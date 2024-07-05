@@ -61,6 +61,8 @@ import { ImportDataComponent } from "./components/Blocks/import-data/import-data
 import { SettingsPanelComponent } from './components/ToolBar/settings-panel/settings-panel.component';
 import { TemplatesPanelComponent } from './components/ToolBar/templates-panel/templates-panel.component';
 import { TutorialsPanelComponent } from './components/ToolBar/tutorials-panel/tutorials-panel.component';
+import {MatListModule} from "@angular/material/list";
+import {MatExpansionModule} from "@angular/material/expansion";
 
 @NgModule({
   declarations: [
@@ -128,6 +130,8 @@ import { TutorialsPanelComponent } from './components/ToolBar/tutorials-panel/tu
     MatInputModule,
     FormsModule,
     NgChartsModule,
+    MatListModule,
+    MatExpansionModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

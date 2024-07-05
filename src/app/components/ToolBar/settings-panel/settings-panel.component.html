@@ -1,41 +1,40 @@
- <div id="settings">
-    <panel-section-collapsible>
-        <title-block icon='expand_more' description='' class="settingsHeader">
-            Settings
-          </title-block>
-    </panel-section-collapsible>
-  
-      <!-- BASIC SETTING DROPDOWN -->
-      <collapsible-subsection [expanded]='true' titleLabel='Basic Settings' [expanded]="sectionExpanded['LBasic']"
-        (opened)="sectionExpanded['LBasic'] = true" (closed)="sectionExpanded['LBasic'] = false">
-        <div>
-        <p>Global Units</p>
-        <radio-block id="globalUnits"
-                  [options]="['English (in)', 'Metric (cm)', 'SI (m)']"
-                  [initialSelection]="'Metric (cm)'"
-                  >
-            </radio-block>
-        <p>Angle Units</p>
-            <radio-block id="angleUnits"
-                      [options]="['Degree (º)', 'Radian']"
-                      [initialSelection]="'Degree (º)'"
-                      >
-                </radio-block>
-            </div>
-      </collapsible-subsection>
-  
-      <!-- VISUAL DROPDOWN -->
-      <collapsible-subsection [expanded]='true' titleLabel='Visual Settings' [expanded]="sectionExpanded['LVisual']"
-        (opened)="sectionExpanded['LVisual'] = true" (closed)="sectionExpanded['LVisual'] = false">
-        <div id="grid">
-            <app-toggle tooltip="This toggle will enable or disable gridlines"
-            label="Grid" [initialValue]="true"
-            (valueChanged)="handleToggleGridChange($event)"></app-toggle>
-        <app-toggle *ngIf="getGridEnabled()" tooltip="This toggle will enable or disable minor grdilines"
-            label="Minor Gridlines" [initialValue]="true"
-            (valueChanged)="handleToggleMinorGridChange($event)"></app-toggle>
-        </div>
-      </collapsible-subsection>
-      
+<div id="settings">
+  <panel-section-collapsible>
+    <title-block icon='expand_more' description='' class="settingsHeader">
+      Settings
+    </title-block>
+  </panel-section-collapsible>
+
+  <!-- BASIC SETTING DROPDOWN -->
+  <collapsible-subsection [expanded]='true' titleLabel='Basic Settings' [expanded]="sectionExpanded['LBasic']"
+                          (opened)="sectionExpanded['LBasic'] = true" (closed)="sectionExpanded['LBasic'] = false">
+    <div>
+      <p>Global Units</p>
+      <radio-block id="globalUnits"
+                   [options]="['English (in)', 'Metric (cm)', 'SI (m)']"
+                   [initialSelection]="'Metric (cm)'"
+      >
+      </radio-block>
+      <p>Angle Units</p>
+      <radio-block id="angleUnits"
+                   [options]="['Degree (º)', 'Radian']"
+                   [initialSelection]="'Degree (º)'"
+      >
+      </radio-block>
     </div>
-  
+  </collapsible-subsection>
+
+  <!-- VISUAL DROPDOWN -->
+  <collapsible-subsection [expanded]='true' titleLabel='Visual Settings' [expanded]="sectionExpanded['LVisual']"
+                          (opened)="sectionExpanded['LVisual'] = true" (closed)="sectionExpanded['LVisual'] = false">
+    <div id="grid">
+      <app-toggle tooltip="This toggle will enable or disable gridlines"
+                  label="Grid" [initialValue]="true"
+                  (valueChanged)="handleToggleGridChange($event)"></app-toggle>
+      <app-toggle *ngIf="getGridEnabled()" tooltip="This toggle will enable or disable minor grdilines"
+                  label="Minor Gridlines" [initialValue]="true"
+                  (valueChanged)="handleToggleMinorGridChange($event)"></app-toggle>
+    </div>
+  </collapsible-subsection>
+
+</div>

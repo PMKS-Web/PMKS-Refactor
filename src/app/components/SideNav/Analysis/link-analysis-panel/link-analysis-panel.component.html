@@ -1,9 +1,9 @@
 <div id="linkAnalysisPanel">
-<!--  LINK PANEL-->
+  <!--  LINK PANEL-->
   <!-- TITLE BLOCK: CONTAINS TITLE AND DYNAMIC LINK NAME -->
   <panel-section-collapsible>
     <title-block icon='expand_more' description='' class = "analysisHeader"
-      >Analysis for Link
+    >Analysis for Link
       {{ getLinkName() }}
     </title-block>
 
@@ -14,34 +14,34 @@
   <collapsible-subsection titleLabel='Data Summary' [expanded]="graphExpanded['dataSummary']"
                           (opened)="graphExpanded['dataSummary'] = true"
                           (closed)="graphExpanded['dataSummary'] = false">
-        <div class="flex-container">
-          <title-block>Data Summary</title-block>
-            <p>Center of Mass</p>
-            <p class="subtitle">Name of Link: {{ getLinkName() }} </p>
-            <p class="subtitle">X Coordinate of Center of Mass: {{ this.getCOMXCoord() }} </p>
-            <p class="subtitle">Y Coordinate of Center of Mass: {{ this.getCOMYCoord() }} </p>
+    <div class="flex-container">
+      <title-block>Data Summary</title-block>
+      <p>Center of Mass</p>
+      <p class="subtitle">Name of Link: {{ getLinkName() }} </p>
+      <p class="subtitle">X Coordinate of Center of Mass: {{ this.getCOMXCoord() }} </p>
+      <p class="subtitle">Y Coordinate of Center of Mass: {{ this.getCOMYCoord() }} </p>
 
-          <!-- REFERENCE JOINTS ALL LISTED- AND LOGIC TO SELECT THEM -->
-          <div><p style="display:inline-block; margin-bottom: 5px;">Reference Joint</p> <mat-icon matTooltip='Select a reference point for the compound link' [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon> </div>
-          <div class="button-container">
-            <div *ngFor="let joint of this.getCurrentLink().getJoints()" class = "button-wrapper">
-              <button class="referenceJointSelect" (click) = onReferenceJointSelected(joint)>
-                Joint: {{ joint.name }}
-              </button>
-            </div>
-          </div>
-
-          <p class="subtitle">Name of Joint: {{ getReferenceJointName() }} </p>
-          <p class="subtitle"> X Coordinate of Joint: {{ this.getReferenceJointXCoord() }} </p>
-          <p class="subtitle"> Y Coordinate of Joint: {{ this.getReferenceJointYCoord() }} </p>
-
+      <!-- REFERENCE JOINTS ALL LISTED- AND LOGIC TO SELECT THEM -->
+      <div><p style="display:inline-block; margin-bottom: 5px;">Reference Joint</p> <mat-icon matTooltip='Select a reference point for the compound link' [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon> </div>
+      <div class="button-container">
+        <div *ngFor="let joint of this.getCurrentLink().getJoints()" class = "button-wrapper">
+          <button class="referenceJointSelect" (click) = onReferenceJointSelected(joint)>
+            Joint: {{ joint.name }}
+          </button>
         </div>
+      </div>
+
+      <p class="subtitle">Name of Joint: {{ getReferenceJointName() }} </p>
+      <p class="subtitle"> X Coordinate of Joint: {{ this.getReferenceJointXCoord() }} </p>
+      <p class="subtitle"> Y Coordinate of Joint: {{ this.getReferenceJointYCoord() }} </p>
+
+    </div>
   </collapsible-subsection>
 
 
   <!-- EVERY GRAPH OPEN BUTTON -->
   <div *ngFor="let graphType of getGraphTypes()">
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(graphType) + ' Graph'" graphText= 'Open'
+    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(graphType) + ' Graph'" graphText= "Open"
                            [btn1Action]="openAnalysisGraph.bind(this, graphType)"></analysis-graph-button>
   </div>
 

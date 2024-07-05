@@ -1,42 +1,42 @@
-<!-- *ngIf= open will make the panel "close" when you open a template but makes it so you have to 
+<!-- *ngIf= open will make the panel "close" when you open a template but makes it so you have to
 double click templates to open again, works for now, will need a better fix later -->
 <div *ngIf=open class="app-templates-panel-container">
-    <panel-section-collapsible>
-        <title-block icon='expand_more' description='' class="synthesisHeader">
-            Templates
-          </title-block>
-        <div class="gridLayout">
-            <!-- Displays an image of each of the templates with an open button -->
-            <div class="template">
-                <p>Four-Bar</p>
-                <!-- <img src='assets/templates/fourbar.gif'/> -->
-                <img class='' src='assets/templates/fourbar.jpg'/> 
-                <button mat-raised-button (click)="this.openTemplate('fourbar')">Open</button> 
-            </div>
-            <div class="template">
-                <p>Watt I Linkage</p>
-                <!-- <img src='assets/templates/watt.gif' /> -->
-                <img class='' src='assets/templates/watt.jpg'/> 
-                <button mat-raised-button (click)="this.openTemplate('watt')">Open</button> 
-            </div>
-            <div class="template">
-                <p>Watt II Linkage</p>
-                <!-- <img src='assets/templates/watt2.gif' /> -->
-                <img class='' src='assets/templates/watt2.jpg' /> 
-                <button mat-raised-button (click)="this.openTemplate('watt2')">Open</button> 
-            </div>
-            <div class="template">
-                <p>Stephenson III Linage</p>
-                <!-- <img src='assets/templates/steph3.gif'/> -->
-                <img class='' src='assets/templates/steph3.jpg'/> 
-                <button mat-raised-button (click)="this.openTemplate('steph3')">Open</button> 
-            </div>
-            <div class="template">
-                <p>Slider-Crank</p>
-                <!-- <img src='assets/templates/slider.gif' /> -->
-                <img class='' src='assets/templates/slider.jpg'/> 
-                <button mat-flat-button (click)="this.openTemplate('slider')">Open</button> 
-            </div>
-        </div>
-    </panel-section-collapsible>
+  <panel-section-collapsible>
+    <title-block icon='expand_more' description='' class="synthesisHeader">
+      Templates
+    </title-block>
+    <div class="gridLayout">
+      <!-- Displays an image of each of the templates with an open button -->
+      <div class="template">
+        <p>Four-Bar</p>
+        <!-- <img src='assets/templates/fourbar.gif'/> -->
+        <img class='' src='assets/templates/fourbar.jpg'/>
+        <button mat-raised-button (click)="this.openTemplate('fourbar')">Open</button>
+      </div>
+      <div class="template">
+        <p>Watt I Linkage</p>
+        <!-- <img src='assets/templates/watt.gif' /> -->
+        <img class='' src='assets/templates/watt.jpg'/>
+        <button mat-raised-button (click)="this.openTemplate('watt')">Open</button>
+      </div>
+      <div class="template">
+        <p>Watt II Linkage</p>
+        <!-- <img src='assets/templates/watt2.gif' /> -->
+        <img class='' src='assets/templates/watt2.jpg' />
+        <button mat-raised-button (click)="this.openTemplate('watt2')">Open</button>
+      </div>
+      <div class="template">
+        <p>Stephenson III Linage</p>
+        <!-- <img src='assets/templates/steph3.gif'/> -->
+        <img class='' src='assets/templates/steph3.jpg'/>
+        <button mat-raised-button (click)="this.openTemplate('steph3')">Open</button>
+      </div>
+      <div class="template">
+        <p>Slider-Crank</p>
+        <!-- <img src='assets/templates/slider.gif' /> -->
+        <img class='' src='assets/templates/slider.jpg'/>
+        <button mat-raised-button (click)="this.openTemplate('slider');">Open</button>
+      </div>
+    </div>
+  </panel-section-collapsible>
 </div>

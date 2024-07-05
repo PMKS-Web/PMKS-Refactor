@@ -5,63 +5,79 @@
 
 
 
- .app-templates-panel-container{
+.app-templates-panel-container{
   background-color: white;
   border-radius: 3px;
-  width:800px;
+  //width:2000px;
   margin-right: 50px;
   display: flex; /* Use flexbox */
-  flex-wrap: wrap; /* Allow items to wrap to the next line */
-  justify-content: space-between;
-  margin-top: 30px;
+  flex-wrap: nowrap;/* Allow items to wrap to the next line */
+  margin-top: 60px;
   display: flex; /* Use flexbox to ensure content fills the space */
   //align-items: center; /* Vertically center content */
-  justify-content: center; /* Horizontally center content */
+  //justify-content: center; /* Horizontally center content */
+  opacity: 0.999;
+  flex-direction: column;
+  margin-left: 250px;
+  height: 800px;
 }
 
 .template {
   background-color: white;
   border-top: 5px solid #3F51B5;
   //height: 75px;
-  background-color: white;
   margin-bottom: 15px;
   display: flex; /* Use flexbox to ensure content fills the space */
-  //align-items: center; /* Vertically center content */
-  justify-content: center; /* Horizontally center content */
-
+  //align-items: end; /* Vertically center content */
+  justify-content: end; /* Horizontally center content */
+ flex-direction: column;
 
   cursor: pointer;
 
-      //If the card  is hovered, hide the static image of the GIF
-      &:hover .static {
-        opacity: 0;
-        //Animate the change to opacity
-        transition: opacity 0.3s ease-in-out;
-      }
-      .static {
-        //position:fixed;
-        opacity: 1;
-      }
+  //If the card  is hovered, hide the static image of the GIF
+  &:hover .static {
+    opacity: 0;
+    //Animate the change to opacity
+    transition: opacity 0.3s ease-in-out;
+  }
+  .static {
+    //position:fixed;
+    opacity: 1;
+  }
 
-    button {
-        position: relative;
-        bottom: 0;
-        right: 0;
-        margin: 10px;
-    }
+  button {
+    position: relative;
+    bottom: 0;
+    left: 75%;
+    margin: 10px;
+    width: 30px;
+    justify-content: end;
+    z-index: 1;
+    color:  #3F51B5;
+    background-color: #e8eaf6;
+    border-radius: 20px;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-color: transparent;
+
+  }
+  button:hover{
+    background-color: #3f51b5;
+    color: white;
+  }
 }
-  
+
 img {
-  height: 100px;
+  //height: 100px;
 }
 
 .gridLayout {
   display: grid;
-      //Make sure items always fill the entire space, make it responsive
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      //Add a 10px gap
-      grid-gap: 20px;
-      padding: 24px;
-      padding-top: 0px;
+  //Make sure items always fill the entire space, make it responsive
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  //Add a 10px gap
+  grid-gap: 20px;
+  padding: 24px;
+  padding-top: 0px;
 }
 

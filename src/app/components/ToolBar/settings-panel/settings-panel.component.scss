@@ -4,21 +4,29 @@
 @use '@angular/material' as mat;
 
 @mixin css($theme) {
-    // Get the color config from the theme.
-    $color-config: mat.get-color-config($theme);
-    // Get the primary color palette from the color-config.
-    $primary-palette: map.get($color-config, 'primary');
-    $accent-palette: map.get($color-config, 'accent');
-    $typography-config: mat.get-typography-config($theme);
-    $foreground: map.get($theme, foreground);
+  // Get the color config from the theme.
+  $color-config: mat.get-color-config($theme);
+  // Get the primary color palette from the color-config.
+  $primary-palette: map.get($color-config, 'primary');
+  $accent-palette: map.get($color-config, 'accent');
+  $typography-config: mat.get-typography-config($theme);
+  $foreground: map.get($theme, foreground);
 
-    #settings{ 
-      background-color: white; 
-      border-radius: 3px;
-      width:395px;
-      float: right;
-      margin-top: 32px;
-      border-top: 5px solid #3F51B5;
-      box-shadow: 3px 3px 3px gray;    
-    } 
+  #settings {
+    background-color: white;
+    border-radius: 3px;
+    width: 320px;
+    float: right;
+    border-top: 5px solid #3F51B5;
+    box-shadow: 3px 3px 3px gray;
+    opacity: 0.999;
+    gap: 10px;
+    padding: 10px 20px 20px 20px;
+    margin-top: 40px;
+    margin-right: 12px;
   }
+  #angleUnits, #globalUnits{
+    display: flex;
+    justify-content: center;
+  }
+}
