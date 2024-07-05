@@ -20,6 +20,7 @@
   flex-direction: column;
   margin-left: 250px;
   height: 800px;
+  box-shadow: 0px 0px 200px 200px rgba(55, 54, 54, 0.8);
 }
 
 .template {
@@ -80,4 +81,22 @@ img {
   padding: 24px;
   padding-top: 0px;
 }
-
+.CloseBtn{
+  position: relative;
+  bottom: 0;
+  left: 92%;
+  margin: 10px;
+  width: 30px;
+  justify-content: center;
+  z-index: 1;
+  color:  #3F51B5;
+  background-color: #e8eaf6;
+  border-radius: 20px;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-color: transparent;
+}
+.CloseBtn:hover{
+  background-color: #3f51b5;
+  color: white;
+}

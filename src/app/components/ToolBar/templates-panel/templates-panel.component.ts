@@ -26,6 +26,9 @@ export class TemplatesPanelComponent {
     //creates a new mechanism in the state
     this.mechanism = this.stateService.getMechanism();
   }
+  togglePanel() {
+    this.open = !this.open;
+  }
 
   openTemplate(linkage: string){
     this.open=false; //closes panel sort of, will need a better fix to actually close the panel in the toolbar
