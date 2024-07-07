@@ -1,11 +1,11 @@
 <div class="app-sidenav-container">
     <nav class="side-nav">
         @for(tab of this.tabs; track $index){
-        <button class ="sidenav-button"
-                [ngClass]="{'selected': tab.selected}"
-                (click)="setCurrentTab(tab.label)">
-                <img
-                [src]="tab.icon" style="height:40px; width:40px">
+        <button
+                class ="sidenav-button"
+                [ngClass]="{ 'selected': isSelected(tab.label) }"
+                (click)="togglePanel(tab.label)">
+                <img [src]="tab.icon" style="height:40px; width:40px">
                 {{tab.label}}
         </button>
         }

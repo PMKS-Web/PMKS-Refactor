@@ -10,7 +10,11 @@ import { ColorService } from 'src/app/services/color.service';
 import { FormControl, FormGroup } from "@angular/forms";
 import { LinkComponent } from 'src/app/components/Grid/link/link.component';
 import { Coord } from 'src/app/model/coord';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
+
+export class AppModule { }
 
 @Component({
     selector: 'three-pos-synthesis',
@@ -20,7 +24,7 @@ import { Coord } from 'src/app/model/coord';
 })
 export class ThreePosSynthesis{
 
-    /*  THE POSITION VALUES ARE ALL HARD CODED BECAUSE THE BACKEND ISN'T SET UP 
+    /*  THE POSITION VALUES ARE ALL HARD CODED BECAUSE THE BACKEND ISN'T SET UP
         ALL OF THESE FUNCTIONS SHOULD BE WRITTEN IN THE BACK END AND CALLED TO ON THE FRONT END */
 
 
@@ -53,9 +57,9 @@ export class ThreePosSynthesis{
     pos3Specified: boolean = false;
     fourBarGenerated: boolean = false;
     sixBarGenerated: boolean = false;
-    
 
-    constructor(private stateService: StateService, private interactionService: InteractionService, private colorService: ColorService){    
+
+    constructor(private stateService: StateService, private interactionService: InteractionService, private colorService: ColorService){
     }
 
 setReference(r: string) {
@@ -118,7 +122,7 @@ setPosYCoord(x: number, posNum: number){
 }
 
 setPositionAngle(x: number, posNum: number){
-    
+
 }
 
 getPosXCoord(posNum: number): number{
