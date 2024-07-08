@@ -21,6 +21,7 @@ export class ToggleComponent {
   @Input() tooltip = '';
   @Input() label: string = '';
   @Input() initialValue: boolean = false;
+  @Input() IconClass: string = '';
   @Output() valueChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   public value: boolean = this.initialValue;

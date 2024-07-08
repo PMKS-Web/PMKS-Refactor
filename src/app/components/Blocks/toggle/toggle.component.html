@@ -1,6 +1,6 @@
 <div class="toggle-container">
   <span class="label">{{ label }}</span>
-  <mat-icon matTooltip='{{ this.tooltip }}' [matTooltipShowDelay]='1000' class='label-help'
+  <mat-icon matTooltip='{{ this.tooltip }}' [matTooltipShowDelay]='1000' class='label-help' [ngClass]="IconClass"
   >help_outline
   </mat-icon>
   <div class="switch-container">

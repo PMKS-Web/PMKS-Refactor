@@ -18,7 +18,7 @@
     width: 320px;
     float: right;
     border-top: 5px solid #3F51B5;
-    box-shadow: 3px 3px 3px gray;
+    box-shadow: 0 9px 5px 0 gray, 0 9px 5px 0 gray, 12px 0 15px -4px gray, -12px 0 15px -4px gray;
     opacity: 0.999;
     gap: 10px;
     padding: 10px 20px 20px 20px;
@@ -28,5 +28,13 @@
   #angleUnits, #globalUnits{
     display: flex;
     justify-content: center;
+  }
+  p{
+    margin-bottom: 5px;
+    margin-right: 0px;
+    margin-left: 0px;
+  }
+  #grid, #units{
+    font-size: 15px
   }
 }

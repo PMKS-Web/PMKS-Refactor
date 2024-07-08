@@ -52,7 +52,6 @@
     left: 75%;
     margin: 10px;
     width: 30px;
-    justify-content: end;
     z-index: 1;
     color:  #3F51B5;
     background-color: #e8eaf6;
@@ -60,6 +59,7 @@
     padding: 5px 10px;
     cursor: pointer;
     border-color: transparent;
+    text-align: center;
 
   }
   button:hover{
