@@ -1,11 +1,11 @@
 <!-- *ngIf= open will make the panel "close" when you open a template but makes it so you have to
 double click templates to open again, works for now, will need a better fix later -->
+<div class="focusEffect">
 <div *ngIf=open class="app-templates-panel-container">
   <panel-section-collapsible>
-    <title-block icon='expand_more' description='' class="synthesisHeader">
-      Templates
+    <title-block description=''>
+      <h3>Templates <button class="CloseBtn"   (click)="togglePanel()" mat-flat-button>&#10005;</button></h3>
     </title-block>
-    <button class="CloseBtn"   (click)="togglePanel()" mat-flat-button>&#10005;</button>
     <div class="gridLayout">
       <!-- Displays an image of each of the templates with an open button -->
       <div class="template">
@@ -40,4 +40,5 @@ double click templates to open again, works for now, will need a better fix late
       </div>
     </div>
   </panel-section-collapsible>
+</div>
 </div>

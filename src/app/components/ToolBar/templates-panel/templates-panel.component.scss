@@ -13,14 +13,13 @@
   display: flex; /* Use flexbox */
   flex-wrap: nowrap;/* Allow items to wrap to the next line */
   margin-top: 60px;
-  display: flex; /* Use flexbox to ensure content fills the space */
+ /* Use flexbox to ensure content fills the space */
   //align-items: center; /* Vertically center content */
   //justify-content: center; /* Horizontally center content */
   opacity: 0.999;
   flex-direction: column;
   margin-left: 250px;
-  height: 800px;
-  box-shadow: 0px 0px 200px 200px rgba(55, 54, 54, 0.8);
+  height: 600px;
 }
 
 .template {
@@ -84,7 +83,7 @@ img {
 .CloseBtn{
   position: relative;
   bottom: 0;
-  left: 92%;
+  left: 85%;
   margin: 10px;
   width: 30px;
   justify-content: center;
@@ -99,4 +98,19 @@ img {
 .CloseBtn:hover{
   background-color: #3f51b5;
   color: white;
+}
+
+h3{
+  margin-left: 20px;
+  margin-bottom: 2px;
+  margin-top: 2px;
+  font-family: Roboto, "Helvetica Neue", serif;
+  font-weight: normal;
+}
+.focusEffect{
+  background-color: rgba(90, 86, 86, 0.5);
+  height: 100vh;
+  width: 100vw;
+  transform: translate(0, 30px);
+  position: fixed;
 }

@@ -68,6 +68,7 @@
   -webkit-transition: .4s;
   transition: .4s;
   border-radius: 50%;
+  transform: translateY(-5px);
 }
 
 input:checked + .slider {
@@ -81,10 +82,12 @@ input:focus + .slider {
 input:checked + .slider:before {
   -webkit-transform: translateX(23px); /* Updated value for the checked state */
   -ms-transform: translateX(23px);
-  transform: translateX(23px);
+ // transform: translateX(23px);
   display: flex;
   align-items: center;
   justify-content: center;
+  //transform: translateY(-5px);
+  transform: translate(23px, -5px);
 }
 
 
@@ -110,6 +113,7 @@ input:checked + .slider:before {
   font-size: 18px;
   color: white;
   transition: .4s;
+  transform: translateY(-5px);
 }
 
 .tick {
@@ -136,3 +140,7 @@ input:not(:checked) ~ .slider:before{
   background-color: #4e4d4d;
 }
 
+.slider:hover {
+  box-shadow: 0 0 30px #002962;
+
+}
