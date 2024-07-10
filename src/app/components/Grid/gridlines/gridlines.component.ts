@@ -42,7 +42,7 @@ export class GridLinesComponent  {
   }
 
   private getCellSize(zoomScale: number):number{
-    let factorsOfTen: number = zoomScale >=1 ? (Math.log10(zoomScale)) : (-Math.log10(1 / zoomScale)); 
+    let factorsOfTen: number = zoomScale >=1 ? (Math.log10(zoomScale)) : (-Math.log10(1 / zoomScale));
     let scaleLevel: number = zoomScale >=1 ? factorsOfTen % 1: 1-(-factorsOfTen % 1);
     let label: number =  scaleLevel < Math.log10(2) ? 1 : scaleLevel < Math.log10(4) ? 2 : 4;
     let cellSize = Math.pow(10, Math.floor(factorsOfTen)) * label * this.DEFAULT_CELL_SCALE;

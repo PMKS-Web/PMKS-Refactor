@@ -1,7 +1,7 @@
 <!-- *ngIf= open will make the panel "close" when you open a template but makes it so you have to
 double click templates to open again, works for now, will need a better fix later -->
-<div class="focusEffect">
-<div *ngIf=open class="app-templates-panel-container">
+<div *ngIf=open class="focusEffect">
+<div class="app-templates-panel-container">
   <panel-section-collapsible>
     <title-block description=''>
       <h3>Templates <button class="CloseBtn"   (click)="togglePanel()" mat-flat-button>&#10005;</button></h3>
@@ -18,7 +18,7 @@ double click templates to open again, works for now, will need a better fix late
         <p>Watt I Linkage</p>
         <!-- <img src='assets/templates/watt.gif' /> -->
         <img class='' src='assets/templates/watt.jpg'/>
-        <button mat-raised-button (click)="this.openTemplate('watt')">Open</button>
+        <button mat-raised-button ><a id='newtab' href="http://localhost:4200/" target="_blank" (click)="this.openTemplate('watt')">Open</a></button>
       </div>
       <div class="template">
         <p>Watt II Linkage</p>

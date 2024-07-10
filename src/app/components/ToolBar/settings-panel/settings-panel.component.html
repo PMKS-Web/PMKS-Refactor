@@ -1,21 +1,21 @@
 <div id="settings">
   <panel-section-collapsible>
     <title-block icon='expand_more' description='' class="settingsHeader">
-      Settings
+      <h3 style="margin-bottom: 10px;">Settings</h3>
     </title-block>
   </panel-section-collapsible>
 
   <!-- BASIC SETTING DROPDOWN -->
   <collapsible-subsection [expanded]='true' titleLabel='Basic Settings' [expanded]="sectionExpanded['LBasic']"
                           (opened)="sectionExpanded['LBasic'] = true" (closed)="sectionExpanded['LBasic'] = false">
-    <div id="units">
-      <p>Global Units</p>
+    <div id="units" >
+      <p class="units">Global Units</p>
       <radio-block id="globalUnits"
                    [options]="['English (in)', 'Metric (cm)', 'SI (m)']"
                    [initialSelection]="'Metric (cm)'"
       >
       </radio-block>
-      <p>Angle Units</p>
+      <p class="units">Angle Units</p>
       <radio-block id="angleUnits"
                    [options]="['Degree (º)', 'Radian']"
                    [initialSelection]="'Degree (º)'"

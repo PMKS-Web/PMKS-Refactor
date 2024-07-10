@@ -8,7 +8,7 @@ import { Link } from 'src/app/model/link';
 import { StateService } from 'src/app/services/state.service';
 import { state } from '@angular/animations';
 import { ToolbarComponent } from 'src/app/components/ToolBar/toolbar/toolbar.component';
-import {window} from "rxjs";
+//import {window} from "rxjs";
 
 
 @Component({
@@ -27,7 +27,7 @@ export class TemplatesPanelComponent {
     this.mechanism = this.stateService.getMechanism();
   }
   togglePanel() {
-    this.open = !this.open;
+    this.open = false;
   }
 
   openTemplate(linkage: string){
@@ -35,6 +35,22 @@ export class TemplatesPanelComponent {
 
     //calls helper functions to call to the state and create the mechanisms by calling to the mechanism class
     //these functions are temporary solutions, in the future should be done using encoding
+    // const protocol = window.location.protocol;
+    // const hostname = window.location.hostname;
+    // const pathname = window.location.pathname;
+    // const port = window.location.port;
+    // const url = `${protocol}//${hostname}${port ? `:${port}` : ''}${pathname}`;
+    // const dataURLString = `${url}?${content}`;
+    //
+    // const toolman = document.createElement('a');
+    // toolman.setAttribute('href', dataURLString);
+    // toolman.setAttribute('target', '_blank');
+    // toolman.style.display = 'none';
+    // document.body.appendChild(toolman);
+    // toolman.click();
+    // document.body.removeChild(toolman);
+
+
     if(linkage==='fourbar'){
       this.makeFourBar();
     }
