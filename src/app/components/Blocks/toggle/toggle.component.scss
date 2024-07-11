@@ -140,7 +140,6 @@ input:not(:checked) ~ .slider:before{
   background-color: #4e4d4d;
 }
 
-.slider:hover {
-  box-shadow: 0 0 30px #002962;
-
+input:hover + .slider:before{
+  scale: 1.4;
 }

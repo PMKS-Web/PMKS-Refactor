@@ -19,7 +19,7 @@
   opacity: 0.999;
   flex-direction: column;
   margin-left: 250px;
-  height: 600px;
+  height: fit-content;
 }
 
 .template {
@@ -35,14 +35,21 @@
   cursor: pointer;
 
   //If the card  is hovered, hide the static image of the GIF
-  &:hover .static {
+  &:hover .img {
     opacity: 0;
     //Animate the change to opacity
     transition: opacity 0.3s ease-in-out;
   }
-  .static {
+  .img {
     //position:fixed;
     opacity: 1;
+    position: absolute;
+    transform: translateY(-260px);
+  }
+
+  img{
+    width: 15vw;
+    top: 20vh;
   }
 
   button {
@@ -67,8 +74,9 @@
   }
 }
 
-img {
+.img {
   //height: 100px;
+  z-index: 0;
 }
 
 .gridLayout {
