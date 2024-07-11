@@ -35,36 +35,22 @@ export class TemplatesPanelComponent {
 
     //calls helper functions to call to the state and create the mechanisms by calling to the mechanism class
     //these functions are temporary solutions, in the future should be done using encoding
-    // const protocol = window.location.protocol;
-    // const hostname = window.location.hostname;
-    // const pathname = window.location.pathname;
-    // const port = window.location.port;
-    // const url = `${protocol}//${hostname}${port ? `:${port}` : ''}${pathname}`;
-    // const dataURLString = `${url}?${content}`;
-    //
-    // const toolman = document.createElement('a');
-    // toolman.setAttribute('href', dataURLString);
-    // toolman.setAttribute('target', '_blank');
-    // toolman.style.display = 'none';
-    // document.body.appendChild(toolman);
-    // toolman.click();
-    // document.body.removeChild(toolman);
-
-
-    if(linkage==='fourbar'){
-      this.makeFourBar();
-    }
-    else if(linkage==='watt'){
-      this.makeWatt();
-    }
-    else if(linkage==='watt2'){
-      this.makeWatt2();
-    }
-    else if(linkage==='steph3'){
-      this.makeSteph3();
-    }
-    else if(linkage==='slider'){
-      this.makeSlider();
+    switch (linkage) {
+      case 'fourbar':
+        this.makeFourBar();
+        break;
+      case 'watt':
+        this.makeWatt();
+        break;
+      case 'watt2':
+        this.makeWatt2();
+        break;
+      case 'steph3':
+        this.makeSteph3();
+        break;
+      case 'slider':
+        this.makeSlider();
+        break;
     }
   }
 
