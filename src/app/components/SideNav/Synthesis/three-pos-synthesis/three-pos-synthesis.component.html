@@ -15,7 +15,11 @@
               >help_outline
               </mat-icon>
 
+<<<<<<< Updated upstream
               <single-input-block class="right-aligned" [input1Value]="0" style="margin-bottom:5px;"
+=======
+              <single-input-block class="right-aligned" [input1Value]="0" style="margin-bottom:-7px;margin-left: 41px;"
+>>>>>>> Stashed changes
             (input1Change)="setCouplerLength($event)"
 
             unit1="cm"
@@ -23,8 +27,13 @@
             </div>
 
             <!-- The fixed reference is the center of rotation and you set that with the radio block -->
+<<<<<<< Updated upstream
             <div><img src='assets/icons/referencePoint.svg' style="height: 12px; width: 12px;"/>
                   <p style="display:inline-block; margin-bottom:0;">Fixed Reference</p>
+=======
+            <div><img src='assets/icons/referencePoint.svg' style="height: 12.5px; width: 12.5px; display: inline-block; align-items: center; margin-left: 6px;"/>
+                  <p style="display:inline-block; margin-bottom:0; ">Fixed Reference</p>
+>>>>>>> Stashed changes
             </div>
                   <mat-icon id="fixedReferenceTooltip"
                         matTooltip="The center of rotation of the end-effector link, and what the position coordinate represents" [matTooltipShowDelay]='1000'
@@ -86,19 +95,24 @@
 </div>
 </div>
     <hr class="solid">
-<!-- If all positions are defined you can then generate a four bar or delete all positions -->
+
     <div *ngIf='!this.allPositionsDefined()' class="definedButtons">
     <button id="generateFourBarGrey" (click)="generateFourBar()">Generate Four-Bar</button>
     <button id="removeAllGrey"  (click)="removeAllPositions()">Remove All Positions</button>
     </div>
 
+    <!-- If all positions are defined you can then generate a four bar or delete all positions -->
+
     <div *ngIf='this.allPositionsDefined()' class="definedButtons">
       <button id="generateFourBar" (click)="generateFourBar()">Generate Four-Bar</button>
+<<<<<<< Updated upstream
       <button id="removeAll"  (click)="removeAllPositions()">Remove All Positions</button>
+=======
+
+>>>>>>> Stashed changes
       <!-- once a four bar is generated you are able to generate a six bar -->
       <div *ngIf='isFourBarGenerated()' class="definedButtons">
       <button *ngIf='isFourBarGenerated()' id="generateFourBar" (click)="generateSixBar()">Generate Six-Bar</button>
-      <!--  <button id="removeAll"  (click)="removeAllPositions()">Remove All Positions</button> -->
     </div>
 
 </div>

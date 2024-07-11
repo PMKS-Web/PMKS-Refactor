@@ -58,6 +58,7 @@
 
 
   .icon {
+<<<<<<< Updated upstream
   width: 15px; /* Adjust size as necessary */
   height: 15px; /* Adjust size as necessary */
   margin-right: 6px; /* Adjust spacing as necessary */
@@ -66,6 +67,20 @@
 
   .label {
     margin-right: auto; /* Adjust spacing as necessary */
+=======
+    width: 15px;
+    height: 15px;
+    margin-right: 6px;
+    margin-left: 6px;
+    margin-top: 1px;
+    margin-bottom: -12px;
+  }
+
+.label {
+    margin-left: 1px;
+    margin-right: auto;
+    margin-bottom: -15px;
+>>>>>>> Stashed changes
     min-width:100px;
     max-width: 100px;
   }
@@ -76,6 +91,8 @@
 
   hr.solid {
     border-top: 1px solid rgba(63, 81, 181, 0.1);
+    margin-top: 10px;
+    margin-bottom: 10px;
   }
 
   .right-aligned {
@@ -125,6 +142,22 @@
     color: #3F51B5;
     border: none;
   }
+
+  #clearFourBar {
+    margin:0 auto;
+    display:inherit;
+    background-color: white;
+    width: 60%;
+    height: 40px;
+    border-radius: 20px;
+    border: 1px solid black;
+    margin-top: 3px;
+    margin-bottom: 8px;
+    background-color: #e8eaf6;
+    color: #3F51B5;
+    border: none;
+  }
+
   #generateFourBarGrey{
     margin:0 auto;
     display:block;
@@ -206,6 +239,7 @@
     display: flex;
     margin-left: -45px;
     margin-top: 6px;
+    margin-bottom: -16px;
   }
 
   #fixedReferenceTooltip {
