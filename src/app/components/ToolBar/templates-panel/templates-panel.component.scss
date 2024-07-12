@@ -20,6 +20,7 @@
   flex-direction: column;
   margin-left: 250px;
   height: fit-content;
+  width: 85vw;
 }
 
 .template {
@@ -32,7 +33,6 @@
  flex-direction: column;
   box-shadow: 0px 0px 3px #263037;
   cursor: pointer;
-
   //If the card  is hovered, hide the static image of the GIF
   &:hover .img {
     opacity: 0;
@@ -40,9 +40,9 @@
     transition: opacity 0.3s ease-in-out;
   }
   .img {
-    //position:fixed;
+    position:fixed;
     opacity: 1;
-    transform: translateY(-100%);
+    //transform: translateY(-5%);
   }
 
   img{
@@ -61,7 +61,7 @@
     cursor: pointer;
     border-color: transparent;
     text-align: center;
-    transform: translate(325%,-350%);
+    transform: translate(325%,0);
   }
   button:hover{
     background-color: #3f51b5;
@@ -85,8 +85,6 @@
 }
 .CloseBtn{
   position: relative;
-  bottom: 0;
-  left: 85%;
   margin: 10px;
   width: 30px;
   justify-content: center;
@@ -97,6 +95,7 @@
   padding: 5px 10px;
   cursor: pointer;
   border-color: transparent;
+  transform: translateX(70vw);
 }
 .CloseBtn:hover{
   background-color: #3f51b5;
