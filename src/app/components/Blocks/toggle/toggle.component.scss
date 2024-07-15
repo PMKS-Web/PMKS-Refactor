@@ -17,21 +17,21 @@
   width: 100%; /* Make the container take full width */
   margin-top: 5px;
   margin-bottom: 5px;
+  justify-content: space-between;
 }
 
 .label {
-  flex-grow: 0.05;
+  margin-right:4px;
   margin-left: 5px;
-  margin-bottom: 0px;
+  margin-bottom: 5px;
   font-size: 16px;
 }
 
 .switch {
-  position: absolute;
+  position: relative;
   display: inline-block;
   width: 50px;
   height: 15px;
-  right: 25px;
   }
 
 .switch-container {
@@ -65,13 +65,14 @@
 
 .slider:before {
   position: absolute;
-  content: "";
+  content: "\2714";
   height: 25px;
   width: 25px;
   background-color: #3f51b5;
   -webkit-transition: .4s;
   transition: .4s;
   border-radius: 50%;
+  color: white;
 }
 
 input:checked + .slider {
@@ -99,56 +100,23 @@ input:checked + .slider:before {
   font-size: 18px;
   vertical-align: middle;
   padding-top: 2px;
+  justify-content: ;
 }
-
-.switch .check {
-  position: absolute;
-  top: 50%;
-  right: -5px; /* Adjust this value according to your design */
-  transform: translateY(-50%);
-  transition: .4s;
-}
-
-.tick,
-.cross {
-  position: absolute;
-  top: 1px;
-  font-size: 18px;
+input:not(:checked) + .slider:before{
+  content: '\2716';
   color: white;
-  transition: .4s;
-  transform: translateY(-5px);
-}
-
-.tick {
-  transform: translate(20px, -5px);
-  opacity: 0;
-}
-
-input:checked+.slider+.tick {
-  opacity: 1;
-  color: white;
-}
-
-.cross {
-  opacity: 0;
-  transform: translate(-1.75px, -5px);
-}
-
-input:not(:checked) ~ .cross {
-  color: white;
-  opacity: 1;
-}
-
-input:not(:checked) ~ .slider:before{
   background-color: #4e4d4d;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 input:hover + .slider:before{
   scale: 1.4;
 }
-input:hover ~ .cross{
-  scale: 1.4;
-}
-input:hover ~ .tick{
-  scale: 1.4;
-}
+//input:hover ~ .cross{
+//  scale: 1.4;
+//}
+//input:hover ~ .tick{
+//  scale: 1.4;
+//}

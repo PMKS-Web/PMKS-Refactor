@@ -4,7 +4,7 @@ double click templates to open again, works for now, will need a better fix late
 <div class="app-templates-panel-container">
   <panel-section-collapsible>
     <title-block description=''>
-      <h3>Templates <button class="CloseBtn"   (click)="togglePanel()" mat-flat-button>&#10005;</button></h3>
+      <h3>Templates</h3>
     </title-block>
     <div class="gridLayout">
       <!-- Displays an image of each of the templates with an open button -->
@@ -27,13 +27,13 @@ double click templates to open again, works for now, will need a better fix late
         <button mat-raised-button (click)="this.openTemplate('watt2')">Open</button>
       </div>
       <div class="template">
-        <p>Stephenson III Linage</p>
+        <p>Stephenson III Linkage</p>
         <img src='assets/templates/steph3.gif'class="gifs"/>
         <img  src='assets/templates/steph3.jpg' class="img" />
         <button mat-raised-button (click)="this.openTemplate('steph3')">Open</button>
       </div>
       <div class="template">
-        <p>Slider-Crank</p>
+        <p>Crank Slider Linkage</p>
         <img src='assets/templates/slider.gif' class="gifs"/>
         <img  src='assets/templates/slider.jpg' class="img"/>
         <button mat-raised-button (click)="this.openTemplate('slider');">Open</button>
