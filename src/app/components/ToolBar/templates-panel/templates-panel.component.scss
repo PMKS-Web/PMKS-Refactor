@@ -5,63 +5,96 @@
 
 
 
- .app-templates-panel-container{
+.app-templates-panel-container{
   background-color: white;
   border-radius: 3px;
-  width:800px;
+  //width:2000px;
   margin-right: 50px;
   display: flex; /* Use flexbox */
-  flex-wrap: wrap; /* Allow items to wrap to the next line */
-  justify-content: space-between;
-  margin-top: 30px;
-  display: flex; /* Use flexbox to ensure content fills the space */
+  flex-wrap: nowrap;/* Allow items to wrap to the next line */
+  margin-top: 5px;
+ /* Use flexbox to ensure content fills the space */
   //align-items: center; /* Vertically center content */
-  justify-content: center; /* Horizontally center content */
+  //justify-content: center; /* Horizontally center content */
+  opacity: 0.999;
+  flex-direction: column;
+  margin-left: 10vw;
+  height: fit-content;
+  width: 85vw;
 }
 
 .template {
   background-color: white;
   border-top: 5px solid #3F51B5;
   //height: 75px;
-  background-color: white;
-  margin-bottom: 15px;
   display: flex; /* Use flexbox to ensure content fills the space */
-  //align-items: center; /* Vertically center content */
-  justify-content: center; /* Horizontally center content */
-
-
+  //align-items: end; /* Vertically center content */
+  justify-content: end; /* Horizontally center content */
+ flex-direction: column;
+  box-shadow: 0px 0px 3px #263037;
   cursor: pointer;
+  //If the card  is hovered, hide the static image of the GIF
+  &:hover .img {
+    opacity: 0;
+    //Animate the change to opacity
+    transition: opacity 0.3s ease-in-out;
+  }
+  .img {
+    position:absolute;
+    opacity: 1;
+    //transform: translateY(-5%);
+  }
 
-      //If the card  is hovered, hide the static image of the GIF
-      &:hover .static {
-        opacity: 0;
-        //Animate the change to opacity
-        transition: opacity 0.3s ease-in-out;
-      }
-      .static {
-        //position:fixed;
-        opacity: 1;
-      }
+  img{
+    width: 15vw;
+  }
 
-    button {
-        position: relative;
-        bottom: 0;
-        right: 0;
-        margin: 10px;
-    }
+  button {
+    position: absolute;
+    margin: 10px;
+    width: 30px;
+    color:  #3F51B5;
+    background-color: #e8eaf6;
+    border-radius: 20px;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-color: transparent;
+    text-align: center;
+    transform: translate(325%,0);
+  }
+  button:hover{
+    background-color: #3f51b5;
+    color: white;
+  }
 }
-  
-img {
-  height: 100px;
+
+.img {
+  //height: 100px;
+  z-index: 0;
 }
 
 .gridLayout {
   display: grid;
-      //Make sure items always fill the entire space, make it responsive
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      //Add a 10px gap
-      grid-gap: 20px;
-      padding: 24px;
-      padding-top: 0px;
+  //Make sure items always fill the entire space, make it responsive
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  //Add a 10px gap
+  grid-gap: 20px;
+  padding: 24px;
+  padding-top: 0px;
 }
 
+h3{
+  margin-left: 20px;
+  margin-bottom: 2px;
+  margin-top: 2px;
+  margin-right: 0;
+  font-family: Roboto, "Helvetica Neue", serif;
+  font-weight: normal;
+}
+.focusEffect{
+  background-color: rgba(90, 86, 86, 0.5);
+  height: 100vh;
+  width: 100vw;
+  transform: translate(0, 30px);
+  position: fixed;
+}

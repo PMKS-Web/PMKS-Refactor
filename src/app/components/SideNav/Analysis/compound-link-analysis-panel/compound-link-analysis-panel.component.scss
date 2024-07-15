@@ -2,14 +2,14 @@
 @use '@angular/material' as mat;
 
 @mixin css($theme) {
-    // Get the color config from the theme.
-    $color-config: mat.get-color-config($theme);
-    // Get the primary color palette from the color-config.
-    $primary-palette: map.get($color-config, 'primary');
-    $accent-palette: map.get($color-config, 'accent');
-    $typography-config: mat.get-typography-config($theme);
-    $background: map.get($theme, background);
-    $foreground: map.get($theme, foreground);
+  // Get the color config from the theme.
+  $color-config: mat.get-color-config($theme);
+  // Get the primary color palette from the color-config.
+  $primary-palette: map.get($color-config, 'primary');
+  $accent-palette: map.get($color-config, 'accent');
+  $typography-config: mat.get-typography-config($theme);
+  $background: map.get($theme, background);
+  $foreground: map.get($theme, foreground);
 
 
 
@@ -23,6 +23,8 @@
   width:100%;
   max-height:calc(90vh - 30px);;
   overflow-y:scroll;
+  margin:10px;
+  gap:10px;
 }
 
 .flex-container {
@@ -93,14 +95,14 @@
 
 .referenceJointSelect{
   height: 28px;
-    margin: 2px;
-    background-color: #e8eaf6;
-    color: #3F51B5;
-    border: none;
-    border-radius: 3px;
+  margin: 2px;
+  background-color: #e8eaf6;
+  color: #3F51B5;
+  border: none;
+  border-radius: 3px;
 }
 
 .referenceJointSelect:hover {
   color: #e8eaf6;
-    background-color: #3F51B5;
+  background-color: #3F51B5;
 }

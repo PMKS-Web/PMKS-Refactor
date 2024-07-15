@@ -2,18 +2,19 @@
 @use '@angular/material' as mat;
 
 @mixin css($theme) {
-    // Get the color config from the theme.
-    $color-config: mat.get-color-config($theme);
-    // Get the primary color palette from the color-config.
-    $primary-palette: map.get($color-config, 'primary');
-    $accent-palette: map.get($color-config, 'accent');
-    $typography-config: mat.get-typography-config($theme);
-    $background: map.get($theme, background);
-    $foreground: map.get($theme, foreground);
+  // Get the color config from the theme.
+  $color-config: mat.get-color-config($theme);
+  // Get the primary color palette from the color-config.
+  $primary-palette: map.get($color-config, 'primary');
+  $accent-palette: map.get($color-config, 'accent');
+  $typography-config: mat.get-typography-config($theme);
+  $background: map.get($theme, background);
+  $foreground: map.get($theme, foreground);
 
 
 
 }
+
 
 #linkAnalysisPanel {
   background-color: white;
@@ -22,6 +23,8 @@
   box-shadow: 3px 3px 3px gray;
   max-height:calc(90vh - 30px);;
   overflow-y:scroll;
+  margin:10px;
+  gap:10px;;
 }
 
 .flex-container {
@@ -108,4 +111,8 @@ mat-icon {
 .referenceJointSelect:hover {
   color: #e8eaf6;
   background-color: #3F51B5;
+}
+
+#analysis-graph-button{
+  //background-color: #007bff;
 }

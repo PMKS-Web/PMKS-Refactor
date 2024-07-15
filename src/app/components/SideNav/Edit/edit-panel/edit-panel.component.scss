@@ -4,23 +4,23 @@
 @use '@angular/material' as mat;
 
 @mixin css($theme) {
-    // Get the color config from the theme.
-    $color-config: mat.get-color-config($theme);
-    // Get the primary color palette from the color-config.
-    $primary-palette: map.get($color-config, 'primary');
-    $accent-palette: map.get($color-config, 'accent');
-    $typography-config: mat.get-typography-config($theme);
-    $background: map.get($theme, background);
-    $foreground: map.get($theme, foreground);
+  // Get the color config from the theme.
+  $color-config: mat.get-color-config($theme);
+  // Get the primary color palette from the color-config.
+  $primary-palette: map.get($color-config, 'primary');
+  $accent-palette: map.get($color-config, 'accent');
+  $typography-config: mat.get-typography-config($theme);
+  $background: map.get($theme, background);
+  $foreground: map.get($theme, foreground);
 
-.app-edit-panel-container{
+  .app-edit-panel-container{
     display: flex;
     flex-direction: column;
     padding: 0px 0px;
     z-index: 1;
     position: absolute;
     max-height:fit-content;
-}
+  }
   #editJoint {
     background-color: #f4f4f4;
     padding: 20px;
@@ -30,7 +30,7 @@
     padding: 10px;
     background-color: white;
   }
-  
+
 }
 #default-view {
   background-color: white;

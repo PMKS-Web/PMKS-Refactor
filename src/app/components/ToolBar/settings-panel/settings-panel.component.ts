@@ -1,7 +1,7 @@
 import { Component} from '@angular/core'
 import { InteractionService } from 'src/app/services/interaction.service'
 import { JointInteractor } from 'src/app/controllers/joint-interactor';
-
+import {GridLinesComponent} from 'src/app/components/Grid/gridlines/gridlines.component'
 
 @Component({
     selector: 'app-settings-panel',
@@ -15,7 +15,7 @@ export class SettingsPanelComponent{
         LBasic: true,
         LVisual: true,
       };
- 
+
     gridEnabled: boolean= true;
     minorGridEnabled: boolean = true;
 
@@ -25,6 +25,8 @@ export class SettingsPanelComponent{
 
     handleToggleGridChange(stateChange: boolean){
         this.gridEnabled=stateChange;
+        if(stateChange){
+        }
     }
 
     getGridEnabled(): boolean{

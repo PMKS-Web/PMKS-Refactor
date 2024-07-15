@@ -1,15 +1,14 @@
 <div class="toggle-container">
   <span class="label">{{ label }}</span>
-  <mat-icon matTooltip='{{ this.tooltip }}' [matTooltipShowDelay]='1000' class='label-help'
+  <mat-icon matTooltip='{{ this.tooltip }}' [matTooltipShowDelay]='1000' class='label-help' [ngClass]="IconClass"
   >help_outline
   </mat-icon>
   <div class="switch-container">
     <label class="switch" (click)="toggle()">
       <input type="checkbox" [(ngModel)]="value" (change)="toggle()">
       <span class="slider"></span>
-<!--       <mat-icon class="check" *ngIf="value===true" style="color:black">check</mat-icon>
-      <mat-icon class="x" *ngIf="value===false" style="color:black">cross</mat-icon> -->
+
     </label>
-    
+
   </div>
 </div>
