@@ -1,18 +1,38 @@
 <!-- This is the panel for three position synthesis -->
 <div id="threePos">
-      <div style="margin-bottom:10px;">
+  <div class="scroll-container">
+  <div style="margin-bottom:15px;">
             <!-- Each coupler position has the same length which is set here -->
-            <p>Coupler Link Specifications</p>
-            <single-input-block class="right-aligned" [input1Value]="0"
+            <p class="subtitle" style="margin-right: 4px; margin-left: 6px;color:grey;font-size:14px;">Automatically create a 4-bar linkage based on 3 coupler poses.</p>
+            <p style="margin-bottom:3px; margin-right: 4px; margin-left: 6px;">Coupler Link Specifications</p>
+            <div class="input-container">
+              <img src="assets/icons/length.svg" alt="length icon" class="icon">
+            <span class="label">Length</span>
+              <mat-icon id="lengthTooltip"
+                        matTooltip="The length of the end-effector link" [matTooltipShowDelay]='1000'
+                        class='label-help'
+                        [matTooltipDisabled]='disabled'
+              >help_outline
+              </mat-icon>
+
+              <single-input-block class="right-aligned" [input1Value]="0" style="margin-bottom:-7px;margin-left: 41px;"
             (input1Change)="setCouplerLength($event)"
-            iconLabel1="assets/icons/length.svg"
+
             unit1="cm"
             [showIcon]="false"></single-input-block>
-            
+            </div>
+
             <!-- The fixed reference is the center of rotation and you set that with the radio block -->
-            <div><img src='assets/icons/referencePoint.svg' style="height: 12px; width: 12px;"/>
+            <div><img src='assets/icons/referencePoint.svg' style="height: 12.5px; width: 12.5px; display: inline-block; align-items: center; margin-left: 6px;"/>
                   <p style="display:inline-block; margin-bottom:0;">Fixed Reference</p>
             </div>
+                  <mat-icon id="fixedReferenceTooltip"
+                        matTooltip="The center of rotation of the end-effector link, and what the position coordinate represents" [matTooltipShowDelay]='1000'
+                        class='label-help'
+                        [matTooltipDisabled]='disabled'
+                  >help_outline
+                  </mat-icon>
+
             <radio-block  id="reference"
                   [options]="['Back', 'Center', 'Front']"
                   [initialSelection]="'Center'"
@@ -21,24 +41,24 @@
             </radio-block>
       </div>
       <div>
-            
+            <hr class="solid">
             <div *ngFor='let i of [1,2,3]'>
-                  
+
                   <!-- displays each position label, if the position is specified/defined, then the trash icon appears -->
-                  
+
                   <div>
-                        <mat-icon id="tooltip" matTooltip="Change the x and y values of the reference point of the coupler position {{i}}" [matTooltipShowDelay]='1000' class='label-help'
+                    <p style="display:inline; margin: 2.5px; margin-left: 8px;">Position {{i}}</p>
+                    <mat-icon id="tooltip" matTooltip="Change the x and y values of the reference point of the coupler position {{i}}" [matTooltipShowDelay]='1000' class='label-help'
                         [matTooltipDisabled]='disabled'
                         >help_outline
-                        </mat-icon>
-                        <p style="display:inline; margin: -3px;">Position {{i}}</p>
+                    </mat-icon>
                         <button id="trash" *ngIf='this.isPositionDefined(i)' (click)="this.deletePosition(i)">
-                              <img id="icon" src='assets/icons/trash.svg' style="height: 20px; width: 20px;"/>
-                        </button>                       
+                              <img id="icon" src='assets/icons/trash.svg' style="height: 13px; width: 15px; margin-bottom: -1.5px; margin-left: -2px;"/>
+                        </button>
                   </div>
-                  
+
                   <!-- allows the user to enter coordinates and an angle for the position -->
-                  <div class='poseData' *ngIf='this.isPositionDefined(i)' >
+                  <div class='poseData' style="margin-right: -25px; margin-bottom: 15px; margin-top: 7px;" *ngIf='this.isPositionDefined(i)' >
                         <dual-input-block [input2Value]="getPosYCoord(1)"
                         (input1Change)="setPosXCoord($event, 1)"
                         (input2Change)="setPosYCoord($event, 1)"
@@ -49,28 +69,47 @@
                         unit2="cm"
                         [showIcon]="false">
                   </dual-input-block>
-                  <single-input-block [input1Value]="getPosAngle(1)"
+                  <single-input-block
+                        [input1Value]="getPosAngle(1)"
                         (input1Change)="setPositionAngle($event, 1)"
                         iconLabel1="assets/icons/angle.svg"
                         unit1="deg"
                         [showIcon]="false">
                   </single-input-block>
       </div>
-      
+
       <!-- if position has not yet been created and its the first undefined position, show "create position" button  -->
       <div class='positionCreate' *ngIf='this.getFirstUndefinedPosition() === i'>
             <button id="specify" (click)="this.specifyPosition(i)">Specify Position</button>
-      </div> 
-      
+      </div>
+
 </div>
 </div>
+    <hr class="solid2">
 <!-- If all positions are defined you can then generate a four bar or delete all positions -->
-<div *ngIf='this.allPositionsDefined()' class="definedButtons">
-      <button id="generateFourBar" (click)="generateFourBar()">Generate Four-Bar</button>
+    <div *ngIf='!this.allPositionsDefined()' class="definedButtons">
+      <button id="removeAllGrey" >Remove All Positions</button>
+      <button id="generateFourBarGrey">Generate Four-Bar</button>
+    </div>
+
+    <div *ngIf='this.allPositionsDefined()' class="definedButtons">
+      <button id="removeAll" (click)="removeAllPositions()">Remove All Positions</button>
+      <button *ngIf="!isSixBarGenerated()" id="generateFourBar" (click)="generateFourBar()">
+        {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
+      </button>
+      <button *ngIf="isSixBarGenerated()" id="generateFourBarGrey" >Generate Four-Bar</button>
+
+
       <!-- once a four bar is generated you are able to generate a six bar -->
-      <button *ngIf='isFourBarGenerated()' id="generateFourBar" (click)="generateSixBar()">Generate Six-Bar</button>
-      <button id="removeAll"  (click)="removeAllPositions()">Remove All Positions</button>
+      <div *ngIf='isFourBarGenerated()' class="definedButtons">
+        <button id="generateSixBar" (click)="generateSixBar()">
+          {{ sixBarGenerated ? 'Clear Six-Bar' : 'Generate Six-Bar' }}
+        </button>
+        <div *ngIf="isSixBarGenerated()" class="definedButtons">
+           <!-- {{ buttonLabel }} -->
+        </div>
+      </div>
+    </div>
 
 </div>
-
 </div>

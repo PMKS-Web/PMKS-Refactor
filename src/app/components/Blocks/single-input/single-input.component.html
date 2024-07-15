@@ -9,8 +9,8 @@
   </div>
   <div class="input-sections">
     <div class="input-section">
-      <img *ngIf="iconLabel1!==undefined" src="{{iconLabel1}}" style="height:14px;">
-      <label for="input1"> {{label1}}</label> 
+      <img *ngIf="iconLabel1!==undefined" src="{{iconLabel1}}" style="height:14px; display: inline-block; align-items: center; margin-bottom: -2px;">
+      <label for="input1"> {{label1}}</label>
       <input style="padding-right:30px;" type="number" id="input1" [(ngModel)]="input1Value"
              (keyup.enter)="onEnterKeyInput1()" (blur)="onBlurInput1()"/>
              <span class="unit" style="margin-left:-30px;">{{unit1}}</span>

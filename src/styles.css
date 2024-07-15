@@ -10,6 +10,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   --light-warning: #a0001c;
 
 
+
 }
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
@@ -68,3 +69,4 @@ input[type=file]:hover {
   background-color: #3f51b5;
   color: white;
 }
+

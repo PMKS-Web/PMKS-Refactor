@@ -1,24 +1,25 @@
 <div class="app-synthesis-panel-container">
     <panel-section-collapsible>
-        <title-block icon='expand_more' description='' class="synthesisHeader">
+        <title-block icon='expand_more' description='' class="synthesisHeader" >
           Synthesis
         </title-block>
-        <p class="subtitle">This is where you synthesize links</p>
-    
+
     <!--each type of synthesis has its own file and is a collapsible sub section-->
     <!-- Three Position Synthesis -->
-    <collapsible-subsection [expanded]='true' titleLabel='Three Position Synthesis' [expanded]="sectionExpanded['LBasic']"
-    (opened)="sectionExpanded['threePos'] = true"
+
+      <p class ="collapsible-subsection-margin" style="margin: 5px;margin-right: 50px;"></p>
+      <collapsible-subsection [expanded]='true'  titleLabel='Three Position Synthesis' [expanded]="sectionExpanded['LBasic']"
+      (opened)="sectionExpanded['threePos'] = true"
     (closed)="sectionExpanded['threePos'] = false">
-    <three-pos-synthesis></three-pos-synthesis>
+      <three-pos-synthesis></three-pos-synthesis>
     </collapsible-subsection>
 
-    <!-- Path Synthesis -->
+
+      <!-- Path Synthesis -->
     <collapsible-subsection [expanded]='true' titleLabel='Path Synthesis' [expanded]="sectionExpanded['LBasic']"
     (opened)="sectionExpanded['path'] = true"
     (closed)="sectionExpanded['path'] = false">
     <path-synthesis></path-synthesis>
     </collapsible-subsection>
-    
   </panel-section-collapsible>
 </div>

@@ -24,7 +24,7 @@
     //box-shadow: 3px 3px 3px gray;
     width:100%;
   }
-  
+
   .flex-container {
     display: flex;
     flex-direction: column;
@@ -39,7 +39,7 @@
   .left-aligned {
     margin-right: auto; /* Pushes this element to the left */
   }
-  
+
   .right-aligned {
     margin-left: auto; /* Pushes this element to the right */
   }
@@ -70,4 +70,3 @@
   .row {
     display: flex;
   }
-  

@@ -4,6 +4,7 @@ interface Tab {
   selected: boolean,
   label: string,
   icon: string
+
 }
 
 
@@ -23,6 +24,15 @@ export class SidenavComponent {
   constructor(){
   }
 
+  togglePanel(clickedTab: string): void {
+    this.tabs.forEach(tab => {
+      if (tab.label === clickedTab) {
+        tab.selected = !tab.selected; // Toggle selected state
+      } else {
+        tab.selected = false; // Close other panels
+      }
+    });
+  }
 
   setCurrentTab(clickedTab: string){
     this.tabs.forEach((tab)=>{
@@ -32,6 +42,7 @@ export class SidenavComponent {
         tab.selected = false;
       }
     });
+
   }
 
   isSelected(id: string): boolean {
@@ -48,6 +59,7 @@ export class SidenavComponent {
   }
 
   getSelected(): string {
+
     let selectedTab = '';
     this.tabs.forEach((tab)=>{
       if(tab.selected){

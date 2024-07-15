@@ -91,7 +91,6 @@ input:checked + .slider:before {
   align-items: center;
   justify-content: center;
   //transform: translateY(-5px);
-
 }
 
 
@@ -113,10 +112,5 @@ input:not(:checked) + .slider:before{
 
 input:hover + .slider:before{
   scale: 1.4;
+
 }
-//input:hover ~ .cross{
-//  scale: 1.4;
-//}
-//input:hover ~ .tick{
-//  scale: 1.4;
-//}

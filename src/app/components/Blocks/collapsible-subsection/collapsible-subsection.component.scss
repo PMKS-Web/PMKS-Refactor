@@ -54,6 +54,7 @@
           transform: rotate(180deg);
         }
       }
+
     }
 
     .panel-content {
@@ -63,6 +64,7 @@
       flex-direction: column;
       transition: transform 0.15s ease-in-out;
       overflow-wrap: anywhere;
+
 
       &.hidden {
         transform: scaleY(0);
