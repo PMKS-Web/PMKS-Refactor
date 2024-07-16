@@ -119,7 +119,3 @@ input:not(:checked) + .slider:before{
 input:hover + .slider:before{
   scale: 1.4;
 }
-.icon{
-  display: flex;
-  justify-content: start;
-}
