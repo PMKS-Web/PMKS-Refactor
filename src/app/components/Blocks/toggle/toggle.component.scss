@@ -17,13 +17,14 @@
   width: 100%; /* Make the container take full width */
   margin-top: 5px;
   margin-bottom: 5px;
-  justify-content: space-between;
+  //justify-content: space-between;
 }
 
 .label {
   margin-right:4px;
   margin-left: 5px;
-  margin-bottom: 5px;
+  margin-bottom: 0px;
+  margin-top: 0px;
   font-size: 16px;
 }
 
@@ -37,7 +38,7 @@
 .switch-container {
   display: flex;
   align-items: center;
-  justify-content: flex-end; /* Align the toggle slider to the right */
+  justify-content: end; /* Align the toggle slider to the right */
 }
 
 .switch input {
@@ -45,7 +46,11 @@
   width: 0;
   height: 0;
 }
-
+.buffer{
+  width: 100%;
+  display: flex;
+  justify-content: start;
+}
 .slider {
   position: absolute;
   cursor: pointer;
@@ -99,8 +104,8 @@ input:checked + .slider:before {
   color: #3f51b5;
   font-size: 18px;
   vertical-align: middle;
-  padding-top: 2px;
-  justify-content: ;
+  padding-top: 5px;
+
 }
 input:not(:checked) + .slider:before{
   content: '\2716';
@@ -114,9 +119,7 @@ input:not(:checked) + .slider:before{
 input:hover + .slider:before{
   scale: 1.4;
 }
-//input:hover ~ .cross{
-//  scale: 1.4;
-//}
-//input:hover ~ .tick{
-//  scale: 1.4;
-//}
+.icon{
+  display: flex;
+  justify-content: start;
+}

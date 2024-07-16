@@ -1,9 +1,9 @@
-<div class="toggle-container">
+<div class="buffer"><div class="toggle-container">
   <span class="label">{{ label }}</span>
-  <mat-icon matTooltip='{{ this.tooltip }}' [matTooltipShowDelay]='1000' class='label-help' [ngClass]="IconClass"
+  <div class="icon"><mat-icon matTooltip='{{ this.tooltip }}' [matTooltipShowDelay]='1000' class='label-help' [ngClass]="IconClass"
   >help_outline
-  </mat-icon>
-  <div class="switch-container">
+  </mat-icon> </div> </div>
+<div class="switch-container">
     <label class="switch" (click)="toggle()">
       <input type="checkbox" [(ngModel)]="value" (change)="toggle()">
       <span class="slider"></span>
