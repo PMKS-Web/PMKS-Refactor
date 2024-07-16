@@ -4,48 +4,47 @@
 @use '@angular/material' as mat;
 
 @mixin css($theme) {
-    // Get the color config from the theme.
-    $color-config: mat.get-color-config($theme);
-    // Get the primary color palette from the color-config.
-    $primary-palette: map.get($color-config, 'primary');
-    $accent-palette: map.get($color-config, 'accent');
-    $typography-config: mat.get-typography-config($theme);
-    $background: map.get($theme, background);
-    $foreground: map.get($theme, foreground);
-  }
-  
-  
-   .app-templates-panel-container{
-    background-color: white;
-    border-radius: 3px;
-    //width:800px;
-    display: flex; /* Use flexbox */
-    flex-wrap: wrap; /* Allow items to wrap to the next line */
-    justify-content: space-between;
-    margin-top: 30px;
-    display: flex; /* Use flexbox to ensure content fills the space */
-    //align-items: center; /* Vertically center content */
-    justify-content: center; /* Horizontally center content */
-    margin-right: 40px;
-  }
-  
-  .gridLayout {
-    display: grid;
-        //Make sure items always fill the entire space, make it responsive
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        //Add a 10px gap
-        grid-gap: 20px;
-        padding: 24px;
-        padding-top: 0px;
-  }
+  // Get the color config from the theme.
+  $color-config: mat.get-color-config($theme);
+  // Get the primary color palette from the color-config.
+  $primary-palette: map.get($color-config, 'primary');
+  $accent-palette: map.get($color-config, 'accent');
+  $typography-config: mat.get-typography-config($theme);
+  $background: map.get($theme, background);
+  $foreground: map.get($theme, foreground);
+}
 
 
-  .vids {
-    margin: 5px;
-    padding: 5px;
-    display: flex;
-  }
-  
-  
-  
+.app-templates-panel-container{
+  background-color: white;
+  border-radius: 3px;
+  //width:800px;
+  display: flex; /* Use flexbox */
+  flex-wrap: wrap; /* Allow items to wrap to the next line */
+  justify-content: space-between;
+  margin-top: 30px;
+  display: flex; /* Use flexbox to ensure content fills the space */
+  //align-items: center; /* Vertically center content */
+  justify-content: center; /* Horizontally center content */
+  margin-right: 40px;
+}
+
+.gridLayout {
+  display: grid;
+  //Make sure items always fill the entire space, make it responsive
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  //Add a 10px gap
+  grid-gap: 20px;
+  padding: 24px;
+  padding-top: 0px;
+}
+
+
+.vids {
+  margin: 5px;
+  padding: 5px;
+  display: flex;
+}
+
+
 

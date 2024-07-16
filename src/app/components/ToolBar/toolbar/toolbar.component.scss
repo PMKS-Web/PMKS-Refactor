@@ -3,23 +3,23 @@
 
 
 @mixin css($theme) {
-    // Get the color config from the theme.
-    $color-config: mat.get-color-config($theme);
-    // Get the primary color palette from the color-config.
-    $primary-palette: map.get($color-config, 'primary');
-    $accent-palette: map.get($color-config, 'accent');
-    $typography-config: mat.get-typography-config($theme);
-    $background: map.get($theme, background);
-    $foreground: map.get($theme, foreground);
+  // Get the color config from the theme.
+  $color-config: mat.get-color-config($theme);
+  // Get the primary color palette from the color-config.
+  $primary-palette: map.get($color-config, 'primary');
+  $accent-palette: map.get($color-config, 'accent');
+  $typography-config: mat.get-typography-config($theme);
+  $background: map.get($theme, background);
+  $foreground: map.get($theme, foreground);
 
-.pmksImage {
+  .pmksImage {
     transform: scale(0.8);
     position: relative;
     width: 65px;
     height: 40px;
-}
+  }
 
-.toolbar.toolbar{
+  .toolbar.toolbar{
     background-color: mat.get-color-from-palette($primary-palette, 100);
     position: absolute;
     top: 0px;
@@ -29,21 +29,21 @@
     box-shadow: 0 3px 1px -2px #0003,0 2px 2px #00000024,0 1px 5px #0000003f;
     min-width: 400px;
     margin-bottom: 0px;
-}
+  }
 
-.toolbar-button.toolbar-button{
+  .toolbar-button.toolbar-button{
     background-color: mat.get-color-from-palette($primary-palette, 100);
     margin:0rem 0.2rem;
     height: 30px;
-}
+  }
 
-.toolbar-button:hover{
+  .toolbar-button:hover{
     background-color: mat.get-color-from-palette($primary-palette, 50);
     transition-duration: 0.3s;
 
-}
-.spacer{
+  }
+  .spacer{
     flex: 1 1;
-}
+  }
 
 }

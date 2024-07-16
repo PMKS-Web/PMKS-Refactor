@@ -4,18 +4,18 @@ import { JointInteractor } from 'src/app/controllers/joint-interactor';
 
 
 @Component({
-    selector: 'app-tutorials-panel',
-    templateUrl: './tutorials-panel.component.html',
-    styleUrls: ['./tutorials-panel.component.scss'],
+  selector: 'app-tutorials-panel',
+  templateUrl: './tutorials-panel.component.html',
+  styleUrls: ['./tutorials-panel.component.scss'],
 
 })
 export class TutorialsPanelComponent {
-    sectionExpanded: { [key: string]: boolean } = {
-        basic: true
-      };
+  sectionExpanded: { [key: string]: boolean } = {
+    basic: true
+  };
 
-    constructor(private interactionService: InteractionService){
-    }
+  constructor(private interactionService: InteractionService){
+  }
 
 
 }
