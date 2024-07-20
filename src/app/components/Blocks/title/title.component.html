@@ -8,7 +8,16 @@
       color='primary'
       *ngIf='buttonLabel && icon'
     >
+      <mat-icon *ngIf='icon'>{{ icon }}</mat-icon>
       {{ buttonLabel }}
+    </button>
+    <button
+      id='title-icon-button'
+      (click)='toggleExpand()'
+      *ngIf='!buttonLabel && icon'
+      mat-icon-button
+    >
+      <mat-icon>{{ this.shownIcon }}</mat-icon>
     </button>
   </div>
   <p id='title-description' *ngIf='description'>{{ description }}</p>
