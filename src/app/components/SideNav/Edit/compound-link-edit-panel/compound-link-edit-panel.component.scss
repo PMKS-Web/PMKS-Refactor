@@ -2,113 +2,140 @@
 @use '@angular/material' as mat;
 
 @mixin css($theme) {
-    // Get the color config from the theme.
-    $color-config: mat.get-color-config($theme);
-    // Get the primary color palette from the color-config.
-    $primary-palette: map.get($color-config, 'primary');
-    $accent-palette: map.get($color-config, 'accent');
-    $typography-config: mat.get-typography-config($theme);
-    $background: map.get($theme, background);
-    $foreground: map.get($theme, foreground);
+  // Get the color config from the theme.
+  $color-config: mat.get-color-config($theme);
+  // Get the primary color palette from the color-config.
+  $primary-palette: map.get($color-config, 'primary');
+  $accent-palette: map.get($color-config, 'accent');
+  $typography-config: mat.get-typography-config($theme);
+  $background: map.get($theme, background);
+  $foreground: map.get($theme, foreground);
+}
+
+.scroll-container {
+  max-height: calc(100vh - 150px);
+  overflow:hidden;
+  overflow-y:auto;
+}
+.scroll-container::-webkit-scrollbar {
+  width: 8px;
+}
+.scroll-container::-webkit-scrollbar-track {
+  background: rgba(63, 81, 181, 0.9);
+}
+.scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(63, 81, 181, 0.22);
+}
+.scroll-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(63, 81, 181, 0.67);
+}
+.scroll-container::-webkit-scrollbar-button {
+  display: none;
+}
+/* Firefox Browsers*/
+@supports (-moz-appearance: none) {
+  .scroll-container {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(63, 81, 181, 0.9) #f1f1f1;
+  }
 }
 
 #editLink {
-    background-color: white;
-    border-top: 5px solid #3F51B5;
-    border-radius: 3px;
-    box-shadow: 3px 3px 3px gray;
-    width:100%;
-    max-height:calc(90vh - 30px);;
-    overflow-y:scroll;
-  }
+  background-color: white;
+  border-top: 5px solid #3F51B5;
+  border-radius: 3px;
+  box-shadow: 3px 3px 3px gray;
+  width:100%;
+  max-height:calc(90vh - 30px);;
+  //overflow-y:scroll;
+}
 
-  .flex-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: flex-start;
-  }
+.flex-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+}
 
 .button-container {
   display: flex;
+  justify-content: center; /* Center the buttons horizontally */
+  align-items: center; /* Center the buttons vertically if needed */
+  width: 100%; /* Ensure the container takes full width */
   flex-wrap: wrap;
   margin: auto;
+
+  //.button-wrapper {
+  //  flex: 0 0 calc(33.33% - 10px); /* Each button takes up approximately one-third of the container with 10px spacing */
+  //  margin: 5px; /* Adjust the margin as needed for spacing between buttons */
+  //}
+
+  .referenceJointSelect {
+    height: 34px !important;
+    margin: 7px 0;
+    color: #3F51B5;
+    width: 10%;
+    display: flex;
+    justify-content: center; /* Center the buttons horizontally */
+    align-items: center; /* Center the buttons vertically if needed */
+
+  }
 }
 
-.button-wrapper {
-  flex: 0 0 calc(33.33% - 10px); /* Each button takes up approximately one-third of the container with 10px spacing */
-  margin: 5px; /* Adjust the margin as needed for spacing between buttons */
-}
+
 
 .disabled-panel {
   opacity: 0.5; /* Adjust the opacity to control the greying out effect */
   pointer-events: none; /* Disable user interactions */
 }
 
-  .left-aligned {
-    margin-right: auto; /* Pushes this element to the left */
-  }
+.left-aligned {
+  margin-right: auto; /* Pushes this element to the left */
+}
 
-  .right-aligned {
-    margin-left: auto; /* Pushes this element to the right */
-  }
+.right-aligned {
+  margin-left: auto; /* Pushes this element to the right */
+}
 
-  div.colors {
-    width: 30px;
-    height: 30px;
-    margin: 7px 3px;
-    border-radius: 5px;
-    border: none;
-    //margin: 10px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+div.colors {
+  width: 30px;
+  height: 30px;
+  margin: 7px 3px;
+  border-radius: 5px;
+  border: none;
+  //margin: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  p.colors {
-    padding:0;
-    margin-top: 5px;
-    margin-bottom: 0;
-  }
+p.colors {
+  padding:0;
+  margin-top: 5px;
+  margin-bottom: 0;
+}
 
-  #lengthAndAngle {
-    max-height: 10px;
-  }
+#lengthAndAngle {
+  max-height: 10px;
+}
 
-  .row {
-    display: flex;
-  }
+.row {
+  display: flex;
+}
 
-  .topbuttons {
-    background-color: white;
-    border: none;
-    height: 25px;
-    width: 25px;
-    text-align: center;
-  }
+.topbuttons {
+  background-color: white;
+  border: none;
+  height: 25px;
+  width: 25px;
+  text-align: center;
+}
 
-  .referenceJointSelect {
-    height: 28px;
-    margin: 2px;
-    background-color: #e8eaf6;
-    color: #3F51B5;
-    border: none;
-    border-radius: 3px;
-  }
-
-  .referenceJointSelect:hover {
-    color: #e8eaf6;
-    background-color: #3F51B5;
-  }
-
-  mat-icon {
-    color: #3f51b5;
-    font-size: 18px;
-    vertical-align: middle;
-    padding-top: 2px;
-    margin-left:2px;
-  }
-  .check {
-    color: white;
-  }
+mat-icon {
+  color: #3f51b5;
+  font-size: 18px;
+  vertical-align: middle;
+  padding-top: 2px;
+  margin-left:4px;
+}

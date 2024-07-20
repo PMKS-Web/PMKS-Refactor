@@ -95,9 +95,7 @@ input:checked + .slider:before {
   align-items: center;
   justify-content: center;
   //transform: translateY(-5px);
-
 }
-
 
 .mat-icon {
   color: #3f51b5;
@@ -118,7 +116,30 @@ input:not(:checked) + .slider:before{
 input:hover + .slider:before{
   scale: 1.4;
 }
-.icon{
-  display: flex;
-  justify-content: start;
+
+.toggle-input-icon{
+  color: #3f51b5;
+  font-size: 18px;
+  vertical-align: middle;
+  margin-top: 5px;
+  margin-right: 67px;
+  padding-top: 2px;
+}
+
+.toggle-ground-icon{
+  color: #3f51b5;
+  font-size: 18px;
+  vertical-align: middle;
+  margin-top: 5px;
+  margin-right: 51px;
+  padding-top: 2px;
+}
+
+.toggle-weld-icon{
+  color: #3f51b5;
+  font-size: 18px;
+  vertical-align: middle;
+  margin-top: 5px;
+  margin-right: 68px;
+  padding-top: 2px;
 }

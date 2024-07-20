@@ -22,14 +22,15 @@
   flex-direction: row;
 }
 
-.input-section {
-  margin-right: 10px;
-}
 /* Chrome, Safari, Edge, Opera */
 input[matinput]::-webkit-outer-spin-button,
 input[matinput]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+
+.input-section {
+  margin-right: 10px;
 }
 
 /* Firefox */
@@ -47,7 +48,7 @@ input[matinput][type=number] {
 
 label {
   margin-right: -10px;
-  margin-left: 6px;
+  margin-left: -7px;
 }
 
 mat-icon {
