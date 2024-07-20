@@ -10,7 +10,6 @@ import { state } from '@angular/animations';
 import { ToolbarComponent } from 'src/app/components/ToolBar/toolbar/toolbar.component';
 //import {window} from "rxjs";
 
-
 @Component({
   selector: 'app-templates-panel',
   templateUrl: './templates-panel.component.html',
@@ -22,12 +21,18 @@ export class TemplatesPanelComponent {
   private mechanism: Mechanism;
   public open = true;
 
-  constructor(private interactionService: InteractionService, private stateService: StateService){
+  constructor(private interactionService: InteractionService, private stateService: StateService, public toolbarComponent: ToolbarComponent){
     //creates a new mechanism in the state
     this.mechanism = this.stateService.getMechanism();
   }
-  togglePanel() {
-    this.open = false;
+  togglePanel(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+
+    if (!target.closest('.app-templates-panel-container')) {
+      this.open = false;
+      this.toolbarComponent.setCurrentTab('');
+
+    }
   }
 
   openTemplate(linkage: string){

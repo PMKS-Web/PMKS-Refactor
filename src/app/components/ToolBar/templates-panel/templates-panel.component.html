@@ -1,6 +1,6 @@
 <!-- *ngIf= open will make the panel "close" when you open a template but makes it so you have to
 double click templates to open again, works for now, will need a better fix later -->
-<div *ngIf=open class="focusEffect">
+<div *ngIf=open class="focusEffect" (click)="togglePanel($event)">
   <div class="app-templates-panel-container">
     <panel-section-collapsible>
       <title-block description=''>
@@ -11,7 +11,7 @@ double click templates to open again, works for now, will need a better fix late
         <div class="template">
           <p>Four-Bar</p>
           <img src='assets/templates/fourbar.gif' class="gifs"/>
-          <img class='' src='assets/templates/fourbar.jpg' class="img"/>
+          <img src='assets/templates/fourbar.jpg' class="img"/>
           <button mat-raised-button (click)="this.openTemplate('fourbar')">Open</button>
         </div>
         <div class="template">
@@ -23,19 +23,19 @@ double click templates to open again, works for now, will need a better fix late
         <div class="template">
           <p>Watt II Linkage</p>
           <img src='assets/templates/watt2.gif' class="gifs"/>
-          <img  src='assets/templates/watt2.jpg' class="img"/>
+          <img src='assets/templates/watt2.jpg' class="img"/>
           <button mat-raised-button (click)="this.openTemplate('watt2')">Open</button>
         </div>
         <div class="template">
           <p>Stephenson III Linkage</p>
-          <img src='assets/templates/steph3.gif'class="gifs"/>
+          <img src='assets/templates/steph3.gif' class="gifs"/>
           <img  src='assets/templates/steph3.jpg' class="img" />
           <button mat-raised-button (click)="this.openTemplate('steph3')">Open</button>
         </div>
         <div class="template">
           <p>Crank Slider Linkage</p>
           <img src='assets/templates/slider.gif' class="gifs"/>
-          <img  src='assets/templates/slider.jpg' class="img"/>
+          <img src='assets/templates/slider.jpg' class="img"/>
           <button mat-raised-button (click)="this.openTemplate('slider');">Open</button>
         </div>
       </div>
