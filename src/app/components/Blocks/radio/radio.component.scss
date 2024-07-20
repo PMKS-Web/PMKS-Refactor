@@ -41,7 +41,7 @@
       }
 
       .mat-button-toggle-checked {
-        background-color: mat.get-color-from-palette($primary-palette, 400);
+        background-color: mat.get-color-from-palette(#5C6BC0, 400);
         color: white;
       }
     }
@@ -49,11 +49,11 @@
 }
 
 .selected {
-  background-color: #007bff; /* Change this to your desired color */
+  background-color: #5C6BC0; /* Change this to your desired color */
   color: white; /* Change this to the text color you want */
 }
 
 .primary-color {
   background-color: white; /* Change this to the same color as above */
-  color: #007bff; /* Change this to the text color you want */
+  color: #5C6BC0; /* Change this to the text color you want */
 }

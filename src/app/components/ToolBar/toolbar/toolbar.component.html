@@ -27,7 +27,7 @@
           matTooltip='Show the library of available linkages'
           matTooltipShowDelay='1000'>
     <mat-icon>ondemand_video</mat-icon>
-    Tutorials
+    <a style="text-decoration:none; color:black;" href="https://pmks.mech.website/pmks-web-how-to-videos/" target="_blank">Tutorials</a>
   </button>
 
   <!-- TEMPLATES -->
@@ -39,7 +39,7 @@
   </button>
 
   <!-- SAVE -->
-  <button mat-button class="toolbar-button" (click)="setCurrentTab('Save');"
+  <button mat-button class="toolbar-button"
           matTooltip='Save this linkage to your device'
           matTooltipShowDelay='1000'>
     <mat-icon>save</mat-icon>
@@ -47,7 +47,7 @@
   </button>
 
   <!-- SHARE -->
-  <button mat-button class="toolbar-button" (click)="setCurrentTab('Share');"
+  <button mat-button class="toolbar-button"
           matTooltip='Copy a URL to clipboard that contains your linakge'
           matTooltipShowDelay='1000'>
     <mat-icon>link</mat-icon>
@@ -62,14 +62,6 @@
           matTooltipShowDelay='1000'>
     <mat-icon>settings</mat-icon>
     Settings
-  </button>
-
-  <!-- FEEDBACK -->
-  <button mat-button class="toolbar-button" (click)="setCurrentTab('Feedback');"
-          matTooltip='Send a Feedback to us'
-          matTooltipShowDelay='1000'>
-    <mat-icon>feedback</mat-icon>
-    Feedback
   </button>
 
 
@@ -87,15 +79,6 @@
     }
     @case ('Tutorials'){
       <app-tutorials-panel></app-tutorials-panel>
-    }
-    @case ('Save'){
-      <app-save-panel></app-save-panel>
-    }
-    @case ('Feedback'){
-      <app-feedback-panel></app-feedback-panel>
-    }
-    @case ('Share'){
-      <app-share-panel></app-share-panel>
     }
   }
 </div>

@@ -43,6 +43,7 @@
     position:absolute;
     opacity: 1;
     //transform: translateY(-5%);
+    //z-index: 16;
   }
 
   img{
@@ -68,10 +69,6 @@
   }
 }
 
-.img {
-  //height: 100px;
-  z-index: 0;
-}
 
 .gridLayout {
   display: grid;
@@ -97,4 +94,7 @@ h3{
   width: 100vw;
   transform: translate(0, 30px);
   position: fixed;
+}
+*{
+  z-index: 15;
 }
