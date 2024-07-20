@@ -54,7 +54,7 @@
 }
 #default-view {
   background-color: white;
-  border-top: 5px solid #3F51B5;
+  border-top: 5px solid #ffc107;
   border-radius: 3px;
   box-shadow: 3px 3px 3px gray;
   width:100%;
@@ -65,6 +65,6 @@
     justify-content: space-between;
     //width: 100px;
     background-color: white;
-    margin-left: -3px;
+    margin-left: 3px;
   }
 }
