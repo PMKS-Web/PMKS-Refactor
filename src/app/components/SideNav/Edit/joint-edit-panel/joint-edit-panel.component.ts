@@ -62,11 +62,12 @@ export class jointEditPanelComponent {
   // the mechanism's built in setXCoord function, we are able to update with no
   // errors
   getJointXCoord(): number {
-    return Math.round(this.getCurrentJoint().coords.x * 100) / 100;
+    return this.getCurrentJoint().coords.x;
   }
 
+
   getJointYCoord(): number {
-    return Math.round(this.getCurrentJoint().coords.y * 100) / 100;
+    return this.getCurrentJoint().coords.y;
   }
 
 
@@ -156,26 +157,28 @@ export class jointEditPanelComponent {
     let xDiff = otherJoint.coords.x - currentJoint.coords.x;
     let yDiff = otherJoint.coords.y - currentJoint.coords.y;
 
-    let hypotenuse = Math.sqrt((xDiff * xDiff) + (yDiff * yDiff));
-    return Math.round(hypotenuse * 100) / 10000;
+    let hypotenuse = (xDiff * xDiff) + (yDiff * yDiff);
+    return Math.sqrt(hypotenuse);
   }
 
   getJointAngle(otherJoint: Joint): number {
+
     let currentJoint = this.getCurrentJoint();
     let xDiff = otherJoint.coords.x - currentJoint.coords.x;
     let yDiff = otherJoint.coords.y - currentJoint.coords.y;
-
+    // Calculate the angle using arctangent
     const angleInRadians = Math.atan2(yDiff, xDiff);
+
+    // Convert the angle to degrees
     let angleInDegrees = angleInRadians * (180 / Math.PI);
 
-    // Normalize the angle to be within [-180, 180] degrees
+    // Ensure the angle is in the range of +180 to -180 degrees
     if (angleInDegrees > 180) {
       angleInDegrees -= 360;
     } else if (angleInDegrees < -180) {
       angleInDegrees += 360;
     }
-
-    return Math.round(angleInDegrees * 100) / 10000;
+    return angleInDegrees;
   }
 
   // handleToggleGroundChanged is used by the edit panel implementation of a toggle block

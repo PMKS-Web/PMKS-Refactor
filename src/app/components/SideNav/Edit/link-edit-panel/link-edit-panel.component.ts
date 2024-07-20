@@ -36,7 +36,7 @@ export class LinkEditPanelComponent{
       //icon paths for dual button for addFracer and addForce
       public addTracerIconPath: string = "assets/icons/addTracer.svg";
       public addForceIconPath: string = "assets/icons/addForce.svg";
-
+ 
 
     constructor(private stateService: StateService, private interactionService: InteractionService, private colorService: ColorService){
 
@@ -48,7 +48,7 @@ export class LinkEditPanelComponent{
         return link.getLink();
     }
 
-    //helper function to access the mechanism
+    //helper function to access the mechanism 
     getMechanism(): Mechanism {
       return this.stateService.getMechanism();
     }
@@ -59,25 +59,14 @@ export class LinkEditPanelComponent{
         this.getSelectedObject().locked = this.isLocked;
     }
 
-  getLinkLength(): number {
-    const length = this.getSelectedObject().calculateLength();
-    if (length !== null && length !== undefined) {
-      return Math.round(length * 100) / 10000;
+    getLinkLength(): number{
+        return this.getSelectedObject().calculateLength()!;
     }
-    return 0; // or handle null/undefined case as per your application logic
-  }
-
-  getLinkAngle(): number {
-    const angle = this.getSelectedObject().calculateAngle();
-    console.log(`Angle in degrees from calculateAngle: ${angle}`);
-    if (angle !== null && angle !== undefined) {
-      // Round to the nearest hundredth
-      return Math.round(angle * 100) / 10000;
+    getLinkAngle(): number{
+        return this.getSelectedObject().calculateAngle()!;
     }
-    return 0; // Handle null/undefined case as per your application logic
-  }
 
-  getLinkJoints(): Map<number, Joint>{
+    getLinkJoints(): Map<number, Joint>{
         return this.getSelectedObject().joints;
     }
 
@@ -130,14 +119,14 @@ export class LinkEditPanelComponent{
         this.getMechanism().addJointToLink(linkID, CoM);
     }
 
-    //deletes the link and calls deselectObject to close the panel
+    //deletes the link and calls deselectObject to close the panel 
     deleteLink(){
         console.log("link " + this.getSelectedObject().id + " has been deleted")
         this.stateService.getMechanism().removeLink(this.getSelectedObject().id);
         this.interactionService.deselectObject();
     }
 
-    //allows link name to be edited
+    //allows link name to be edited 
     onTitleBlockClick(event: MouseEvent): void {
         const clickedElement = event.target as HTMLElement;
         // Check if the clicked element has the 'edit-svg' class, so we can enable editing

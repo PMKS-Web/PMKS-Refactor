@@ -10,17 +10,18 @@
       </button>
     }
   </nav>
-    <div class="app-panel-container">
-        @switch(getSelected()){
-            @case ('Edit'){
-            <app-edit-panel></app-edit-panel>
-            }
-            @case ('Synthesis'){
-            <app-synthesis-panel></app-synthesis-panel>
-            }
-            @case ('Analysis'){
-            <app-analysis-panel></app-analysis-panel>
-            }
+  <div class="app-panel-container">
+    @switch(getSelected()){
+      @case ('Edit'){
+        <app-edit-panel></app-edit-panel>
+      }
+      @case ('Synthesis'){
+        <app-synthesis-panel></app-synthesis-panel>
+      }
+      @case ('Analysis'){
+        <app-analysis-panel></app-analysis-panel>
+      }
+
     }
   </div>
 </div>

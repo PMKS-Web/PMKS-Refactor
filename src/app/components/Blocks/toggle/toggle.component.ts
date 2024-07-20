@@ -1,4 +1,16 @@
-import { Component, Input, EventEmitter, Output } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+  ViewChild
+} from '@angular/core';
+import {FormControl, FormGroup} from '@angular/forms';
 
 @Component({
   selector: 'app-toggle',
@@ -6,10 +18,10 @@ import { Component, Input, EventEmitter, Output } from '@angular/core';
   styleUrls: ['./toggle.component.scss']
 })
 export class ToggleComponent {
-  @Input() tooltip: string = '';
+  @Input() tooltip = '';
   @Input() label: string = '';
   @Input() initialValue: boolean = false;
-  @Input() iconClass: string = ''; // Add this line
+  @Input() IconClass: string = '';
   @Output() valueChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   public value: boolean = this.initialValue;

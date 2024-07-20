@@ -2,67 +2,14 @@
 @use '@angular/material' as mat;
 
 @mixin css($theme) {
-  $color-config: mat.get-color-config($theme);
-  $primary-palette: map.get($color-config, 'primary');
-  $accent-palette: map.get($color-config, 'accent');
-  $typography-config: mat.get-typography-config($theme);
-  $background: map.get($theme, background);
-  $foreground: map.get($theme, foreground);
-}
-
-.scroll-container {
-  max-height: calc(100vh - 150px);
-  overflow:hidden;
-  overflow-y:auto;
-}
-.scroll-container::-webkit-scrollbar {
-  width: 8px;
-}
-.scroll-container::-webkit-scrollbar-track {
-  background: rgba(63, 81, 181, 0.9);
-}
-.scroll-container::-webkit-scrollbar-thumb {
-  background: rgba(63, 81, 181, 0.22);
-}
-.scroll-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(63, 81, 181, 0.67);
-}
-.scroll-container::-webkit-scrollbar-button {
-  display: none;
-}
-/* Firefox Browsers*/
-@supports (-moz-appearance: none) {
-  .scroll-container {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(63, 81, 181, 0.9) #f1f1f1;
-  }
-}
-
-.input-direction-label {
-  display: flex;
-  align-items: center;
-  font-size: 16px; /* Adjust font size as needed */
-}
-
-.label-help {
-  color: #3f51b5;
-  font-size: 18px;
-  vertical-align: middle;
-  margin-left: 5px; /* Adjust spacing between label and icon */
-  margin-top: 5px;
-}
-
-.button-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.button-container tri-button {
-  //width: 150px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    // Get the color config from the theme.
+    $color-config: mat.get-color-config($theme);
+    // Get the primary color palette from the color-config.
+    $primary-palette: map.get($color-config, 'primary');
+    $accent-palette: map.get($color-config, 'accent');
+    $typography-config: mat.get-typography-config($theme);
+    $background: map.get($theme, background);
+    $foreground: map.get($theme, foreground);
 }
 
 #editJoint {
@@ -70,14 +17,16 @@
   border-top: 5px solid #3F51B5;
   border-radius: 3px;
   box-shadow: 3px 3px 3px gray;
-  width: 100%;
-  max-height: calc(90vh - 30px);
+  width:100%;
+  max-height:calc(90vh - 30px);;
+  overflow-y:scroll;
 }
 
 .flex-container {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  
 }
 
 .disabled-panel {
@@ -95,8 +44,7 @@
 
 .row {
   display: flex;
-  justify-content: center; /* Center the items within the row */
-  align-items: center;
+  justify-content: space-between;
 }
 
 button {
@@ -105,5 +53,4 @@ button {
   height: 25px;
   width: 25px;
   text-align: center;
-  align-items: center;
 }

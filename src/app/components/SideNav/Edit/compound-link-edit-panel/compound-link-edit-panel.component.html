@@ -1,127 +1,120 @@
 <div id="editLink">
-  <div class="scroll-container">
     <!--  LINK PANEL-->
     <!--  Name does not work because no name is set-->
-    <panel-section-collapsible>
-      <title-block icon='expand_more' description='' class="editHeader" (click)="onTitleBlockClick($event)">
-        Edit Compound Link
-        <ng-container *ngIf="isEditingTitle; else linkNameDisplay">
-          <input #linkNameInput [(ngModel)]="this.getSelectedObject().name" (blur)="setCompoundLinkName(linkNameInput.value)" (keyup.enter)="setCompoundLinkName(linkNameInput.value)"/>
+      <panel-section-collapsible>
+    <title-block icon='expand_more' description='' class="editHeader" (click)="onTitleBlockClick($event)">
+      Edit Compound Link
+      <ng-container *ngIf="isEditingTitle; else linkNameDisplay">
+    <input #linkNameInput [(ngModel)]="this.getSelectedObject().name" (blur)="setCompoundLinkName(linkNameInput.value)" (keyup.enter)="setCompoundLinkName(linkNameInput.value)"/>
+  </ng-container>
+  <ng-template #linkNameDisplay>
+    {{ this.getCompoundLinkName() }}
+  </ng-template>
+  <button class="topbuttons" (click)="this.isEditingTitle=true">
+    <img src='assets/icons/edit.svg' style="height: 20px; width: 20px;"/>
+  </button>
+  <button class="topbuttons" (click)="this.deleteCompoundLink()">
+    <img src='assets/icons/trash.svg' style="height: 20px; width: 20px;"/>
+  </button>
+      <button class="topbuttons" (click)="this.updateCompoundLinkLock()">
+        <ng-container *ngIf="isLocked; else unlockIcon">
+          <img src='assets/icons/unlock.svg' style="height: 20px; width: 20px;"/>
         </ng-container>
-        <ng-template #linkNameDisplay>
-          {{ this.getCompoundLinkName() }}
+        <ng-template #unlockIcon>
+          <img src='assets/icons/lock.svg' style="height: 20px; width: 20px;"/>
         </ng-template>
-        <button class="topbuttons" (click)="this.isEditingTitle=true">
-          <img src='assets/icons/edit.svg' style="height: 16px; width: 16px;"/>
-        </button>
-        <button class="topbuttons" (click)="this.deleteCompoundLink()">
-          <img src='assets/icons/trash.svg' style="height: 16px; width: 16px;"/>
-        </button>
-        <button class="topbuttons" (click)="this.updateCompoundLinkLock()">
-          <ng-container *ngIf="isLocked; else unlockIcon">
-            <img src='assets/icons/unlock.svg' style="height: 16px; width: 16px;"/>
-          </ng-container>
-          <ng-template #unlockIcon>
-            <img src='assets/icons/lock.svg' style="height: 16px; width: 16px;"/>
-          </ng-template>
-        </button>
+      </button>
 
-      </title-block>
+    </title-block>
 
-      <!-- DYNAMICALLY LIST EVERY UNIQUE REFERENCE JOINT, SO THE USER CAN SELECT ONE -->
-      <div>
-        <p style="display:inline; margin-bottom: 5px; margin-left: 15px;">Reference Joint</p>
-        <mat-icon matTooltip='Select a reference point for the link' [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon> </div>
-      <div class="button-container" style="align-items: center;">
-        <div *ngFor="let joint of uniqueJoints" class = "button-wrapper">
-          <div class='groupedButtons'>
-            <button class="referenceJointSelect" mat-stroked-button color='primary' (click) = onReferenceJointSelected(joint) style="padding-left: 5px; padding-right: 5px;">
-              <div class="alignVertical">
-                <span style="font-size: 12px">Joint: {{ joint.name }}</span>
-              </div>
-            </button>
-          </div>
+        <!-- DYNAMICALLY LIST EVERY UNIQUE REFERENCE JOINT, SO THE USER CAN SELECT ONE -->
+        <div><p style="display:inline-block; margin-bottom: 5px;">Reference Joint</p> <mat-icon matTooltip='Select a reference point for the link' [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon> </div>
+        <div class="button-container">
+            <div *ngFor="let joint of uniqueJoints" class = "button-wrapper">
+                <button class="referenceJointSelect" (click) = onReferenceJointSelected(joint)>
+                  Joint: {{ joint.name }}
+                </button>
+            </div>
         </div>
-      </div>
 
-      <dual-input-block id="referenceJoint"
-                        [disabled]=false
-                        [input1Value]="getReferenceJointDist()"
-                        [input2Value]="getReferenceJointAngle()"
-                        (input1Change)="setReferenceJointDist($event)"
-                        (input2Change)="setReferenceJointAngle($event)"
-                        iconLabel1="assets/icons/length.svg" iconLabel2="assets/icons/angle.svg"
-                        unit1="cm" unit2="deg"
-                        tooltip = "The position and angle of the reference joint">
-        Reference Joint {{ this.referenceJoint?.name }} Distance and Angle to CoM
-      </dual-input-block>
-
+        <dual-input-block id="referenceJoint"
+                          [disabled]=false
+                          [input1Value]="getReferenceJointDist()"
+                          [input2Value]="getReferenceJointAngle()"
+                          (input1Change)="setReferenceJointDist($event)"
+                          (input2Change)="setReferenceJointAngle($event)"
+                          iconLabel1="assets/icons/length.svg" iconLabel2="assets/icons/angle.svg"
+                          unit1="cm" unit2="deg"
+                          tooltip = "The position and angle of the reference joint">
+          Reference Joint {{ this.referenceJoint?.name }} Distance and Angle to CoM
+        </dual-input-block>
 
 
-    </panel-section-collapsible>
+
+      </panel-section-collapsible>
     <div id="body" [class.disabled-panel]="getCompoundLinkLockState()">
       <!-- BASIC SETTING DROPDOWN -->
       <collapsible-subsection titleLabel='Sublinks' [expanded]="sectionExpanded['LBasic'] || getCompoundLinkLockState()"
-                              (opened)="sectionExpanded['LBasic'] = true"
-                              (closed)="sectionExpanded['LBasic'] = false">
-        <div>
-          <div *ngFor='let link of getAllConnectedLinks(); let i = index;'>
+            (opened)="sectionExpanded['LBasic'] = true"
+            (closed)="sectionExpanded['LBasic'] = false">
+            <div>
+                <div *ngFor='let link of getAllConnectedLinks(); let i = index;'>
             <dual-input-block id="lengthAndAngle"
                               [disabled]=true
-                              [input1Value]="getLinkLength(link)"
-                              [input2Value]="getLinkAngle(link)"
-                              iconLabel1="assets/icons/length.svg" iconLabel2="assets/icons/angle.svg"
-                              unit1="cm" unit2="deg"
-                              tooltip = "The length and angle of the link">
-              Link {{ link.name }} Length and Angle
+              [input1Value]="getLinkLength(link)"
+              [input2Value]="getLinkAngle(link)"
+              iconLabel1="assets/icons/length.svg" iconLabel2="assets/icons/angle.svg"
+              unit1="cm" unit2="deg"
+                tooltip = "The length and angle of the link">
+                Link {{ link.name }} Length and Angle
             </dual-input-block>
-          </div>
-        </div>
+                </div>
+            </div>
       </collapsible-subsection>
 
       <!-- COMPONENTS DROPDOWN -->
       <collapsible-subsection titleLabel='Joints of Sublinks' [expanded]="sectionExpanded['LComponent'] || getCompoundLinkLockState()"
-                              (opened)="sectionExpanded['LComponent'] = true"
-                              (closed)="sectionExpanded['LComponent'] = false">
-        <div id="linkComponents">
-          <!--{{this.getLinkComponents()}} -->
-          <div id="container">
-            <div *ngFor='let link of getAllConnectedLinks(); let i = index;'>
-              <div *ngFor='let joint of getLinkComponents(link); let i = index;'>
-                <dual-input-block
-                  [disabled]=true
-                  [input1Value]="this.roundToFour(joint.coords.x)"
-                  [input2Value]="this.roundToFour(joint.coords.y)"
-                  (input1Change)="joint.coords.x=($event)"
-                  (input2Change)="joint.coords.y=($event)"
-                  label1= "X"
-                  label2= "Y"
-                  unit1="cm"
-                  unit2="cm"
-                  tooltip= "Change joint positions">
-                  Joint {{ joint.name }}:
-                </dual-input-block>
+            (opened)="sectionExpanded['LComponent'] = true"
+            (closed)="sectionExpanded['LComponent'] = false">
+            <div id="linkComponents">
+              <p>Components</p>
+              <!--{{this.getLinkComponents()}} -->
+              <div id="container">
+                  <div *ngFor='let link of getAllConnectedLinks(); let i = index;'>
+                <div *ngFor='let joint of getLinkComponents(link); let i = index;'>
+                  <dual-input-block
+                    [disabled]=true
+                    [input1Value]="this.roundToFour(joint.coords.x)"
+                    [input2Value]="this.roundToFour(joint.coords.y)"
+                    (input1Change)="joint.coords.x=($event)"
+                    (input2Change)="joint.coords.y=($event)"
+                    label1= "X"
+                    label2= "Y"
+                    unit1="cm"
+                    unit2="cm"
+                    tooltip= "Change joint positions">
+                    Joint {{ joint.name }}:
+                  </dual-input-block>
+                </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
       </collapsible-subsection>
       <collapsible-subsection [expanded]='true' titleLabel='Visual Settings' [expanded]="sectionExpanded['LVisual']"
-                              (opened)="sectionExpanded['LVisual'] = true"
-                              (closed)="sectionExpanded['LVisual'] = false">
-        <div>
+            (opened)="sectionExpanded['LVisual'] = true"
+            (closed)="sectionExpanded['LVisual'] = false">
+        <div> 
           <div>
-            <p class="colors" style="margin-left: 15px;">Link Color:</p>
-            <div class="row" style="justify-content: center;">
+            <p class="colors">Link Color:</p>
+            <div class="row">
               <div *ngFor='let color of getColors(); let i=index' class="colors" [style.backgroundColor]='color'
-                   (click)='setLinkColor(i)'>
+                (click)='setLinkColor(i)'>
                 <!-- Use an *ngIf directive to show a check mark if the color is selected -->
-                <mat-icon *ngIf='selectedIndex === i' style="color: white;">check</mat-icon>
+                <mat-icon class="check" *ngIf='selectedIndex === i' style="color:white">check</mat-icon>
               </div>
             </div>
           </div>
-        </div>
-      </collapsible-subsection>
     </div>
-  </div>
-</div>
+      </collapsible-subsection>
+      </div>
+    </div>

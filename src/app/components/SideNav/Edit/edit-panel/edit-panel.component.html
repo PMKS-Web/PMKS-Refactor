@@ -1,30 +1,23 @@
-<div class="app-edit-panel-container" style="width: 250px; margin-top: 63px;">
-  @switch (getSelectedObjectType())
-  {
-    @case('JointInteractor')
-    {
-      <app-joint-edit-panel></app-joint-edit-panel>
-    }
-    @case('LinkInteractor')
-    {
-      <app-link-edit-panel></app-link-edit-panel>
-    }
-    @case('CompoundLinkInteractor')
-    {
-      <app-compound-link-edit-panel></app-compound-link-edit-panel>
-    }
-    @case('ForceInteractor')
-    {
-      <p>Force Selected</p>
-    }
-    @default
-    {
-      <div id="default-view">
-        <title-block class="header">Edit Panel</title-block>
-        <p class="subtitle">Please select a joint or a link to start editing!</p>
-        <p class="subtitle">Right click on the screen to begin!</p>
-      </div>
-    }
-  }
+<div class="app-edit-panel-container">
+        @switch (getSelectedObjectType()){
+            @case('JointInteractor'){
+                <app-joint-edit-panel></app-joint-edit-panel>
+            }
+            @case('LinkInteractor'){
+                <app-link-edit-panel></app-link-edit-panel>
+            }
+            @case('CompoundLinkInteractor'){
+                <app-compound-link-edit-panel></app-compound-link-edit-panel>
+            }
+            @case('ForceInteractor'){
+                <p>Force Selected</p>
+            }
+            @default(){
+                <div id="default-view">
+                    <title-block>Edit Panel</title-block>
+                    <p class="subtitle">Please select a joint or a link to start editing!</p>
+                    <p class="subtitle">Right click on the screen to begin!</p>
+                </div>
+            }
+        }
 </div>
-

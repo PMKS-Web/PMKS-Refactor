@@ -4,10 +4,12 @@ html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 :root{
-    --white-background: #ffffff;
-    --light-primary: #002962;
-    --light-accent: #fdc500;
-    --light-warning: #a0001c;
+  --white-background: #ffffff;
+  --light-primary: #002962;
+  --light-accent: #fdc500;
+  --light-warning: #a0001c;
+
+
 }
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
@@ -20,6 +22,7 @@ input::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
 }
+
 
   input {
     width: 40%;
@@ -62,3 +65,4 @@ input[type=number] {
   p, label, input, dual-input-block, single-input-block {
     color: #263037;
   }
+
