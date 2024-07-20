@@ -22,7 +22,6 @@
       justify-content: space-between;
       @include mat.typography-level($typography-config, 'headline-6');
 
-
       #title-icon-button {
         zoom: 0.7; // NOTE: You may need to adjust this value to achieve exactly 48px.
       }
@@ -31,13 +30,19 @@
     #title-description {
       @include mat.typography-level($typography-config, 'body-2');
       color: rgba(0, 0, 0, 0.6);
-      //font-weight: 200;
-      //font-size: 12px;
+      font-weight: 200;
+      font-size: 12px;
     }
   }
 }
 
 div {
-  margin: 0 3px 0 3px;
+  margin-left: 3px;
 }
-
+#title-block .row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font: 500 20px / 32px Roboto, sans-serif;
+  letter-spacing: .0125em;
+}
