@@ -1,9 +1,9 @@
 import { Component} from '@angular/core'
 
 interface Tab {
-  selected: boolean,
-  label: string,
-  icon: string
+    selected: boolean,
+    label: string,
+    icon: string
 }
 
 
@@ -32,11 +32,9 @@ export class SidenavComponent {
         tab.selected = false;
       }
     });
-  }
 
-  isSelected(id: string): boolean {
-    return this.tabs.find(tab => tab.label === id)?.selected ?? false;
-  }
+}
+
   togglePanel(clickedTab: string): void {
     this.tabs.forEach(tab => {
       if (tab.label === clickedTab) {
@@ -47,7 +45,12 @@ export class SidenavComponent {
     });
   }
 
-  getSelected(): string {
+
+  isSelected(id: string): boolean {
+    return this.tabs.find(tab => tab.label === id)?.selected ?? false;
+  }
+
+getSelected(): string {
     let selectedTab = '';
     this.tabs.forEach((tab)=>{
       if(tab.selected){
