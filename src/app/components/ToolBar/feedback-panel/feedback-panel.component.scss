@@ -8,13 +8,13 @@
   $typography-config: mat.get-typography-config($theme);
   $foreground: map.get($theme, foreground);
 
-  #feedback {
-    background-color: white;
+  #settings {
+    background-color: #f30404;
     border-radius: 3px;
     display: flex;
     flex-direction: column;
-    width: 350px;
-    border-top: 5px solid #3F51B5;
+    width: 150px;
+    border-top: 5px solid #b906f3;
     box-shadow: 0 9px 5px 0 gray, 0 9px 5px 0 gray, 12px 0 15px -4px gray, -12px 0 15px -4px gray;
     opacity: 0.999;
     padding: 10px;
@@ -32,7 +32,7 @@
 
       form {
         .max-width {
-          max-width: 100%;
+          max-width: 100vh;
         }
 
         textarea {

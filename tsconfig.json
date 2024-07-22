@@ -15,12 +15,12 @@
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
-    "target": "es2015",
+    "target": "ES2022",
     "types": ["@types/papaparse"],
-    "module": "es2015",
+    "module": "ES2022",
     "useDefineForClassFields": false,
     "lib": [
-      "es2015",
+      "ES2022",
       "dom"
     ],
     "paths": {

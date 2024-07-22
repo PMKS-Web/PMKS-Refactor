@@ -1,4 +1,5 @@
-<div class="remover" *ngIf="open" (click)="closePanel($event)"><div id="feedback">
+<div class="remover" *ngIf="open" (click)="closePanel($event)">
+  <div class="settings">
   <panel-section-collapsible>
 
   </panel-section-collapsible>
@@ -47,7 +48,7 @@
         </mat-checkbox>
         <mat-checkbox color='primary' checked formControlName='project'>Send a copy of the open project
         </mat-checkbox>
-        <div style='padding: 10px 0 10px 10px; width: calc(100% - 20px);'>
+        <div style='padding: 10px 0 10px 10px; width: calc(50vh);'>
           <!--          <button (disabled)='sendingEmail' icon='send' (click)='sendCommentEmail.bind(this)'>Send Message-->
           <!--          </button>-->
           <button>Send Message
