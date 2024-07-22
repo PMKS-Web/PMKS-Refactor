@@ -95,15 +95,17 @@ input:checked + .slider:before {
   align-items: center;
   justify-content: center;
   //transform: translateY(-5px);
+
 }
+
 
 .mat-icon {
   color: #3f51b5;
   font-size: 18px;
   vertical-align: middle;
   padding-top: 5px;
-
 }
+
 input:not(:checked) + .slider:before{
   content: '\2714';
   color: white;
@@ -117,29 +119,34 @@ input:hover + .slider:before{
   scale: 1.4;
 }
 
-.toggle-input-icon{
-  color: #3f51b5;
-  font-size: 18px;
-  vertical-align: middle;
-  margin-top: 5px;
-  margin-right: 67px;
-  padding-top: 2px;
+.label {
+  flex-grow: 1;
+  margin-right: 5px;
 }
 
-.toggle-ground-icon{
-  color: #3f51b5;
-  font-size: 18px;
-  vertical-align: middle;
-  margin-top: 5px;
-  margin-right: 51px;
-  padding-top: 2px;
-}
-
-.toggle-weld-icon{
-  color: #3f51b5;
-  font-size: 18px;
-  vertical-align: middle;
-  margin-top: 5px;
-  margin-right: 68px;
-  padding-top: 2px;
-}
+//.toggle-input-icon{
+//  color: #3f51b5;
+//  font-size: 18px;
+//  vertical-align: middle;
+//  margin-top: 5px;
+//  margin-right: 72px;
+//  padding-top: 2px;
+//}
+//
+//.toggle-ground-icon{
+//  color: #3f51b5;
+//  font-size: 18px;
+//  vertical-align: middle;
+//  margin-top: 5px;
+//  margin-right: 56px;
+//  padding-top: 2px;
+//}
+//
+//.toggle-weld-icon{
+//  color: #3f51b5;
+//  font-size: 18px;
+//  vertical-align: middle;
+//  margin-top: 5px;
+//  margin-right: 73px;
+//  padding-top: 2px;
+//}
