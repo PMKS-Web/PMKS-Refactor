@@ -50,6 +50,12 @@ input[type=number] {
     font-weight: 500;
   }
 
+  #title-description{
+    font-size: 14px;
+    color: #0009;
+    font-weight: 400;
+  }
+
   div.app-panel-container, div.app-synthesis-panel-container {
     width:300px;
   }
