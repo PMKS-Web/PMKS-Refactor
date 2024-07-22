@@ -1,0 +1,61 @@
+<div class="remover" *ngIf="open" (click)="closePanel($event)"><div id="feedback">
+  <panel-section-collapsible>
+
+  </panel-section-collapsible>
+
+  <collapsible-subsection [expanded]='true' titleLabel='Go to Github' [expanded]="sectionExpanded['LBasic']"
+                          (opened)="sectionExpanded['LBasic'] = true" (closed)="sectionExpanded['LBasic'] = false">
+    <title-block icon='expand_more' description='' class="synthesisHeader">
+      <h3>Github</h3>
+    </title-block>
+    <p>PMKS+ is open source! Do you want to help us develop it?</p>
+    <button mat-button class="toolbar-button" (click)="gotoGithub();"
+            matTooltip='Go to our github repo'
+            matTooltipShowDelay='1000'>
+      <mat-icon>github</mat-icon>
+      Github
+    </button>
+  </collapsible-subsection>
+
+  <collapsible-subsection [expanded]='true' titleLabel='Feedback Form' [expanded]="sectionExpanded['LBasic']"
+                          (opened)="sectionExpanded['LBasic'] = true" (closed)="sectionExpanded['LBasic'] = false">
+    <div>
+      <title-block icon='expand_more'
+                   description='Do you want to attach a file? Send us an email at gr-pmksplus@wpi.edu'
+                   class="synthesisHeader">
+        Send Feedback
+      </title-block>
+      <form [formGroup]='commentForm'>
+        <mat-form-field class='max-width'>
+          <mat-label>Leave a message</mat-label>
+          <textarea type='text' matInput formControlName='comment'></textarea>
+          <mat-error *ngIf="commentForm.controls['comment'].hasError('required')">
+            Message is required
+          </mat-error>
+        </mat-form-field>
+        <mat-checkbox color='primary' formControlName='response'>I would like a response</mat-checkbox>
+        <mat-form-field *ngIf='commentForm.value.response' class='max-width'>
+          <mat-label>Email</mat-label>
+          <input type='email' matInput formControlName='email' [errorStateMatcher]='matcher'
+                 placeholder='Ex. pat@example.com'>
+          <mat-error
+            *ngIf="commentForm.controls['email'].hasError('email') && !commentForm.controls['email'].hasError('required')">
+            Invalid email address
+          </mat-error>
+        </mat-form-field>
+        <mat-checkbox color='primary' checked formControlName='diagnostics'>Send browser and version data
+        </mat-checkbox>
+        <mat-checkbox color='primary' checked formControlName='project'>Send a copy of the open project
+        </mat-checkbox>
+        <div style='padding: 10px 0 10px 10px; width: calc(100% - 20px);'>
+          <!--          <button (disabled)='sendingEmail' icon='send' (click)='sendCommentEmail.bind(this)'>Send Message-->
+          <!--          </button>-->
+          <button>Send Message
+          </button>
+        </div>
+      </form>
+    </div>
+  </collapsible-subsection>
+
+</div>
+</div>

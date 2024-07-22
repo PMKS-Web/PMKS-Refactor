@@ -1,6 +1,4 @@
-/* To learn more about this file see: https://angular.io/config/tsconfig. */
 {
-  "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
@@ -17,14 +15,21 @@
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
-    "target": "ES2022",
+    "target": "es2015",
     "types": ["@types/papaparse"],
-    "module": "ES2022",
+    "module": "es2015",
     "useDefineForClassFields": false,
     "lib": [
-      "ES2022",
+      "es2015",
       "dom"
-    ]
+    ],
+    "paths": {
+      "firebase/analytics": ["./node_modules/firebase/analytics/dist/index.esm.js"],
+      "firebase/auth": ["./node_modules/firebase/auth/dist/index.esm.js"],
+      "@angular/*": ["node_modules/@angular/*"]
+    }
+
+
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
