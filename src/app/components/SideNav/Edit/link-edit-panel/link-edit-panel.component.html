@@ -88,7 +88,7 @@
                               (opened)="sectionExpanded['LVisual'] = true" (closed)="sectionExpanded['LVisual'] = false">
         <!-- changes the color of the link -->
         <div>
-          <p class="colors" style="margin-left: 15px;">Link Color:</p>
+          <p class="colors" style="margin-left: 11px;">Link Color:</p>
           <div class="row" style="justify-content: center;">
             <div *ngFor='let color of getColors(); let i=index' class="colors" [style.backgroundColor]='color'
                  (click)='setLinkColor(i)'>

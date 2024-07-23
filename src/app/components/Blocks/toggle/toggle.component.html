@@ -1,14 +1,16 @@
-<div class="buffer"><div class="toggle-container">
-  <span class="label">{{ label }}</span>
-  <div class="icon"><mat-icon matTooltip='{{ this.tooltip }}' [matTooltipShowDelay]='1000' class='label-help' [ngClass]="iconClass"
-  >help_outline
-  </mat-icon> </div> </div>
-  <div class="switch-container">
-    <label class="switch" (click)="toggle()">
-      <input type="checkbox" [(ngModel)]="value" (change)="toggle()">
-      <span class="slider"></span>
-
-    </label>
-
+<div class="buffer">
+  <div class="toggle-container">
+  <span class="label" style="margin-left: 15px;">
+    {{ label }}
+    <mat-icon matTooltip='{{ this.tooltip }}' [matTooltipShowDelay]='1000' class='label-help' [ngClass]="iconClass">help_outline
+    </mat-icon>
+  </span>
+    <div class="switch-container">
+      <label class="switch" (click)="toggle()">
+        <input type="checkbox" [(ngModel)]="value" (change)="toggle()">
+        <span class="slider"></span>
+      </label>
+    </div>
   </div>
 </div>
+

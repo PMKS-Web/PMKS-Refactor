@@ -1,7 +1,6 @@
 import { Component, Input } from '@angular/core';
-import { FormGroup } from '@angular/forms';
-import {Joint} from "../../../model/joint";
-import {Mechanism} from "../../../model/mechanism";
+import { Joint } from "../../../model/joint";
+import { Mechanism } from "../../../model/mechanism";
 
 @Component({
   selector: 'tri-button',
@@ -27,18 +26,31 @@ export class TriButtonComponent {
   @Input() btn2SVGPath: string = '';
   @Input() btn3SVGPath: string = '';
 
+  selectedButton: string = ''; // Add this line to track the selected button
 
-/*
-  <mat-icon svgIcon='unweld_joint'></mat-icon>
-  <mat-icon [svgIcon]=btn3Icon></mat-icon>
-    <mat-icon svgIcon='weld_joint'></mat-icon>
-*/
-
-  getCurrentJoint(): Joint{
+  getCurrentJoint(): Joint {
     return this.joint;
   }
-  getMechanism(): Mechanism{
+
+  getMechanism(): Mechanism {
     return this.mechanism;
   }
+
+  // Update button action methods to set the selectedButton variable
+  selectButton1() {
+    this.selectedButton = 'btn1';
+    this.btn1Action();
+  }
+
+  selectButton2() {
+    this.selectedButton = 'btn2';
+    this.btn2Action();
+  }
+
+  selectButton3() {
+    this.selectedButton = 'btn3';
+    this.btn3Action();
+  }
+
   constructor() {}
 }

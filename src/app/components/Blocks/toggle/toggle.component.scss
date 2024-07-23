@@ -21,7 +21,10 @@
 }
 
 .label {
-  margin: 0px 4px 0px 5px;
+  margin-right:4px;
+  margin-left: 5px;
+  margin-bottom: 0px;
+  margin-top: 0px;
   font-size: 16px;
 }
 
@@ -55,7 +58,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(63, 81, 181, 0.8);;
+  background-color: #ccc;
   -webkit-transition: .4s;
   transition: .4s;
   border-radius: 34px;
@@ -67,20 +70,18 @@
 
 .slider:before {
   position: absolute;
-  content: "\2716";
+  content: "\2714";
   height: 25px;
   width: 25px;
-  background-color: #4e4d4d;
+  background-color: #3f51b5;
   -webkit-transition: .4s;
   transition: .4s;
   border-radius: 50%;
   color: white;
-  -webkit-transform: translateX(15px); /* Updated value for the checked state */
-  -ms-transform: translateX(15px);
 }
 
 input:checked + .slider {
-  background-color: #ccc;
+  background-color: rgba(63, 81, 181, 0.8);
 }
 
 input:focus + .slider {
@@ -88,14 +89,16 @@ input:focus + .slider {
 }
 
 input:checked + .slider:before {
-  -webkit-transform: translateX(-5px); /* Updated value for the checked state */
-  -ms-transform: translateX(-5px);
+  -webkit-transform: translateX(20px); /* Updated value for the checked state */
+  -ms-transform: translateX(20px);
   // transform: translateX(23px);
   display: flex;
   align-items: center;
   justify-content: center;
   //transform: translateY(-5px);
+
 }
+
 
 .mat-icon {
   color: #3f51b5;
@@ -104,10 +107,11 @@ input:checked + .slider:before {
   padding-top: 5px;
 
 }
+
 input:not(:checked) + .slider:before{
-  content: '\2714';
+  content: '\2716';
   color: white;
-  background-color: #3f51b5;
+  background-color: #4e4d4d;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -117,29 +121,7 @@ input:hover + .slider:before{
   scale: 1.4;
 }
 
-.toggle-input-icon{
-  color: #3f51b5;
-  font-size: 18px;
-  vertical-align: middle;
-  margin-top: 5px;
-  margin-right: 67px;
-  padding-top: 2px;
-}
-
-.toggle-ground-icon{
-  color: #3f51b5;
-  font-size: 18px;
-  vertical-align: middle;
-  margin-top: 5px;
-  margin-right: 51px;
-  padding-top: 2px;
-}
-
-.toggle-weld-icon{
-  color: #3f51b5;
-  font-size: 18px;
-  vertical-align: middle;
-  margin-top: 5px;
-  margin-right: 68px;
-  padding-top: 2px;
+.label {
+  flex-grow: 1;
+  margin-right: 5px;
 }

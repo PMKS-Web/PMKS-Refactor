@@ -1,20 +1,31 @@
 <div class='row' id='tri-button'>
   <div class='groupedButtons' style="padding-bottom: 10px;">
-    <button mat-stroked-button color='primary' [disabled]='btn1Disabled' class='{{btn1Disabled ? "buttonDisabled" : ""}}'
-            (click)='btn1Action()' style="padding-left: 5px; padding-right: 5px;">
+    <button mat-stroked-button color='primary'
+            [ngClass]="{'selected': selectedButton === 'btn1'}"
+            [disabled]='btn1Disabled'
+            class='{{btn1Disabled ? "buttonDisabled" : ""}}'
+            (click)='selectButton1()'
+            style="padding-left: 5px; padding-right: 5px;">
       <div class="alignVertical">
         <span style="font-size: 12px">{{btn1Text}}</span>
       </div>
     </button>
-    <button *ngIf="btn2Visible" mat-stroked-button color='primary' [disabled]='btn2Disabled' class='{{btn2Disabled ? "buttonDisabled" : ""}}'
-            (click)='btn2Action()' style="padding-left: 5px; padding-right: 5px;">
+    <button *ngIf="btn2Visible" mat-stroked-button color='primary'
+            [ngClass]="{'selected': selectedButton === 'btn2'}"
+            [disabled]='btn2Disabled'
+            class='{{btn2Disabled ? "buttonDisabled" : ""}}'
+            (click)='selectButton2()'
+            style="padding-left: 5px; padding-right: 5px;">
       <div class="alignVertical">
         <span style="font-size: 12px">{{btn2Text}}</span>
       </div>
     </button>
   </div>
-  <button *ngIf="btn3Visible" mat-stroked-button color='primary' [disabled]='btn3Disabled' class='{{btn3Disabled ? "buttonDisabled button3" : "button3"}}'
-          (click)='btn3Action()'>
+  <button *ngIf="btn3Visible" mat-stroked-button color='primary'
+          [ngClass]="{'selected': selectedButton === 'btn3'}"
+          [disabled]='btn3Disabled'
+          class='{{btn3Disabled ? "buttonDisabled button3" : "button3"}}'
+          (click)='selectButton3()'>
     <div class="alignVertical">
       <img src={{btn3SVGPath}} alt="SVG Image" width="20" height="20">
       <span>{{btn3Text}}</span>

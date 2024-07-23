@@ -28,13 +28,17 @@
     }
 
     button {
-      margin: 0; /* Adjust margin as needed */
+      margin: 0 5px; /* Adjust margin as needed */
+      &.selected {
+        background-color: mat.get-color-from-palette($primary-palette, 500);
+        color: white; /* Change text color if needed */
+        border-color: mat.get-color-from-palette($primary-palette, 500);
+      }
     }
 
     .button3 {
       padding: 0;
       flex-grow: 1;
-      text-align: center;
     }
 
     .buttonDisabled {

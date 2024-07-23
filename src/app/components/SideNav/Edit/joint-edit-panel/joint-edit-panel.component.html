@@ -93,17 +93,13 @@
         <!-- TRI BUTTON THAT IS USED FOR DIRECTION OF INPUT ON INPUT JOINT -->
         <div>
           <div *ngIf="getCurrentJoint().isInput">
-            <p class="input-direction-label" style="margin: 4px 0 5px 16px;">
-              Input Direction
-              <mat-icon matTooltip='Select the direction of rotation for the animation to start in. Note that positive angles are always counter-clockwise.' [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon>
-            </p>
+            <p>Input Direction</p>
             <div class="button-container">
               <tri-button btn1Text="Counter-Clockwise" btn2Text="Clockwise"
                           [btn1Disabled]="!getCurrentJoint().canAddInput() || getCurrentJoint().isInput"
                           [btn2Disabled]="!getCurrentJoint().canAddInput() || !getCurrentJoint().isInput"
                           [btn1Action]="makeInputCounterClockwise" [btn2Action]="makeInputClockwise"
-                          [joint]="getCurrentJoint()" [mechanism]="getMechanism()">
-              </tri-button>
+                          [joint]="getCurrentJoint()" [mechanism]="getMechanism()"></tri-button>
             </div>
           </div>
         </div>
