@@ -67,6 +67,7 @@ import {SharePanelComponent} from "./components/ToolBar/share-panel/share-panel.
 import {MatListModule} from "@angular/material/list";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {MatCheckboxModule} from "@angular/material/checkbox";
+import {MatSliderModule} from "@angular/material/slider";
 
 @NgModule({
   declarations: [
@@ -140,6 +141,7 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
     MatListModule,
     MatExpansionModule,
     MatCheckboxModule,
+    MatSliderModule,
   ],
   providers: [],
   exports: [
