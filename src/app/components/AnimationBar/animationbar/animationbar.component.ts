@@ -1,11 +1,10 @@
-import { Component } from '@angular/core'
-import { CompoundLinkInteractor } from 'src/app/controllers/compound-link-interactor';
-import { JointInteractor } from 'src/app/controllers/joint-interactor';
-import { LinkInteractor } from 'src/app/controllers/link-interactor';
-import { Joint } from 'src/app/model/joint';
-import { AnimationService } from 'src/app/services/animation.service';
-import { InteractionService } from 'src/app/services/interaction.service';
-
+import {Component} from '@angular/core'
+import {CompoundLinkInteractor} from 'src/app/controllers/compound-link-interactor';
+import {JointInteractor} from 'src/app/controllers/joint-interactor';
+import {LinkInteractor} from 'src/app/controllers/link-interactor';
+import {AnimationService} from 'src/app/services/animation.service';
+import {InteractionService} from 'src/app/services/interaction.service';
+//import { MatSnackBar } from '@angular/material/snack-bar';
 
 
 @Component({
@@ -17,7 +16,7 @@ export class AnimationBarComponent {
 
     private isAnimating: boolean = false;
     private isPausedAnimating: boolean = true;
-    constructor(private interactionServive: InteractionService, private animationService: AnimationService) {
+    constructor(private interactionService: InteractionService, private animationService: AnimationService) {
 
 
     }
@@ -36,6 +35,15 @@ export class AnimationBarComponent {
                 this.animationService.animateMechanisms(true);
                 this.isAnimating = true;
                 this.isPausedAnimating = false;
+                //for some reason this doesn't work
+                // if (this.interactionService.isDragging){
+                //   this.snackBar.open("Cannot edit while animation is playing", '', {
+                //     panelClass: 'my-custom-snackbar',
+                //     horizontalPosition: 'center',
+                //     verticalPosition: 'top',
+                //     duration: 4000,
+                //   });
+                // }
                 break;
             case 'stop':
                 this.animationService.reset();
@@ -44,16 +52,17 @@ export class AnimationBarComponent {
                 break;
         }
     }
-
     getIsAnimating():boolean{
         return this.isAnimating;
     }
     getIsPausedAnimating():boolean{
         return this.isPausedAnimating;
     }
-    
+  sendNotification(text: string) {
+   console.log(text)
+  }
     getMechanismIndex():number{
-        let obj = this.interactionServive.getSelectedObject();
+        let obj = this.interactionService.getSelectedObject();
         let index = -1;
         if(obj == undefined){
             return -1;
@@ -78,7 +87,7 @@ export class AnimationBarComponent {
         return index;
     }
 
-    
+
 
 
 }

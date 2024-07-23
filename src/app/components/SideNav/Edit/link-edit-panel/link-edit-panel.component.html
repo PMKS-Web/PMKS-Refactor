@@ -2,7 +2,7 @@
   <!--  LINK PANEL-->
   <div class="scroll-container">
     <panel-section-collapsible>
-      <title-block icon='expand_more' description='' class="editHeader" (click)="onTitleBlockClick($event)">
+      <title-block description='' class="editHeader" (click)="onTitleBlockClick($event)">
         Edit Link
         <!-- edit title input if edit selected -->
         <ng-container *ngIf="isEditingTitle; else linkNameDisplay">
