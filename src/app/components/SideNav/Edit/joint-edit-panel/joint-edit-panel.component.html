@@ -1,113 +1,114 @@
 
 <div id="editJoint">
-  <div class="scroll-container">
-    <div id="body" [class.disabled-panel]="getJointLockState()">
+    <div class="scroll-container">
+      <div id="body" [class.disabled-panel]="getJointLockState()">
 
-      <!--  JOINT PANEL-->
-      <!-- TITLE BLOCK: CONTAINS TITLE, INPUT SECTION FOR JOINT NAME, EDIT AND DELETE SVGS -->
-      <panel-section-collapsible>
-        <title-block description='' class = "editHeader" (click)="onTitleBlockClick($event)"
-        >Edit Joint
-          <ng-container *ngIf="isEditingTitle; else jointNameDisplay">
-            <input #jointNameInput [(ngModel)]="getCurrentJoint().name" (blur)="setJointName(jointNameInput.value)" (keyup.enter)="setJointName(jointNameInput.value)"/>
-          </ng-container>
-          <ng-template #jointNameDisplay>
-            {{ getJointName() }}
-          </ng-template>
-          <button (click)="isEditingTitle=true">
-            <img src='assets/icons/edit.svg' style="height: 16px; width: 26px;"/>
-          </button>
-          <button (click)="deleteJoint()">
-            <img src='assets/icons/trash.svg' style="height: 16px; width: 16px;"/>
-          </button>
-        </title-block>
-        <p class="subtitle">This is where you edit joints. Change things such as the position.</p>
-      </panel-section-collapsible>
 
-      <!-- BASIC SETTING DROPDOWN -->
-      <collapsible-subsection titleLabel='Basic Settings' [expanded]="graphExpanded['basicBasic']"
-                              (opened)="graphExpanded['basicBasic'] = true"
-                              (closed)="graphExpanded['basicBasic'] = false">
-        <!-- THE JOINT X AND Y COORD INPUT COMPONENT -->
-        <div class="flex-container">
-          <dual-input-block [input1Value]="getJointXCoord()"
-                            [input2Value]="getJointYCoord()"
-                            (input1Change)="setJointXCoord($event)"
-                            (input2Change)="setJointYCoord($event)"
-                            tooltip="Change the x and y values of the current joint!"
-                            label1="X"
-                            label2="Y"
-                            unit1="cm"
-                            unit2="cm"
-                            tooltip = "The location of the Joint in X and Y Positions">
-            Input X and Y positions
-          </dual-input-block>
-        </div>
-      </collapsible-subsection>
-      <!-- DYNAMICALLY DISPLAYS CONNECTED JOINTS BASED ON A LIST PROVIDED IN THE TYPESCRIPT -->
-      <collapsible-subsection titleLabel='Distance to Joint' [expanded]="graphExpanded['distance']"
-                              (opened)="graphExpanded['distance'] = true"
-                              (closed)="graphExpanded['distance'] = false">
-        <div id="connectedJoints">
-          <div id="container">
-            <div *ngFor='let joint of getConnectedJoints(); let i = index;'>
-              <ng-container *ngIf="getCurrentJoint().name !== joint.name">
-                <dual-input-block
-                  [input1Value]="getJointDistance(joint).toFixed(4)"
-                  [input2Value]="getJointAngle(joint).toFixed(4)"
-                  (input1Change)="changeJointDistance(joint.id, $event)"
-                  (input2Change)="changeJointAngle(joint.id, $event)"
-                  [disabled] = "joint.locked"
-                  iconLabel1 = "assets/icons/length.svg"
-                  iconLabel2="assets/icons/angle.svg"
-                  unit1="cm"
-                  unit2="deg"
-                  tooltip = "The distance and angle from Joint {{getCurrentJoint().name}} to {{joint.name}}">
-                  Joint {{getCurrentJoint().name}} to Joint {{ joint.name }}
-                </dual-input-block>
-              </ng-container>
+        <!--  JOINT PANEL-->
+        <!-- TITLE BLOCK: CONTAINS TITLE, INPUT SECTION FOR JOINT NAME, EDIT AND DELETE SVGS -->
+        <panel-section-collapsible>
+          <title-block icon='expand_more' description='' class = "editHeader" (click)="onTitleBlockClick($event)"
+          >Edit Joint
+            <ng-container *ngIf="isEditingTitle; else jointNameDisplay">
+              <input #jointNameInput [(ngModel)]="getCurrentJoint().name" (blur)="setJointName(jointNameInput.value)" (keyup.enter)="setJointName(jointNameInput.value)"/>
+            </ng-container>
+            <ng-template #jointNameDisplay>
+              {{ getJointName() }}
+            </ng-template>
+            <button (click)="isEditingTitle=true">
+              <img src='assets/icons/edit.svg' style="height: 16px; width: 16px;"/>
+            </button>
+            <button (click)="deleteJoint()">
+              <img src='assets/icons/trash.svg' style="height: 16px; width: 16px;"/>
+            </button>
+          </title-block>
+          <p class="subtitle">This is where you edit joints. Change things such as the position.</p>
+        </panel-section-collapsible>
+
+        <!-- BASIC SETTING DROPDOWN -->
+        <collapsible-subsection titleLabel='Basic Settings' [expanded]="graphExpanded['basicBasic']"
+                                (opened)="graphExpanded['basicBasic'] = true"
+                                (closed)="graphExpanded['basicBasic'] = false">
+          <!-- THE JOINT X AND Y COORD INPUT COMPONENT -->
+          <div class="flex-container">
+            <dual-input-block [input1Value]="getJointXCoord()"
+                              [input2Value]="getJointYCoord()"
+                              (input1Change)="setJointXCoord($event)"
+                              (input2Change)="setJointYCoord($event)"
+                              tooltip="Change the x and y values of the current joint!"
+                              label1="X"
+                              label2="Y"
+                              unit1="cm"
+                              unit2="cm"
+                              tooltip = "The location of the Joint in X and Y Positions">
+              Input X and Y positions
+            </dual-input-block>
+          </div>
+        </collapsible-subsection>
+        <!-- DYNAMICALLY DISPLAYS CONNECTED JOINTS BASED ON A LIST PROVIDED IN THE TYPESCRIPT -->
+        <collapsible-subsection titleLabel='Distance to Joint' [expanded]="graphExpanded['distance']"
+                                (opened)="graphExpanded['distance'] = true"
+                                (closed)="graphExpanded['distance'] = false">
+          <div id="connectedJoints">
+            <div id="container">
+              <div *ngFor='let joint of getConnectedJoints(); let i = index;'>
+                <ng-container *ngIf="getCurrentJoint().name !== joint.name">
+                  <dual-input-block
+                    [input1Value]="getJointDistance(joint).toFixed(4)"
+                    [input2Value]="getJointAngle(joint).toFixed(4)"
+                    (input1Change)="changeJointDistance(joint.id, $event)"
+                    (input2Change)="changeJointAngle(joint.id, $event)"
+                    [disabled] = "joint.locked"
+                    iconLabel1 = "assets/icons/length.svg"
+                    iconLabel2="assets/icons/angle.svg"
+                    unit1="cm"
+                    unit2="deg"
+                    tooltip = "The distance and angle from Joint {{getCurrentJoint().name}} to {{joint.name}}">
+                    Joint {{getCurrentJoint().name}} to Joint {{ joint.name }}
+                  </dual-input-block>
+                </ng-container>
+              </div>
             </div>
           </div>
-        </div>
-      </collapsible-subsection>
+        </collapsible-subsection>
 
 
-      <!-- ADVANCED SETTING DROPDOWN -->
-      <collapsible-subsection titleLabel='Advanced Settings' [expanded]="graphExpanded['advancedSettingsBasic'] || this.getCurrentJoint().locked"
-                              (opened)="graphExpanded['advancedSettingsBasic'] = true"
-                              (closed)="graphExpanded['advancedSettingsBasic'] = false">
-        <!-- TOGGLE BLOCK FOR GROUNDING -->
-        <app-toggle tooltip="This toggle will ground or remove the ground on the joint"
-                    label="Toggle Ground" [initialValue]="false" [iconClass]="'toggle-ground-icon'"
-                    (valueChanged)="handleToggleGroundChange($event)"></app-toggle>
-        <!-- TOGGLE BLOCK FOR WELDING -->
-        <app-toggle *ngIf="canAddWeld()" tooltip="This toggle will weld or unweld the joint"
-                    label="Toggle Weld" [initialValue]="false" [iconClass]="'toggle-weld-icon'"
-                    (valueChanged)="handleToggleWeldChange($event)"></app-toggle>
-        <!-- TOGGLE BLOCK FOR INPUT -->
-        <app-toggle *ngIf="canAddInput()" tooltip="This toggle will make the joint an input or remove the input"
-                    label="Toggle Input" [initialValue]="true" [iconClass]="'toggle-input-icon'"
-                    (valueChanged)="handleToggleInputChange($event)"></app-toggle>
+        <!-- ADVANCED SETTING DROPDOWN -->
+        <collapsible-subsection titleLabel='Advanced Settings' [expanded]="graphExpanded['advancedSettingsBasic'] || this.getCurrentJoint().locked"
+                                (opened)="graphExpanded['advancedSettingsBasic'] = true"
+                                (closed)="graphExpanded['advancedSettingsBasic'] = false">
+          <!-- TOGGLE BLOCK FOR GROUNDING -->
+          <app-toggle tooltip="This toggle will ground or remove the ground on the joint"
+                      label="Toggle Ground" [initialValue]="false" [iconClass]="'toggle-ground-icon'"
+                      (valueChanged)="handleToggleGroundChange($event)"></app-toggle>
+          <!-- TOGGLE BLOCK FOR WELDING -->
+          <app-toggle *ngIf="canAddWeld()" tooltip="This toggle will weld or unweld the joint"
+                      label="Toggle Weld" [initialValue]="false" [iconClass]="'toggle-weld-icon'"
+                      (valueChanged)="handleToggleWeldChange($event)"></app-toggle>
+          <!-- TOGGLE BLOCK FOR INPUT -->
+          <app-toggle *ngIf="canAddInput()" tooltip="This toggle will make the joint an input or remove the input"
+                      label="Toggle Input" [initialValue]="true" [iconClass]="'toggle-input-icon'"
+                      (valueChanged)="handleToggleInputChange($event)"></app-toggle>
 
 
-        <!-- TRI BUTTON THAT IS USED FOR DIRECTION OF INPUT ON INPUT JOINT -->
-        <div>
-          <div *ngIf="getCurrentJoint().isInput">
-            <p class="input-direction-label" style="margin: 4px 0 5px 16px;">
-              Input Direction
-              <mat-icon matTooltip='Select the direction of rotation for the animation to start in. Note that positive angles are always counter-clockwise.' [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon>
-            </p>
-            <div class="button-container">
-              <tri-button btn1Text="Counter-Clockwise" btn2Text="Clockwise"
-                          [btn1Disabled]="!getCurrentJoint().canAddInput() || getCurrentJoint().isInput"
-                          [btn2Disabled]="!getCurrentJoint().canAddInput() || !getCurrentJoint().isInput"
-                          [btn1Action]="makeInputCounterClockwise" [btn2Action]="makeInputClockwise"
-                          [joint]="getCurrentJoint()" [mechanism]="getMechanism()">
-              </tri-button>
+          <!-- TRI BUTTON THAT IS USED FOR DIRECTION OF INPUT ON INPUT JOINT -->
+          <div>
+            <div *ngIf="getCurrentJoint().isInput">
+              <p class="input-direction-label" style="margin: 4px 0 5px 10px;">
+                Input Direction
+                <mat-icon matTooltip='Select the direction of rotation for the animation to start in. Note that positive angles are always counter-clockwise.' [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon>
+              </p>
+              <div class="button-container">
+                <tri-button btn1Text="Counter-Clockwise" btn2Text="Clockwise"
+                            [btn1Disabled]="!getCurrentJoint().canAddInput() || getCurrentJoint().isInput"
+                            [btn2Disabled]="!getCurrentJoint().canAddInput() || !getCurrentJoint().isInput"
+                            [btn1Action]="makeInputCounterClockwise" [btn2Action]="makeInputClockwise"
+                            [joint]="getCurrentJoint()" [mechanism]="getMechanism()">
+                </tri-button>
+              </div>
             </div>
           </div>
-        </div>
-      </collapsible-subsection>
+        </collapsible-subsection>
+      </div>
     </div>
-  </div>
 </div>
