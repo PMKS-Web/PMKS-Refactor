@@ -63,6 +63,7 @@ import { TemplatesPanelComponent } from './components/ToolBar/templates-panel/te
 import { TutorialsPanelComponent } from './components/ToolBar/tutorials-panel/tutorials-panel.component';
 import {MatExpansionModule} from "@angular/material/expansion";
 import {MatListModule} from "@angular/material/list";
+import {MatSliderModule} from "@angular/material/slider";
 
 @NgModule({
   declarations: [
@@ -114,25 +115,26 @@ import {MatListModule} from "@angular/material/list";
     TemplatesPanelComponent,
     TutorialsPanelComponent,
   ],
-  imports: [
-    BrowserModule,
-    MatMenuModule,
-    BrowserAnimationsModule,
-    MatToolbarModule,
-    MatButtonModule,
-    MatIconModule,
-    MatSidenavModule,
-    MatButtonToggleModule,
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatTooltipModule,
-    MatSlideToggleModule,
-    MatInputModule,
-    FormsModule,
-    NgChartsModule,
-    MatExpansionModule,
-    MatListModule,
-  ],
+    imports: [
+        BrowserModule,
+        MatMenuModule,
+        BrowserAnimationsModule,
+        MatToolbarModule,
+        MatButtonModule,
+        MatIconModule,
+        MatSidenavModule,
+        MatButtonToggleModule,
+        ReactiveFormsModule,
+        MatFormFieldModule,
+        MatTooltipModule,
+        MatSlideToggleModule,
+        MatInputModule,
+        FormsModule,
+        NgChartsModule,
+        MatExpansionModule,
+        MatListModule,
+        MatSliderModule,
+    ],
   providers: [],
   bootstrap: [AppComponent]
 })

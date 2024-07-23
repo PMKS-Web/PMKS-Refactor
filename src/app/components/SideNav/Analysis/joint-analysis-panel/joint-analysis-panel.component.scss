@@ -19,8 +19,8 @@
   background-color: white;
   border-top: 5px solid #3F51B5;
   border-radius: 3px;
-  box-shadow: 3px 3px 3px gray;
-  max-height:calc(90vh - 30px);;
+  box-shadow:  0 9px 5px 0 gray, 0 9px 5px 0 gray, 12px 0 15px -4px gray, -12px 0 15px -4px gray;
+  max-height:calc(90vh - 30px);
   overflow-y:scroll;
   margin:10px;
   gap:10px;

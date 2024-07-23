@@ -14,10 +14,10 @@ selectedPanel: string = '';
 
 setCurrentTab(clickedPanel: string){
     console.log(clickedPanel);
-    if(clickedPanel==this.selectedPanel)
-        this.selectedPanel='';
-    else
-        this.selectedPanel= clickedPanel;
+    if(clickedPanel==this.selectedPanel) {
+      this.selectedPanel = '';
+    }else{
+        this.selectedPanel= clickedPanel;}
 
     console.log("Current Selected: " + this.selectedPanel);
 }

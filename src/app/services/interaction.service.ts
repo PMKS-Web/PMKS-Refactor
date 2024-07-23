@@ -23,11 +23,11 @@ Interactors.
 })
 export class InteractionService {
 
-    
+
     private mousePos: MousePosition;
     private objects: Interactor[] = [];
     private selected = new Set<Interactor>(); // set of currently-selected objects
-    private isDragging: boolean = false; // whether the selected objects are being dragged
+    public isDragging: boolean = false; // whether the selected objects are being dragged
     private lastSelected: Interactor | undefined = undefined;
     private _selectionChange: BehaviorSubject<Interactor | undefined> = new BehaviorSubject<Interactor | undefined>(this.lastSelected);
     public _selectionChange$ = this._selectionChange.asObservable();
@@ -43,9 +43,9 @@ export class InteractionService {
 
     private clickCapture: ClickCapture | undefined;
 
-    constructor(private contextMenuService: ContextMenuService, 
-                private stateService: StateService, 
-                private panZoomService: PanZoomService, 
+    constructor(private contextMenuService: ContextMenuService,
+                private stateService: StateService,
+                private panZoomService: PanZoomService,
                 private unitConverter: UnitConversionService) {
 
         this.mousePos = {
@@ -173,7 +173,6 @@ export class InteractionService {
         this.isDragging = false;
 
     }
-
     // if mouse is down, then drag the selected objects
     public _onMouseMove(object: Interactor, event: MouseEvent): void {
         //update the mouse position within the SVG

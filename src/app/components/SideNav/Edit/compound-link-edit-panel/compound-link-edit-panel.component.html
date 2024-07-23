@@ -3,7 +3,7 @@
     <!--  LINK PANEL-->
     <!--  Name does not work because no name is set-->
     <panel-section-collapsible>
-      <title-block icon='expand_more' description='' class="editHeader" (click)="onTitleBlockClick($event)">
+      <title-block description='' class="editHeader" (click)="onTitleBlockClick($event)">
         Edit Compound Link
         <ng-container *ngIf="isEditingTitle; else linkNameDisplay">
           <input #linkNameInput [(ngModel)]="this.getSelectedObject().name" (blur)="setCompoundLinkName(linkNameInput.value)" (keyup.enter)="setCompoundLinkName(linkNameInput.value)"/>
