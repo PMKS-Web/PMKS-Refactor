@@ -1,45 +1,3 @@
-<!--<div class="app-animation-bar-container" >-->
-
-<!--    <div class="animation-bar">-->
-
-<!--        <button class="animation-button" [disabled]='invalidMechanism()' *ngIf='this.getIsPausedAnimating()' mat-mini-fab color='primary'-->
-<!--            (click)="controlAnimation('play')" matTooltip='Play Animation' matTooltipShowDelay='1000'>-->
-<!--          <mat-icon>play_arrow</mat-icon>-->
-<!--        </button>-->
-<!--        <button class="animation-button" [disabled]='invalidMechanism()' *ngIf='!this.getIsPausedAnimating()' mat-mini-fab color='primary'-->
-<!--            (click)="controlAnimation('pause')" matTooltip='Play Animation' matTooltipShowDelay='1000'>-->
-<!--          <mat-icon>pause</mat-icon>-->
-<!--        </button>-->
-<!--        <button class="animation-button" [disabled]='invalidMechanism()' (click)="controlAnimation('stop')" mat-mini-fab color='warn'-->
-<!--            matTooltip='Play Animation' matTooltipShowDelay='1000'>-->
-<!--          <mat-icon>stop</mat-icon>-->
-<!--        </button>-->
-
-<!--    </div>-->
-<!--  <div class='animationBar'>-->
-<!--    <div id='timeInputWrapper'>-->
-<!--      <div id='tLabel'>T:</div>-->
-<!--      <form #simpleForm='ngForm'>-->
-<!--        <input-->
-<!--          id='animationBar-input'-->
-<!--          name='timestep'-->
-<!--          type='number'-->
-<!--          #field-->
-<!--        />-->
-<!--      </form>-->
-<!--      <span id='secLabel'>sec</span>-->
-<!--    </div>-->
-
-<!--    <mat-slider-->
-<!--      min='0'-->
-<!--      max='5'-->
-<!--    >-->
-<!--      <input id='slider' matSliderThumb />-->
-<!--    </mat-slider>-->
-<!--  </div>-->
-
-<!--</div>-->
-<!--https://stackoverflow.com/questions/33193512/css-center-element-on-x-and-y-->
 <div id='barContainer'>
   <div id='animationBar'>
     <button id='speedButton'
@@ -48,7 +6,7 @@
             matTooltip='Change Animation Speed'
             matTooltipShowDelay='1000'
     >
-    2x</button>
+      2x</button>
 
     <button class="animation-button" [disabled]='invalidMechanism()' *ngIf='this.getIsPausedAnimating()' mat-mini-fab color='primary'
             (click)="controlAnimation('play')" matTooltip='Play Animation' matTooltipShowDelay='1000'>
@@ -87,13 +45,22 @@
   </div>
   <div id='viewButtons'>
     <button
+      matTooltip='Show Center of Mass'
+      matTooltipPosition='above'
+      [matTooltipShowDelay]='1000'
+      mat-icon-button
+      color='primary'
+    >
+      <mat-icon><img src="" alt=""></mat-icon>
+    </button>
+    <button
       matTooltip='Show ID Labels'
       matTooltipPosition='above'
       [matTooltipShowDelay]='1000'
       mat-icon-button
       color='primary'
     >
-      <mat-icon color="primary"><img src="https://raw.githubusercontent.com/PMKS-Web/PMKSWeb/main/src/assets/icons/abc.svg" alt=""></mat-icon>
+      <mat-icon><img src="./assets/icons/abc.svg" alt=""></mat-icon>
     </button>
     <button
       matTooltip='Zoom In'
