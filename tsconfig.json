@@ -1,6 +1,4 @@
-/* To learn more about this file see: https://angular.io/config/tsconfig. */
 {
-  "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
@@ -24,7 +22,14 @@
     "lib": [
       "ES2022",
       "dom"
-    ]
+    ],
+    "paths": {
+      "firebase/analytics": ["./node_modules/firebase/analytics/dist/index.esm.js"],
+      "firebase/auth": ["./node_modules/firebase/auth/dist/index.esm.js"],
+      "@angular/*": ["node_modules/@angular/*"]
+    }
+
+
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
