@@ -65,9 +65,9 @@ import {FeedbackPanelComponent} from "./components/ToolBar/feedback-panel/feedba
 import {SavePanelComponent} from "./components/ToolBar/save-panel/save-panel.component";
 import {SharePanelComponent} from "./components/ToolBar/share-panel/share-panel.component";
 import {MatListModule} from "@angular/material/list";
-import {MatSliderModule} from "@angular/material/slider";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {MatCheckboxModule} from "@angular/material/checkbox";
+import {MatSliderModule} from "@angular/material/slider";
 
 @NgModule({
   declarations: [
@@ -122,30 +122,27 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
     SavePanelComponent,
     SharePanelComponent,
   ],
-
-    imports: [
-        BrowserModule,
-        MatMenuModule,
-        BrowserAnimationsModule,
-        MatToolbarModule,
-        MatButtonModule,
-        MatIconModule,
-        MatSidenavModule,
-        MatButtonToggleModule,
-        ReactiveFormsModule,
-        MatFormFieldModule,
-        MatTooltipModule,
-        MatSlideToggleModule,
-        MatInputModule,
-        FormsModule,
-        NgChartsModule,
-        MatExpansionModule,
-        MatListModule,
-        MatSliderModule,
-        MatExpansionModule,
-        MatCheckboxModule,
-    ],
-
+  imports: [
+    BrowserModule,
+    MatMenuModule,
+    BrowserAnimationsModule,
+    MatToolbarModule,
+    MatButtonModule,
+    MatIconModule,
+    MatSidenavModule,
+    MatButtonToggleModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatTooltipModule,
+    MatSlideToggleModule,
+    MatInputModule,
+    FormsModule,
+    NgChartsModule,
+    MatListModule,
+    MatExpansionModule,
+    MatCheckboxModule,
+    MatSliderModule,
+  ],
   providers: [],
   exports: [
     PanelSectionCollapsibleComponent,

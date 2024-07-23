@@ -7,7 +7,7 @@
         <!--  JOINT PANEL-->
         <!-- TITLE BLOCK: CONTAINS TITLE, INPUT SECTION FOR JOINT NAME, EDIT AND DELETE SVGS -->
         <panel-section-collapsible>
-          <title-block icon='expand_more' description='' class = "editHeader" (click)="onTitleBlockClick($event)"
+          <title-block description='' class = "editHeader" (click)="onTitleBlockClick($event)"
           >Edit Joint
             <ng-container *ngIf="isEditingTitle; else jointNameDisplay">
               <input #jointNameInput [(ngModel)]="getCurrentJoint().name" (blur)="setJointName(jointNameInput.value)" (keyup.enter)="setJointName(jointNameInput.value)"/>
