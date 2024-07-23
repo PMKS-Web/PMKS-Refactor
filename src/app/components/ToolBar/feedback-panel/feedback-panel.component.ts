@@ -36,7 +36,7 @@ export class FeedbackPanelComponent {
 
   closePanel(event: MouseEvent) {
     const target = event.target as HTMLElement;
-    if (!target.closest('#settings')) {
+    if (!target.closest('.settings')) {
       this.open = false;
       this.toolbarComponent.setCurrentTab('');
     }

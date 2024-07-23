@@ -1,3 +1,110 @@
+//@use 'sass:map';
+//@use '@angular/material' as mat;
+//
+//@mixin css($theme) {
+//    // Get the color config from the theme.
+//    $color-config: mat.get-color-config($theme);
+//    // Get the primary color palette from the color-config.
+//    $primary-palette: map.get($color-config, 'primary');
+//    $accent-palette: map.get($color-config, 'accent');
+//    $typography-config: mat.get-typography-config($theme);
+//    $background: map.get($theme, background);
+//    $foreground: map.get($theme, foreground);
+//
+//
+//    .app-animation-bar-container {
+//        position: absolute;
+//        bottom: 20px;
+//        left: 0;
+//        width: 100%;
+//        gap: 10px;
+//        margin-right: 10px;
+//        display: flex;
+//        align-items: center;
+//        justify-content: flex-end;
+//        pointer-events: none;
+//    }
+//
+//    .animation-bar {
+//
+//        height: 48px;
+//        pointer-events: auto;
+//        margin: 10px 0;
+//        padding: 10px 20px;
+//        display: flex;
+//        gap: 10px;
+//        align-items: center;
+//        justify-content: center;
+//        // width: 400px;
+//        border-radius: var(--border-radius);
+//        //Set the elevation of the animation bar to 2.
+//        @include mat.elevation(2);
+//        //Set the background color of the animation bar to the background color of the raised button.
+//        background-color: white;
+//
+//        /* Chrome, Safari, Edge, Opera */
+//        input::-webkit-outer-spin-button,
+//        input::-webkit-inner-spin-button {
+//            -webkit-appearance: none;
+//            margin: 0;
+//        }
+//    }
+//  .animationBar {
+//    height: 48px;
+//    pointer-events: auto;
+//    margin: 10px 0;
+//    padding: 10px 20px;
+//    display: flex;
+//    gap: 10px;
+//    align-items: center;
+//    justify-content: center;
+//    // width: 400px;
+//    border-radius: var(--border-radius);
+//    //Set the elevation of the animation bar to 2.
+//    @include mat.elevation(2);
+//    //Set the background color of the animation bar to the background color of the raised button.
+//    background-color: white;
+//
+//    /* Chrome, Safari, Edge, Opera */
+//    input::-webkit-outer-spin-button,
+//    input::-webkit-inner-spin-button {
+//      -webkit-appearance: none;
+//      margin: 0;
+//    }
+//
+//    /* Firefox */
+//    input[type=number] {
+//      -moz-appearance: textfield;
+//    }
+//
+//    #timeInputWrapper {
+//      display: flex;
+//      font-size: 20px;
+//      font-weight: 400;
+//      align-items: baseline;
+//      // @include mat.typography-level($typography-config, 'headline-6');
+//      #tLabel {
+//        margin-right: 10px;
+//      }
+//
+//      #secLabel {
+//      }
+//    }
+//
+//    .animation-button {
+//      bottom: 0;
+//      width: 4rem;
+//      height: 4rem;
+//      background-color: var(--white-secondary);
+//      border: none;
+//      display: flex;
+//      flex-direction: column;
+//      font-size: 8pt;
+//    }
+//
+//
+//  }}
+
 @use 'sass:map';
 @use '@angular/material' as mat;
 
@@ -14,6 +121,7 @@
   #speedButton {
     font-weight: bold;
     font-size: 20px;
+    background-color: white;
   }
 
   #barContainer {
