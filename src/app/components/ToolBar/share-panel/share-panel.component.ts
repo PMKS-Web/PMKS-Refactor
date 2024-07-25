@@ -1,6 +1,6 @@
 import {Component, inject, OnInit} from '@angular/core';
 // @ts-ignore
-//import { Analytics, logEvent } from '@angular/fire/analytics';
+import { Analytics, logEvent } from '@angular/fire/analytics';
 import { UrlGenerationService } from 'src/app/services/url-generation.service';
 
 @Component({
@@ -9,7 +9,7 @@ import { UrlGenerationService } from 'src/app/services/url-generation.service';
   styleUrl: './share-panel.component.css'
 })
 export class SharePanelComponent implements OnInit{
-  //private analytics: Analytics = inject(Analytics);
+  private analytics: Analytics = inject(Analytics);
 
   static instance: SharePanelComponent;
 

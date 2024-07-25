@@ -19,4 +19,10 @@ export class AnalysisPanelComponent {
       return obj.type();
     }
   }
+
+  isPanelExpanded: boolean = false;
+
+  onPanelExpandedChange(expanded: boolean) {
+    this.isPanelExpanded = expanded;
+  }
 }

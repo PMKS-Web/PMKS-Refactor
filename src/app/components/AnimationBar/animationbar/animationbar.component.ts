@@ -1,10 +1,11 @@
-import {Component} from '@angular/core'
+import {Component, HostListener} from '@angular/core'
 import {CompoundLinkInteractor} from 'src/app/controllers/compound-link-interactor';
 import {JointInteractor} from 'src/app/controllers/joint-interactor';
 import {LinkInteractor} from 'src/app/controllers/link-interactor';
 import {AnimationService} from 'src/app/services/animation.service';
 import {InteractionService} from 'src/app/services/interaction.service';
 //import { MatSnackBar } from '@angular/material/snack-bar';
+import{ContextMenuService} from 'src/app/services/context-menu.service'
 
 
 @Component({
@@ -16,10 +17,16 @@ export class AnimationBarComponent {
 
     private isAnimating: boolean = false;
     private isPausedAnimating: boolean = true;
-    constructor(private interactionService: InteractionService, private animationService: AnimationService) {
+    constructor(public interactionService: InteractionService, private animationService: AnimationService, public contextMenuService: ContextMenuService) {
 
 
     }
+  cursorPosition: string = '';
+
+  @HostListener('document:mousemove', ['$event'])
+  onMouseMove(event: MouseEvent) {
+    this.cursorPosition = `X: ${event.clientX}, Y: ${event.clientY}`;
+  }
 
     invalidMechanism() {
         this.animationService.isInvalid();

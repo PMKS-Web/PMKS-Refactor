@@ -45,6 +45,7 @@ export class PanelSectionCollapsibleComponent implements AfterContentInit {
 
   @Output() closed: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() opened: EventEmitter<boolean> = new EventEmitter<boolean>();
+  //@Output() expandedChange: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   ngAfterContentInit() {
     this.titleBlock?.first.nestedComponentChange.subscribe(() => this.toggleExpand());
@@ -55,6 +56,7 @@ export class PanelSectionCollapsibleComponent implements AfterContentInit {
 
   toggleExpand() {
     this.expanded = !this.expanded;
+    //this.expandedChange.emit(this.expanded);
     console.log(this.expanded);
     if (this.expanded) {
       this.opened.emit(true);
