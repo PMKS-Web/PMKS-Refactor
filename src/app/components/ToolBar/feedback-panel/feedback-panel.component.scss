@@ -70,18 +70,48 @@
 }
 
 .sendBtn {
-  color:  #3F51B5;
-  background-color: #e8eaf6;
+  margin:0 auto;
+  display:block;
+  background-color: white;
+  width: 40%;
+  height: 40px;
   border-radius: 20px;
-  border-color: transparent;
-  padding: 5px 10px;
-  cursor: pointer;
+  border: 1px solid black;
+  margin-top: -5px;
+  margin-bottom: 8px;
+  background-color: #e8eaf6;
+  font-weight: bold;
+  font-size: 12.8px;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  color: #3F51B5;
+  border: none;
 }
 .sendBtn:hover{
   background-color: #3f51b5;
   color: white;
 }
 
+.gitBtn {
+  margin:0 auto;
+  display:block;
+  background-color: white;
+  width: 40%;
+  height: 40px;
+  border-radius: 20px;
+  border: 1px solid black;
+  margin-top: -5px;
+  margin-bottom: 8px;
+  background-color: #e8eaf6;
+  font-weight: bold;
+  font-size: 12.8px;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  color: #3F51B5;
+  border: none;
+}
+.gitBtn:hover{
+  background-color: #3f51b5;
+  color: white;
+}
 .sendMessage{
   width: 100%;
   display: flex;
