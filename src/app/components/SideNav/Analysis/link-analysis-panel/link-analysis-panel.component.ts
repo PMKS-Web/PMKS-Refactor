@@ -233,4 +233,5 @@ export class LinkAnalysisPanelComponent {
     this.referenceJoint = joint;
   }
 
+ public GraphType = GraphType;
 }

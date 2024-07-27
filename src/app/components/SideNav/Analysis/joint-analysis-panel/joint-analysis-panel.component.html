@@ -31,9 +31,16 @@
 
 
   <!-- EVERY GRAPH OPEN BUTTON -->
-  <div *ngFor="let graphType of getGraphTypes()">
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(graphType) + ' Graph'" graphText= 'Open'
-                           [btn1Action]="openAnalysisGraph.bind(this, graphType)"></analysis-graph-button>
+  <div>
+    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.JointPosition) + ' Graph'" graphText= 'Show Graph'
+                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointPosition)"></analysis-graph-button>
+    <p>Position X:{{getJointXCoord()}}, Y: {{getJointYCoord()}}</p>
+    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.JointVelocity) + ' Graph'" graphText= 'Show Graph'
+                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointVelocity)"></analysis-graph-button>
+    <p style="margin-left: 20px;">V<sub>x</sub>: N/A,  V<sub>y</sub>: N/A</p>
+    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.JointAcceleration) + ' Graph'" graphText= 'Show Graph'
+                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointAcceleration)"></analysis-graph-button>
+    <p style="margin-left: 20px;">A<sub>x</sub>: N/A,  A<sub>y</sub>: N/A</p>
   </div>
 
   <!-- DYNAMICALLY HANDLE OPENING GRAPHS -->

@@ -8,6 +8,7 @@ import {Form, FormControl, FormGroup} from "@angular/forms";
 import {Link} from "src/app/model/link";
 import {PositionSolverService} from "src/app/services/kinematic-solver.service";
 import {AnalysisSolveService} from "src/app/services/analysis-solver.service";
+import {AnalysisGraphButtonComponent} from 'src/app/components/Blocks/analysis-graph-button/analysis-graph-button.component'
 
 interface Tab {
     selected: boolean,

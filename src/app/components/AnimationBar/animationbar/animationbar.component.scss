@@ -130,8 +130,8 @@
     bottom: 20px;
     left: 0;
     width: 100%;
-    gap: 10px;
-    margin-right: 10px;
+    gap: 5px;
+    margin-right: 0px;
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -139,9 +139,9 @@
 
     #viewButtons {
       pointer-events: auto;
-      margin: 10px 0;
-      margin-right: 10px;
-      padding: 10px;
+      //margin: 10px 0;
+      margin-right: 5px;
+      padding: 5px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -152,15 +152,17 @@
       @include mat.elevation(2);
       //Set the background color of the animation bar to the background color of the raised button.
       background-color: white;
+      width: 230px;
+      height: 58px;
     }
 
     #animationBar {
       height: 48px;
       pointer-events: auto;
-      margin: 10px 0;
+      margin: 5px 0;
       padding: 10px 20px;
       display: flex;
-      gap: 10px;
+      gap: 5px;
       align-items: center;
       justify-content: center;
       // width: 400px;
@@ -169,6 +171,7 @@
       @include mat.elevation(2);
       //Set the background color of the animation bar to the background color of the raised button.
       background-color: white;
+      width: 290px;
 
       /* Chrome, Safari, Edge, Opera */
       input::-webkit-outer-spin-button,
@@ -251,4 +254,21 @@
     padding-left: 70px;
     padding-right: 10px;
   }
+}
+.animationButtons{
+  height: 48px;
+  pointer-events: auto;
+  margin: 5px 0;
+  padding: 10px 20px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  // width: 400px;
+  border-radius: var(--border-radius);
+  //Set the elevation of the animation bar to 2.
+  @include mat.elevation(2);
+  //Set the background color of the animation bar to the background color of the raised button.
+  background-color: white;
+  width: 130px;
 }

@@ -5,8 +5,11 @@ import {LinkInteractor} from 'src/app/controllers/link-interactor';
 import {AnimationService} from 'src/app/services/animation.service';
 import {InteractionService} from 'src/app/services/interaction.service';
 //import { MatSnackBar } from '@angular/material/snack-bar';
-import{ContextMenuService} from 'src/app/services/context-menu.service'
-
+import {JointComponent} from 'src/app/components/Grid/joint/joint.component'
+import { UnitConversionService } from 'src/app/services/unit-conversion.service';
+import {join} from "@angular/compiler-cli";
+import {Coord} from "../../../model/coord";
+import {PanZoomService} from "../../../services/pan-zoom.service";
 
 @Component({
     selector: 'app-animation-bar',
@@ -17,15 +20,16 @@ export class AnimationBarComponent {
 
     private isAnimating: boolean = false;
     private isPausedAnimating: boolean = true;
-    constructor(public interactionService: InteractionService, private animationService: AnimationService, public contextMenuService: ContextMenuService) {
-
+    constructor(public interactionService: InteractionService, private animationService: AnimationService, private unitConversionService: UnitConversionService, public panZoomService: PanZoomService) {
 
     }
   cursorPosition: string = '';
 
   @HostListener('document:mousemove', ['$event'])
   onMouseMove(event: MouseEvent) {
-    this.cursorPosition = `X: ${event.clientX}, Y: ${event.clientY}`;
+    let screenPos: Coord = new Coord(event.offsetX, event.offsetY);
+    let currentZoomPan = this.panZoomService.getZoomPan();
+    this.cursorPosition =  this.unitConversionService.mouseCoordToModelCoord(screenPos, currentZoomPan) + "";
   }
 
     invalidMechanism() {

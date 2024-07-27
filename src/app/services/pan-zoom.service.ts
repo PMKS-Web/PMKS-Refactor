@@ -19,7 +19,7 @@ export interface ZoomPan {
 })
 export class PanZoomService{
 
-    private zoomPan: ZoomPan;
+    public zoomPan: ZoomPan;
 
 constructor() {
     this.zoomPan = {
@@ -35,6 +35,10 @@ constructor() {
 
 }
 
+  public getZoomPan(): ZoomPan{
+    return this.zoomPan;
+
+  }
 public _onMouseScrollWheel(event: WheelEvent){
     event.stopPropagation();
 
@@ -45,7 +49,7 @@ public _onMouseScrollWheel(event: WheelEvent){
     let oldViewBoxHeight: number = this.zoomPan.viewBoxHeight;
 
     if(zoomDirection > 0){
-    
+
         this.zoomPan.currentZoom *= this.zoomPan.zoomScale;
         this.zoomPan.viewBoxWidth = this.zoomPan.windowWidth * this.zoomPan.currentZoom;
         this.zoomPan.viewBoxHeight = this.zoomPan.windowHeight * this.zoomPan.currentZoom;
@@ -85,10 +89,6 @@ public getViewBox():string{
         +  this.zoomPan.viewBoxY.toString() + " "
         +  this.zoomPan.viewBoxWidth.toString() + " "
         +  this.zoomPan.viewBoxHeight.toString() + " ";
-}
-public getZoomPan(): ZoomPan{
-    return this.zoomPan;
-
 }
 
 }

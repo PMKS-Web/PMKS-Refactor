@@ -237,6 +237,7 @@ export class CompoundLinkAnalysisPanelComponent {
   onReferenceJointSelected(joint: Joint){
     this.referenceJoint = joint;
   }
+  public GraphType = GraphType;
 
 
   // geteLinksForJoint and getConnectedJoints are both used to dynamically
