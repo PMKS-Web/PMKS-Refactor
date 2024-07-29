@@ -1,5 +1,5 @@
 <div id='barContainer'>
-  <div id='animationBar'>
+  <div id='animationBarPlaySpeed'>
     <button id='speedButton'
             [disabled]='invalidMechanism()'
             mat-mini-fab
@@ -21,7 +21,7 @@
       <mat-icon>stop</mat-icon>
     </button>
   </div>
-  <div id='animationBar'>
+  <div id='animationBarTimeSlider'>
     <div id='timeInputWrapper'>
       <div id='tLabel'>T:</div>
       <form #simpleForm='ngForm'>

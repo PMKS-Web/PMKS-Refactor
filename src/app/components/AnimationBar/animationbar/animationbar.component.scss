@@ -153,8 +153,36 @@
       //Set the background color of the animation bar to the background color of the raised button.
       background-color: white;
     }
+    #animationBarPlaySpeed {
+      height: 48px;
+      pointer-events: auto;
+      margin: 10px 0;
+      padding: 10px 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      // width: 400px;
+      border-radius: var(--border-radius);
+      //Set the elevation of the animation bar to 2.
+      @include mat.elevation(2);
+      //Set the background color of the animation bar to the background color of the raised button.
+      background-color: white;
 
-    #animationBar {
+      /* Chrome, Safari, Edge, Opera */
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      /* Firefox */
+      input[type=number] {
+        -moz-appearance: textfield;
+      }
+    }
+
+    #animationBarTimeSlider {
       height: 48px;
       pointer-events: auto;
       margin: 10px 0;
@@ -225,7 +253,7 @@
   }
 }
 #bottomBar {
-  //5 pixel high absolute posositon white bar in the bottom of the screen 100% width
+  //5 pixel high absolute position white bar in the bottom of the screen 100% width
   position: absolute;
   bottom: 0;
   right: 0;
