@@ -162,7 +162,7 @@ const driverObj = driver({
     {
       popover: {
         title: 'Welcome',
-        description: 'This pop-up tutorial will guide you various features of Planar Mechanism Kinematic Simulator Plus (PMKS+).'
+        description: 'This pop-up tutorial will guide you through various features of Planar Mechanism Kinematic Simulator Plus (PMKS+).'
       }
     },
 
@@ -175,6 +175,38 @@ const driverObj = driver({
         align:'start'
       }
     },
+
+    {
+      element: '.sidenav-button.selected',
+      popover: {
+        title: 'Edit Mode ',
+        description: 'Clicking Edit will allow creating and editing linkages on the grid.',
+        side:"left",
+        align:'start'
+      }
+    },
+
+    {
+      element: '.app-edit-panel-container',
+      popover: {
+        title: 'Edit Panel ',
+        description: 'Joint, Link and Force properties will be displayed and edited from this panel while creating linkages on the grid.',
+        side:"left",
+        align:'center'
+      }
+    },
+
+    {
+      element: '.side-nav',
+      popover: {
+        title: 'Synthesis and Analysis Modes ',
+        description: 'Three Position Synthesis has been integrated into PMKS+. Analysis mode showcases results of kinematic and force analyses.',
+        side:"left",
+        align:'start'
+      }
+    },
+
+
 
     {
       element: '#animationBarPlaySpeed',
