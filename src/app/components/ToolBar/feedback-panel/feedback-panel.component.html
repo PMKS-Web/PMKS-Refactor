@@ -39,18 +39,17 @@
         </div>
       </form>
     </div>
-    <collapsible-subsection [expanded]='true' titleLabel='Go to Github' [expanded]="sectionExpanded['LBasic']"
+    <collapsible-subsection [expanded]='false' titleLabel='Source Code' [expanded]="sectionExpanded['LBasic']"
                             (opened)="sectionExpanded['LBasic'] = true" (closed)="sectionExpanded['LBasic'] = false">
-      <title-block description='' class="synthesisHeader">
-        <h3>Github</h3>
+      <title-block description='Source Code is Hosted at Github' class="feedbackHeader">
       </title-block>
-      <p>PMKS+ is open source! Do you want to help us develop it?</p>
-      <button mat-button class="toolbar-button" (click)="gotoGithub();"
+      <div style='padding: 10px 0 10px 10px; width: 100%; display: flex; justify-content: center'>
+      <button class="gitBtn" (click)="gotoGithub();"
               matTooltip='Go to our github repo'
               matTooltipShowDelay='1000'>
-        <mat-icon>github</mat-icon>
-        Github
-      </button>
+              Github
+          </button>
+        </div>
     </collapsible-subsection>
 
 </div>
