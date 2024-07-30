@@ -1,4 +1,4 @@
-import { Component} from '@angular/core'
+import {Component, EventEmitter, Input, Output} from '@angular/core'
 import { InteractionService } from 'src/app/services/interaction.service'
 import { JointInteractor } from 'src/app/controllers/joint-interactor';
 import { ToolbarComponent } from 'src/app/components/ToolBar/toolbar/toolbar.component';
@@ -25,11 +25,18 @@ export class SettingsPanelComponent{
 
   gridEnabled: boolean= true;
   minorGridEnabled: boolean = true;
+  @Input() iconClass: string = ''; // Add this line
 
   constructor(private interactionService: InteractionService, public toolbarComponent: ToolbarComponent){
 
   }
+  @Output() valueChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
+  public value: boolean = this.gridEnabled;
 
+  toggle() {
+    this.value = !this.value;
+    this.valueChanged.emit(this.value);
+  }
 
   closePanel(event: MouseEvent) {
     const target = event.target as HTMLElement;
@@ -45,7 +52,7 @@ export class SettingsPanelComponent{
   }
 
   getGridEnabled(): boolean{
-    return this.handleToggleGridChange(!this.gridEnabled);
+    return this.handleToggleGridChange(this.gridEnabled);
   }
 
   handleToggleMinorGridChange(stateChange: boolean){

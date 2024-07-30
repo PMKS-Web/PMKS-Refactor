@@ -32,9 +32,19 @@
   <collapsible-subsection [expanded]='true' titleLabel='Visual Settings' [expanded]="sectionExpanded['LVisual']"
                           (opened)="sectionExpanded['LVisual'] = true" (closed)="sectionExpanded['LVisual'] = false">
     <div id="grid">
-      <app-toggle tooltip="This toggle will enable or disable gridlines"
-                  label="Grid" [initialValue]="true"
-                  (valueChanged)="handleToggleGridChange($event)"></app-toggle>
+      <div class="toggle-container">
+  <span class="label" style="margin-left: 10px;">
+    Grid
+    <mat-icon matTooltip='This toggle will enable or disable gridlines' style="color: #3f51b5; font-size: 18px; vertical-align: middle; padding-top: 2.5px" [matTooltipShowDelay]='1000' class='label-help' [ngClass]="iconClass">help_outline
+    </mat-icon>
+  </span>
+        <div class="switch-container">
+          <label class="switch" (click)="toggle()">
+            <input type="checkbox" [(ngModel)]="gridEnabled" (change)="toggle()">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
       <app-toggle *ngIf="getGridEnabled()" tooltip="This toggle will enable or disable minor grdilines"
                   label="Minor Gridlines" [initialValue]="true"
                   (valueChanged)="handleToggleMinorGridChange($event)"></app-toggle>

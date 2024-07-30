@@ -69,3 +69,116 @@
     margin-bottom: 10px;
   }
 }
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  width: 100%; /* Make the container take full width */
+  margin-top: 5px;
+  margin-bottom: 5px;
+  //justify-content: space-between;
+}
+
+.label {
+  margin-right:4px;
+  margin-left: 5px;
+  margin-bottom: 0px;
+  margin-top: 0px;
+  font-size: 16px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 15px;
+}
+
+.switch-container {
+  display: flex;
+  align-items: center;
+  justify-content: end; /* Align the toggle slider to the right */
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.buffer{
+  width: 100%;
+  display: flex;
+  justify-content: start;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+  border-radius: 34px;
+  margin-right: 10px;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+}
+
+.slider:before {
+  position: absolute;
+  content: "\2714";
+  height: 25px;
+  width: 25px;
+  background-color: #3f51b5;
+  -webkit-transition: .4s;
+  transition: .4s;
+  border-radius: 50%;
+  color: white;
+}
+
+input:checked + .slider {
+  background-color: rgba(63, 81, 181, 0.8);
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #3f51b5;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(20px); /* Updated value for the checked state */
+  -ms-transform: translateX(20px);
+  // transform: translateX(23px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  //transform: translateY(-5px);
+
+}
+
+//.mat-icon {
+//  color: #3f51b5;
+//  font-size: 18px;
+//  vertical-align: middle;
+//  padding-top: 5px;
+//}
+
+input:not(:checked) + .slider:before{
+  content: '\2716';
+  color: white;
+  background-color: #4e4d4d;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+input:hover + .slider:before{
+  scale: 1.4;
+}
+
+.label {
+  flex-grow: 1;
+  margin-right: 5px;
+}

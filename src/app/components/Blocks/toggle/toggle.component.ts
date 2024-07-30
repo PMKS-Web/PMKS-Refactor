@@ -8,10 +8,9 @@ import { Component, Input, EventEmitter, Output } from '@angular/core';
 export class ToggleComponent {
   @Input() tooltip: string = '';
   @Input() label: string = '';
-  @Input() initialValue: boolean = false;
+  @Input() initialValue: boolean = true;
   @Input() iconClass: string = ''; // Add this line
   @Output() valueChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
-
   public value: boolean = this.initialValue;
 
   toggle() {
