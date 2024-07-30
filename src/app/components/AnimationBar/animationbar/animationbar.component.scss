@@ -42,7 +42,7 @@
 //        //Set the background color of the animation bar to the background color of the raised button.
 //        background-color: white;
 //
-//        /* Chrome, Safari, Edge, Opera */
+//        __<<ngM2ThemingMigrationEscapedComment0>>__
 //        input::-webkit-outer-spin-button,
 //        input::-webkit-inner-spin-button {
 //            -webkit-appearance: none;
@@ -65,14 +65,14 @@
 //    //Set the background color of the animation bar to the background color of the raised button.
 //    background-color: white;
 //
-//    /* Chrome, Safari, Edge, Opera */
+//    __<<ngM2ThemingMigrationEscapedComment1>>__
 //    input::-webkit-outer-spin-button,
 //    input::-webkit-inner-spin-button {
 //      -webkit-appearance: none;
 //      margin: 0;
 //    }
 //
-//    /* Firefox */
+//    __<<ngM2ThemingMigrationEscapedComment2>>__
 //    input[type=number] {
 //      -moz-appearance: textfield;
 //    }
@@ -110,11 +110,11 @@
 
 @mixin css($theme) {
   // Get the color config from the theme.
-  $color-config: mat.get-color-config($theme);
+  $color-config: mat.m2-get-color-config($theme);
   // Get the primary color palette from the color-config.
   $primary-palette: map.get($color-config, 'primary');
   $accent-palette: map.get($color-config, 'accent');
-  $typography-config: mat.get-typography-config($theme);
+  $typography-config: mat.m2-get-typography-config($theme);
   $background: map.get($theme, background);
   $foreground: map.get($theme, foreground);
 
@@ -202,15 +202,15 @@
         width: 40px;
         border: 0;
         outline: none;
-        background-color: mat.get-color-from-palette($primary-palette, 50);
+        background-color: mat.m2-get-color-from-palette($primary-palette, 50);
         border-radius: var(--border-radius);
         padding: 5px;
         //When the input is focused
         &:focus {
           margin-bottom: 0;
-          background-color: mat.get-color-from-palette($primary-palette, 100);
+          background-color: mat.m2-get-color-from-palette($primary-palette, 100);
           //add a bottom border
-          border-bottom: 2px solid mat.get-color-from-palette($primary-palette, 500);
+          border-bottom: 2px solid mat.m2-get-color-from-palette($primary-palette, 500);
           //no more roudned corners in for the bottom
           border-radius: var(--border-radius) var(--border-radius) 0 0;
           margin-bottom: -2px;

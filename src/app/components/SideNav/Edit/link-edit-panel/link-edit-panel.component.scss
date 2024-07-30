@@ -3,11 +3,11 @@
 
 @mixin css($theme) {
   // Get the color config from the theme.
-  $color-config: mat.get-color-config($theme);
+  $color-config: mat.m2-get-color-config($theme);
   // Get the primary color palette from the color-config.
   $primary-palette: map.get($color-config, 'primary');
   $accent-palette: map.get($color-config, 'accent');
-  $typography-config: mat.get-typography-config($theme);
+  $typography-config: mat.m2-get-typography-config($theme);
   $background: map.get($theme, background);
   $foreground: map.get($theme, foreground);
 }
@@ -119,4 +119,28 @@ button {
 #linkComponenets {
   max-height: 100px;
   overflow-y: scroll;
+}
+
+.label-help {
+  color: #3f51b5;
+  font-size: 18px;
+  vertical-align: middle;
+  margin-top: 5px;
+}
+
+.label {
+  margin: 0px 4px 0px 5px;
+  font-size: 16px;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+}
+
+.right-aligned {
+  display: flex;
+  align-items: center;
+  margin-right: -45px;
+  margin-top: 10px;
 }

@@ -4,11 +4,11 @@
 
 @mixin css($theme) {
     // Get the color config from the theme.
-    $color-config: mat.get-color-config($theme);
+    $color-config: mat.m2-get-color-config($theme);
     // Get the primary color palette from the color-config.
     $primary-palette: map.get($color-config, 'primary');
     $accent-palette: map.get($color-config, 'accent');
-    $typography-config: mat.get-typography-config($theme);
+    $typography-config: mat.m2-get-typography-config($theme);
     $background: map.get($theme, background);
     $foreground: map.get($theme, foreground);
 
@@ -20,7 +20,7 @@
 }
 
 .toolbar.toolbar{
-    background-color: mat.get-color-from-palette($primary-palette, 100);
+    background-color: mat.m2-get-color-from-palette($primary-palette, 100);
     position: absolute;
     top: 0px;
     left: 0px;
@@ -32,13 +32,13 @@
 }
 
 .toolbar-button.toolbar-button{
-    background-color: mat.get-color-from-palette($primary-palette, 100);
+    background-color: mat.m2-get-color-from-palette($primary-palette, 100);
     margin:0rem 0.2rem;
     height: 30px;
 }
 
 .toolbar-button:hover{
-    background-color: mat.get-color-from-palette($primary-palette, 50);
+    background-color: mat.m2-get-color-from-palette($primary-palette, 50);
     transition-duration: 0.3s;
 
 }
