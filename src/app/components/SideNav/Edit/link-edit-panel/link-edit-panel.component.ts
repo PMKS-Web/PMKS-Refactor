@@ -25,7 +25,7 @@ export class LinkEditPanelComponent{
         LBasic: true,
         LVisual: false,
         LComponent: false,
-        LMass: true,
+        LMass: false,
         LCompound: true,
         FBasic: true,
         FVisual: false,

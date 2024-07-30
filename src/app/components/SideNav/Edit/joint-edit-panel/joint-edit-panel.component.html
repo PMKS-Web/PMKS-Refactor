@@ -100,8 +100,9 @@
               </p>
               <div class="button-container">
                 <tri-button btn1Text="Counter-Clockwise" btn2Text="Clockwise"
-                            [btn1Disabled]="!getCurrentJoint().canAddInput() || getCurrentJoint().isInput"
-                            [btn2Disabled]="!getCurrentJoint().canAddInput() || !getCurrentJoint().isInput"
+                            [btn1Visible]="true"
+                            [btn1Disabled]="!canAddInput()"
+                            [btn2Disabled]="!canAddInput()"
                             [btn1Action]="makeInputCounterClockwise" [btn2Action]="makeInputClockwise"
                             [joint]="getCurrentJoint()" [mechanism]="getMechanism()">
                 </tri-button>

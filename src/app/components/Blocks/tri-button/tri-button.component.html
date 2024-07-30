@@ -1,23 +1,42 @@
 <div class='row' id='tri-button'>
-  <div class='groupedButtons' style="padding-bottom: 10px;">
-    <button mat-stroked-button color='primary' [disabled]='btn1Disabled' class='{{btn1Disabled ? "buttonDisabled" : ""}}'
-            (click)='btn1Action()' style="padding-left: 5px; padding-right: 5px;">
+  <div class='buttons'>
+    <button
+      *ngIf="btn1Visible"
+      mat-stroked-button
+      color='primary'
+      type="button"
+      [class.selected]="btn1Active"
+      [attr.disabled]="btn1Disabled ? '' : null"
+      (click)="onBtn1Click()"
+      style="padding-left: 5px; padding-right: 5px;">
       <div class="alignVertical">
         <span style="font-size: 12px">{{btn1Text}}</span>
       </div>
     </button>
-    <button *ngIf="btn2Visible" mat-stroked-button color='primary' [disabled]='btn2Disabled' class='{{btn2Disabled ? "buttonDisabled" : ""}}'
-            (click)='btn2Action()' style="padding-left: 5px; padding-right: 5px;">
+    <button
+      *ngIf="btn2Visible"
+      mat-stroked-button
+      color='primary'
+      type="button"
+      [class.selected]="btn2Active"
+      [attr.disabled]="btn2Disabled ? '' : null"
+      (click)="onBtn2Click()"
+      style="padding-left: 5px; padding-right: 5px;">
       <div class="alignVertical">
         <span style="font-size: 12px">{{btn2Text}}</span>
       </div>
     </button>
+    <button
+      *ngIf="btn3Visible"
+      mat-stroked-button
+      color='primary'
+      type="button"
+      [class.selected]="btn3Active"
+      [attr.disabled]="btn3Disabled ? '' : null"
+      (click)="onBtn3Click()">
+      <div class="alignVertical">
+        <span style="font-size: 12px">{{btn3Text}}</span>
+      </div>
+    </button>
   </div>
-  <button *ngIf="btn3Visible" mat-stroked-button color='primary' [disabled]='btn3Disabled' class='{{btn3Disabled ? "buttonDisabled button3" : "button3"}}'
-          (click)='btn3Action()'>
-    <div class="alignVertical">
-      <img src={{btn3SVGPath}} alt="SVG Image" width="20" height="20">
-      <span>{{btn3Text}}</span>
-    </div>
-  </button>
 </div>

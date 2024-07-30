@@ -3,11 +3,11 @@
 
 @mixin css($theme) {
   // Get the color config from the theme.
-  $color-config: mat.get-color-config($theme);
+  $color-config: mat.m2-get-color-config($theme);
   // Get the primary color palette from the color-config.
   $primary-palette: map.get($color-config, 'primary');
   $accent-palette: map.get($color-config, 'accent');
-  $typography-config: mat.get-typography-config($theme);
+  $typography-config: mat.m2-get-typography-config($theme);
   $background: map.get($theme, background);
   $foreground: map.get($theme, foreground);
 }
@@ -59,16 +59,11 @@
 
 .button-container {
   display: flex;
-  justify-content: center; /* Center the buttons horizontally */
-  align-items: center; /* Center the buttons vertically if needed */
-  width: 100%; /* Ensure the container takes full width */
+  justify-content: center;
+  align-items: center;
+  width: 100%;
   flex-wrap: wrap;
   margin: auto;
-
-  //.button-wrapper {
-  //  flex: 0 0 calc(33.33% - 10px); /* Each button takes up approximately one-third of the container with 10px spacing */
-  //  margin: 5px; /* Adjust the margin as needed for spacing between buttons */
-  //}
 
   .referenceJointSelect {
     height: 34px !important;
@@ -76,11 +71,17 @@
     color: #3F51B5;
     width: 10%;
     display: flex;
-    justify-content: center; /* Center the buttons horizontally */
-    align-items: center; /* Center the buttons vertically if needed */
+    justify-content: center;
+    align-items: center;
 
+    &.selected {
+      background-color: #5C6BC0; /* Change this to your desired color */
+      color: white; /* Change this to the text color you want */
+    }
   }
 }
+
+
 
 
 

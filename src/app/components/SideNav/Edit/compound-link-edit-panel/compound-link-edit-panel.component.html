@@ -33,9 +33,16 @@
         <p style="display:inline; margin-bottom: 5px; margin-left: 15px;">Reference Joint</p>
         <mat-icon matTooltip='Select a reference point for the link' [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon> </div>
       <div class="button-container" style="align-items: center;">
-        <div *ngFor="let joint of uniqueJoints" class = "button-wrapper">
+        <div *ngFor="let joint of uniqueJoints" class="button-wrapper">
           <div class='groupedButtons'>
-            <button class="referenceJointSelect" mat-stroked-button color='primary' (click) = onReferenceJointSelected(joint) style="padding-left: 5px; padding-right: 5px;">
+            <button
+              class="referenceJointSelect"
+              mat-stroked-button
+              color="primary"
+              type="button"
+              (click)="onReferenceJointSelected(joint)"
+              [ngClass]="{'selected': referenceJoint === joint}"
+              style="padding-left: 5px; padding-right: 5px;">
               <div class="alignVertical">
                 <span style="font-size: 12px">Joint {{ joint.name }}</span>
               </div>
@@ -43,6 +50,8 @@
           </div>
         </div>
       </div>
+
+
 
       <dual-input-block id="referenceJoint"
                         [disabled]=false

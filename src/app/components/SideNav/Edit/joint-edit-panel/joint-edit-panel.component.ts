@@ -33,6 +33,7 @@ export class jointEditPanelComponent {
   public addInputIconPath: string = "assets/icons/addInput.svg";
   public rotateRightIconPath: string = "assets/icons/rotateRight.svg";
   public rotateLeftIconPath: string = "assets/icons/rotateLeft.svg";
+  btn1Visible: boolean = true;
 
   constructor(private stateService: StateService, private interactorService: InteractionService) {
     console.log("joint-edit-panel.constructor");
@@ -190,8 +191,13 @@ export class jointEditPanelComponent {
   // these values are passed into a tri button. these handle making and removing input.
   //        [btn1Disabled]="!getCurrentJoint().canAddInput() || getCurrentJoint().isInput"
 
-  makeInputClockwise() { console.log("We would be making the input clockwise here"); }
-  makeInputCounterClockwise() { console.log("We would be making the input counter clockwise here"); }
+  makeInputClockwise(): void {
+    console.log("Making input clockwise");
+  }
+
+  makeInputCounterClockwise(): void {
+    console.log("Making input counter-clockwise");
+  }
 
 
   // these values are passed into a tri button. these handle the welding and unwelding
@@ -221,7 +227,7 @@ export class jointEditPanelComponent {
   }
 
   canAddInput(): boolean {
-    return this.getCurrentJoint().isGrounded;
+    return this.getCurrentJoint().canAddInput();
   }
 
 }
