@@ -1,5 +1,5 @@
 <div id='barContainer'>
-  <div id='animationBar'>
+  <div class='animationButtons'>
     <button id='speedButton'
             [disabled]='invalidMechanism()'
             mat-mini-fab
@@ -94,6 +94,7 @@
 <div id='bottomBar'>
   <ul>
     <li>Degrees of Freedom: N/A</li>
+    <li>Position:{{cursorPosition}}</li>
     <li>Units: N/A</li>
     <li style='flex-grow: 1'></li>
     <li>PMKS Refactor Version 1</li>

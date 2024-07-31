@@ -3,11 +3,11 @@
 
 @mixin css($theme) {
   // Get the color config from the theme.
-  $color-config: mat.m2-get-color-config($theme);
+  $color-config: mat.get-color-config($theme);
   // Get the primary color palette from the color-config.
   $primary-palette: map.get($color-config, 'primary');
   $accent-palette: map.get($color-config, 'accent');
-  $typography-config: mat.m2-get-typography-config($theme);
+  $typography-config: mat.get-typography-config($theme);
   $background: map.get($theme, background);
   $foreground: map.get($theme, foreground);
 
@@ -25,6 +25,7 @@
   overflow-y:scroll;
   margin:10px;
   gap:10px;;
+  width: 420px;
 }
 
 .flex-container {
@@ -53,27 +54,22 @@
 }
 
 .overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.3);
   display: flex;
-  justify-content: flex-start; /* Align to the left side of the screen */
-  align-items: center;
+  //justify-content: flex-start; /* Align to the left side of the screen */
+  //align-items: center;
 }
 
 .modal {
   background: #fff;
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
   position: relative;
-  height: 350px;
-  width: 700px;
-  margin-left: 20px;
-  top: 100px;
+  height: 200px;
+  width: 100%;
+  //margin-left: 20px;
+  //top: 100px;
 }
 
 .close-button {
@@ -84,14 +80,13 @@
   background: none;
   border: none;
   font-size: 20px;
-  color: red;
 }
 
 .large-graph {
-  width: 100%;
-  height: 500px; /* Set the height to your desired value */
+  display: flex;
+  width: fit-content;
+  height: fit-content; /* Set the height to your desired value */
 }
-
 mat-icon {
   color: #3f51b5;
   font-size: 18px;
