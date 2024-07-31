@@ -9,9 +9,9 @@ import {AnalysisSolveService, JointAnalysis} from "src/app/services/analysis-sol
 import {first} from "rxjs";
 
 interface Tab {
-    selected: boolean,
-    label: string,
-    icon: string
+  selected: boolean,
+  label: string,
+  icon: string
 }
 
 // enum contains every kind of graph this panel can open.
@@ -26,9 +26,9 @@ export enum GraphType {
 }
 
 @Component({
-    selector: 'app-compound-link-analysis-panel',
-    templateUrl: './compound-link-analysis-panel.component.html',
-    styleUrls: ['./compound-link-analysis-panel.component.scss'],
+  selector: 'app-compound-link-analysis-panel',
+  templateUrl: './compound-link-analysis-panel.component.html',
+  styleUrls: ['./compound-link-analysis-panel.component.scss'],
 
 })
 export class CompoundLinkAnalysisPanelComponent {
@@ -41,13 +41,13 @@ export class CompoundLinkAnalysisPanelComponent {
     dataSummary: true,
     graphicalAnalysis: false,
     positionOfJoint: false,
-      velocityOfJoint: false,
-      accelerationOfJoint: false
+    velocityOfJoint: false,
+    accelerationOfJoint: false
   };
 
   constructor(private stateService: StateService, private interactorService: InteractionService,
               private positionSolver: PositionSolverService, private analysisSolverService: AnalysisSolveService){
-      console.log("joint-analysis-panel.constructor");
+    console.log("joint-analysis-panel.constructor");
   }
 
   getMechanism(): Mechanism {return this.stateService.getMechanism();}
@@ -56,16 +56,16 @@ export class CompoundLinkAnalysisPanelComponent {
     return (currentCompoundLinkInteractor as CompoundLinkInteractor).getCompoundLink();
   }
   getLinkName(): string {return this.getCurrentCompoundLink().name;}
-    getReferenceJoint(){return this.referenceJoint;}
-    getReferenceJointName(){return this.getReferenceJoint()?.name;}
-    getReferenceJointXCoord(){return this.getReferenceJoint()?.coords.x.toFixed(3) as unknown as number;}
-    getReferenceJointYCoord(){return this.getReferenceJoint()?.coords.y.toFixed(3) as unknown as number;}
+  getReferenceJoint(){return this.referenceJoint;}
+  getReferenceJointName(){return this.getReferenceJoint()?.name;}
+  getReferenceJointXCoord(){return this.getReferenceJoint()?.coords.x.toFixed(3) as unknown as number;}
+  getReferenceJointYCoord(){return this.getReferenceJoint()?.coords.y.toFixed(3) as unknown as number;}
 
 
 
-    // get x coord and y coord return the number of the center of mass
+  // get x coord and y coord return the number of the center of mass
   getCOMXCoord(): number {return this.getCurrentCompoundLink()?.centerOfMass.x.toFixed(3) as unknown as number;}
-    getCOMYCoord(): number {return this.getCurrentCompoundLink()?.centerOfMass.y.toFixed(3) as unknown as number;}
+  getCOMYCoord(): number {return this.getCurrentCompoundLink()?.centerOfMass.y.toFixed(3) as unknown as number;}
 
 
   /*
@@ -166,7 +166,7 @@ export class CompoundLinkAnalysisPanelComponent {
 
     // @ts-ignore
     return maxJoint;
-}
+  }
 
   // calls the positionSolver on current joint and reformats data into a type that chart,js can take
   // see transformJointKinematicGraph function in analysis solver for more detail
@@ -237,28 +237,29 @@ export class CompoundLinkAnalysisPanelComponent {
   onReferenceJointSelected(joint: Joint){
     this.referenceJoint = joint;
   }
+  public GraphType = GraphType;
 
 
   // geteLinksForJoint and getConnectedJoints are both used to dynamically
   // view and modify the connected joints in a mechanism. Is sent to a loop of
   // dual input blocks in the HTML, that's created by looping through all of the
   // connected joints
-    /*
-  getLinksForJoint(): IterableIterator<Link> {return this.getMechanism().getConnectedLinksForJoint(this.getCurrentJoint()).values();}
-  getConnectedJoints(): Joint[] {
-    const connectedLinks: Link[] = Array.from(this.getLinksForJoint());
-    const allJoints: Joint[] = connectedLinks.reduce(
-        (accumulator: Joint[], link: Link) => {
-          const jointMap: Map<number, Joint> = link.joints;
-          const joints: Joint[] = Array.from(jointMap.values());
-          return accumulator.concat(joints);
-        },
-        []
-    );
-    // console.log(allJoints);
-    return allJoints;
-  }
+  /*
+getLinksForJoint(): IterableIterator<Link> {return this.getMechanism().getConnectedLinksForJoint(this.getCurrentJoint()).values();}
+getConnectedJoints(): Joint[] {
+  const connectedLinks: Link[] = Array.from(this.getLinksForJoint());
+  const allJoints: Joint[] = connectedLinks.reduce(
+      (accumulator: Joint[], link: Link) => {
+        const jointMap: Map<number, Joint> = link.joints;
+        const joints: Joint[] = Array.from(jointMap.values());
+        return accumulator.concat(joints);
+      },
+      []
+  );
+  // console.log(allJoints);
+  return allJoints;
+}
 
-     */
+   */
 
 }

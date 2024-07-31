@@ -232,5 +232,6 @@ export class LinkAnalysisPanelComponent {
   onReferenceJointSelected(joint: Joint){
     this.referenceJoint = joint;
   }
+  public GraphType = GraphType;
 
 }
