@@ -12,5 +12,16 @@
 </head>
 <body class="mat-typography" style='width: 100vw; height: 100vh; overflow: hidden !important;'>
   <app-root style='width: 100vw; height: 100vh; overflow: hidden !important; display: block;'></app-root>
+  <script>
+    window.addEventListener('resize', checkWindowSize);
+    function checkWindowSize() {
+      const minWidth = 400;
+      const minHeight = 400;
+
+      if (window.innerWidth < minWidth || window.innerHeight < minHeight) {
+        alert('Your window is too small!');
+      }
+    }
+  </script>
 </body>
 </html>
