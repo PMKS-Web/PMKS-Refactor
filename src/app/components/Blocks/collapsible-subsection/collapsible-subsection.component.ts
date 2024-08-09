@@ -47,4 +47,15 @@ export class CollapsibleSubsectionComponent {
       this.closed.emit(true);
     }
   }
-}
+
+    open() {
+      this.expanded = true;
+      this.opened.emit();
+    }
+
+    // Method to programmatically close the subsection
+    close() {
+      this.expanded = false;
+      this.closed.emit();
+    }
+  }

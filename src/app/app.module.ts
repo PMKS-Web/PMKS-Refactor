@@ -1,14 +1,13 @@
 
-
-import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+import {AfterViewInit, NgModule, ViewChild} from '@angular/core';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule} from '@angular/material/button';
 import { MatIconModule} from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
+
 
 import { driver } from "driver.js";
 
@@ -38,6 +37,8 @@ import {FormGroup, FormsModule} from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTooltipModule } from "@angular/material/tooltip";
+import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSlideToggleModule } from "@angular/material/slide-toggle";
 import {ToggleComponent} from "./components/Blocks/toggle/toggle.component";
 import {MatInputModule} from "@angular/material/input";
@@ -59,7 +60,6 @@ import { AnimationBarComponent } from './components/AnimationBar/animationbar/an
 import {AnalysisGraphButtonComponent} from "./components/Blocks/analysis-graph-button/analysis-graph-button.component";
 import {ExportDataComponent} from "./components/Blocks/export-data/export-data.component";
 import { ImportDataComponent } from "./components/Blocks/import-data/import-data.component";
-
 import { SettingsPanelComponent } from './components/ToolBar/settings-panel/settings-panel.component';
 import { TemplatesPanelComponent } from './components/ToolBar/templates-panel/templates-panel.component';
 import { TutorialsPanelComponent } from './components/ToolBar/tutorials-panel/tutorials-panel.component';
@@ -70,6 +70,8 @@ import {MatListModule} from "@angular/material/list";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatSliderModule} from "@angular/material/slider";
+import { Injectable } from '@angular/core';
+
 
 @NgModule({
   declarations: [
@@ -153,90 +155,149 @@ import {MatSliderModule} from "@angular/material/slider";
   bootstrap: [AppComponent]
 })
 
-export class AppModule { }
 
-/* Driver.js trial implementation */
-const driverObj = driver({
-  showProgress: true,
-  steps: [
-    {
-      popover: {
-        title: 'Welcome',
-        description: 'This pop-up tutorial will guide you through various features of Planar Mechanism Kinematic Simulator Plus (PMKS+).'
-      }
-    },
+export class AppModule implements AfterViewInit {
 
-    {
-      element: '.side-nav',
-      popover: {
-        title: 'Usage Modes of PMKS+ ',
-        description: 'PMKS+ has three major usage modes: Synthesis, Edit and Analysis.',
-        side:"left",
-        align:'start'
-      }
-    },
+  @ViewChild(SynthesisPanelComponent, { static: false }) synthesisPanel: SynthesisPanelComponent | undefined;
+  @ViewChild(CollapsibleSubsectionComponent, { static: false }) collapsibleSubsection: CollapsibleSubsectionComponent | undefined;
 
-    {
-      element: '.sidenav-button.selected',
-      popover: {
-        title: 'Edit Mode ',
-        description: 'Clicking Edit will allow creating and editing linkages on the grid.',
-        side:"left",
-        align:'start'
-      }
-    },
+  private collapsibleSubsectionComponent: CollapsibleSubsectionComponent | undefined;
 
-    {
-      element: '.app-edit-panel-container',
-      popover: {
-        title: 'Edit Panel ',
-        description: 'Joint, Link and Force properties will be displayed and edited from this panel while creating linkages on the grid.',
-        side:"left",
-        align:'center'
-      }
-    },
+  constructor() {}
 
-    {
-      element: '.side-nav',
-      popover: {
-        title: 'Synthesis and Analysis Modes ',
-        description: 'Three Position Synthesis has been integrated into PMKS+. Analysis mode showcases results of kinematic and force analyses.',
-        side:"left",
-        align:'start'
-      }
-    },
+  setCollapsibleSubsectionComponent(component: CollapsibleSubsectionComponent) {
+    this.collapsibleSubsectionComponent = component;
+  }
+
+  openCollapsibleSubsection() {
+    if (this.collapsibleSubsectionComponent) {
+      this.collapsibleSubsectionComponent.open(); // Expand the collapsible subsection
+    }
+  }
+
+  ngAfterViewInit() {
+    // Ensure that components are fully rendered before interacting with them
+    setTimeout(() => {
+      this.openPanels();
+    }, 1000); // Adjust timeout as needed
+  }
 
 
+  openPanels() {
+    // Assuming you have methods or access to open panels programmatically
+    // For example, you may need to interact with your panel components directly
+    // or use Angular ViewChild to access the components and call their methods
+    const synthesisPanel = document.querySelector('.app-synthesis-panel-container') as HTMLElement;
+    if (synthesisPanel) {
+      synthesisPanel.click();  // Simulate click to open the panel
+    }
+    const threePosSynthesisPanel = document.querySelector('collapsible-subsection[titleLabel="Three Position Synthesis"]') as HTMLElement;
+    if (threePosSynthesisPanel) {
+      threePosSynthesisPanel.click();  // Simulate click to open the subsection
+    }
+  }
+}
 
-    {
-      element: '#animationBarPlaySpeed',
-      popover: {
-        title: 'Animation Controller ',
-        description: 'Animate any valid mechanisms and control the speed of animation using these buttons.',
-        side:"top",
-        align:"center"
-      }
-    },
+    const driverObj = driver({
+      showProgress: true,
+      steps: [
+        {
+          popover: {
+            title: 'Welcome',
+            description: 'This pop-up tutorial will guide you through various features of Planar Mechanism Kinematic Simulator Plus (PMKS+).'
+          }
+        },
 
-    {
-      element: '#animationBarTimeSlider',
-      popover: {
-        title: 'Time and Slider ',
-        description: 'Adjust the slider to display the position of the mechanism at that time step. Specific time step can also be specified in the textbox.',
-        side:"top",
-        align:"center"
-      }
-    },
+        {
+          element: '.side-nav',
+          popover: {
+            title: 'Usage Modes of PMKS+ ',
+            description: 'PMKS+ has three major usage modes: Synthesis, Edit and Analysis.',
+            side:"left",
+            align:'start'
+          }
+        },
 
-    {
-      element: '#viewButtons',
-      popover: {
-        title: 'Display Options',
-        description: 'Display the center of mass and labels of joints and links using these buttons. To adjust the size, zoom options are also available.',
-        side:"top",
-        align:"center"
-      }
-    },
-  ]
-});
-driverObj.drive();
+        {
+          element: '.sidenav-button.selected',
+          popover: {
+            title: 'Edit Mode ',
+            description: 'Clicking Edit will allow creating and editing linkages on the grid.',
+            side:"left",
+            align:'start'
+          }
+        },
+
+        {
+          element: '.app-edit-panel-container',
+          popover: {
+            title: 'Edit Panel ',
+            description: 'Joint, Link and Force properties will be displayed and edited from this panel while creating linkages on the grid.',
+            side:"left",
+            align:'center'
+          }
+        },
+
+        {
+          element: '.side-nav',
+          popover: {
+            title: 'Synthesis and Analysis Modes ',
+            description: 'Three Position Synthesis has been integrated into PMKS+. Analysis mode showcases results of kinematic and force analyses.',
+            side:"left",
+            align:'start'
+          }
+        },
+
+        {
+          element: '#animationBarPlaySpeed',
+          popover: {
+            title: 'Animation Controller ',
+            description: 'Animate any valid mechanisms and control the speed of animation using these buttons.',
+            side:"top",
+            align:"center"
+          }
+        },
+
+        {
+          element: '#animationBarTimeSlider',
+          popover: {
+            title: 'Time and Slider ',
+            description: 'Adjust the slider to display the position of the mechanism at that time step. Specific time step can also be specified in the textbox.',
+            side:"top",
+            align:"center"
+          }
+        },
+
+        {
+          element: '#viewButtons',
+          popover: {
+            title: 'Display Options',
+            description: 'Display the center of mass and labels of joints and links using these buttons. To adjust the size, zoom options are also available.',
+            side:"top",
+            align:"center"
+          }
+        },
+
+        {
+          element: '#synthesisPanel',
+          popover: {
+            title: 'Synthesis Panel',
+            description: 'Here is the Synthesis Panel. It should be visible now.',
+            side: 'left',
+            align: 'start'
+          }
+        },
+
+        {
+          element: '#threePositionSynthesis',
+          popover: {
+            title: 'Three Position Synthesis',
+            description: 'This is the Three Position Synthesis section. It should be expanded now.',
+            side: 'top',
+            align: 'center'
+          }
+        },
+      ]
+    });
+    driverObj.drive();
+
