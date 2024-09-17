@@ -28,12 +28,13 @@ export class Mechanism {
         this._linkIDCount = 0;
         this._forceIDCount = 0;
         this._compoundLinkIDCount = 0;
-        
+
     }
 
     notifyChange(): void{
         console.log("updated Mechanism to");
         console.log(Array.from(this._joints.values()));
+        console.log(Array.from(this._links.values()));
         this._mechanismChange.next(this);
     }
 
@@ -786,7 +787,12 @@ export class Mechanism {
         return this._joints.get(id)!;
     }
 
-
+    getLinks(): IterableIterator<Link> {
+      return this._links.values();
+    }
+    getArrayOfLinks(): Array<Link>{
+      return Array.from(this._links.values());
+    }
 
     getJoints(): IterableIterator<Joint>{
         return this._joints.values();

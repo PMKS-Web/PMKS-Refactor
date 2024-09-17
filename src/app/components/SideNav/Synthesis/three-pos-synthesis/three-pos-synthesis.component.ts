@@ -133,6 +133,18 @@ isSixBarGenerated(): boolean {
       return undefined;
   }
 generateFourBar(){
+  let listOfLinks = this.mechanism.getArrayOfLinks();
+  console.log(listOfLinks);
+  let len;
+  let i;
+  for (i = 0, len = listOfLinks.length; i < len; i++) {
+    let linkId = listOfLinks[i].id;
+    console.log(linkId);
+    this.mechanism.removeLink(linkId);
+    console.log("LIST OF LINKS AFTER DELETION:");
+    console.log(this.mechanism.getArrayOfLinks());
+  }
+
   this.fourBarGenerated = !this.fourBarGenerated;
   this.cdr.detectChanges();
   let joint1 = new Coord((this.pos1X + 1) / -2, this.pos1Y);
