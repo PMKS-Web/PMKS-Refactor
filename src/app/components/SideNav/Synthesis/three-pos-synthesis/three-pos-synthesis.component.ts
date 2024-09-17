@@ -260,15 +260,31 @@ getFirstUndefinedPosition(): number{
     return 0;
 }
 
-deletePosition(index: number){
-    if(index==1)
-        this.pos1Specified=false;
-    if(index==2)
-        this.pos2Specified=false;
-    if(index==3)
-        this.pos3Specified=false;
+  deletePosition(index: number) {
+    if (index === 1) {
+      this.pos1Specified = false;
+    } else if (index === 2) {
+      this.pos2Specified = false;
+    } else if (index === 3) {
+      this.pos3Specified = false;
+    }
 
-}
+    // Remove all links if the four-bar has been generated
+    if (this.fourBarGenerated) {
+      let listOfLinks = this.mechanism.getArrayOfLinks();
+      console.log(listOfLinks);
+      let len;
+      let i;
+      for (i = 0, len = listOfLinks.length; i < len; i++) {
+        let linkId = listOfLinks[i].id;
+        console.log(linkId);
+        this.mechanism.removeLink(linkId);
+        console.log("LIST OF LINKS AFTER DELETION:");
+        console.log(this.mechanism.getArrayOfLinks());
+      }
+      this.fourBarGenerated = false;
+    }
+  }
 
 allPositionsDefined(): boolean {
     if(this.pos1Specified && this.pos2Specified && this.pos3Specified)
@@ -277,12 +293,28 @@ allPositionsDefined(): boolean {
         return false;
 }
 
-removeAllPositions(){
-    for(let i=1; i<=3; i++){
-        this.deletePosition(i);
-        this.resetPos(i)
+  removeAllPositions() {
+    // Remove all links regardless of whether the four-bar has been generated
+    let listOfLinks = this.mechanism.getArrayOfLinks();
+    console.log(listOfLinks);
+    let len;
+    let i;
+    for (i = 0, len = listOfLinks.length; i < len; i++) {
+      let linkId = listOfLinks[i].id;
+      console.log(linkId);
+      this.mechanism.removeLink(linkId);
+      console.log("LIST OF LINKS AFTER DELETION:");
+      console.log(this.mechanism.getArrayOfLinks());
     }
-    this.fourBarGenerated=false;
-    this.sixBarGenerated=false;
-}
+
+    // Reset positions
+    for (let i = 1; i <= 3; i++) {
+      this.deletePosition(i);
+      this.resetPos(i);
+    }
+
+    // Reset flags
+    this.fourBarGenerated = false;
+    this.sixBarGenerated = false;
+  }
 }
