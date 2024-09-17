@@ -137,8 +137,8 @@ generateFourBar(){
   this.cdr.detectChanges();
   let joint1 = new Coord((this.pos1X + 1) / -2, this.pos1Y);
   let joint2 = new Coord((this.pos1X + 1) / 2, this.pos1Y);
-  let joint3 = new Coord(this.pos2X  / 2, this.pos2Y);
-  let joint4 = new Coord((this.pos2X + (this.pos2X/2)) , this.pos2Y);
+  let joint3 = new Coord(this.pos3X  / 2, this.pos3Y);
+  let joint4 = new Coord((this.pos3X + (this.pos3X/2)) , this.pos3Y);
 
   this.mechanism.addLink(joint1, joint2);
 
@@ -157,11 +157,11 @@ generateFourBar(){
   //adds the grounded joints and input
   joints=this.mechanism.getJoints();
   for (const joint of joints) {
-    if(joint.id===0){
+    if(joint.id===6){
       joint.addGround();
       joint.addInput();
     }
-    if(joint.id===3){
+    if(joint.id===9){
       joint.addGround();
     }
   }
