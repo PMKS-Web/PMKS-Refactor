@@ -59,7 +59,7 @@
 
                   <!-- allows the user to enter coordinates and an angle for the position -->
                   <div class='poseData' style="margin-right: -25px; margin-bottom: 15px; margin-top: 7px;" *ngIf='this.isPositionDefined(i)' >
-                        <dual-input-block [input2Value]="getPosYCoord(1)"
+                        <dual-input-block [input1Value]="getPosXCoord(i)" [input2Value]="getPosYCoord(i)"
                         (input1Change)="setPosXCoord($event, 1)"
                         (input2Change)="setPosYCoord($event, 1)"
                         tooltip="Change the x and y values of the reference point of the coupler position {{i}}"
