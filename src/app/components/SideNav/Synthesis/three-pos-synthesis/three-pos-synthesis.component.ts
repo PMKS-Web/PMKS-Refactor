@@ -78,20 +78,20 @@ specifyPosition(index: number){
     if(index===1) {
       this.pos1Specified = true;
       //Need special case for when x coords are 0
-      const coord1A = new Coord((this.pos1X + 1) / -2, this.pos1Y);
-      const coord2A = new Coord((this.pos1X + 1) / 2, this.pos1Y);
+      const coord1A = new Coord(this.pos1X - 1, this.pos1Y);
+      const coord2A = new Coord(this.pos1X + 1, this.pos1Y);
       this.mechanism.addLink(coord1A, coord2A);
     }
     else if(index===2) {
       this.pos2Specified = true;
-      const coord1B = new Coord(this.pos2X  / 2, this.pos2Y);
-      const coord2B = new Coord((this.pos2X + (this.pos2X/2)) , this.pos2Y);
+      const coord1B = new Coord(this.pos2X - 1, this.pos2Y);
+      const coord2B = new Coord(this.pos2X + 1, this.pos2Y);
       this.mechanism.addLink(coord1B, coord2B);
     }
     else if(index===3) {
       this.pos3Specified = true;
-      const coord1C = new Coord(this.pos3X / 2, this.pos3Y);
-      const coord2C = new Coord((this.pos3X + (this.pos3X / 2)), this.pos3Y);
+      const coord1C = new Coord(this.pos3X - 1, this.pos3Y);
+      const coord2C = new Coord(this.pos3X + 1, this.pos3Y);
       this.mechanism.addLink(coord1C, coord2C);
     }
 }
