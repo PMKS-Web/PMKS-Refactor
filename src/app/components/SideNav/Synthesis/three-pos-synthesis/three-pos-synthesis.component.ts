@@ -121,10 +121,52 @@ isFourBarGenerated(): boolean {
 isSixBarGenerated(): boolean {
     return this.sixBarGenerated;
   }
-
+  getLastJoint(joints: IterableIterator<Joint>): Joint | undefined{
+    let lastJoint: Joint | undefined;
+    for (const joint of joints) {
+      lastJoint = joint;
+    }
+    if (lastJoint !== undefined) {
+      return lastJoint;
+    }
+    else
+      return undefined;
+  }
 generateFourBar(){
   this.fourBarGenerated = !this.fourBarGenerated;
   this.cdr.detectChanges();
+  let joint1 = new Coord((this.pos1X + 1) / -2, this.pos1Y);
+  let joint2 = new Coord((this.pos1X + 1) / 2, this.pos1Y);
+  let joint3 = new Coord(this.pos2X  / 2, this.pos2Y);
+  let joint4 = new Coord((this.pos2X + (this.pos2X/2)) , this.pos2Y);
+
+  this.mechanism.addLink(joint1, joint2);
+
+  let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
+  let lastJoint= this.getLastJoint(joints);
+  if (lastJoint !== undefined) {
+    this.mechanism.addLinkToJoint(lastJoint.id, joint3);
+  }
+
+  joints=this.mechanism.getJoints(); //updates list of all joints
+  lastJoint= this.getLastJoint(joints);
+  if (lastJoint !== undefined) {
+    this.mechanism.addLinkToJoint(lastJoint.id, joint4);
+  }
+
+  //adds the grounded joints and input
+  joints=this.mechanism.getJoints();
+  for (const joint of joints) {
+    if(joint.id===0){
+      joint.addGround();
+      joint.addInput();
+    }
+    if(joint.id===3){
+      joint.addGround();
+    }
+  }
+
+  console.log(this.mechanism);
 }
 
 generateSixBar() {
