@@ -47,22 +47,42 @@ export class ThreePosSynthesis{
     couplerLength: number = 5;
     //stores position values
     pos1X: number = 0;
-    pos1Y: number = 0;
+    pos1Y: number = 3;
     pos1Angle: number = 0;
-    pos1Specified: boolean = false;
-    pos2X: number = 0;
-    pos2Y: number = 0;
+    pos1Specified: boolean = true;
+    pos2X: number = 2;
+    pos2Y: number = 3;
     pos2Angle: number = 0;
-    pos2Specified: boolean = false;
-    pos3X: number = 0;
+    pos2Specified: boolean = true;
+    pos3X: number = 4;
     pos3Y: number = 0;
     pos3Angle: number = 0;
-    pos3Specified: boolean = false;
+    pos3Specified: boolean = true;
     fourBarGenerated: boolean = false;
     sixBarGenerated: boolean = false;
+    private mechanism: Mechanism;
 
-    constructor(private stateService: StateService, private interactionService: InteractionService, private colorService: ColorService, private cdr: ChangeDetectorRef){
+    constructor(private stateService: StateService,
+                private interactionService: InteractionService,
+                private colorService: ColorService,
+                private cdr: ChangeDetectorRef,
+
+    ){
+      this.mechanism = this.stateService.getMechanism();
     }
+
+  ngOnInit() {
+    // Make sure to trigger change detection when the component is initialized
+    this.cdr.detectChanges();
+  }
+
+  getLastJoint(joints: IterableIterator<Joint>): Joint | undefined {
+    let lastJoint: Joint | undefined;
+    for (const joint of joints) {
+      lastJoint = joint;
+    }
+    return lastJoint;
+  }
 
 setReference(r: string) {
     this.reference = r;
@@ -108,9 +128,79 @@ isSixBarGenerated(): boolean {
   }
 
 generateFourBar(){
-  this.fourBarGenerated = !this.fourBarGenerated;
+
+  console.log('Position 1:', this.pos1X, this.pos1Y);
+  console.log('Position 2:', this.pos2X, this.pos2Y);
+  console.log('Position 3:', this.pos3X, this.pos3Y);
+  // If the four-bar is already generated, we need to clear it
+  if (this.fourBarGenerated) {
+    console.log('Clearing four-bar linkage');
+    // Clear existing links from the mechanism
+    let listOfLinks = Array.from(this.mechanism.getJoints());
+    for (let link of listOfLinks) {
+      this.mechanism.removeLink(link.id);
+    }
+    this.fourBarGenerated = false;
+  }
+  // If the four-bar is not generated, create it
+  else {
+    console.log('Generating four-bar linkage');
+    console.log('Position 1:', this.pos1X, this.pos1Y);
+    console.log('Position 2:', this.pos2X, this.pos2Y);
+    console.log('Position 3:', this.pos3X, this.pos3Y);
+  // // Toggle the state of fourBarGenerated
+  // this.fourBarGenerated = !this.fourBarGenerated;
+  // this.cdr.detectChanges(); // Trigger change detection to update the view
+
+  // Define the coordinates for the four-bar linkage using the hardcoded values
+  let joint1 = new Coord(this.pos1X, this.pos1Y);
+  let joint2 = new Coord(this.pos2X, this.pos2Y);
+  let joint3 = new Coord(this.pos3X, this.pos3Y);
+  // Create the fourth joint based on a simple calculation
+  let joint4 = new Coord(this.pos3X + (this.pos3X - this.pos2X), this.pos3Y);
+
+  // Add the first link between joint1 and joint2
+  this.mechanism.addLink(joint1, joint2);
+
+  // Retrieve the last joint added and create the next link
+  let joints = this.mechanism.getJoints();
+  let lastJoint = this.getLastJoint(joints);
+  if (lastJoint !== undefined) {
+    // Add the second link from the last joint to joint3
+    this.mechanism.addLinkToJoint(lastJoint.id, joint3);
+  }
+
+  // Update joints list and add the third link to joint4
+  joints = this.mechanism.getJoints();
+  lastJoint = this.getLastJoint(joints);
+  if (lastJoint !== undefined) {
+    this.mechanism.addLinkToJoint(lastJoint.id, joint4);
+  }
+
+  // Define ground and input for the joints
+  joints = this.mechanism.getJoints();
+  for (const joint of joints) {
+    if (joint.id === 2) {  // Assuming joint1 is the fixed ground joint
+      joint.addGround();
+    }
+    if (joint.id === 3) {  // Assuming joint2 is the input joint (the one that drives the mechanism)
+      joint.addGround();
+      joint.addInput();
+    }
+    if (joint.id === 4) {  // Assuming joint4 is another fixed ground joint
+      joint.addGround();
+    }
+  }
+    // Mark the four-bar as generated
+    this.fourBarGenerated = true;
+  }
+
+  // Trigger change detection to update the view
   this.cdr.detectChanges();
+
+
 }
+
 
 generateSixBar() {
   this.sixBarGenerated = !this.sixBarGenerated;
@@ -131,10 +221,16 @@ setCouplerLength(x: number){
 
 }
 
-setPosXCoord(x: number, posNum: number){
+setPosXCoord(value: number, posNum: number){
+  if (posNum === 1) this.pos1X = value;
+  else if (posNum === 2) this.pos2X = value;
+  else if (posNum === 3) this.pos3X = value;
 
 }
-setPosYCoord(x: number, posNum: number){
+setPosYCoord(value: number, posNum: number){
+  if (posNum === 1) this.pos1Y = value;
+  else if (posNum === 2) this.pos2Y = value;
+  else if (posNum === 3) this.pos3Y = value;
 }
 
 setPositionAngle(x: number, posNum: number){
@@ -217,3 +313,4 @@ removeAllPositions(){
     this.sixBarGenerated=false;
 }
 }
+

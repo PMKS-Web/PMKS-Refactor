@@ -15,7 +15,7 @@
               >help_outline
               </mat-icon>
 
-              <single-input-block class="right-aligned" [input1Value]="0" style="margin-bottom:-7px;margin-left: 41px;"
+              <single-input-block class="right-aligned" [input1Value]="couplerLength" style="margin-bottom:-7px;margin-left: 41px;"
             (input1Change)="setCouplerLength($event)"
 
             unit1="cm"
@@ -59,19 +59,20 @@
 
                   <!-- allows the user to enter coordinates and an angle for the position -->
                   <div class='poseData' style="margin-right: -25px; margin-bottom: 15px; margin-top: 7px;" *ngIf='this.isPositionDefined(i)' >
-                        <dual-input-block [input2Value]="getPosYCoord(1)"
-                        (input1Change)="setPosXCoord($event, 1)"
-                        (input2Change)="setPosYCoord($event, 1)"
-                        tooltip="Change the x and y values of the reference point of the coupler position {{i}}"
-                        label1="X"
-                        label2="Y"
-                        unit1="cm"
-                        unit2="cm"
-                        [showIcon]="false">
+                        <dual-input-block [input1Value]="i === 1 ? pos1X : i === 2 ? pos2X : pos3X"
+                                          [input2Value]="i === 1 ? pos1Y : i === 2 ? pos2Y : pos3Y"
+                                          (input1Change)="setPosXCoord($event, 1)"
+                                          (input2Change)="setPosYCoord($event, 1)"
+                                          tooltip="Change the x and y values of the reference point of the coupler position {{i}}"
+                                          label1="X"
+                                          label2="Y"
+                                          unit1="cm"
+                                          unit2="cm"
+                                          [showIcon]="false">
                   </dual-input-block>
                   <single-input-block
-                        [input1Value]="getPosAngle(1)"
-                        (input1Change)="setPositionAngle($event, 1)"
+                    [input1Value]="i === 1 ? pos1Angle : i === 2 ? pos2Angle : pos3Angle"
+                    (input1Change)="setPositionAngle($event, i)"
                         iconLabel1="assets/icons/angle.svg"
                         unit1="deg"
                         [showIcon]="false">
