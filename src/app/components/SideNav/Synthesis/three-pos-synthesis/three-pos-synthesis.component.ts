@@ -44,7 +44,7 @@ export class ThreePosSynthesis{
     buttonLabel: string = 'Generate Four-Bar';
     reference: string = "Center";
     positions: number[] = [];
-    couplerLength: number = 5;
+    couplerLength: number = 2;
     //stores position values
     pos1X: number = 0;
     pos1Y: number = 1;
@@ -60,6 +60,12 @@ export class ThreePosSynthesis{
     pos3Specified: boolean = false;
     fourBarGenerated: boolean = false;
     sixBarGenerated: boolean = false;
+    coord1A = new Coord(this.pos1X - this.couplerLength/2, this.pos1Y);
+    coord2A = new Coord(this.pos1X + this.couplerLength/2, this.pos1Y);
+    coord1B = new Coord(this.pos2X - this.couplerLength/2, this.pos2Y);
+    coord2B = new Coord(this.pos2X + this.couplerLength/2, this.pos2Y);
+    coord1C = new Coord(this.pos3X - this.couplerLength/2, this.pos3Y);
+    coord2C = new Coord(this.pos3X + this.couplerLength/2, this.pos3Y);
     private mechanism: Mechanism;
 
     constructor(private stateService: StateService, private interactionService: InteractionService, private colorService: ColorService, private cdr: ChangeDetectorRef){
@@ -77,22 +83,15 @@ getReference(): string{
 specifyPosition(index: number){
     if(index===1) {
       this.pos1Specified = true;
-      //Need special case for when x coords are 0
-      const coord1A = new Coord(this.pos1X - 1, this.pos1Y);
-      const coord2A = new Coord(this.pos1X + 1, this.pos1Y);
-      this.mechanism.addLink(coord1A, coord2A);
+      this.mechanism.addLink(this.coord1A, this.coord2A);
     }
     else if(index===2) {
       this.pos2Specified = true;
-      const coord1B = new Coord(this.pos2X - 1, this.pos2Y);
-      const coord2B = new Coord(this.pos2X + 1, this.pos2Y);
-      this.mechanism.addLink(coord1B, coord2B);
+      this.mechanism.addLink(this.coord1B, this.coord2B);
     }
     else if(index===3) {
       this.pos3Specified = true;
-      const coord1C = new Coord(this.pos3X - 1, this.pos3Y);
-      const coord2C = new Coord(this.pos3X + 1, this.pos3Y);
-      this.mechanism.addLink(coord1C, coord2C);
+      this.mechanism.addLink(this.coord1C, this.coord2C);
     }
 }
 
@@ -147,10 +146,10 @@ generateFourBar(){
 
   this.fourBarGenerated = !this.fourBarGenerated;
   this.cdr.detectChanges();
-  let joint1 = new Coord((this.pos1X + 1) / -2, this.pos1Y);
-  let joint2 = new Coord((this.pos1X + 1) / 2, this.pos1Y);
-  let joint3 = new Coord(this.pos3X  / 2, this.pos3Y);
-  let joint4 = new Coord((this.pos3X + (this.pos3X/2)) , this.pos3Y);
+  let joint1 = this.coord1A;
+  let joint2 = this.coord2A;
+  let joint3 = this.coord1C;
+  let joint4 = this.coord2C;
 
   this.mechanism.addLink(joint1, joint2);
 
@@ -197,17 +196,43 @@ generateSixBar() {
   //}
 
 setCouplerLength(x: number){
-
+  this.couplerLength = x;
 }
 
 setPosXCoord(x: number, posNum: number){
-
+  if(posNum === 1){
+    this.pos1X = x;
+  }
+  else if(posNum === 2){
+    this.pos2X = x;
+  }
+  else if (posNum === 3){
+    this.pos3X = x;
+  }
 }
-setPosYCoord(x: number, posNum: number){
+setPosYCoord(y: number, posNum: number){
+  if(posNum === 1){
+    this.pos1Y = y;
+  }
+  else if(posNum === 2){
+    this.pos2Y = y;
+  }
+  else if (posNum === 3){
+    this.pos3Y = y;
+  }
 }
 
 setPositionAngle(x: number, posNum: number){
-
+  if(posNum === 1){
+    this.pos1Angle = x;
+  }
+  else if(posNum === 2){
+    this.pos2Angle = x;
+  }
+  else if (posNum === 3){
+    this.pos3Angle = x;
+  }
+  //Call some function to update at the end of these?
 }
 
 getPosXCoord(posNum: number): number{
