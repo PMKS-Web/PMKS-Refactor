@@ -47,17 +47,20 @@ export class ThreePosSynthesis{
     couplerLength: number = 2;
     //stores position values
     pos1X: number = 0;
-    pos1Y: number = 1;
+    pos1Y: number = 0;
     pos1Angle: number = 0;
     pos1Specified: boolean = false;
-    pos2X: number = -3;
-    pos2Y: number = 1;
+    pos2X: number = 0;
+    pos2Y: number = 0;
     pos2Angle: number = 0;
     pos2Specified: boolean = false;
-    pos3X: number = 4;
-    pos3Y: number = 5;
+    pos3X: number = 0;
+    pos3Y: number = 0;
     pos3Angle: number = 0;
     pos3Specified: boolean = false;
+    position1: Link|null = null;
+    position2: Link|null = null;
+    position3: Link|null = null;
     fourBarGenerated: boolean = false;
     sixBarGenerated: boolean = false;
     coord1A = new Coord(this.pos1X - this.couplerLength/2, this.pos1Y);
@@ -84,14 +87,20 @@ specifyPosition(index: number){
     if(index===1) {
       this.pos1Specified = true;
       this.mechanism.addLink(this.coord1A, this.coord2A);
+      const links = this.mechanism.getArrayOfLinks();
+      this.position1 = links[links.length - 1];
     }
     else if(index===2) {
       this.pos2Specified = true;
       this.mechanism.addLink(this.coord1B, this.coord2B);
+      const links = this.mechanism.getArrayOfLinks();
+      this.position1 = links[links.length - 1];
     }
     else if(index===3) {
       this.pos3Specified = true;
       this.mechanism.addLink(this.coord1C, this.coord2C);
+      const links = this.mechanism.getArrayOfLinks();
+      this.position1 = links[links.length - 1];
     }
 }
 
@@ -194,45 +203,162 @@ generateSixBar() {
 //clearSixBar() {
     //this.sixBarGenerated = false;
   //}
-
+//Find way to center/length equidistant on each side of x/y position
 setCouplerLength(x: number){
   this.couplerLength = x;
+  if(this.reference === "Center") {
+    if (this.position1){
+      this.position1.setLength(this.couplerLength, this.position1.getJoints()[0]);
+      //Call function to center?
+    }
+    if (this.position2){
+      this.position2.setLength(this.couplerLength, this.position2.getJoints()[0]);
+    }
+    if (this.position3){
+      this.position3.setLength(this.couplerLength, this.position3.getJoints()[0]);
+    }
+  }
+  else if (this.reference === "Back"){
+    if (this.position1){
+      this.position1.setLength(this.couplerLength, this.position1.getJoints()[0]);
+    }
+    if (this.position2){
+      this.position2.setLength(this.couplerLength, this.position2.getJoints()[0]);
+    }
+    if (this.position3){
+      this.position3.setLength(this.couplerLength, this.position3.getJoints()[0]);
+    }
+  }
+  else {
+    if (this.position1){
+      this.position1.setLength(this.couplerLength, this.position1.getJoints()[1]);
+    }
+    if (this.position2){
+      this.position2.setLength(this.couplerLength, this.position2.getJoints()[1]);
+    }
+    if (this.position3){
+      this.position3.setLength(this.couplerLength, this.position3.getJoints()[1]);
+    }
+  }
+}
+//Check on interactions when angles are weird
+setPosXCoord(x: number, posNum: number) {
+  if (posNum === 1) {
+    this.pos1X = x;
+    const backJoint = this.position1!.getJoints()[0];
+    const frontJoint = this.position1!.getJoints()[1];
+    if (this.reference === "Center") {
+      //harder
+    }
+    else if (this.reference === "Back") {
+      backJoint.setCoordinates(new Coord(x, backJoint.coords.y));
+      frontJoint.setCoordinates(new Coord(x+this.couplerLength, frontJoint.coords.y));
+    }
+    else {
+      frontJoint.setCoordinates(new Coord(x, frontJoint.coords.y));
+      backJoint.setCoordinates(new Coord(x-this.couplerLength, backJoint.coords.y));
+    }
+  }
+  else if (posNum === 2) {
+    this.pos2X = x;
+    const backJoint = this.position2!.getJoints()[0];
+    const frontJoint = this.position2!.getJoints()[1];
+    if (this.reference === "Center") {
+      //harder
+    }
+    else if (this.reference === "Back") {
+      backJoint.setCoordinates(new Coord(x, backJoint.coords.y));
+      frontJoint.setCoordinates(new Coord(x+this.couplerLength, frontJoint.coords.y));
+    }
+    else {
+      frontJoint.setCoordinates(new Coord(x, frontJoint.coords.y));
+      backJoint.setCoordinates(new Coord(x-this.couplerLength, backJoint.coords.y));
+    }
+  }
+  else if (posNum === 3) {
+      this.pos3X = x;
+    const backJoint = this.position3!.getJoints()[0];
+    const frontJoint = this.position3!.getJoints()[1];
+    if (this.reference === "Center") {
+      //harder
+    }
+    else if (this.reference === "Back") {
+      backJoint.setCoordinates(new Coord(x, backJoint.coords.y));
+      frontJoint.setCoordinates(new Coord(x+this.couplerLength, frontJoint.coords.y));
+    }
+    else {
+      frontJoint.setCoordinates(new Coord(x, frontJoint.coords.y));
+      backJoint.setCoordinates(new Coord(x-this.couplerLength, backJoint.coords.y));
+    }
+  }
 }
 
-setPosXCoord(x: number, posNum: number){
-  if(posNum === 1){
-    this.pos1X = x;
-  }
-  else if(posNum === 2){
-    this.pos2X = x;
-  }
-  else if (posNum === 3){
-    this.pos3X = x;
-  }
-}
 setPosYCoord(y: number, posNum: number){
+
   if(posNum === 1){
     this.pos1Y = y;
+    const backJoint = this.position1!.getJoints()[0];
+    const frontJoint = this.position1!.getJoints()[1];
+    if (this.reference === "Center") {
+      //harder
+    }
+    else if (this.reference === "Back") {
+      backJoint.setCoordinates(new Coord(backJoint.coords.x, y));
+      frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y));
+      //call setangleto?
+    }
+    else {
+      frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y));
+      backJoint.setCoordinates(new Coord(backJoint.coords.x, y));
+    }
   }
   else if(posNum === 2){
-    this.pos2Y = y;
+    const backJoint = this.position2!.getJoints()[0];
+    const frontJoint = this.position2!.getJoints()[1];
+    if (this.reference === "Center") {
+      //harder
+    }
+    else if (this.reference === "Back") {
+      backJoint.setCoordinates(new Coord(backJoint.coords.x, y));
+      frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y+this.couplerLength));
+    }
+    else {
+      frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y));
+      backJoint.setCoordinates(new Coord(backJoint.coords.x, y+this.couplerLength));
+    }
   }
   else if (posNum === 3){
     this.pos3Y = y;
+    const backJoint = this.position3!.getJoints()[0];
+    const frontJoint = this.position3!.getJoints()[1];
+    if (this.reference === "Center") {
+      //harder
+    }
+    else if (this.reference === "Back") {
+      backJoint.setCoordinates(new Coord(backJoint.coords.x, y));
+      frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y+this.couplerLength));
+    }
+    else {
+      frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y));
+      backJoint.setCoordinates(new Coord(backJoint.coords.x, y+this.couplerLength));
+    }
   }
 }
 
 setPositionAngle(x: number, posNum: number){
+
   if(posNum === 1){
     this.pos1Angle = x;
+
   }
   else if(posNum === 2){
     this.pos2Angle = x;
+
   }
   else if (posNum === 3){
     this.pos3Angle = x;
+
   }
-  //Call some function to update at the end of these?
 }
 
 getPosXCoord(posNum: number): number{

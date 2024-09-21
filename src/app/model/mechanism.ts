@@ -366,7 +366,7 @@ export class Mechanism {
      * Moves a joint to a new specified x coordinate.
      *
      * @param {number} jointID
-     * @param {number} newXCoord
+     * @param {Coord} newCoord
      * @memberof Mechanism
      */
     setJointCoord(jointID: number, newCoord: Coord) {
@@ -597,13 +597,14 @@ export class Mechanism {
      *
      * @param {number} linkID
      * @param {number} newLength
+     * @param {Joint} refJoint
      * @memberof Mechanism
      */
-    /*
-    setLinkLength(linkID: number, newLength: number) {
-        this.executeLinkAction(linkID, link => {link.setLength(newLength);});
+
+    setLinkLength(linkID: number, newLength: number, refJoint: Joint) {
+        this.executeLinkAction(linkID, link => {link.setLength(newLength, refJoint);});
     }
-     */
+
     /**
      * Sets the angle of a link relative to the x axis, while maintaining its length given its ID.
      *
@@ -787,8 +788,8 @@ export class Mechanism {
         return this._joints.get(id)!;
     }
 
-    getLinks(): IterableIterator<Link> {
-      return this._links.values();
+    getLink(id: number): Link {
+      return this._links.get(id)!;
     }
     getArrayOfLinks(): Array<Link>{
       return Array.from(this._links.values());
@@ -797,6 +798,9 @@ export class Mechanism {
     getJoints(): IterableIterator<Joint>{
         return this._joints.values();
     }
+  getArrayOfJoints(): Array<Joint>{
+    return Array.from(this._joints.values());
+  }
     getIndependentLinks(): IterableIterator<Link>{
         let allLinks: Map<number,Link> = new Map();
         for(let [id,link] of this._links){
