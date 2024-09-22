@@ -787,6 +787,10 @@ export class Mechanism {
         return this._joints.get(id)!;
     }
 
+    get_jointIDCount(): number {
+      return this._jointIDCount;
+    }
+
     getLinks(): IterableIterator<Link> {
       return this._links.values();
     }
@@ -816,6 +820,11 @@ export class Mechanism {
     getForces(): IterableIterator<Force>{
         return this._forces.values();
     }
+  //----------------------------SET FUNCTIONS----------------------------
+  set_jointIDCount (count : number){
+      this._jointIDCount = count;
+  }
+
  //----------------------------GET FUNCTIONS FOR KINEMATICS----------------------------
     getSubMechanisms(): Array<Map<Joint,RigidBody[]>>{
         const subMechanisms: Array<Map<Joint,RigidBody[]>> = new Array();
