@@ -145,6 +145,10 @@ generateFourBar(){
     console.log(this.mechanism.getArrayOfLinks());
   }
 
+  // Populate the positions information
+
+  // Find first itnersection point
+  // Now create joints, links, etc. from the above four coordinates
   this.fourBarGenerated = !this.fourBarGenerated;
   this.cdr.detectChanges();
   let joint1 = new Coord((this.pos1X + 1) / -2, this.pos1Y);
@@ -285,4 +289,61 @@ removeAllPositions(){
     this.fourBarGenerated=false;
     this.sixBarGenerated=false;
 }
+
+  findIntersectionPoint(pose1_coord1: Coord, pose2_coord1: Coord, pose3_coord1: Coord) {
+    //slope of Line 1
+    let slope1 = 1 / ((pose2_coord1.y - pose1_coord1.y) / (pose2_coord1.x - pose1_coord1.x));
+    //slope of line 2
+    let slope2 = 1 / ((pose3_coord1.y - pose2_coord1.y) / (pose3_coord1.x - pose2_coord1.x));
+
+    //midpoints of the above two lines
+    let midpoint_line1 = new Coord(
+      (pose1_coord1.x + pose2_coord1.x) / 2,
+      (pose1_coord1.y + pose2_coord1.y) / 2
+    );
+    let midpoint_line2 = new Coord(
+      (pose3_coord1.x + pose2_coord1.x) / 2,
+      (pose3_coord1.y + pose2_coord1.y) / 2
+    );
+
+    //intercept
+    let c1 = midpoint_line1.y + slope1 * midpoint_line1.x;
+    let c2 = midpoint_line2.y + slope2 * midpoint_line2.x;
+
+    //intersection point
+    let x1 = (c1 - c2) / (-slope2 + slope1);
+    let y1 = -slope1 * x1 + c1;
+
+    return new Coord(x1, y1);
+  }
+
+  findIntersectionPoint2(pose1_coord2: Coord, pose2_coord2: Coord, pose3_coord2: Coord) {
+    let slope1 = 1 / ((pose2_coord2.y - pose1_coord2.y) / (pose2_coord2.x - pose1_coord2.x));
+    //slope of line 2
+    let slope2 = 1 / ((pose3_coord2.y - pose2_coord2.y) / (pose3_coord2.x - pose2_coord2.x));
+
+    //midpoints of the above two lines
+    let midpoint_line1 = new Coord(
+      (pose1_coord2.x + pose2_coord2.x) / 2,
+      (pose1_coord2.y + pose2_coord2.y) / 2
+    );
+    let midpoint_line2 = new Coord(
+      (pose3_coord2.x + pose2_coord2.x) / 2,
+      (pose3_coord2.y + pose2_coord2.y) / 2
+    );
+
+    //intercept
+    let c1 = midpoint_line1.y + slope1 * midpoint_line1.x;
+    let c2 = midpoint_line2.y + slope2 * midpoint_line2.x;
+
+    //intersection point
+    let x1 = (c1 - c2) / (-slope2 + slope1);
+    let y1 = -slope1 * x1 + c1;
+
+    return new Coord(x1, y1);
+  }
 }
+}
+
+
+
