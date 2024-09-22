@@ -148,9 +148,10 @@ generateFourBar(){
     console.log('Position 1:', this.pos1X, this.pos1Y);
     console.log('Position 2:', this.pos2X, this.pos2Y);
     console.log('Position 3:', this.pos3X, this.pos3Y);
-  // // Toggle the state of fourBarGenerated
-  // this.fourBarGenerated = !this.fourBarGenerated;
-  // this.cdr.detectChanges(); // Trigger change detection to update the view
+    // // Toggle the state of fourBarGenerated
+    // this.fourBarGenerated = !this.fourBarGenerated;
+    // this.cdr.detectChanges(); // Trigger change detection to update the view
+
 
   // Define the coordinates for the four-bar linkage using the hardcoded values
   let joint1 = new Coord(this.pos1X, this.pos1Y);
