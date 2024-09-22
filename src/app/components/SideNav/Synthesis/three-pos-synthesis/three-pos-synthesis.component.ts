@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnChanges, Output, EventEmitter, numberAttribute } from '@angular/core';
+import {Component, Input, OnInit, OnChanges, Output, EventEmitter, numberAttribute, HostListener} from '@angular/core';
 import { Interactor } from 'src/app/controllers/interactor';
 import { LinkInteractor } from 'src/app/controllers/link-interactor';
 import { Link } from 'src/app/model/link';
@@ -13,6 +13,7 @@ import { Coord } from 'src/app/model/coord';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ChangeDetectorRef } from '@angular/core';
+import { DoCheck } from '@angular/core';
 
 
 
@@ -30,50 +31,60 @@ export class ThreePosSynthesis{
     /*  THE POSITION VALUES ARE ALL HARD CODED BECAUSE THE BACKEND ISN'T SET UP
         ALL OF THESE FUNCTIONS SHOULD BE WRITTEN IN THE BACK END AND CALLED TO ON THE FRONT END */
 
-    sectionExpanded: { [key: string]: boolean } = {
-        Basic: false,
-      };
-    @Input() disabled: boolean=false;
-    @Input() tooltip: string = '';
-    @Input() input1Value: number=0;
-    @Input() label1: string ="Length";
-    @Output() input1Change: EventEmitter<number> = new EventEmitter<number>();
-    // handle the enter key being pressed and updating the values of the input blocks
-    onEnterKeyInput1() {this.input1Change.emit(this.input1Value);}
-    onBlurInput1() {this.input1Change.emit(this.input1Value);}
-    buttonLabel: string = 'Generate Four-Bar';
-    reference: string = "Center";
-    positions: number[] = [];
-    couplerLength: number = 2;
-    //stores position values
-    pos1X: number = 0;
-    pos1Y: number = 0;
-    pos1Angle: number = 0;
-    pos1Specified: boolean = false;
-    pos2X: number = 0;
-    pos2Y: number = 0;
-    pos2Angle: number = 0;
-    pos2Specified: boolean = false;
-    pos3X: number = 0;
-    pos3Y: number = 0;
-    pos3Angle: number = 0;
-    pos3Specified: boolean = false;
-    position1: Link|null = null;
-    position2: Link|null = null;
-    position3: Link|null = null;
-    fourBarGenerated: boolean = false;
-    sixBarGenerated: boolean = false;
-    coord1A = new Coord(this.pos1X - this.couplerLength/2, this.pos1Y);
-    coord2A = new Coord(this.pos1X + this.couplerLength/2, this.pos1Y);
-    coord1B = new Coord(this.pos2X - this.couplerLength/2, this.pos2Y);
-    coord2B = new Coord(this.pos2X + this.couplerLength/2, this.pos2Y);
-    coord1C = new Coord(this.pos3X - this.couplerLength/2, this.pos3Y);
-    coord2C = new Coord(this.pos3X + this.couplerLength/2, this.pos3Y);
-    private mechanism: Mechanism;
+  @Input() disabled: boolean = false;
+  @Input() tooltip: string = '';
+  @Input() input1Value: number = 0;
+  @Input() label1: string = "Length";
+  @Output() input1Change: EventEmitter<number> = new EventEmitter<number>();
 
-    constructor(private stateService: StateService, private interactionService: InteractionService, private colorService: ColorService, private cdr: ChangeDetectorRef){
-      this.mechanism = this.stateService.getMechanism();
+  sectionExpanded: { [key: string]: boolean } = { Basic: false };
+  buttonLabel: string = 'Generate Four-Bar';
+  reference: string = "Center";
+  positions: number[] = [];
+  couplerLength: number = 2;
+  pos1X: number = 0;
+  pos1Y: number = 0;
+  pos1Angle: number = 0;
+  pos1Specified: boolean = false;
+  pos2X: number = 0;
+  pos2Y: number = 0;
+  pos2Angle: number = 0;
+  pos2Specified: boolean = false;
+  pos3X: number = 0;
+  pos3Y: number = 0;
+  pos3Angle: number = 0;
+  pos3Specified: boolean = false;
+  position1: Link | null = null;
+  position2: Link | null = null;
+  position3: Link | null = null;
+  fourBarGenerated: boolean = false;
+  sixBarGenerated: boolean = false;
+  coord1A = new Coord(this.pos1X - this.couplerLength / 2, this.pos1Y);
+  coord2A = new Coord(this.pos1X + this.couplerLength / 2, this.pos1Y);
+  coord1B = new Coord(this.pos2X - this.couplerLength / 2, this.pos2Y);
+  coord2B = new Coord(this.pos2X + this.couplerLength / 2, this.pos2Y);
+  coord1C = new Coord(this.pos3X - this.couplerLength / 2, this.pos3Y);
+  coord2C = new Coord(this.pos3X + this.couplerLength / 2, this.pos3Y);
+  private mechanism: Mechanism;
+
+  constructor(private stateService: StateService, private interactionService: InteractionService, private cdr: ChangeDetectorRef) {
+    this.mechanism = this.stateService.getMechanism();
+  }
+
+  ngDoCheck() {
+    if (this.position1 && this.pos1Specified) {
+      const newCoord = this.getNewCoord(this.position1);
+      this.updatePositionCoords(1, newCoord);
     }
+    if (this.position2 && this.pos2Specified) {
+      const newCoord = this.getNewCoord(this.position2);
+      this.updatePositionCoords(2, newCoord);
+    }
+    if (this.position3 && this.pos3Specified) {
+      const newCoord = this.getNewCoord(this.position3);
+      this.updatePositionCoords(3, newCoord);
+    }
+  }
 
 setReference(r: string) {
     this.reference = r;
@@ -83,26 +94,60 @@ getReference(): string{
     return this.reference;
 }
 
-specifyPosition(index: number){
-    if(index===1) {
+  specifyPosition(index: number) {
+    if (index === 1) {
       this.pos1Specified = true;
       this.mechanism.addLink(this.coord1A, this.coord2A);
       const links = this.mechanism.getArrayOfLinks();
       this.position1 = links[links.length - 1];
-    }
-    else if(index===2) {
+    } else if (index === 2) {
       this.pos2Specified = true;
       this.mechanism.addLink(this.coord1B, this.coord2B);
       const links = this.mechanism.getArrayOfLinks();
-      this.position1 = links[links.length - 1];
-    }
-    else if(index===3) {
+      this.position2 = links[links.length - 1];
+    } else if (index === 3) {
       this.pos3Specified = true;
       this.mechanism.addLink(this.coord1C, this.coord2C);
       const links = this.mechanism.getArrayOfLinks();
-      this.position1 = links[links.length - 1];
+      this.position3 = links[links.length - 1];
     }
-}
+  }
+
+  getNewCoord(position: Link): Coord {
+    // Get the coordinates of the joint corresponding to the fixed position
+    const joint = position.getJoints()[0]; // Assuming the first joint is the fixed position
+    return new Coord(joint.coords.x, joint.coords.y);
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  onMouseMove(event: MouseEvent) {
+    if (this.position1 && this.pos1Specified) {
+      const newCoord = this.getNewCoord(this.position1);
+      this.updatePositionCoords(1, newCoord);
+    }
+    if (this.position2 && this.pos2Specified) {
+      const newCoord = this.getNewCoord(this.position2);
+      this.updatePositionCoords(2, newCoord);
+    }
+    if (this.position3 && this.pos3Specified) {
+      const newCoord = this.getNewCoord(this.position3);
+      this.updatePositionCoords(3, newCoord);
+    }
+  }
+
+  updatePositionCoords(posNum: number, newCoord: Coord) {
+    if (posNum === 1) {
+      this.pos1X = newCoord.x;
+      this.pos1Y = newCoord.y;
+    } else if (posNum === 2) {
+      this.pos2X = newCoord.x;
+      this.pos2Y = newCoord.y;
+    } else if (posNum === 3) {
+      this.pos3X = newCoord.x;
+      this.pos3Y = newCoord.y;
+    }
+    this.cdr.detectChanges();
+  }
 
 resetPos(pos: number){
     if(pos==1){
