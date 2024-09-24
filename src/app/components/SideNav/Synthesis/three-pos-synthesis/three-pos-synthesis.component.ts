@@ -156,32 +156,45 @@ getReference(): string{
   }
 
   updatePositionCoords(posNum: number, newCoord: Coord) {
+    const roundedX = parseFloat(newCoord.x.toFixed(2));
+    const roundedY = parseFloat(newCoord.y.toFixed(2));
+
     if (posNum === 1) {
-      this.pos1X = newCoord.x;
-      this.pos1Y = newCoord.y;
+      this.pos1X = roundedX;
+      this.pos1Y = roundedY;
     } else if (posNum === 2) {
-      this.pos2X = newCoord.x;
-      this.pos2Y = newCoord.y;
+      this.pos2X = roundedX;
+      this.pos2Y = roundedY;
     } else if (posNum === 3) {
-      this.pos3X = newCoord.x;
-      this.pos3Y = newCoord.y;
+      this.pos3X = roundedX;
+      this.pos3Y = roundedY;
     }
     this.cdr.detectChanges();
   }
 
-   calculateAngle(joint1: Joint, joint2: Joint): number {
+  calculateAngle(joint1: Joint, joint2: Joint): number {
     const deltaX = joint2.coords.x - joint1.coords.x;
     const deltaY = joint2.coords.y - joint1.coords.y;
-    return Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+    let angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI); // Convert radians to degrees
+    if (angle < 0) {
+      angle += 360; // Normalize to 0-360
+    }
+    return angle;
   }
 
   updatePositionAngle(posNum: number, angle: number) {
+    let normalizedAngle = angle % 360;
+    if (normalizedAngle < 0) {
+      normalizedAngle += 360;
+    }
+    const roundedAngle = Math.round(normalizedAngle);
+
     if (posNum === 1) {
-      this.pos1Angle = angle;
+      this.pos1Angle = roundedAngle;
     } else if (posNum === 2) {
-      this.pos2Angle = angle;
+      this.pos2Angle = roundedAngle;
     } else if (posNum === 3) {
-      this.pos3Angle = angle;
+      this.pos3Angle = roundedAngle;
     }
     this.cdr.detectChanges();
   }
@@ -521,21 +534,114 @@ setPosYCoord(y: number, posNum: number){
   }
 }
 
-setPositionAngle(x: number, posNum: number){
+  setPositionAngle(angle: number, posNum: number) {
+    const radians = angle * (Math.PI / 180); // Convert angle to radians
 
-  if(posNum === 1){
-    this.pos1Angle = x;
+    if (posNum === 1 && this.position1) {
+      this.pos1Angle = angle;
+      const backJoint = this.position1.getJoints()[0];
+      const frontJoint = this.position1.getJoints()[1];
+      const referenceJoint = this.getReferenceJoint(this.position1);
+      const centerX = referenceJoint.coords.x;
+      const centerY = referenceJoint.coords.y;
+      const halfLength = this.couplerLength / 2;
 
+      if (this.reference === "Center") {
+        backJoint.setCoordinates(new Coord(
+          centerX - halfLength * Math.cos(radians),
+          centerY - halfLength * Math.sin(radians)
+        ));
+        frontJoint.setCoordinates(new Coord(
+          centerX + halfLength * Math.cos(radians),
+          centerY + halfLength * Math.sin(radians)
+        ));
+      } else if (this.reference === "Back") {
+        frontJoint.setCoordinates(new Coord(
+          centerX + this.couplerLength * Math.cos(radians),
+          centerY + this.couplerLength * Math.sin(radians)
+        ));
+      } else if (this.reference === "Front") {
+        backJoint.setCoordinates(new Coord(
+          centerX - this.couplerLength * Math.cos(radians),
+          centerY - this.couplerLength * Math.sin(radians)
+        ));
+      }
+    } else if (posNum === 2 && this.position2) {
+      this.pos2Angle = angle;
+      const backJoint = this.position2.getJoints()[0];
+      const frontJoint = this.position2.getJoints()[1];
+      const referenceJoint = this.getReferenceJoint(this.position2);
+      const centerX = referenceJoint.coords.x;
+      const centerY = referenceJoint.coords.y;
+      const halfLength = this.couplerLength / 2;
+
+      if (this.reference === "Center") {
+        backJoint.setCoordinates(new Coord(
+          centerX - halfLength * Math.cos(radians),
+          centerY - halfLength * Math.sin(radians)
+        ));
+        frontJoint.setCoordinates(new Coord(
+          centerX + halfLength * Math.cos(radians),
+          centerY + halfLength * Math.sin(radians)
+        ));
+      } else if (this.reference === "Back") {
+        frontJoint.setCoordinates(new Coord(
+          centerX + this.couplerLength * Math.cos(radians),
+          centerY + this.couplerLength * Math.sin(radians)
+        ));
+      } else if (this.reference === "Front") {
+        backJoint.setCoordinates(new Coord(
+          centerX - this.couplerLength * Math.cos(radians),
+          centerY - this.couplerLength * Math.sin(radians)
+        ));
+      }
+    } else if (posNum === 3 && this.position3) {
+      this.pos3Angle = angle;
+      const backJoint = this.position3.getJoints()[0];
+      const frontJoint = this.position3.getJoints()[1];
+      const referenceJoint = this.getReferenceJoint(this.position3);
+      const centerX = referenceJoint.coords.x;
+      const centerY = referenceJoint.coords.y;
+      const halfLength = this.couplerLength / 2;
+
+      if (this.reference === "Center") {
+        backJoint.setCoordinates(new Coord(
+          centerX - halfLength * Math.cos(radians),
+          centerY - halfLength * Math.sin(radians)
+        ));
+        frontJoint.setCoordinates(new Coord(
+          centerX + halfLength * Math.cos(radians),
+          centerY + halfLength * Math.sin(radians)
+        ));
+      } else if (this.reference === "Back") {
+        frontJoint.setCoordinates(new Coord(
+          centerX + this.couplerLength * Math.cos(radians),
+          centerY + this.couplerLength * Math.sin(radians)
+        ));
+      } else if (this.reference === "Front") {
+        backJoint.setCoordinates(new Coord(
+          centerX - this.couplerLength * Math.cos(radians),
+          centerY - this.couplerLength * Math.sin(radians)
+        ));
+      }
+    }
+    this.cdr.detectChanges();
   }
-  else if(posNum === 2){
-    this.pos2Angle = x;
 
+  getReferenceJoint(position: Link): Joint {
+    if (this.reference === "Back") {
+      return position.getJoints()[0];
+    } else if (this.reference === "Front") {
+      return position.getJoints()[1];
+    } else {
+      const joints = position.getJoints();
+      const joint1 = joints[0];
+      const joint2 = joints[1];
+      const centerX = (joint1.coords.x + joint2.coords.x) / 2;
+      const centerY = (joint1.coords.y + joint2.coords.y) / 2;
+      return new Joint(-1 /*Jav here, put this as placeholder id, idk if it needs to be something specific but we will see if something breaks */, new Coord(centerX, centerY));
+    }
   }
-  else if (posNum === 3){
-    this.pos3Angle = x;
-
-  }
-}
 
 getPosXCoord(posNum: number): number{
     if(posNum==1)
