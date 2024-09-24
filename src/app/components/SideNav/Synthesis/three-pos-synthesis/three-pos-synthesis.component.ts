@@ -75,14 +75,20 @@ export class ThreePosSynthesis{
     if (this.position1 && this.pos1Specified) {
       const newCoord = this.getNewCoord(this.position1);
       this.updatePositionCoords(1, newCoord);
+      const angle = this.calculateAngle(this.position1.getJoints()[0], this.position1.getJoints()[1]);
+      this.updatePositionAngle(1, angle);
     }
     if (this.position2 && this.pos2Specified) {
       const newCoord = this.getNewCoord(this.position2);
       this.updatePositionCoords(2, newCoord);
+      const angle = this.calculateAngle(this.position2.getJoints()[0], this.position2.getJoints()[1]);
+      this.updatePositionAngle(2, angle);
     }
     if (this.position3 && this.pos3Specified) {
       const newCoord = this.getNewCoord(this.position3);
       this.updatePositionCoords(3, newCoord);
+      const angle = this.calculateAngle(this.position3.getJoints()[0], this.position3.getJoints()[1]);
+      this.updatePositionAngle(3, angle);
     }
   }
 
@@ -114,8 +120,22 @@ getReference(): string{
   }
 
   getNewCoord(position: Link): Coord {
-    // Get the coordinates of the joint corresponding to the fixed position
-    const joint = position.getJoints()[0]; // Assuming the first joint is the fixed position
+    let joint: Joint;
+    if (this.reference === "Back") {
+      joint = position.getJoints()[0]; // First joint for "Back"
+    } else if (this.reference === "Front") {
+      joint = position.getJoints()[1]; // Second joint for "Front"
+    } else if (this.reference === "Center") {
+      const joints = position.getJoints();
+      const joint1 = joints[0];
+      const joint2 = joints[1];
+      const centerX = (joint1.coords.x + joint2.coords.x) / 2;
+      const centerY = (joint1.coords.y + joint2.coords.y) / 2;
+      return new Coord(centerX, centerY);
+    } else {
+      // Default to "Back" if reference is not recognized
+      joint = position.getJoints()[0];
+    }
     return new Coord(joint.coords.x, joint.coords.y);
   }
 
@@ -145,6 +165,23 @@ getReference(): string{
     } else if (posNum === 3) {
       this.pos3X = newCoord.x;
       this.pos3Y = newCoord.y;
+    }
+    this.cdr.detectChanges();
+  }
+
+   calculateAngle(joint1: Joint, joint2: Joint): number {
+    const deltaX = joint2.coords.x - joint1.coords.x;
+    const deltaY = joint2.coords.y - joint1.coords.y;
+    return Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+  }
+
+  updatePositionAngle(posNum: number, angle: number) {
+    if (posNum === 1) {
+      this.pos1Angle = angle;
+    } else if (posNum === 2) {
+      this.pos2Angle = angle;
+    } else if (posNum === 3) {
+      this.pos3Angle = angle;
     }
     this.cdr.detectChanges();
   }
