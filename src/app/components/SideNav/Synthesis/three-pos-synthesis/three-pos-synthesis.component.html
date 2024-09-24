@@ -15,7 +15,7 @@
               >help_outline
               </mat-icon>
 
-              <single-input-block class="right-aligned" [input1Value]="2" style="margin-bottom:-7px;margin-left: 41px;"
+              <single-input-block class="right-aligned" [input1Value]="0" style="margin-bottom:-7px;margin-left: 41px;"
             (input1Change)="setCouplerLength($event)"
 
             unit1="cm"
@@ -70,8 +70,8 @@
                         [showIcon]="false">
                   </dual-input-block>
                   <single-input-block
-                        [input1Value]="getPosAngle(i)"
-                        (input1Change)="setPositionAngle($event, i)"
+                        [input1Value]="getPosAngle(1)"
+                        (input1Change)="setPositionAngle($event, 1)"
                         iconLabel1="assets/icons/angle.svg"
                         unit1="deg"
                         [showIcon]="false">

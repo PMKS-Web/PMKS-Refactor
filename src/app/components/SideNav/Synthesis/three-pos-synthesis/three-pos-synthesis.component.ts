@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnChanges, Output, EventEmitter, numberAttribute } from '@angular/core';
+import {Component, Input, OnInit, OnChanges, Output, EventEmitter, numberAttribute, HostListener} from '@angular/core';
 import { Interactor } from 'src/app/controllers/interactor';
 import { LinkInteractor } from 'src/app/controllers/link-interactor';
 import { Link } from 'src/app/model/link';
@@ -13,6 +13,7 @@ import { Coord } from 'src/app/model/coord';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ChangeDetectorRef } from '@angular/core';
+import { DoCheck } from '@angular/core';
 
 
 
@@ -30,50 +31,60 @@ export class ThreePosSynthesis{
     /*  THE POSITION VALUES ARE ALL HARD CODED BECAUSE THE BACKEND ISN'T SET UP
         ALL OF THESE FUNCTIONS SHOULD BE WRITTEN IN THE BACK END AND CALLED TO ON THE FRONT END */
 
-    sectionExpanded: { [key: string]: boolean } = {
-        Basic: false,
-      };
-    @Input() disabled: boolean=false;
-    @Input() tooltip: string = '';
-    @Input() input1Value: number=0;
-    @Input() label1: string ="Length";
-    @Output() input1Change: EventEmitter<number> = new EventEmitter<number>();
-    // handle the enter key being pressed and updating the values of the input blocks
-    onEnterKeyInput1() {this.input1Change.emit(this.input1Value);}
-    onBlurInput1() {this.input1Change.emit(this.input1Value);}
-    buttonLabel: string = 'Generate Four-Bar';
-    reference: string = "Center";
-    positions: number[] = [];
-    couplerLength: number = 2;
-    //stores position values
-    pos1X: number = 0;
-    pos1Y: number = 0;
-    pos1Angle: number = 0;
-    pos1Specified: boolean = false;
-    pos2X: number = 0;
-    pos2Y: number = 0;
-    pos2Angle: number = 0;
-    pos2Specified: boolean = false;
-    pos3X: number = 0;
-    pos3Y: number = 0;
-    pos3Angle: number = 0;
-    pos3Specified: boolean = false;
-    position1: Link|null = null;
-    position2: Link|null = null;
-    position3: Link|null = null;
-    fourBarGenerated: boolean = false;
-    sixBarGenerated: boolean = false;
-    coord1A = new Coord(this.pos1X - this.couplerLength/2, this.pos1Y);
-    coord2A = new Coord(this.pos1X + this.couplerLength/2, this.pos1Y);
-    coord1B = new Coord(this.pos2X - this.couplerLength/2, this.pos2Y);
-    coord2B = new Coord(this.pos2X + this.couplerLength/2, this.pos2Y);
-    coord1C = new Coord(this.pos3X - this.couplerLength/2, this.pos3Y);
-    coord2C = new Coord(this.pos3X + this.couplerLength/2, this.pos3Y);
-    private mechanism: Mechanism;
+  @Input() disabled: boolean = false;
+  @Input() tooltip: string = '';
+  @Input() input1Value: number = 0;
+  @Input() label1: string = "Length";
+  @Output() input1Change: EventEmitter<number> = new EventEmitter<number>();
 
-    constructor(private stateService: StateService, private interactionService: InteractionService, private colorService: ColorService, private cdr: ChangeDetectorRef){
-      this.mechanism = this.stateService.getMechanism();
+  sectionExpanded: { [key: string]: boolean } = { Basic: false };
+  buttonLabel: string = 'Generate Four-Bar';
+  reference: string = "Center";
+  positions: number[] = [];
+  couplerLength: number = 2;
+  pos1X: number = 3;
+  pos1Y: number = 7.52;
+  pos1Angle: number = 0;
+  pos1Specified: boolean = false;
+  pos2X: number = 10.51;
+  pos2Y: number = 4.18;
+  pos2Angle: number = 0;
+  pos2Specified: boolean = false;
+  pos3X: number = 13.99;
+  pos3Y: number = -0.69;
+  pos3Angle: number = 0;
+  pos3Specified: boolean = false;
+  position1: Link | null = null;
+  position2: Link | null = null;
+  position3: Link | null = null;
+  fourBarGenerated: boolean = false;
+  sixBarGenerated: boolean = false;
+  coord1A = new Coord(this.pos1X - this.couplerLength / 2, this.pos1Y);
+  coord2A = new Coord(this.pos1X + this.couplerLength / 2, this.pos1Y);
+  coord1B = new Coord(this.pos2X - this.couplerLength / 2, this.pos2Y);
+  coord2B = new Coord(this.pos2X + this.couplerLength / 2, this.pos2Y);
+  coord1C = new Coord(this.pos3X - this.couplerLength / 2, this.pos3Y);
+  coord2C = new Coord(this.pos3X + this.couplerLength / 2, this.pos3Y);
+  private mechanism: Mechanism;
+
+  constructor(private stateService: StateService, private interactionService: InteractionService, private cdr: ChangeDetectorRef) {
+    this.mechanism = this.stateService.getMechanism();
+  }
+
+  ngDoCheck() {
+    if (this.position1 && this.pos1Specified) {
+      const newCoord = this.getNewCoord(this.position1);
+      this.updatePositionCoords(1, newCoord);
     }
+    if (this.position2 && this.pos2Specified) {
+      const newCoord = this.getNewCoord(this.position2);
+      this.updatePositionCoords(2, newCoord);
+    }
+    if (this.position3 && this.pos3Specified) {
+      const newCoord = this.getNewCoord(this.position3);
+      this.updatePositionCoords(3, newCoord);
+    }
+  }
 
 setReference(r: string) {
     this.reference = r;
@@ -83,26 +94,60 @@ getReference(): string{
     return this.reference;
 }
 
-specifyPosition(index: number){
-    if(index===1) {
+  specifyPosition(index: number) {
+    if (index === 1) {
       this.pos1Specified = true;
       this.mechanism.addLink(this.coord1A, this.coord2A);
       const links = this.mechanism.getArrayOfLinks();
       this.position1 = links[links.length - 1];
-    }
-    else if(index===2) {
+    } else if (index === 2) {
       this.pos2Specified = true;
       this.mechanism.addLink(this.coord1B, this.coord2B);
       const links = this.mechanism.getArrayOfLinks();
       this.position2 = links[links.length - 1];
-    }
-    else if(index===3) {
+    } else if (index === 3) {
       this.pos3Specified = true;
       this.mechanism.addLink(this.coord1C, this.coord2C);
       const links = this.mechanism.getArrayOfLinks();
       this.position3 = links[links.length - 1];
     }
-}
+  }
+
+  getNewCoord(position: Link): Coord {
+    // Get the coordinates of the joint corresponding to the fixed position
+    const joint = position.getJoints()[0]; // Assuming the first joint is the fixed position
+    return new Coord(joint.coords.x, joint.coords.y);
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  onMouseMove(event: MouseEvent) {
+    if (this.position1 && this.pos1Specified) {
+      const newCoord = this.getNewCoord(this.position1);
+      this.updatePositionCoords(1, newCoord);
+    }
+    if (this.position2 && this.pos2Specified) {
+      const newCoord = this.getNewCoord(this.position2);
+      this.updatePositionCoords(2, newCoord);
+    }
+    if (this.position3 && this.pos3Specified) {
+      const newCoord = this.getNewCoord(this.position3);
+      this.updatePositionCoords(3, newCoord);
+    }
+  }
+
+  updatePositionCoords(posNum: number, newCoord: Coord) {
+    if (posNum === 1) {
+      this.pos1X = newCoord.x;
+      this.pos1Y = newCoord.y;
+    } else if (posNum === 2) {
+      this.pos2X = newCoord.x;
+      this.pos2Y = newCoord.y;
+    } else if (posNum === 3) {
+      this.pos3X = newCoord.x;
+      this.pos3Y = newCoord.y;
+    }
+    this.cdr.detectChanges();
+  }
 
 resetPos(pos: number){
     if(pos==1){
@@ -140,53 +185,60 @@ isSixBarGenerated(): boolean {
     else
       return undefined;
   }
-generateFourBar(){
-  let listOfLinks = this.mechanism.getArrayOfLinks();
-  console.log(listOfLinks);
-  let len;
-  let i;
-  for (i = 0, len = listOfLinks.length; i < len; i++) {
-    let linkId = listOfLinks[i].id;
-    console.log(linkId);
-    this.mechanism.removeLink(linkId);
-    console.log("LIST OF LINKS AFTER DELETION:");
-    console.log(this.mechanism.getArrayOfLinks());
-  }
-
-  this.fourBarGenerated = !this.fourBarGenerated;
-  let joint1 = this.coord1A;
-  let joint2 = this.coord2A;
-  let joint3 = this.coord1C;
-  let joint4 = this.coord2C;
-
-  this.mechanism.addLink(joint1, joint2);
-
-  let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
-  let lastJoint= this.getLastJoint(joints);
-  if (lastJoint !== undefined) {
-    this.mechanism.addLinkToJoint(lastJoint.id, joint3);
-  }
-
-  joints=this.mechanism.getJoints(); //updates list of all joints
-  lastJoint= this.getLastJoint(joints);
-  if (lastJoint !== undefined) {
-    this.mechanism.addLinkToJoint(lastJoint.id, joint4);
-  }
-
-  //adds the grounded joints and input
-  joints=this.mechanism.getJoints();
-  for (const joint of joints) {
-    if(joint.id===6){
-      joint.addGround();
-      joint.addInput();
+  generateFourBar(){
+    let listOfLinks = this.mechanism.getArrayOfLinks();
+    console.log(listOfLinks);
+    let len;
+    let i;
+    for (i = 0, len = listOfLinks.length; i < len; i++) {
+      let linkId = listOfLinks[i].id;
+      console.log(linkId);
+      this.mechanism.removeLink(linkId);
+      console.log("LIST OF LINKS AFTER DELETION:");
+      console.log(this.mechanism.getArrayOfLinks());
     }
-    if(joint.id===9){
-      joint.addGround();
-    }
-  }
 
-  console.log(this.mechanism);
-}
+    let firstPoint = this.findIntersectionPoint(this.coord1A, this.coord1B, this.coord1C);
+    let secondPoint = this.coord1A;
+    let thirdPoint = this.coord2A;
+    let fourthPoint = this.findIntersectionPoint2(this.coord2A, this.coord2B, this.coord2C);
+
+    this.fourBarGenerated = !this.fourBarGenerated;
+    this.cdr.detectChanges();
+
+    let joint1 = new Coord( firstPoint.x, firstPoint.y);
+    let joint2 = new Coord( secondPoint.x, secondPoint.y);
+    let joint3 = new Coord( thirdPoint.x, thirdPoint.y);
+    let joint4 = new Coord( fourthPoint.x, fourthPoint.y);
+
+    this.mechanism.addLink(joint1, joint2);
+
+    let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
+    let lastJoint= this.getLastJoint(joints);
+    if (lastJoint !== undefined) {
+      this.mechanism.addLinkToJoint(lastJoint.id, joint3);
+    }
+
+    joints=this.mechanism.getJoints(); //updates list of all joints
+    lastJoint= this.getLastJoint(joints);
+    if (lastJoint !== undefined) {
+      this.mechanism.addLinkToJoint(lastJoint.id, joint4);
+    }
+
+    //adds the grounded joints and input
+    joints=this.mechanism.getJoints();
+    for (const joint of joints) {
+      if(joint.id===6){
+        joint.addGround();
+        joint.addInput();
+      }
+      if(joint.id===9){
+        joint.addGround();
+      }
+    }
+
+    console.log(this.mechanism);
+  }
 
 generateSixBar() {
   this.sixBarGenerated = !this.sixBarGenerated;
@@ -207,8 +259,8 @@ setCouplerLength(x: number){
   this.couplerLength = x;
   if(this.reference === "Center") {
     if (this.position1){
-      const centerJoint = new Joint(-1, this.position1.getMidpoint(this.position1.getJoints()[0], this.position1.getJoints()[1]));
-      this.position1.setLength(this.couplerLength, centerJoint);
+      this.position1.setLength(this.couplerLength, this.position1.getJoints()[0]);
+      //Call function to center?
     }
     if (this.position2){
       this.position2.setLength(this.couplerLength, this.position2.getJoints()[0]);
@@ -257,7 +309,6 @@ setPosXCoord(x: number, posNum: number) {
       frontJoint.setCoordinates(new Coord(x, frontJoint.coords.y));
       backJoint.setCoordinates(new Coord(x-this.couplerLength, backJoint.coords.y));
     }
-    this.setPositionAngle(this.pos1Angle, 1);
   }
   else if (posNum === 2) {
     this.pos2X = x;
@@ -274,7 +325,6 @@ setPosXCoord(x: number, posNum: number) {
       frontJoint.setCoordinates(new Coord(x, frontJoint.coords.y));
       backJoint.setCoordinates(new Coord(x-this.couplerLength, backJoint.coords.y));
     }
-    this.setPositionAngle(this.pos2Angle, 2);
   }
   else if (posNum === 3) {
       this.pos3X = x;
@@ -291,7 +341,6 @@ setPosXCoord(x: number, posNum: number) {
       frontJoint.setCoordinates(new Coord(x, frontJoint.coords.y));
       backJoint.setCoordinates(new Coord(x-this.couplerLength, backJoint.coords.y));
     }
-    this.setPositionAngle(this.pos3Angle, 3);
   }
 }
 
@@ -307,12 +356,12 @@ setPosYCoord(y: number, posNum: number){
     else if (this.reference === "Back") {
       backJoint.setCoordinates(new Coord(backJoint.coords.x, y));
       frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y));
+      //call setangleto?
     }
     else {
       frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y));
       backJoint.setCoordinates(new Coord(backJoint.coords.x, y));
     }
-    this.setPositionAngle(this.pos1Angle, 1);
   }
   else if(posNum === 2){
     const backJoint = this.position2!.getJoints()[0];
@@ -328,7 +377,6 @@ setPosYCoord(y: number, posNum: number){
       frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y));
       backJoint.setCoordinates(new Coord(backJoint.coords.x, y+this.couplerLength));
     }
-    this.setPositionAngle(this.pos2Angle, 2);
   }
   else if (posNum === 3){
     this.pos3Y = y;
@@ -345,7 +393,6 @@ setPosYCoord(y: number, posNum: number){
       frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y));
       backJoint.setCoordinates(new Coord(backJoint.coords.x, y+this.couplerLength));
     }
-    this.setPositionAngle(this.pos3Angle, 3);
   }
 }
 
@@ -353,45 +400,15 @@ setPositionAngle(x: number, posNum: number){
 
   if(posNum === 1){
     this.pos1Angle = x;
-    const backJoint = this.position1!.getJoints()[0];
-    const frontJoint = this.position1!.getJoints()[1];
-    if (this.reference === "Center") {
-      //harder
-    }
-    else if (this.reference === "Back") {
-      this.mechanism.setLinkAngle(this.position1!.id, backJoint, x);
-    }
-    else {
-      this.mechanism.setAngleToJoint(backJoint.id, frontJoint.id, x);
-    }
+
   }
   else if(posNum === 2){
     this.pos2Angle = x;
-    const backJoint = this.position2!.getJoints()[0];
-    const frontJoint = this.position2!.getJoints()[1];
-    if (this.reference === "Center") {
-      //harder
-    }
-    else if (this.reference === "Back") {
-      this.position2!.setAngle(x, backJoint);
-    }
-    else {
-      this.position2!.setAngle(x, frontJoint);
-    }
+
   }
   else if (posNum === 3){
     this.pos3Angle = x;
-    const backJoint = this.position3!.getJoints()[0];
-    const frontJoint = this.position3!.getJoints()[1];
-    if (this.reference === "Center") {
-      //harder
-    }
-    else if (this.reference === "Back") {
-      this.position3!.setAngle(x, backJoint);
-    }
-    else {
-      this.position3!.setAngle(x, frontJoint);
-    }
+
   }
 }
 
@@ -501,5 +518,57 @@ allPositionsDefined(): boolean {
     // Reset flags
     this.fourBarGenerated = false;
     this.sixBarGenerated = false;
+  }
+  findIntersectionPoint(pose1_coord1: Coord, pose2_coord1: Coord, pose3_coord1: Coord) {
+    //slope of Line 1
+    let slope1 = 1 / ((pose2_coord1.y - pose1_coord1.y) / (pose2_coord1.x - pose1_coord1.x));
+    //slope of line 2
+    let slope2 = 1 / ((pose3_coord1.y - pose2_coord1.y) / (pose3_coord1.x - pose2_coord1.x));
+
+    //midpoints of the above two lines
+    let midpoint_line1 = new Coord(
+      (pose1_coord1.x + pose2_coord1.x) / 2,
+      (pose1_coord1.y + pose2_coord1.y) / 2
+    );
+    let midpoint_line2 = new Coord(
+      (pose3_coord1.x + pose2_coord1.x) / 2,
+      (pose3_coord1.y + pose2_coord1.y) / 2
+    );
+
+    //intercept
+    let c1 = midpoint_line1.y + slope1 * midpoint_line1.x;
+    let c2 = midpoint_line2.y + slope2 * midpoint_line2.x;
+
+    //intersection point
+    let x1 = (c1 - c2) / (-slope2 + slope1);
+    let y1 = -slope1 * x1 + c1;
+
+    return new Coord(x1, y1);
+  }
+
+  findIntersectionPoint2(pose1_coord2: Coord, pose2_coord2: Coord, pose3_coord2: Coord) {
+    let slope1 = 1 / ((pose2_coord2.y - pose1_coord2.y) / (pose2_coord2.x - pose1_coord2.x));
+    //slope of line 2
+    let slope2 = 1 / ((pose3_coord2.y - pose2_coord2.y) / (pose3_coord2.x - pose2_coord2.x));
+
+    //midpoints of the above two lines
+    let midpoint_line1 = new Coord(
+      (pose1_coord2.x + pose2_coord2.x) / 2,
+      (pose1_coord2.y + pose2_coord2.y) / 2
+    );
+    let midpoint_line2 = new Coord(
+      (pose3_coord2.x + pose2_coord2.x) / 2,
+      (pose3_coord2.y + pose2_coord2.y) / 2
+    );
+
+    //intercept
+    let c1 = midpoint_line1.y + slope1 * midpoint_line1.x;
+    let c2 = midpoint_line2.y + slope2 * midpoint_line2.x;
+
+    //intersection point
+    let x1 = (c1 - c2) / (-slope2 + slope1);
+    let y1 = -slope1 * x1 + c1;
+
+    return new Coord(x1, y1);
   }
 }

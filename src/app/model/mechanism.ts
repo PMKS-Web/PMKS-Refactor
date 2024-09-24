@@ -366,7 +366,7 @@ export class Mechanism {
      * Moves a joint to a new specified x coordinate.
      *
      * @param {number} jointID
-     * @param {Coord} newCoord
+     * @param {number} newXCoord
      * @memberof Mechanism
      */
     setJointCoord(jointID: number, newCoord: Coord) {
@@ -597,14 +597,13 @@ export class Mechanism {
      *
      * @param {number} linkID
      * @param {number} newLength
-     * @param {Joint} refJoint
      * @memberof Mechanism
      */
-
-    setLinkLength(linkID: number, newLength: number, refJoint: Joint) {
-        this.executeLinkAction(linkID, link => {link.setLength(newLength, refJoint);});
+    /*
+    setLinkLength(linkID: number, newLength: number) {
+        this.executeLinkAction(linkID, link => {link.setLength(newLength);});
     }
-
+     */
     /**
      * Sets the angle of a link relative to the x axis, while maintaining its length given its ID.
      *
@@ -788,8 +787,12 @@ export class Mechanism {
         return this._joints.get(id)!;
     }
 
-    getLink(id: number): Link {
-      return this._links.get(id)!;
+    get_jointIDCount(): number {
+      return this._jointIDCount;
+    }
+
+    getLinks(): IterableIterator<Link> {
+      return this._links.values();
     }
     getArrayOfLinks(): Array<Link>{
       return Array.from(this._links.values());
@@ -798,9 +801,6 @@ export class Mechanism {
     getJoints(): IterableIterator<Joint>{
         return this._joints.values();
     }
-  getArrayOfJoints(): Array<Joint>{
-    return Array.from(this._joints.values());
-  }
     getIndependentLinks(): IterableIterator<Link>{
         let allLinks: Map<number,Link> = new Map();
         for(let [id,link] of this._links){
@@ -820,6 +820,11 @@ export class Mechanism {
     getForces(): IterableIterator<Force>{
         return this._forces.values();
     }
+  //----------------------------SET FUNCTIONS----------------------------
+  set_jointIDCount (count : number){
+      this._jointIDCount = count;
+  }
+
  //----------------------------GET FUNCTIONS FOR KINEMATICS----------------------------
     getSubMechanisms(): Array<Map<Joint,RigidBody[]>>{
         const subMechanisms: Array<Map<Joint,RigidBody[]>> = new Array();

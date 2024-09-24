@@ -36,7 +36,7 @@ export class Link implements RigidBody{
     constructor(id: number, joints: Joint[]);
     constructor(id: number, jointAORJoints: Joint | Joint[], jointB?: Joint){
         this._id = id;
-
+        
         this._mass = 0;
         this._forces = new Map();
         this._joints = new Map();
@@ -140,7 +140,7 @@ export class Link implements RigidBody{
         } else {
             //may need to throw error here in future
         }
-
+        
         this.calculateCenterOfMass();
         if(this._joints.size === 1){
             throw new Error("Link now only contains 1 Joint");
@@ -149,7 +149,7 @@ export class Link implements RigidBody{
         for(let joint of this._joints.values()){
             this._name += joint.name;
         }
-
+        
     }
 
     addForce(newForce: Force){
@@ -388,7 +388,6 @@ export class Link implements RigidBody{
             return false;
         }
     }
-
     moveCoordinates( coord: Coord){
         for(const jointID of this._joints.keys()){
             const joint = this._joints.get(jointID)!;
