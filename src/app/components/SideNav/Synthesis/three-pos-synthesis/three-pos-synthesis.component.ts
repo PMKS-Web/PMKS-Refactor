@@ -315,10 +315,16 @@ setCouplerLength(x: number){
       this.setPosYCoord(centerCoord.y, 1);
     }
     if (this.position2){
+      const centerCoord = this.getNewCoord(this.position2);
       this.position2.setLength(this.couplerLength, this.position2.getJoints()[0]);
+      this.setPosXCoord(centerCoord.x, 1);
+      this.setPosYCoord(centerCoord.y, 1);
     }
     if (this.position3){
+      const centerCoord = this.getNewCoord(this.position3);
       this.position3.setLength(this.couplerLength, this.position3.getJoints()[0]);
+      this.setPosXCoord(centerCoord.x, 1);
+      this.setPosYCoord(centerCoord.y, 1);
     }
   }
   else if (this.reference === "Back"){
