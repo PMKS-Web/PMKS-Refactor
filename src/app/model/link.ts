@@ -164,6 +164,7 @@ export class Link implements RigidBody{
         }
     }
 
+    //I don't think this works
     calculateCenterOfMass(): Coord{
         let totalX = 0;
         let totalY = 0;
@@ -181,6 +182,16 @@ export class Link implements RigidBody{
 
         this._centerOfMass = new Coord(centerX, centerY);
         return this._centerOfMass;
+    }
+
+    getMidpoint(joint1: Joint, joint2: Joint): Coord{
+      let x: number;
+      let y: number;
+
+      x = (joint1.coords.x + joint2.coords.x)/2;
+      y = (joint1.coords.y + joint2.coords.y)/2;
+
+      return new Coord(x, y);
     }
 
     // find the first two non-null joints of a link. Do pythagorean math to find length
@@ -205,6 +216,7 @@ export class Link implements RigidBody{
         }
     }
 
+    // Neither does this
     // find the first tow non-empty joints in map. Calculate angle between them
     // using trigonometry (arctan)
     calculateAngle(): number | null {

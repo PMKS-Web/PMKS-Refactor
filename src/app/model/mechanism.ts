@@ -413,15 +413,15 @@ export class Mechanism {
     /**
      * Given two joints and a desired angle between them, rotates the first joint around the second(mantaining same distance) until the desired angle is reached.
      *
-     * @param {number} jointIDtoChance
+     * @param {number} jointIDtoChange
      * @param {number} jointIDReference
-     * @param {nnumber} newAngle
+     * @param {number} newAngle
      * @memberof Mechanism
      */
     setAngleToJoint(jointIDtoChange: number, jointIDReference: number, newAngle: number) {
         let jointB = this._joints.get(jointIDReference);
         if(jointB === undefined){
-            console.error(`Joint with ID ${jointIDReference} does not exist`);;
+            console.error(`Joint with ID ${jointIDReference} does not exist`);
             return;
         }
         this.executeJointAction(jointIDtoChange, (joint) => true, 'error','success',
@@ -612,11 +612,11 @@ export class Mechanism {
      * @param {number} newAngle
      * @memberof Mechanism
      */
-    /*
-    setLinkAngle(linkID: number, newAngle: number) {
+
+    setLinkAngle(linkID: number, refJoint: Joint, newAngle: number) {
         this.executeLinkAction(linkID, link => {link.setAngle(newAngle, refJoint);});
     }
-     */
+
     /**
      * Changes the mass of a specified Link
      *

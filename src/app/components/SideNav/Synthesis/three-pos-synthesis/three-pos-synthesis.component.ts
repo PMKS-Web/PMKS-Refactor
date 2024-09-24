@@ -94,13 +94,13 @@ specifyPosition(index: number){
       this.pos2Specified = true;
       this.mechanism.addLink(this.coord1B, this.coord2B);
       const links = this.mechanism.getArrayOfLinks();
-      this.position1 = links[links.length - 1];
+      this.position2 = links[links.length - 1];
     }
     else if(index===3) {
       this.pos3Specified = true;
       this.mechanism.addLink(this.coord1C, this.coord2C);
       const links = this.mechanism.getArrayOfLinks();
-      this.position1 = links[links.length - 1];
+      this.position3 = links[links.length - 1];
     }
 }
 
@@ -154,7 +154,6 @@ generateFourBar(){
   }
 
   this.fourBarGenerated = !this.fourBarGenerated;
-  this.cdr.detectChanges();
   let joint1 = this.coord1A;
   let joint2 = this.coord2A;
   let joint3 = this.coord1C;
@@ -208,8 +207,8 @@ setCouplerLength(x: number){
   this.couplerLength = x;
   if(this.reference === "Center") {
     if (this.position1){
-      this.position1.setLength(this.couplerLength, this.position1.getJoints()[0]);
-      //Call function to center?
+      const centerJoint = new Joint(-1, this.position1.getMidpoint(this.position1.getJoints()[0], this.position1.getJoints()[1]));
+      this.position1.setLength(this.couplerLength, centerJoint);
     }
     if (this.position2){
       this.position2.setLength(this.couplerLength, this.position2.getJoints()[0]);
@@ -258,6 +257,7 @@ setPosXCoord(x: number, posNum: number) {
       frontJoint.setCoordinates(new Coord(x, frontJoint.coords.y));
       backJoint.setCoordinates(new Coord(x-this.couplerLength, backJoint.coords.y));
     }
+    this.setPositionAngle(this.pos1Angle, 1);
   }
   else if (posNum === 2) {
     this.pos2X = x;
@@ -274,6 +274,7 @@ setPosXCoord(x: number, posNum: number) {
       frontJoint.setCoordinates(new Coord(x, frontJoint.coords.y));
       backJoint.setCoordinates(new Coord(x-this.couplerLength, backJoint.coords.y));
     }
+    this.setPositionAngle(this.pos2Angle, 2);
   }
   else if (posNum === 3) {
       this.pos3X = x;
@@ -290,6 +291,7 @@ setPosXCoord(x: number, posNum: number) {
       frontJoint.setCoordinates(new Coord(x, frontJoint.coords.y));
       backJoint.setCoordinates(new Coord(x-this.couplerLength, backJoint.coords.y));
     }
+    this.setPositionAngle(this.pos3Angle, 3);
   }
 }
 
@@ -305,12 +307,12 @@ setPosYCoord(y: number, posNum: number){
     else if (this.reference === "Back") {
       backJoint.setCoordinates(new Coord(backJoint.coords.x, y));
       frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y));
-      //call setangleto?
     }
     else {
       frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y));
       backJoint.setCoordinates(new Coord(backJoint.coords.x, y));
     }
+    this.setPositionAngle(this.pos1Angle, 1);
   }
   else if(posNum === 2){
     const backJoint = this.position2!.getJoints()[0];
@@ -326,6 +328,7 @@ setPosYCoord(y: number, posNum: number){
       frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y));
       backJoint.setCoordinates(new Coord(backJoint.coords.x, y+this.couplerLength));
     }
+    this.setPositionAngle(this.pos2Angle, 2);
   }
   else if (posNum === 3){
     this.pos3Y = y;
@@ -342,6 +345,7 @@ setPosYCoord(y: number, posNum: number){
       frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y));
       backJoint.setCoordinates(new Coord(backJoint.coords.x, y+this.couplerLength));
     }
+    this.setPositionAngle(this.pos3Angle, 3);
   }
 }
 
@@ -349,15 +353,45 @@ setPositionAngle(x: number, posNum: number){
 
   if(posNum === 1){
     this.pos1Angle = x;
-
+    const backJoint = this.position1!.getJoints()[0];
+    const frontJoint = this.position1!.getJoints()[1];
+    if (this.reference === "Center") {
+      //harder
+    }
+    else if (this.reference === "Back") {
+      this.mechanism.setLinkAngle(this.position1!.id, backJoint, x);
+    }
+    else {
+      this.mechanism.setAngleToJoint(backJoint.id, frontJoint.id, x);
+    }
   }
   else if(posNum === 2){
     this.pos2Angle = x;
-
+    const backJoint = this.position2!.getJoints()[0];
+    const frontJoint = this.position2!.getJoints()[1];
+    if (this.reference === "Center") {
+      //harder
+    }
+    else if (this.reference === "Back") {
+      this.position2!.setAngle(x, backJoint);
+    }
+    else {
+      this.position2!.setAngle(x, frontJoint);
+    }
   }
   else if (posNum === 3){
     this.pos3Angle = x;
-
+    const backJoint = this.position3!.getJoints()[0];
+    const frontJoint = this.position3!.getJoints()[1];
+    if (this.reference === "Center") {
+      //harder
+    }
+    else if (this.reference === "Back") {
+      this.position3!.setAngle(x, backJoint);
+    }
+    else {
+      this.position3!.setAngle(x, frontJoint);
+    }
   }
 }
 
