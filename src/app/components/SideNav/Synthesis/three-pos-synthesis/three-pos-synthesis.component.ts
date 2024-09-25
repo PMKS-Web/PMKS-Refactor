@@ -13,6 +13,7 @@ import { Coord } from 'src/app/model/coord';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ChangeDetectorRef } from '@angular/core';
+import {PositionSolverService} from "../../../../services/kinematic-solver.service";
 import { DoCheck } from '@angular/core';
 
 
@@ -67,7 +68,7 @@ export class ThreePosSynthesis{
   coord2C = new Coord(this.pos3X + this.couplerLength / 2, this.pos3Y);
   private mechanism: Mechanism;
 
-  constructor(private stateService: StateService, private interactionService: InteractionService, private cdr: ChangeDetectorRef) {
+  constructor(private stateService: StateService, private interactionService: InteractionService, private cdr: ChangeDetectorRef, private positionSolver: PositionSolverService) {
     this.mechanism = this.stateService.getMechanism();
   }
 
@@ -235,6 +236,17 @@ isSixBarGenerated(): boolean {
     else
       return undefined;
   }
+
+
+  // updateCords(){
+  //   this.coord1A = new Coord(this.pos1X - this.couplerLength / 2, this.pos1Y);
+  //   this.coord2A = new Coord(this.pos1X + this.couplerLength / 2, this.pos1Y);
+  //   this.coord1B = new Coord(this.pos2X - this.couplerLength / 2, this.pos2Y);
+  //   this.coord2B = new Coord(this.pos2X + this.couplerLength / 2, this.pos2Y);
+  //   this.coord1C = new Coord(this.pos3X - this.couplerLength / 2, this.pos3Y);
+  //   this.coord2C = new Coord(this.pos3X + this.couplerLength / 2, this.pos3Y);
+  // }
+
   generateFourBar(){
     let listOfLinks = this.mechanism.getArrayOfLinks();
     console.log(listOfLinks);
@@ -248,45 +260,44 @@ isSixBarGenerated(): boolean {
       console.log(this.mechanism.getArrayOfLinks());
     }
 
-    let firstPoint = this.findIntersectionPoint(this.coord1A, this.coord1B, this.coord1C);
-    let secondPoint = this.coord1A;
-    let thirdPoint = this.coord2A;
-    let fourthPoint = this.findIntersectionPoint2(this.coord2A, this.coord2B, this.coord2C);
+    let firstPoint = this.findIntersectionPoint(this.position1!.getJoints()[0]._coords, this.position2!.getJoints()[0]._coords, this.position3!.getJoints()[0]._coords);
+    let secondPoint = this.position1!.getJoints()[0]._coords;
+    let thirdPoint = this.position1!.getJoints()[1]._coords;
+    let fourthPoint = this.findIntersectionPoint2(this.position1!.getJoints()[1]._coords, this.position2!.getJoints()[1]._coords, this.position3!.getJoints()[1]._coords);
 
     this.fourBarGenerated = !this.fourBarGenerated;
     this.cdr.detectChanges();
 
-    let joint1 = new Coord( firstPoint.x, firstPoint.y);
-    let joint2 = new Coord( secondPoint.x, secondPoint.y);
-    let joint3 = new Coord( thirdPoint.x, thirdPoint.y);
-    let joint4 = new Coord( fourthPoint.x, fourthPoint.y);
-
-    this.mechanism.addLink(joint1, joint2);
+    this.mechanism.addLink(firstPoint, secondPoint);
 
     let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
     let lastJoint= this.getLastJoint(joints);
     if (lastJoint !== undefined) {
-      this.mechanism.addLinkToJoint(lastJoint.id, joint3);
+      this.mechanism.addLinkToJoint(lastJoint.id, thirdPoint);
     }
 
     joints=this.mechanism.getJoints(); //updates list of all joints
     lastJoint= this.getLastJoint(joints);
     if (lastJoint !== undefined) {
-      this.mechanism.addLinkToJoint(lastJoint.id, joint4);
+      this.mechanism.addLinkToJoint(lastJoint.id, fourthPoint);
     }
 
     //adds the grounded joints and input
-    joints=this.mechanism.getJoints();
+
+
+    joints=this.mechanism.getJoints(); //instead of using it hard coded just do first and last on the list, we could do a getter for this.
+    let index = 0;
     for (const joint of joints) {
-      if(joint.id===6){
+      if(index === 0){ //using index so we arent dependent on ID of the joints
         joint.addGround();
         joint.addInput();
       }
-      if(joint.id===9){
+      if(index === 3){
         joint.addGround();
       }
+      index++
     }
-
+    this.positionSolver.solvePositions();
     console.log(this.mechanism);
   }
 
