@@ -157,8 +157,8 @@ getReference(): string{
   }
 
   updatePositionCoords(posNum: number, newCoord: Coord) {
-    const roundedX = parseFloat(newCoord.x.toFixed(2));
-    const roundedY = parseFloat(newCoord.y.toFixed(2));
+    const roundedX = parseFloat(newCoord.x.toFixed(3));
+    const roundedY = parseFloat(newCoord.y.toFixed(3));
 
     if (posNum === 1) {
       this.pos1X = roundedX;
@@ -178,7 +178,7 @@ getReference(): string{
     const deltaY = joint2.coords.y - joint1.coords.y;
     let angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI); // Convert radians to degrees
     if (angle < 0) {
-      angle += 360; // Normalize to 0-360
+      angle += 360;
     }
     return angle;
   }
@@ -188,7 +188,8 @@ getReference(): string{
     if (normalizedAngle < 0) {
       normalizedAngle += 360;
     }
-    const roundedAngle = Math.round(normalizedAngle);
+
+    const roundedAngle = parseFloat(normalizedAngle.toFixed(3));
 
     if (posNum === 1) {
       this.pos1Angle = roundedAngle;
