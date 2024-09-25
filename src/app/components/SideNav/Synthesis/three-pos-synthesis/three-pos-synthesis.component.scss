@@ -100,10 +100,15 @@
   .right-aligned {
     display: flex;
     align-items: center;
-    margin-right: -45px;
+    justify-content: flex-end;
+    margin-right: 0px;
     margin-top: 10px;
-
+    gap: 2px;
   }
+
+.right-aligned span {
+  margin-left: 0px;
+}
 
   .subtitle {
     display: flex;
@@ -298,4 +303,16 @@
     color: #e8eaf6;
     background-color: #3F51B5;
   }
+/* Adjusting input fields */
+.poseData {
+  display: flex;
+  flex-direction: row;/* Ensure the X, Y, and angle inputs are on the same row */
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px; /* Reduces space between X, Y, and deg blocks */
+  margin-right: 0; /* Remove negative margin */
+  margin-bottom: 15px;
+  margin-top: 7px;
+}
+
 
