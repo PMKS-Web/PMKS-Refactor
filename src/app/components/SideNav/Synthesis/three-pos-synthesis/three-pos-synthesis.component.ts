@@ -317,49 +317,50 @@ generateSixBar() {
   //}
 
 setCouplerLength(x: number){
-  this.couplerLength = x;
-  if(this.reference === "Center") {
-    if (this.position1){
-      const centerCoord = this.getNewCoord(this.position1);
-      this.position1.setLength(this.couplerLength, this.position1.getJoints()[0]);
-      this.setPosXCoord(centerCoord.x, 1);
-      this.setPosYCoord(centerCoord.y, 1);
+    if (x > 0) {
+
+      this.couplerLength = x;
+      if (this.reference === "Center") {
+        if (this.position1) {
+          const centerCoord = this.getNewCoord(this.position1);
+          this.position1.setLength(this.couplerLength, this.position1.getJoints()[0]);
+          this.setPosXCoord(centerCoord.x, 1);
+          this.setPosYCoord(centerCoord.y, 1);
+        }
+        if (this.position2) {
+          const centerCoord = this.getNewCoord(this.position2);
+          this.position2.setLength(this.couplerLength, this.position2.getJoints()[0]);
+          this.setPosXCoord(centerCoord.x, 2);
+          this.setPosYCoord(centerCoord.y, 2);
+        }
+        if (this.position3) {
+          const centerCoord = this.getNewCoord(this.position3);
+          this.position3.setLength(this.couplerLength, this.position3.getJoints()[0]);
+          this.setPosXCoord(centerCoord.x, 3);
+          this.setPosYCoord(centerCoord.y, 3);
+        }
+      } else if (this.reference === "Back") {
+        if (this.position1) {
+          this.position1.setLength(this.couplerLength, this.position1.getJoints()[0]);
+        }
+        if (this.position2) {
+          this.position2.setLength(this.couplerLength, this.position2.getJoints()[0]);
+        }
+        if (this.position3) {
+          this.position3.setLength(this.couplerLength, this.position3.getJoints()[0]);
+        }
+      } else {
+        if (this.position1) {
+          this.position1.setLength(this.couplerLength, this.position1.getJoints()[1]);
+        }
+        if (this.position2) {
+          this.position2.setLength(this.couplerLength, this.position2.getJoints()[1]);
+        }
+        if (this.position3) {
+          this.position3.setLength(this.couplerLength, this.position3.getJoints()[1]);
+        }
+      }
     }
-    if (this.position2){
-      const centerCoord = this.getNewCoord(this.position2);
-      this.position2.setLength(this.couplerLength, this.position2.getJoints()[0]);
-      this.setPosXCoord(centerCoord.x, 1);
-      this.setPosYCoord(centerCoord.y, 1);
-    }
-    if (this.position3){
-      const centerCoord = this.getNewCoord(this.position3);
-      this.position3.setLength(this.couplerLength, this.position3.getJoints()[0]);
-      this.setPosXCoord(centerCoord.x, 1);
-      this.setPosYCoord(centerCoord.y, 1);
-    }
-  }
-  else if (this.reference === "Back"){
-    if (this.position1){
-      this.position1.setLength(this.couplerLength, this.position1.getJoints()[0]);
-    }
-    if (this.position2){
-      this.position2.setLength(this.couplerLength, this.position2.getJoints()[0]);
-    }
-    if (this.position3){
-      this.position3.setLength(this.couplerLength, this.position3.getJoints()[0]);
-    }
-  }
-  else {
-    if (this.position1){
-      this.position1.setLength(this.couplerLength, this.position1.getJoints()[1]);
-    }
-    if (this.position2){
-      this.position2.setLength(this.couplerLength, this.position2.getJoints()[1]);
-    }
-    if (this.position3){
-      this.position3.setLength(this.couplerLength, this.position3.getJoints()[1]);
-    }
-  }
 }
 
 setPosXCoord(x: number, posNum: number) {
@@ -376,7 +377,7 @@ setPosXCoord(x: number, posNum: number) {
       }
       else {
         backJoint.setCoordinates(new Coord (backJoint.coords.x - distanceMoved, backJoint.coords.y));
-        frontJoint.setCoordinates(new Coord (frontJoint.coords.x - distanceMoved, backJoint.coords.y));
+        frontJoint.setCoordinates(new Coord (frontJoint.coords.x - distanceMoved, frontJoint.coords.y));
       }
     }
     else if (this.reference === "Back") {
@@ -416,7 +417,7 @@ setPosXCoord(x: number, posNum: number) {
       }
       else {
         backJoint.setCoordinates(new Coord (backJoint.coords.x - distanceMoved, backJoint.coords.y));
-        frontJoint.setCoordinates(new Coord (frontJoint.coords.x - distanceMoved, backJoint.coords.y));
+        frontJoint.setCoordinates(new Coord (frontJoint.coords.x - distanceMoved, frontJoint.coords.y));
       }
     }
     else if (this.reference === "Back") {
@@ -456,7 +457,7 @@ setPosXCoord(x: number, posNum: number) {
       }
       else {
         backJoint.setCoordinates(new Coord (backJoint.coords.x - distanceMoved, backJoint.coords.y));
-        frontJoint.setCoordinates(new Coord (frontJoint.coords.x - distanceMoved, backJoint.coords.y));
+        frontJoint.setCoordinates(new Coord (frontJoint.coords.x - distanceMoved, frontJoint.coords.y));
       }
     }
     else if (this.reference === "Back") {
