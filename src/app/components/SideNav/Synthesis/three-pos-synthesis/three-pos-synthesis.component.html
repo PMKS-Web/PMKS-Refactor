@@ -3,8 +3,8 @@
   <div class="scroll-container">
   <div style="margin-bottom:15px;">
             <!-- Each coupler position has the same length which is set here -->
-            <p class="subtitle" style="margin-right: 4px; margin-left: 6px;color:grey;font-size:14px;">Automatically create a 4-bar linkage based on 3 coupler poses.</p>
-            <p style="margin-bottom:-3px; margin-right: 4px; margin-left: 6px; margin-top: 5px;">Coupler Link Specifications</p>
+            <p class="subtitle" style="margin-right: 4px; margin-left: 6px;margin-bottom: 10px;color:black;font-size:14px;">Automatically create a 4-bar linkage based on 3 coupler poses.</p>
+            <p style="margin-bottom:-3px; margin-right: 4px; margin-left: 6px; margin-top: 15px;">Coupler Link Specifications</p>
             <div class="input-container">
               <img src="assets/icons/length.svg" alt="length icon" class="icon">
             <span class="label">Length</span>
@@ -15,7 +15,7 @@
               >help_outline
               </mat-icon>
 
-              <single-input-block class="right-aligned" [input1Value]="2" style="margin-bottom:-7px;margin-left: 41px;"
+              <single-input-block class="right-aligned" [input1Value]="2" style="margin-top:-12px;margin-left: 41px;"
             (input1Change)="setCouplerLength($event)"
 
             unit1="cm"
