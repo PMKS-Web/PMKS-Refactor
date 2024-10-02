@@ -306,7 +306,7 @@
 /* Adjusting input fields */
 .poseData {
   display: flex;
-  flex-direction: row;/* Ensure the X, Y, and angle inputs are on the same row */
+  flex-direction: column;/* Ensure the X, Y, and angle inputs are on the different row */
   justify-content: space-between;
   align-items: center;
   gap: 4px; /* Reduces space between X, Y, and deg blocks */
