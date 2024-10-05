@@ -214,7 +214,7 @@
   #removeAllGrey{
     margin:0 auto;
     display:inherit;
-    background-color: #e8eaf6;
+   background-color: #e8eaf6;
     color: #808080;
     width: 60%;
     height: 40px;
@@ -226,6 +226,8 @@
     margin-bottom: 6px;
     border: none;
   }
+
+
 
   #removeAll:hover {
     color: #ffcccb;
@@ -253,6 +255,7 @@
   #specify:hover {
     color: #e8eaf6;
     background-color: #3F51B5;
+    cursor:pointer;
   }
 
   #lengthTooltip {
@@ -306,10 +309,10 @@
 /* Adjusting input fields */
 .poseData {
   display: flex;
-  flex-direction: row;/* Ensure the X, Y, and angle inputs are on the same row */
+  flex-direction: column;/* Ensure the X, Y, and angle inputs are on the different row */
   justify-content: space-between;
   align-items: center;
-  gap: 4px; /* Reduces space between X, Y, and deg blocks */
+  gap: 2px; /* Reduces space between X, Y, and deg blocks */
   margin-right: 0; /* Remove negative margin */
   margin-bottom: 15px;
   margin-top: 7px;
