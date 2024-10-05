@@ -27,9 +27,9 @@ export class AnimationBarComponent {
 
   @HostListener('document:mousemove', ['$event'])
   onMouseMove(event: MouseEvent) {
-    let screenPos: Coord = new Coord(event.offsetX, event.offsetY);
-    let currentZoomPan = this.panZoomService.getZoomPan();
-    let mouseCoords = this.unitConversionService.mouseCoordToModelCoord(screenPos, currentZoomPan);
+    //let screenPos: Coord = new Coord(event.offsetX, event.offsetY);
+    //let currentZoomPan = this.panZoomService.getZoomPan();
+    let mouseCoords = this.interactionService.getMousePos().model;
     this.cursorPosition = mouseCoords.x.toString() + " " + mouseCoords.y.toString();
   }
 
@@ -98,8 +98,6 @@ export class AnimationBarComponent {
     }
     return index;
   }
-
-
 
 
 }
