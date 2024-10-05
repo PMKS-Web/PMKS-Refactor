@@ -15,6 +15,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ChangeDetectorRef } from '@angular/core';
 import {PositionSolverService} from "../../../../services/kinematic-solver.service";
 import { DoCheck } from '@angular/core';
+import {JointInteractor} from "../../../../controllers/joint-interactor";
 
 
 
@@ -72,7 +73,42 @@ export class ThreePosSynthesis{
     this.mechanism = this.stateService.getMechanism();
   }
 
+  ngOnInit(): void {
+    this.lockCurrentJoint();
+  }
+
+  getMechanism(): Mechanism {
+    return this.stateService.getMechanism();
+  }
+
+  getCurrentJoint() {
+    let currentJointInteractor = this.interactionService.getSelectedObject();
+
+    if (currentJointInteractor instanceof JointInteractor) {
+      currentJointInteractor.draggable = false; // Always lock dragging for joints
+    }
+    return (currentJointInteractor as JointInteractor).getJoint();
+  }
+
+  lockCurrentJoint(): void {
+    let currentJointInteractor = this.interactionService.getSelectedObject();
+
+    if (currentJointInteractor instanceof JointInteractor) {
+      currentJointInteractor.draggable = false; // Always lock dragging for joints
+    }
+  }
+
+  lockCurrentLink(): void {
+    let currentLinkInteractor = this.interactionService.getSelectedObject();
+
+    if (currentLinkInteractor instanceof LinkInteractor) {
+      currentLinkInteractor.draggable = true; // Ensure links are draggable
+    }
+  }
+
   ngDoCheck() {
+    this.lockCurrentJoint();
+    this.lockCurrentLink();
     if (this.position1 && this.pos1Specified) {
       const newCoord = this.getNewCoord(this.position1);
       this.updatePositionCoords(1, newCoord);
