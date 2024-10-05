@@ -15,6 +15,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ChangeDetectorRef } from '@angular/core';
 import {PositionSolverService} from "../../../../services/kinematic-solver.service";
 import { DoCheck } from '@angular/core';
+import {Position} from "../../../../model/position";
 
 
 
@@ -55,9 +56,9 @@ export class ThreePosSynthesis{
   pos3Y: number = 0;
   pos3Angle: number = 0;
   pos3Specified: boolean = false;
-  position1: Link | null = null;
-  position2: Link | null = null;
-  position3: Link | null = null;
+  position1: Position | null = null;
+  position2: Position | null = null;
+  position3: Position | null = null;
   fourBarGenerated: boolean = false;
   sixBarGenerated: boolean = false;
   coord1A = new Coord(this.pos1X - this.couplerLength / 2, this.pos1Y);
@@ -104,23 +105,23 @@ getReference(): string{
   specifyPosition(index: number) {
     if (index === 1) {
       this.pos1Specified = true;
-      this.mechanism.addLink(this.coord1A, this.coord2A);
-      const links = this.mechanism.getArrayOfLinks();
-      this.position1 = links[links.length - 1];
+      this.mechanism.addPos(this.coord1A, this.coord2A);
+      const positions = this.mechanism.getArrayOfPositions();
+      this.position1 = positions[positions.length - 1];
     } else if (index === 2) {
       this.pos2Specified = true;
-      this.mechanism.addLink(this.coord1B, this.coord2B);
-      const links = this.mechanism.getArrayOfLinks();
-      this.position2 = links[links.length - 1];
+      this.mechanism.addPos(this.coord1B, this.coord2B);
+      const positions = this.mechanism.getArrayOfPositions();
+      this.position2 = positions[positions.length - 1];
     } else if (index === 3) {
       this.pos3Specified = true;
-      this.mechanism.addLink(this.coord1C, this.coord2C);
-      const links = this.mechanism.getArrayOfLinks();
-      this.position3 = links[links.length - 1];
+      this.mechanism.addPos(this.coord1C, this.coord2C);
+      const positions = this.mechanism.getArrayOfPositions();
+      this.position3 = positions[positions.length - 1];
     }
   }
 
-  getNewCoord(position: Link): Coord {
+  getNewCoord(position: Position): Coord {
     let joint: Joint;
     if (this.reference === "Back") {
       joint = position.getJoints()[0]; // First joint for "Back"
@@ -276,7 +277,7 @@ isSixBarGenerated(): boolean {
       this.mechanism.addLinkToJoint(lastJoint.id, thirdPoint);
     }
 
-    joints=this.mechanism.getJoints(); //updates list of all joints
+    joints = this.mechanism.getJoints(); //updates list of all joints
     lastJoint= this.getLastJoint(joints);
     if (lastJoint !== undefined) {
       this.mechanism.addLinkToJoint(lastJoint.id, fourthPoint);
@@ -701,7 +702,7 @@ setPosYCoord(y: number, posNum: number){
     this.cdr.detectChanges();
   }
 
-  getReferenceJoint(position: Link): Joint {
+  getReferenceJoint(position: Position): Joint {
     if (this.reference === "Back") {
       return position.getJoints()[0];
     } else if (this.reference === "Front") {

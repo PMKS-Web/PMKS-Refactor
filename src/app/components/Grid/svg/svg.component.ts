@@ -16,7 +16,7 @@ import { UnitConversionService } from 'src/app/services/unit-conversion.service'
 export class SvgComponent extends AbstractInteractiveComponent {
 
   constructor(public override interactionService: InteractionService,
-    private stateService: StateService, private panZoomService: PanZoomService, private unitConversionService: UnitConversionService) {
+    private stateService: StateService, private panZoomService: PanZoomService, private unitConversionService: UnitConversionService,) {
 
     super(interactionService);
   }
