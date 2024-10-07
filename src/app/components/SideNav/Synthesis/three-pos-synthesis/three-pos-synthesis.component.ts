@@ -285,20 +285,22 @@ isSixBarGenerated(): boolean {
 
     //adds the grounded joints and input
 
-
+    //TO-DO get the location of the last joint in the joints array ans start th eindex from there because now we have joints in this array fromn the positions.!
     joints=this.mechanism.getJoints(); //instead of using it hard coded just do first and last on the list, we could do a getter for this.
     let index = 0;
     for (const joint of joints) {
-      if(index === 0){ //using index so we arent dependent on ID of the joints
+      if(index === 6){ //using index so we arent dependent on ID of the joints
         joint.addGround();
         joint.addInput();
       }
-      if(index === 3){
+      if(index === 9){
         joint.addGround();
       }
       index++
     }
     this.positionSolver.solvePositions();
+    this.verifyMechanismPath();
+    console.log(this.positionSolver.getAnimationPositions());
     console.log(this.mechanism);
   }
 
@@ -877,4 +879,50 @@ allPositionsDefined(): boolean {
 
     return new Coord(x1, y1);
   }
+  verifyMechanismPath() {
+    const threshold = 0.09;
+    const userPositions = [this.position1, this.position2, this.position3];
+    const animationPaths = this.positionSolver.getAnimationPositions();
+
+    userPositions.forEach(position => {
+      const positionCoords = position!.getJoints().map(joint => joint._coords);//converts positions joints into cords in a array
+      let allMatched = true;
+
+      for (const coord of positionCoords) {
+        let jointMatched = false; //to check if both left and right joint pass throughh
+
+        for (const path of animationPaths) {
+          for (const pathPoint of path) {
+            const distance = this.calculateDistance(coord, pathPoint);
+            if (distance <= threshold) {
+              jointMatched = true;
+              break;
+            }
+          }
+          if (jointMatched){
+            break;
+          }
+        }
+
+        if (!jointMatched) {
+          allMatched = false;
+          break;
+        }
+      }
+
+
+      if (allMatched) {
+        position!.setColor('green');
+      } else {
+        position!.setColor('red');
+      }
+    });
+  }
+
+  calculateDistance(coord1: Coord, coord2: Coord): number {
+    const dx = coord1.x - coord2.x;
+    const dy = coord1.y - coord2.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
 }

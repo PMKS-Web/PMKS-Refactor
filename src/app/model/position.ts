@@ -17,11 +17,12 @@ export class Position implements RigidBody {
   private _isLocked: boolean;
 
   private positionColorOptions = [
-    '#FF5733',
-    '#33FFBD',
-    '#FF33A6',
-    '#335BFF',
-    '#33FF57'
+    '#5E646D87'
+    // '#FF5733',
+    // '#33FFBD',
+    // '#FF33A6',
+    // '#335BFF',
+    // '#33FF57'
   ];
 
   constructor(id: number, jointA: Joint, jointB: Joint);
@@ -307,10 +308,14 @@ export class Position implements RigidBody {
     }
   }
 
-  setColor(index: number) {
-    console.log(index);
-    this._color = this.positionColorOptions[index];
-    console.log(this._color);
+  // setColor(index: number) {
+  //   console.log(index);
+  //   this._color = this.positionColorOptions[index];
+  //   console.log(this._color);
+  // }
+
+  setColor(color: string) {
+    this._color = color;
   }
 
   getJoints(): Joint[] {

@@ -22,23 +22,18 @@ export class SVGPathService {
     return this.calculateConvexPath(hullCoords,radius);
   }
 
-  getSinglePosDrawnPath(coords: Coord[], radius: number): string {
-    if (coords.length !== 2) {
-      throw new Error("A position should only have two joints");
+  getSinglePosDrawnPath(allCoords: Coord[], radius: number): string {
+
+    //check if coordinates are collinear. If they are, use the two returned coords(the end points) to draw a line
+    let collinearCoords: Coord[] | undefined = this.findCollinearCoords(allCoords);
+    if(collinearCoords !== undefined){
+      //build path string between two coords
+      return this.calculateTwoPointPath(collinearCoords[0],collinearCoords[1],radius);
     }
-
-    let x1 = coords[0].x;
-    let y1 = coords[0].y;
-    let x2 = coords[1].x;
-    let y2 = coords[1].y;
-
-    return `
-        M ${x1},${y1}
-        L ${x2},${y2}
-        A ${radius},${radius} 0 0,1 ${x2 + radius},${y2}
-        L ${x1 - radius},${y1}
-        A ${radius},${radius} 0 0,1 ${x1},${y1}
-    `;
+    //If not collinear, use grahamScan to determine hull Points
+    //(The points which make up a convex polygon containing the least number of "joints" in drawing order)
+    let hullCoords: Coord[] = this.grahamScan(allCoords);
+    return this.calculateConvexPath(hullCoords,radius);
   }
 
   private findCollinearCoords(coords: Coord[]): Coord[] | undefined {

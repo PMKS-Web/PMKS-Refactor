@@ -26,6 +26,7 @@ export class Mechanism {
         this._joints = new Map();
         this._links = new Map();
         this._forces = new Map();
+        this._positions = new Map();
         this._compoundLinks = new Map();
         this._idCount = 0;
         this._jointIDCount = 0;
@@ -39,6 +40,7 @@ export class Mechanism {
         console.log("updated Mechanism to");
         console.log(Array.from(this._joints.values()));
         console.log(Array.from(this._links.values()));
+        console.log(Array.from(this._positions.values()));
         this._mechanismChange.next(this);
     }
 
@@ -873,8 +875,13 @@ export class Mechanism {
     getLinks(): IterableIterator<Link> {
       return this._links.values();
     }
+
     getArrayOfLinks(): Array<Link>{
       return Array.from(this._links.values());
+    }
+
+    public getPositions(): Iterable<Position> {
+      return this._positions.values();
     }
 
     getArrayOfPositions(): Position[] {
