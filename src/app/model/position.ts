@@ -1,6 +1,6 @@
-import { Coord } from '../model/coord';
-import { Joint } from '../model/joint';
-import { Force } from '../model/force';
+import {Coord} from '../model/coord';
+import {Joint} from '../model/joint';
+import {Force} from '../model/force';
 
 export interface RigidBody {
   getJoints(): Joint[];
@@ -164,11 +164,8 @@ export class Position implements RigidBody {
   }
 
   private generateName(): string {
-    let name = "";
-    this._joints.forEach(joint => {
-      name += joint.name;
-    });
-    return name;
+    let nameNum = this.id + 1;
+    return "Position " + nameNum.toString();
   }
 
   calculateLength(): number | null {

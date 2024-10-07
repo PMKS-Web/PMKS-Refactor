@@ -28,7 +28,7 @@ export class Joint {
           this._name = "-1";
         }
         else {
-          this._name = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".charAt(id % 52);
+          this._name = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".charAt(Math.abs(id) % 52);
         }
         this._type = JointType.Revolute;
         this._angle = 0;

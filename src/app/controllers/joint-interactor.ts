@@ -48,7 +48,6 @@ export class JointInteractor extends Interactor {
 
         let availableContext: ContextMenuOption[] = [];
         let mechanism: Mechanism = this.stateService.getMechanism();
-
         availableContext.push(
             {
                 icon: "assets/contextMenuIcons/addLink.svg",
