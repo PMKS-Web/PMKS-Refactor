@@ -32,11 +32,13 @@ export class Link implements RigidBody{
         '#0D453E',
       ];
 
+    private positionColorOptions = ['purple', 'orange'];
+
     constructor(id: number, jointA: Joint, jointB: Joint);
     constructor(id: number, joints: Joint[]);
     constructor(id: number, jointAORJoints: Joint | Joint[], jointB?: Joint){
         this._id = id;
-        
+
         this._mass = 0;
         this._forces = new Map();
         this._joints = new Map();
@@ -61,6 +63,12 @@ export class Link implements RigidBody{
 
 
     }
+    static createPosition(id: number, joints: Joint[]): Link {
+      const position = new Link(id, joints[0], joints[1]);
+      position._color = position.positionColorOptions[id % position.positionColorOptions.length];
+      return position;
+    }
+
     //getters
     get id(): number {
         return this._id;
@@ -140,7 +148,7 @@ export class Link implements RigidBody{
         } else {
             //may need to throw error here in future
         }
-        
+
         this.calculateCenterOfMass();
         if(this._joints.size === 1){
             throw new Error("Link now only contains 1 Joint");
@@ -149,7 +157,7 @@ export class Link implements RigidBody{
         for(let joint of this._joints.values()){
             this._name += joint.name;
         }
-        
+
     }
 
     addForce(newForce: Force){
@@ -408,9 +416,4 @@ export class Link implements RigidBody{
         this._color=this.linkColorOptions[index];
         console.log(this._color);
     }
-
-
-
-
-
 }

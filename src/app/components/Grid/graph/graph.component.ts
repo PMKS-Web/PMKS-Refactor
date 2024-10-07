@@ -5,6 +5,7 @@ import { Coord } from 'src/app/model/coord';
 import { Link } from 'src/app/model/link';
 import { Joint } from 'src/app/model/joint';
 import { Force } from 'src/app/model/force';
+import { Position} from "src/app/model/position";
 import { CompoundLink } from 'src/app/model/compound-link';
 import { Mechanism } from 'src/app/model/mechanism';
 import { InteractionService } from 'src/app/services/interaction.service';
@@ -25,6 +26,10 @@ export class GraphComponent {
 
   public getJoints(): Joint[] {
     return Array.from(this.stateService.getMechanism().getJoints());
+  }
+
+  public getPositions(): Position[] {
+    return Array.from(this.stateService.getMechanism().getPositions());
   }
 
   public getLinks(): Link[] {

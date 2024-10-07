@@ -4,6 +4,8 @@ import { Link, RigidBody } from '../model/link'
 import { Force } from '../model/force'
 import { CompoundLink } from '../model/compound-link'
 import { BehaviorSubject } from 'rxjs'
+import {Position} from "./position";
+
 
 export class Mechanism {
     private _joints: Map<number, Joint>;
@@ -17,11 +19,14 @@ export class Mechanism {
     private _compoundLinkIDCount: number;
     private _mechanismChange: BehaviorSubject<Mechanism> = new BehaviorSubject<Mechanism>(this);
     public _mechanismChange$ = this._mechanismChange.asObservable();
+    private _positions: Map<number, Position> = new Map();
+    private _positionIDCount: number = 0;
 
     constructor() {
         this._joints = new Map();
         this._links = new Map();
         this._forces = new Map();
+        this._positions = new Map();
         this._compoundLinks = new Map();
         this._idCount = 0;
         this._jointIDCount = 0;
@@ -35,6 +40,7 @@ export class Mechanism {
         console.log("updated Mechanism to");
         console.log(Array.from(this._joints.values()));
         console.log(Array.from(this._links.values()));
+        console.log(Array.from(this._positions.values()));
         this._mechanismChange.next(this);
     }
 
@@ -63,6 +69,30 @@ export class Mechanism {
         this.notifyChange();
         //console.log(this);
     }
+
+  addPos(coordOne: Coord, coordTwo: Coord) {
+    // Create two joints for the new position
+    let jointA = new Joint(this._jointIDCount, coordOne);
+    this._jointIDCount++;
+    let jointB = new Joint(this._jointIDCount, coordTwo);
+    this._jointIDCount++;
+
+    this._joints.set(jointA.id, jointA);
+    this._joints.set(jointB.id, jointB);
+
+    let position = new Position(this._positionIDCount, [jointA, jointB]);
+
+    this._positionIDCount++;
+    this._positions.set(position.id, position);
+    // this._linkIDCount++;
+    // this._links.set(position.id, position);
+
+    // console.log("Pos:");
+    // console.log( this._positions);
+
+    this.notifyChange();
+    //console.log(this);
+  }
 
     //----------------------------JOINT CONTEXT MENU ACTIONS----------------------------
 
@@ -454,6 +484,22 @@ export class Mechanism {
         //console.log(this);
     }
 
+  /**
+   * Executes an action on the specified position if it exists.
+   * @param positionId The ID of the position to act upon.
+   * @param action The action to execute.
+   */
+  private executePositionAction(positionId: number, action: (position: Position) => void): void {
+    if (this._positions.has(positionId)) {
+      const position = this._positions.get(positionId);
+      if (position) {
+        action(position);
+      }
+    } else {
+      console.error(`Position with ID ${positionId} does not exist.`);
+    }
+  }
+
     /**
      * attaches a tracer point(effectively a joint) to a an existing link.
      *
@@ -527,6 +573,18 @@ export class Mechanism {
             this._links.delete(link.id);
         });
     }
+
+    public removePosition(positionId: number): void {
+      this.executePositionAction(positionId, position => {
+        // If this position is the only one associated with a joint, delete it.
+        this.removePositionCascadeJoints(position);
+
+        // Finally, delete the position from the map
+        this._positions.delete(position.id);
+        console.log(`Position with ID ${positionId} removed.`);
+      });
+    }
+
     //----------------------------LINK HELPERS----------------------------
     private removeLinkCascadeForces(link: Link){
         for(let forceID of link.forces.keys()){
@@ -551,6 +609,30 @@ export class Mechanism {
             }
         }
     }
+
+  /**
+   * Checks if this position is the only one associated with a joint and removes it if so.
+   * @param position The position to check.
+   */
+  private removePositionCascadeJoints(position: Position): void {
+    for (let joint of position.joints.values()) {
+      let isIsolated = true; // Assume joint is isolated initially
+
+      // Check if joint is part of any other position
+      for (let aPosition of this._positions.values()) {
+        if (aPosition.id !== position.id && aPosition.containsJoint(joint.id)) {
+          isIsolated = false; // Joint isn't isolated, move to next joint
+          break;
+        }
+      }
+
+      // Delete isolated joint
+      if (isIsolated) {
+        this._joints.delete(joint.id);
+        console.log(`Isolated joint with ID ${joint.id} removed.`);
+      }
+    }
+  }
 
     // first removes every link within the compound link, then the compound link itself
     public removeCompoundLink (compoundLink: CompoundLink) {
@@ -580,8 +662,7 @@ export class Mechanism {
         }
 
     }
-
-    //----------------------------LINK EDIT MENU ACTIONS----------------------------
+        //----------------------------LINK EDIT MENU ACTIONS----------------------------
     /**
      * Sets the name of a link given its ID.
      *
@@ -794,8 +875,17 @@ export class Mechanism {
     getLinks(): IterableIterator<Link> {
       return this._links.values();
     }
+
     getArrayOfLinks(): Array<Link>{
       return Array.from(this._links.values());
+    }
+
+    public getPositions(): Iterable<Position> {
+      return this._positions.values();
+    }
+
+    getArrayOfPositions(): Position[] {
+      return Array.from(this._positions.values());
     }
 
     getJoints(): IterableIterator<Joint>{
