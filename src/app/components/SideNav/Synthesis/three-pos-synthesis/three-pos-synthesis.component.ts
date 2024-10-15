@@ -48,11 +48,11 @@ export class ThreePosSynthesis{
   pos1Y: number = 0;
   pos1Angle: number = 0;
   pos1Specified: boolean = false;
-  pos2X: number = 0;
+  pos2X: number = -2.5;
   pos2Y: number = 0;
   pos2Angle: number = 0;
   pos2Specified: boolean = false;
-  pos3X: number = 0;
+  pos3X: number = 2.5;
   pos3Y: number = 0;
   pos3Angle: number = 0;
   pos3Specified: boolean = false;
@@ -108,16 +108,19 @@ getReference(): string{
       this.mechanism.addPos(this.coord1A, this.coord2A);
       const positions = this.mechanism.getArrayOfPositions();
       this.position1 = positions[positions.length - 1];
+      this.position1.name = "Position 1";
     } else if (index === 2) {
       this.pos2Specified = true;
       this.mechanism.addPos(this.coord1B, this.coord2B);
       const positions = this.mechanism.getArrayOfPositions();
       this.position2 = positions[positions.length - 1];
+      this.position2.name = "Position 2";
     } else if (index === 3) {
       this.pos3Specified = true;
       this.mechanism.addPos(this.coord1C, this.coord2C);
       const positions = this.mechanism.getArrayOfPositions();
       this.position3 = positions[positions.length - 1];
+      this.position3.name = "Position 3";
     }
   }
 
@@ -209,12 +212,12 @@ resetPos(pos: number){
     }
     else if(pos==2){
         this.pos2Angle=0;
-        this.pos2X=0;
+        this.pos2X=-2.5;
         this.pos2Y=0;
     }
     else {
         this.pos3Angle=0;
-        this.pos3X=0;
+        this.pos3X=2.5;
         this.pos3Y=0;
     }
 }
@@ -248,60 +251,65 @@ isSixBarGenerated(): boolean {
   //   this.coord2C = new Coord(this.pos3X + this.couplerLength / 2, this.pos3Y);
   // }
 
-  generateFourBar(){
-    let listOfLinks = this.mechanism.getArrayOfLinks();
-    console.log(listOfLinks);
-    let len;
-    let i;
-    for (i = 0, len = listOfLinks.length; i < len; i++) {
-      let linkId = listOfLinks[i].id;
-      console.log(linkId);
-      this.mechanism.removeLink(linkId);
-      console.log("LIST OF LINKS AFTER DELETION:");
-      console.log(this.mechanism.getArrayOfLinks());
-    }
-
-    let firstPoint = this.findIntersectionPoint(this.position1!.getJoints()[0]._coords, this.position2!.getJoints()[0]._coords, this.position3!.getJoints()[0]._coords);
-    let secondPoint = this.position1!.getJoints()[0]._coords;
-    let thirdPoint = this.position1!.getJoints()[1]._coords;
-    let fourthPoint = this.findIntersectionPoint2(this.position1!.getJoints()[1]._coords, this.position2!.getJoints()[1]._coords, this.position3!.getJoints()[1]._coords);
-
-    this.fourBarGenerated = !this.fourBarGenerated;
-    this.cdr.detectChanges();
-
-    this.mechanism.addLink(firstPoint, secondPoint);
-
-    let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
-    let lastJoint= this.getLastJoint(joints);
-    if (lastJoint !== undefined) {
-      this.mechanism.addLinkToJoint(lastJoint.id, thirdPoint);
-    }
-
-    joints = this.mechanism.getJoints(); //updates list of all joints
-    lastJoint= this.getLastJoint(joints);
-    if (lastJoint !== undefined) {
-      this.mechanism.addLinkToJoint(lastJoint.id, fourthPoint);
-    }
-
-    //adds the grounded joints and input
-
-    //TO-DO get the location of the last joint in the joints array ans start th eindex from there because now we have joints in this array fromn the positions.!
-    joints=this.mechanism.getJoints(); //instead of using it hard coded just do first and last on the list, we could do a getter for this.
-    let index = 0;
-    for (const joint of joints) {
-      if(index === 6){ //using index so we arent dependent on ID of the joints
-        joint.addGround();
-        joint.addInput();
+  generateFourBar() {
+    //Button changes to "clear four bar" when already generated, so remove mechanism
+    if (this.fourBarGenerated) {
+      let listOfLinks = this.mechanism.getArrayOfLinks();
+      console.log(listOfLinks);
+      let len;
+      let i;
+      for (i = 0, len = listOfLinks.length; i < len; i++) {
+        let linkId = listOfLinks[i].id;
+        console.log(linkId);
+        this.mechanism.removeLink(linkId);
+        console.log("LIST OF LINKS AFTER DELETION:");
+        console.log(this.mechanism.getArrayOfLinks());
       }
-      if(index === 9){
-        joint.addGround();
-      }
-      index++
+      this.fourBarGenerated = false;
     }
-    this.positionSolver.solvePositions();
-    this.verifyMechanismPath();
-    console.log(this.positionSolver.getAnimationPositions());
-    console.log(this.mechanism);
+    else {
+      let firstPoint = this.findIntersectionPoint(this.position1!.getJoints()[0]._coords, this.position2!.getJoints()[0]._coords, this.position3!.getJoints()[0]._coords);
+      let secondPoint = this.position1!.getJoints()[0]._coords;
+      let thirdPoint = this.position1!.getJoints()[1]._coords;
+      let fourthPoint = this.findIntersectionPoint2(this.position1!.getJoints()[1]._coords, this.position2!.getJoints()[1]._coords, this.position3!.getJoints()[1]._coords);
+
+      this.fourBarGenerated = !this.fourBarGenerated;
+      this.cdr.detectChanges();
+
+      this.mechanism.addLink(firstPoint, secondPoint);
+
+      let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
+      let lastJoint = this.getLastJoint(joints);
+      if (lastJoint !== undefined) {
+        this.mechanism.addLinkToJoint(lastJoint.id, thirdPoint);
+      }
+
+      joints = this.mechanism.getJoints(); //updates list of all joints
+      lastJoint = this.getLastJoint(joints);
+      if (lastJoint !== undefined) {
+        this.mechanism.addLinkToJoint(lastJoint.id, fourthPoint);
+      }
+
+      //adds the grounded joints and input
+
+      //TO-DO get the location of the last joint in the joints array ans start th eindex from there because now we have joints in this array fromn the positions.!
+      joints = this.mechanism.getJoints(); //instead of using it hard coded just do first and last on the list, we could do a getter for this.
+      let index = 0;
+      for (const joint of joints) {
+        if (index === 6) { //using index so we arent dependent on ID of the joints
+          joint.addGround();
+          joint.addInput();
+        }
+        if (index === 9) {
+          joint.addGround();
+        }
+        index++
+      }
+      this.positionSolver.solvePositions();
+      this.verifyMechanismPath();
+      console.log(this.positionSolver.getAnimationPositions());
+      console.log(this.mechanism);
+    }
   }
 
 generateSixBar() {
@@ -771,28 +779,25 @@ getFirstUndefinedPosition(): number{
 }
 
   deletePosition(index: number) {
-    if (index === 1) {
-      this.pos1Specified = false;
-    } else if (index === 2) {
-      this.pos2Specified = false;
-    } else if (index === 3) {
-      this.pos3Specified = false;
-    }
-
     // Remove all links if the four-bar has been generated
     if (this.fourBarGenerated) {
-      let listOfLinks = this.mechanism.getArrayOfLinks();
-      console.log(listOfLinks);
-      let len;
-      let i;
-      for (i = 0, len = listOfLinks.length; i < len; i++) {
-        let linkId = listOfLinks[i].id;
-        console.log(linkId);
-        this.mechanism.removeLink(linkId);
-        console.log("LIST OF LINKS AFTER DELETION:");
-        console.log(this.mechanism.getArrayOfLinks());
+      if (window.confirm("This action will delete the entire mechanism and all other coupler positions. Are you sure?")){
+        this.removeAllPositions();
       }
-      this.fourBarGenerated = false;
+    }
+
+    if (index === 1) {
+      this.pos1Specified = false;
+      this.mechanism.removePosition(this.position1!.id);
+      this.resetPos(1);
+    } else if (index === 2) {
+      this.pos2Specified = false;
+      this.mechanism.removePosition(this.position2!.id);
+      this.resetPos(2);
+    } else if (index === 3) {
+      this.pos3Specified = false;
+      this.mechanism.removePosition(this.position3!.id);
+      this.resetPos(3);
     }
   }
 
@@ -817,11 +822,15 @@ allPositionsDefined(): boolean {
       console.log(this.mechanism.getArrayOfLinks());
     }
 
-    // Reset positions
-    for (let i = 1; i <= 3; i++) {
-      this.deletePosition(i);
-      this.resetPos(i);
-    }
+    this.pos1Specified = false;
+    this.mechanism.removePosition(this.position1!.id);
+    this.resetPos(1);
+    this.pos2Specified = false;
+    this.mechanism.removePosition(this.position2!.id);
+    this.resetPos(2);
+    this.pos3Specified = false;
+    this.mechanism.removePosition(this.position3!.id);
+    this.resetPos(3);
 
     // Reset flags
     this.fourBarGenerated = false;
