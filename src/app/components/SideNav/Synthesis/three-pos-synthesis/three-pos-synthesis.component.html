@@ -58,7 +58,7 @@
                   </div>
 
                   <!-- allows the user to enter coordinates and an angle for the position -->
-                  <div class='poseData' style="margin-right: -25px; margin-bottom: 15px; margin-top: 7px;" *ngIf='this.isPositionDefined(i)' >
+                  <div class='poseData' style="margin-right: 5px; margin-bottom: 5px; margin-top: -10px; margin-left:5px;"  *ngIf='this.isPositionDefined(i)' >
                         <dual-input-block [input1Value]="getPosXCoord(i)" [input2Value]="getPosYCoord(i)"
                         (input1Change)="setPosXCoord($event, i)"
                         (input2Change)="setPosYCoord($event, i)"

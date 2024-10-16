@@ -255,7 +255,7 @@
   #specify:hover {
     color: #e8eaf6;
     background-color: #3F51B5;
-    cursor:pointer;
+    cursor:pointer ;
   }
 
   #lengthTooltip {
@@ -312,11 +312,45 @@
   flex-direction: column;/* Ensure the X, Y, and angle inputs are on the different row */
   justify-content: space-between;
   align-items: center;
+  //justify-content: flex-start;
+  //align-items: flex-start;
   gap: 2px; /* Reduces space between X, Y, and deg blocks */
-  margin-right: 0; /* Remove negative margin */
-  margin-bottom: 15px;
-  margin-top: 7px;
+  //margin-right: 0; /* Remove negative margin */
+  //margin-bottom: 15px;
+  //margin-top: 7px;
 
 }
+
+/* Targeting input fields for X and Y values */
+.dual-input-block input {
+  padding-right: 1px;  /* Reduce the space between the value and the unit */
+  width: auto;
+  flex: 1;
+}
+
+.dual-input-block span.unit {
+  margin-left: 2px; /* Reduce the space between the number and 'cm' */
+  padding-left: 0px;
+}
+
+/* Target the labels for X and Y inputs */
+.dual-input-block label {
+  visibility: visible;
+  margin-right: 4px; /* Adjust margin to ensure it's not overlapping */
+  display: inline-block; /* Ensure it's in the right place */
+  width: 20px; /* Ensure the label has enough space */
+  text-align: left; /* Align the text of the label to the right */
+  color: black; /* Ensure it's not being overwritten by any other style */
+  flex: 0;
+}
+
+/* Ensure input field does not push the label off the screen */
+.dual-input-block {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 2px; /* Add a slight gap to adjust space between elements */
+}
+
 
 
