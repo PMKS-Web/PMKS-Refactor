@@ -24,18 +24,25 @@ export class AnimationBarComponent {
 
   }
   cursorPosition: string = '';
+  DoF: string = '';
 
   @HostListener('document:mousemove', ['$event'])
   onMouseMove(event: MouseEvent) {
     let screenPos: Coord = new Coord(event.offsetX, event.offsetY);
     let currentZoomPan = this.panZoomService.getZoomPan();
     let mouseCoords = this.unitConversionService.mouseCoordToModelCoord(screenPos, currentZoomPan);
-    this.cursorPosition = mouseCoords.x.toString() + " " + mouseCoords.y.toString();
+    this.cursorPosition = mouseCoords.x.toFixed(2) + " " + mouseCoords.y.toFixed(2);
   }
 
   invalidMechanism() {
     return this.animationService.isInvalid();
   }
+
+  getDegrees() {
+    //put in animation service? to get specific number of degrees.
+    return "N/A"
+  }
+
   controlAnimation(state: string) {
     switch (state) {
       case 'pause':
