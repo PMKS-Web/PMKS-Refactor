@@ -33,12 +33,23 @@
                   >help_outline
                   </mat-icon>
 
-            <radio-block  id="reference"
-                  [options]="['Back', 'Center', 'Front']"
-                  [initialSelection]="'Center'"
-                  (selectionChanged)="setReference($event)"
-                  >
-            </radio-block>
+
+<!--    <radio-block  id="reference"-->
+<!--                  [options]="['Back', 'Center', 'Front']"-->
+<!--                  [initialSelection]="reference"-->
+<!--                  (selectionChanged)="setReference($event)">-->
+
+<!--    </radio-block>     -->
+<!--    Ensuring that the buttons are dynamically highlighted based on 'reference' -->
+    <div class="fixed-reference-options">
+      <button *ngFor="let option of ['Back', 'Center', 'Front']"
+              class="radio-block-option"
+              [ngClass]="{'selected-option': reference === option, 'unselected-option': reference !== option}"
+              (click)="setReference(option)">
+        {{ option }}
+      </button>
+    </div>
+
       </div>
       <div>
             <hr class="solid">

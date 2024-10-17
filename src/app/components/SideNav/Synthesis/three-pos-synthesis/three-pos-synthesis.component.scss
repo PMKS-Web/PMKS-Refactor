@@ -323,7 +323,7 @@
 
 /* Targeting input fields for X and Y values */
 .dual-input-block input {
-  padding-right: 1px;  /* Reduce the space between the value and the unit */
+  padding-right: 0px;  /* Reduce the space between the value and the unit */
   width: auto;
   flex: 1;
 }
@@ -354,3 +354,36 @@
 
 
 
+.fixed-reference-options {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.radio-block-option {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  background-color: #f8f9fa;
+  color: #6c757d;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-right: 8px;
+  font-size: 14px;
+  display: inline-block;
+}
+
+.selected-option {
+  background-color: #007bff;  // Blue background for selected option
+  color: white;               // White text for selected option
+  font-weight: bold;
+}
+
+.unselected-option {
+  background-color: white;    // White background for unselected options
+  color: #007bff;             // Blue text for unselected options
+  border: 1px solid #ccc;
+}
+
+.radio-block-option:hover {
+  background-color: #e9ecef;  // Slightly darker background on hover
+}

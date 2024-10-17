@@ -93,9 +93,14 @@ export class ThreePosSynthesis{
     }
   }
 
-setReference(r: string) {
-    this.reference = r;
-}
+  ngOnInit() {
+    console.log('Initial reference:', this.reference);  //  log 'Center'
+  }
+
+// Method to update the reference when an option is selected
+  setReference(option: string) {
+    this.reference = option;  // Updates the currently selected option
+  }
 
 getReference(): string{
     return this.reference;
