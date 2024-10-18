@@ -40,6 +40,7 @@
 <!--                  (selectionChanged)="setReference($event)">-->
 
 <!--    </radio-block>     -->
+
 <!--    Ensuring that the buttons are dynamically highlighted based on 'reference' -->
     <div class="fixed-reference-options">
       <button *ngFor="let option of ['Back', 'Center', 'Front']"
@@ -70,7 +71,9 @@
 
                   <!-- allows the user to enter coordinates and an angle for the position -->
                   <div class='poseData' style="margin-right: 5px; margin-bottom: 5px; margin-top: -10px; margin-left:5px;"  *ngIf='this.isPositionDefined(i)' >
-                        <dual-input-block [input1Value]="getPosXCoord(i)" [input2Value]="getPosYCoord(i)"
+                        <dual-input-block
+                        [input1Value]="getPosXCoord(i)"
+                        [input2Value]="getPosYCoord(i)"
                         (input1Change)="setPosXCoord($event, i)"
                         (input2Change)="setPosYCoord($event, i)"
                         tooltip="Change the x and y values of the reference point of the coupler position {{i}}"
@@ -80,7 +83,7 @@
                         unit2="cm"
                         [showIcon]="false">
                   </dual-input-block>
-                  <single-input-block
+                  <single-input-block style="margin-right: 5px; margin-bottom: 5px; margin-top: 0px ; margin-left:5px; padding-right: 2px;"
                         [input1Value]="getPosAngle(i)"
                         (input1Change)="setPositionAngle($event, i)"
                         iconLabel1="assets/icons/angle.svg"

@@ -15,8 +15,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ChangeDetectorRef } from '@angular/core';
 import {PositionSolverService} from "../../../../services/kinematic-solver.service";
 import { DoCheck } from '@angular/core';
-
-
+//import {ViewEncapsulation} from "@angular/core";
 
 
 export class AppModule { }
@@ -25,6 +24,7 @@ export class AppModule { }
     selector: 'three-pos-synthesis',
     templateUrl: './three-pos-synthesis.component.html',
     styleUrls: ['./three-pos-synthesis.component.scss'],
+    // encapsulation: ViewEncapsulation.None
 
 })
 export class ThreePosSynthesis{
@@ -40,7 +40,7 @@ export class ThreePosSynthesis{
 
   sectionExpanded: { [key: string]: boolean } = { Basic: false };
   buttonLabel: string = 'Generate Four-Bar';
-  reference: string = "Center";
+  reference: string = "Center"; //default initial selection
   positions: number[] = [];
   couplerLength: number = 2;
   pos1X: number = 0;
@@ -94,7 +94,7 @@ export class ThreePosSynthesis{
   }
 
   ngOnInit() {
-    console.log('Initial reference:', this.reference);  //  log 'Center'
+    console.log('Initial reference:', this.reference);
   }
 
 // Method to update the reference when an option is selected

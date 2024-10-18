@@ -28,6 +28,7 @@ input[type=number] {
     background-color: rgba(63,81,181, 10%);
     border-radius: 3px 3px 0 0;
     height: 25px;
+
   }
 
   p {
@@ -62,4 +63,5 @@ input[type=number] {
 
   p, label, input, dual-input-block, single-input-block {
     color: #263037;
+    /*padding-right: 10px;*/
   }

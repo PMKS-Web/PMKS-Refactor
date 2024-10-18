@@ -62,6 +62,7 @@
 
   .input-container {
   display: flex;
+    padding-right: 5px;
   align-items: center;
   }
 
@@ -314,18 +315,39 @@
   align-items: center;
   //justify-content: flex-start;
   //align-items: flex-start;
-  gap: 2px; /* Reduces space between X, Y, and deg blocks */
+  gap: 0px; /* Reduces space between X, Y, and deg blocks */
   //margin-right: 0; /* Remove negative margin */
   //margin-bottom: 15px;
   //margin-top: 7px;
 
 }
 
+/* For the input fields (X, Y, and angle) */
+#threePos input[type="number"] {
+  padding-right: 2px !important;  /* Reducing padding to make it closer to the unit */
+  width: 60px !important;  /* Adjust the width to ensure tighter spacing */
+}
+
+/* For the unit span (cm, deg) */
+#threePos span.unit {
+  margin-left: 2px !important;  /* Reduce the space between the value and unit */
+}
+
+
+/* Ensure input field does not push the label off the screen */
+.dual-input-block {
+  display: flex;
+  align-items: center;
+  //justify-content: flex-start;
+  gap: 2px; /* Add a slight gap to adjust space between elements */
+}
+
 /* Targeting input fields for X and Y values */
 .dual-input-block input {
-  padding-right: 0px;  /* Reduce the space between the value and the unit */
+  padding-right: 2px;  /* Reduce the space between the value and the unit */
+  margin-right: 0px;
   width: auto;
-  flex: 1;
+  //flex: 1;
 }
 
 .dual-input-block span.unit {
@@ -344,14 +366,23 @@
   flex: 0;
 }
 
-/* Ensure input field does not push the label off the screen */
-.dual-input-block {
+.single-input-block {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 2px; /* Add a slight gap to adjust space between elements */
+  //justify-content: flex-start;
+  gap: 2px;
 }
 
+.single-input-block input {
+  padding-right: 0px; /* Similar adjustment for angle */
+  margin-right: 0px;
+  width: auto;
+}
+
+.single-input-block span.unit {
+  margin-left: 2px; /* Reduce space between angle value and 'deg' */
+  padding-left: 0px;
+}
 
 
 .fixed-reference-options {
@@ -387,3 +418,9 @@
 .radio-block-option:hover {
   background-color: #e9ecef;  // Slightly darker background on hover
 }
+
+//input-block {
+//  flex: 1;
+//  margin: 0; /* Remove unnecessary margins */
+//  padding: 2px; /* Adjust padding */
+//}
