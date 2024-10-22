@@ -30,9 +30,6 @@ export class AppModule { }
 })
 export class ThreePosSynthesis{
 
-    /*  THE POSITION VALUES ARE ALL HARD CODED BECAUSE THE BACKEND ISN'T SET UP
-        ALL OF THESE FUNCTIONS SHOULD BE WRITTEN IN THE BACK END AND CALLED TO ON THE FRONT END */
-
   @Input() disabled: boolean = false;
   @Input() tooltip: string = '';
   @Input() input1Value: number = 0;

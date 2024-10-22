@@ -11,17 +11,9 @@
     }
   </nav>
     <div class="app-panel-container">
-        @switch(getSelected()){
-            @case ('Edit'){
             <app-edit-panel></app-edit-panel>
-            }
-            @case ('Synthesis'){
-            <app-synthesis-panel></app-synthesis-panel>
-            }
-            @case ('Analysis'){
-            <app-analysis-panel></app-analysis-panel>
-            }
-    }
+            <app-synthesis-panel hidden></app-synthesis-panel>
+            <app-analysis-panel hidden></app-analysis-panel>
   </div>
 </div>
 
