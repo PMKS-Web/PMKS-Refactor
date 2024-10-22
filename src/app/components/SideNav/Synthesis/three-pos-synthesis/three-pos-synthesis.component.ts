@@ -18,6 +18,7 @@ import { DoCheck } from '@angular/core';
 import {JointInteractor} from "../../../../controllers/joint-interactor";
 
 
+//import {ViewEncapsulation} from "@angular/core";
 
 
 export class AppModule { }
@@ -26,6 +27,7 @@ export class AppModule { }
     selector: 'three-pos-synthesis',
     templateUrl: './three-pos-synthesis.component.html',
     styleUrls: ['./three-pos-synthesis.component.scss'],
+    // encapsulation: ViewEncapsulation.None
 
 })
 export class ThreePosSynthesis{
@@ -76,6 +78,7 @@ export class ThreePosSynthesis{
   ngOnInit(): void {
     this.lockCurrentJoint();
   }
+
 
   getMechanism(): Mechanism {
     return this.stateService.getMechanism();
@@ -129,9 +132,9 @@ export class ThreePosSynthesis{
     }
   }
 
-setReference(r: string) {
-    this.reference = r;
-}
+  setReference(option: string) {
+    this.reference = option;  // Updates the currently selected option
+  }
 
 getReference(): string{
     return this.reference;
@@ -193,8 +196,8 @@ getReference(): string{
   }
 
   updatePositionCoords(posNum: number, newCoord: Coord) {
-    const roundedX = parseFloat(newCoord.x.toFixed(3));
-    const roundedY = parseFloat(newCoord.y.toFixed(3));
+    const roundedX = parseFloat(newCoord.x.toFixed(2));
+    const roundedY = parseFloat(newCoord.y.toFixed(2));
 
     if (posNum === 1) {
       this.pos1X = roundedX;
@@ -224,8 +227,7 @@ getReference(): string{
     if (normalizedAngle < 0) {
       normalizedAngle += 360;
     }
-
-    const roundedAngle = parseFloat(normalizedAngle.toFixed(3));
+    const roundedAngle = Math.round(normalizedAngle);
 
     if (posNum === 1) {
       this.pos1Angle = roundedAngle;

@@ -62,6 +62,7 @@
 
   .input-container {
   display: flex;
+    padding-right: 5px;
   align-items: center;
   }
 
@@ -255,7 +256,7 @@
   #specify:hover {
     color: #e8eaf6;
     background-color: #3F51B5;
-    cursor:pointer;
+    cursor:pointer ;
   }
 
   #lengthTooltip {
@@ -312,11 +313,114 @@
   flex-direction: column;/* Ensure the X, Y, and angle inputs are on the different row */
   justify-content: space-between;
   align-items: center;
-  gap: 2px; /* Reduces space between X, Y, and deg blocks */
-  margin-right: 0; /* Remove negative margin */
-  margin-bottom: 15px;
-  margin-top: 7px;
+  //justify-content: flex-start;
+  //align-items: flex-start;
+  gap: 0px; /* Reduces space between X, Y, and deg blocks */
+  //margin-right: 0; /* Remove negative margin */
+  //margin-bottom: 15px;
+  //margin-top: 7px;
 
 }
 
+/* For the input fields (X, Y, and angle) */
+#threePos input[type="number"] {
+  padding-right: 2px !important;  /* Reducing padding to make it closer to the unit */
+  width: 60px !important;  /* Adjust the width to ensure tighter spacing */
+}
 
+/* For the unit span (cm, deg) */
+#threePos span.unit {
+  margin-left: 2px !important;  /* Reduce the space between the value and unit */
+}
+
+
+/* Ensure input field does not push the label off the screen */
+.dual-input-block {
+  display: flex;
+  align-items: center;
+  //justify-content: flex-start;
+  gap: 2px; /* Add a slight gap to adjust space between elements */
+}
+
+/* Targeting input fields for X and Y values */
+.dual-input-block input {
+  padding-right: 2px;  /* Reduce the space between the value and the unit */
+  margin-right: 0px;
+  width: auto;
+  //flex: 1;
+}
+
+.dual-input-block span.unit {
+  margin-left: 2px; /* Reduce the space between the number and 'cm' */
+  padding-left: 0px;
+}
+
+/* Target the labels for X and Y inputs */
+.dual-input-block label {
+  visibility: visible;
+  margin-right: 4px; /* Adjust margin to ensure it's not overlapping */
+  display: inline-block; /* Ensure it's in the right place */
+  width: 20px; /* Ensure the label has enough space */
+  text-align: left; /* Align the text of the label to the right */
+  color: black; /* Ensure it's not being overwritten by any other style */
+  flex: 0;
+}
+
+.single-input-block {
+  display: flex;
+  align-items: center;
+  //justify-content: flex-start;
+  gap: 2px;
+}
+
+.single-input-block input {
+  padding-right: 0px; /* Similar adjustment for angle */
+  margin-right: 0px;
+  width: auto;
+}
+
+.single-input-block span.unit {
+  margin-left: 2px; /* Reduce space between angle value and 'deg' */
+  padding-left: 0px;
+}
+
+
+.fixed-reference-options {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.radio-block-option {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  background-color: #f8f9fa;
+  color: #6c757d;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-right: 8px;
+  font-size: 14px;
+  display: inline-block;
+}
+
+.selected-option {
+  background-color: #007bff;  // Blue background for selected option
+  color: white;               // White text for selected option
+  font-weight: bold;
+}
+
+.unselected-option {
+  background-color: white;    // White background for unselected options
+  color: #007bff;             // Blue text for unselected options
+  border: 1px solid #ccc;
+}
+
+.radio-block-option:hover {
+  background-color: #e9ecef;  // Slightly darker background on hover
+}
+
+//input-block {
+//  flex: 1;
+//  margin: 0; /* Remove unnecessary margins */
+//  padding: 2px; /* Adjust padding */
+//}
