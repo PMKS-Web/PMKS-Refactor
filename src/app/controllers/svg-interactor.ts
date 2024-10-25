@@ -5,6 +5,7 @@ import { ContextMenuOption, Interactor } from "./interactor";
 import { Mechanism } from "../model/mechanism";
 import { CreateLinkFromGridCapture} from "./click-capture/create-link-from-grid-capture"
 import { PanZoomService } from "../services/pan-zoom.service";
+import {HostListener} from "@angular/core";
 
 /*
 This handles any interaction with the SVG canvas.
@@ -13,7 +14,7 @@ This handles any interaction with the SVG canvas.
 export class SvgInteractor extends Interactor {
 
     private lastSVGPosition: Coord | undefined;
-    constructor(private stateService: StateService, 
+    constructor(private stateService: StateService,
         private interactionService: InteractionService, private panZoomService: PanZoomService) {
         super(true, true);
 
@@ -43,7 +44,7 @@ export class SvgInteractor extends Interactor {
                 disabled: false
             }
         ];
-        
+
     }
     private enterAddLinkCaptureMode(modelPosAtRightClick: Coord): void {
         const capture = new CreateLinkFromGridCapture(modelPosAtRightClick, this.interactionService);

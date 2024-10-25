@@ -244,16 +244,25 @@
   ul {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 20px;
+    justify-content: flex-end;
+    gap: 40px;
 
     //Hide the list bullets
     list-style-type: none;
     margin: 0;
     padding: 0;
-    padding-left: 70px;
-    padding-right: 10px;
+    //padding-left: 70px;
+    padding-right: 65px;
   }
+
+  #DoF1 {
+    color: red;
+  }
+
+  #DoF2 {
+    color: green;
+  }
+
 }
 .animationButtons{
   height: 48px;

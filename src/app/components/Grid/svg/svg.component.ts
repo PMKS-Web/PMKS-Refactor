@@ -45,6 +45,10 @@ export class SvgComponent extends AbstractInteractiveComponent {
     return this.panZoomService.getViewBox();
   }
 
-
+  cursorPosition: string = "";
+  onMouseMove(e: MouseEvent) {
+    let mouseCoords = this.interactionService.getMousePos();
+    this.cursorPosition = " " + mouseCoords.model.x.toFixed(2) + " " + mouseCoords.model.y.toFixed(2);
+  }
 
 }

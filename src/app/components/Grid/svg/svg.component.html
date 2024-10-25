@@ -1,6 +1,7 @@
 <svg id="rootSvg" appInteractable
-[interactor]="getInteractor()"
-[attr.viewBox]="getViewBox()">
+     [interactor]="getInteractor()"
+     [attr.viewBox]="getViewBox()"
+     (mousemove)="onMouseMove($event)">
     <g gridlines />
     <g app-graph />
 
