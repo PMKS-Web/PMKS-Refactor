@@ -25,7 +25,7 @@ export class AnimationBarComponent {
 
   }
 
-  @Input() cursorPosition: string = "";
+  @Input() cursorPosition: string = '';
 
   invalidMechanism() {
     return this.animationService.isInvalid();
