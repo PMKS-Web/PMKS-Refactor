@@ -1,11 +1,11 @@
-import { Component } from '@angular/core';
+import {Component, HostListener} from '@angular/core';
 import { ClickCapture, ClickCaptureID } from 'src/app/controllers/click-capture/click-capture';
 
 import { Coord } from 'src/app/model/coord';
 import { Link } from 'src/app/model/link';
 import { Joint } from 'src/app/model/joint';
 import { Force } from 'src/app/model/force';
-import { Position} from "src/app/model/position";
+import { Position } from "src/app/model/position";
 import { CompoundLink } from 'src/app/model/compound-link';
 import { Mechanism } from 'src/app/model/mechanism';
 import { InteractionService } from 'src/app/services/interaction.service';

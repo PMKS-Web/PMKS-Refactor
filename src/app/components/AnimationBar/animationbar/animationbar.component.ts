@@ -10,6 +10,7 @@ import { UnitConversionService } from 'src/app/services/unit-conversion.service'
 import {join} from "@angular/compiler-cli";
 import {Coord} from "../../../model/coord";
 import {PanZoomService} from "../../../services/pan-zoom.service";
+import {SvgComponent} from "../../Grid/svg/svg.component";
 
 @Component({
   selector: 'app-animation-bar',
@@ -20,19 +21,11 @@ export class AnimationBarComponent {
 
   private isAnimating: boolean = false;
   private isPausedAnimating: boolean = true;
-  constructor(public interactionService: InteractionService, private animationService: AnimationService, private unitConversionService: UnitConversionService, public panZoomService: PanZoomService) {
+  constructor(public interactionService: InteractionService, private animationService: AnimationService) {
 
   }
-  cursorPosition: string = '';
-  DoF: string = '';
 
-  @HostListener('document:mousemove', ['$event'])
-  onMouseMove(event: MouseEvent) {
-    let screenPos: Coord = new Coord(event.offsetX, event.offsetY);
-    let currentZoomPan = this.panZoomService.getZoomPan();
-    let mouseCoords = this.unitConversionService.mouseCoordToModelCoord(screenPos, currentZoomPan);
-    this.cursorPosition = mouseCoords.x.toFixed(2) + " " + mouseCoords.y.toFixed(2);
-  }
+  @Input() cursorPosition: string = "";
 
   invalidMechanism() {
     return this.animationService.isInvalid();
