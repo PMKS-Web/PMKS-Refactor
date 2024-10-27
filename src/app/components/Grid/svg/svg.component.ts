@@ -7,6 +7,7 @@ import { ContextMenuComponent } from '../context-menu/context-menu.component';
 import { StateService } from 'src/app/services/state.service';
 import { PanZoomService } from 'src/app/services/pan-zoom.service';
 import { UnitConversionService } from 'src/app/services/unit-conversion.service';
+import {AnimationService} from "../../../services/animation.service";
 
 @Component({
   selector: 'app-svg',
@@ -16,7 +17,8 @@ import { UnitConversionService } from 'src/app/services/unit-conversion.service'
 export class SvgComponent extends AbstractInteractiveComponent {
 
   constructor(public override interactionService: InteractionService,
-    private stateService: StateService, private panZoomService: PanZoomService, private unitConversionService: UnitConversionService,) {
+    private stateService: StateService, private panZoomService: PanZoomService, private unitConversionService: UnitConversionService,
+              private animationService: AnimationService) {
 
     super(interactionService);
   }
@@ -43,6 +45,16 @@ export class SvgComponent extends AbstractInteractiveComponent {
 
   getViewBox(): string{
     return this.panZoomService.getViewBox();
+  }
+
+
+  invalidMechanism() {
+    return this.animationService.isInvalid();
+  }
+
+  getDegrees() {
+    //put in animation service? to get specific number of degrees.
+    return "N/A"
   }
 
   cursorPosition: string = "";

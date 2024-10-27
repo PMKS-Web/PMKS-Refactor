@@ -8,3 +8,21 @@
 </svg>
 
 <app-context-menu></app-context-menu>
+
+<div id='bottomBar' *ngIf="invalidMechanism()">
+  <ul>
+    <li id="DoF1">Degrees of Freedom: {{ getDegrees() }}</li>
+    <li>Position: {{cursorPosition}}</li>
+    <li>Units: N/A</li>
+    <li>PMKS Refactor Version 1</li>
+  </ul>
+</div>
+
+<div id='bottomBar' *ngIf="!invalidMechanism()">
+  <ul>
+    <li id="DoF2">Degrees of Freedom: 1</li>
+    <li>Position:{{cursorPosition}}</li>
+    <li>Units: N/A</li>
+    <li>PMKS Refactor Version 1</li>
+  </ul>
+</div>
