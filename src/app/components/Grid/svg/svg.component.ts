@@ -8,6 +8,7 @@ import { StateService } from 'src/app/services/state.service';
 import { PanZoomService } from 'src/app/services/pan-zoom.service';
 import { UnitConversionService } from 'src/app/services/unit-conversion.service';
 import {AnimationService} from "../../../services/animation.service";
+import {Subscription} from "rxjs";
 
 @Component({
   selector: 'app-svg',
@@ -15,6 +16,11 @@ import {AnimationService} from "../../../services/animation.service";
   styleUrls: ['./svg.component.css']
 })
 export class SvgComponent extends AbstractInteractiveComponent {
+
+  unitSubscription: Subscription = new Subscription();
+  angleSubscription: Subscription = new Subscription();
+  units: string = "Metric (cm)";
+  angles: string = "Degree (º)";
 
   constructor(public override interactionService: InteractionService,
     private stateService: StateService, private panZoomService: PanZoomService, private unitConversionService: UnitConversionService,
@@ -24,6 +30,8 @@ export class SvgComponent extends AbstractInteractiveComponent {
   }
 
   override async ngOnInit(): Promise<void> {
+    this.unitSubscription = this.stateService.globalUnitsCurrent.subscribe((units) => {this.units = units;});
+    this.angleSubscription = this.stateService.globalAnglesCurrent.subscribe((angles) => {this.angles = angles;});
     super.ngOnInit();
   }
 
