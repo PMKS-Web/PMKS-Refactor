@@ -46,11 +46,21 @@ export class SettingsPanelComponent{
   }
 
   changeUnits(newUnits: string){
-    this.stateService.changeUnits(newUnits);
+    console.log(newUnits);
+    if (newUnits === "English (in)"){
+      this.stateService.changeUnits(newUnits, "in")
+    }
+    else if (newUnits === "SI (m)"){
+      this.stateService.changeUnits(newUnits, "m")
+    }
+    else this.stateService.changeUnits(newUnits, "cm");
   }
 
   changeAngle(newAngle: string){
-    this.stateService.changeAngles(newAngle);
+    if (newAngle === "Radian (rad)"){
+      this.stateService.changeAngles(newAngle, "rad")
+    }
+    else this.stateService.changeAngles(newAngle, "º");
   }
 
   toggle() {

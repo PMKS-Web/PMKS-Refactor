@@ -65,10 +65,10 @@ export class SvgComponent extends AbstractInteractiveComponent {
     return "N/A"
   }
 
-  cursorPosition: string = "";
+  cursorPosition: string = " x: 0.00, y: 0.00";
   onMouseMove(e: MouseEvent) {
     let mouseCoords = this.interactionService.getMousePos();
-    this.cursorPosition = " " + mouseCoords.model.x.toFixed(2) + " " + mouseCoords.model.y.toFixed(2);
+    this.cursorPosition = " x: " + mouseCoords.model.x.toFixed(2) + ", y: " + mouseCoords.model.y.toFixed(2);
   }
 
 }

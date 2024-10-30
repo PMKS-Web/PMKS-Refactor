@@ -14,7 +14,7 @@
       </mat-icon></p>
       <radio-block id="globalUnits"
                    [options]="['English (in)', 'Metric (cm)', 'SI (m)']"
-                   [initialSelection]="'Metric (cm)'"
+                   [initialSelection]="units"
                    (selectionChanged)="changeUnits($event)"
       >
       </radio-block>
@@ -22,8 +22,8 @@
       >help_outline
       </mat-icon></p>
       <radio-block id="angleUnits"
-                   [options]="['Degree (º)', 'Radian (c)']"
-                   [initialSelection]="'Degree (º)'"
+                   [options]="['Degree (º)', 'Radian (rad)']"
+                   [initialSelection]="angles"
                    (selectionChanged)="changeAngle($event)"
       >
       </radio-block>

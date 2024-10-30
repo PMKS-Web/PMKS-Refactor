@@ -16,6 +16,7 @@ import { ChangeDetectorRef } from '@angular/core';
 import {PositionSolverService} from "../../../../services/kinematic-solver.service";
 import { DoCheck } from '@angular/core';
 import {Position} from "../../../../model/position";
+import {Subscription} from "rxjs";
 
 
 
@@ -65,9 +66,18 @@ export class ThreePosSynthesis{
   coord1C = new Coord(this.pos3X - this.couplerLength / 2, this.pos3Y);
   coord2C = new Coord(this.pos3X + this.couplerLength / 2, this.pos3Y);
   private mechanism: Mechanism;
+  unitSubscription: Subscription = new Subscription();
+  angleSubscription: Subscription = new Subscription();
+  units: string = "cm";
+  angles: string = "º";
 
   constructor(private stateService: StateService, private interactionService: InteractionService, private cdr: ChangeDetectorRef, private positionSolver: PositionSolverService) {
     this.mechanism = this.stateService.getMechanism();
+  }
+
+  ngOnInit(){
+    this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe((units) => {this.units = units;});
+    this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe((angles) => {this.angles = angles;});
   }
 
   ngDoCheck() {
