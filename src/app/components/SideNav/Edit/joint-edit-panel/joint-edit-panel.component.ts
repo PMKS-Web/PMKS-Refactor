@@ -6,6 +6,7 @@ import { Mechanism } from "src/app/model/mechanism";
 import { Joint } from "src/app/model/joint";
 import { Form, FormControl, FormGroup } from "@angular/forms";
 import { Link } from "src/app/model/link";
+import {Subscription} from "rxjs";
 
 interface Tab {
   selected: boolean,
@@ -34,10 +35,19 @@ export class jointEditPanelComponent {
   public rotateRightIconPath: string = "assets/icons/rotateRight.svg";
   public rotateLeftIconPath: string = "assets/icons/rotateLeft.svg";
   btn1Visible: boolean = true;
+  unitSubscription: Subscription = new Subscription();
+  angleSubscription: Subscription = new Subscription();
+  units: string = "cm";
+  angles: string = "º";
 
   constructor(private stateService: StateService, private interactorService: InteractionService) {
     console.log("joint-edit-panel.constructor");
 
+  }
+
+  ngOnInit(){
+    this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe((units) => {this.units = units;});
+    this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe((angles) => {this.angles = angles;});
   }
 
   getMechanism(): Mechanism { return this.stateService.getMechanism(); }
@@ -158,7 +168,7 @@ export class jointEditPanelComponent {
     let yDiff = otherJoint.coords.y - currentJoint.coords.y;
 
     let hypotenuse = Math.sqrt((xDiff * xDiff) + (yDiff * yDiff));
-    return Math.round(hypotenuse * 100) / 10000;
+    return Math.round(hypotenuse * 100) / 100;
   }
 
   getJointAngle(otherJoint: Joint): number {
@@ -176,7 +186,7 @@ export class jointEditPanelComponent {
       angleInDegrees += 360;
     }
 
-    return Math.round(angleInDegrees * 100) / 10000;
+    return Math.round(angleInDegrees * 100) / 100;
   }
 
   // handleToggleGroundChanged is used by the edit panel implementation of a toggle block

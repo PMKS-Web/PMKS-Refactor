@@ -10,6 +10,7 @@ import { ColorService } from 'src/app/services/color.service';
 import { FormControl, FormGroup } from "@angular/forms";
 import { LinkComponent } from '../../../Grid/link/link.component';
 import { Coord } from 'src/app/model/coord';
+import {Subscription} from "rxjs";
 
 
 @Component({
@@ -36,11 +37,20 @@ export class LinkEditPanelComponent{
       //icon paths for dual button for addFracer and addForce
       public addTracerIconPath: string = "assets/icons/addTracer.svg";
       public addForceIconPath: string = "assets/icons/addForce.svg";
+  unitSubscription: Subscription = new Subscription();
+  angleSubscription: Subscription = new Subscription();
+  units: string = "cm";
+  angles: string = "º";
 
 
     constructor(private stateService: StateService, private interactionService: InteractionService, private colorService: ColorService){
 
     }
+
+  ngOnInit(){
+    this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe((units) => {this.units = units;});
+    this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe((angles) => {this.angles = angles;});
+  }
 
     //helper function to access current selected object (will always be a link here)
     getSelectedObject(): Link{
@@ -61,8 +71,9 @@ export class LinkEditPanelComponent{
 
   getLinkLength(): number {
     const length = this.getSelectedObject().calculateLength();
-    if (length !== null && length !== undefined) {
-      return Math.round(length * 100) / 10000;
+    if (length !== null) {
+      const x = length.toFixed(2);
+      return parseFloat(x);
     }
     return 0; // or handle null/undefined case as per your application logic
   }
@@ -70,9 +81,10 @@ export class LinkEditPanelComponent{
   getLinkAngle(): number {
     const angle = this.getSelectedObject().calculateAngle();
     console.log(`Angle in degrees from calculateAngle: ${angle}`);
-    if (angle !== null && angle !== undefined) {
+    if (angle !== null) {
       // Round to the nearest hundredth
-      return Math.round(angle * 100) / 10000;
+      const x = angle.toFixed(2);
+      return parseFloat(x);
     }
     return 0; // Handle null/undefined case as per your application logic
   }
@@ -147,9 +159,9 @@ export class LinkEditPanelComponent{
         }
       }
 
-    //helper function to quickly round to 4 decimals
-    roundToFour(round:number): number{
-        return Math.round(round * 1000) /1000;
+    //helper function to quickly round to 2 decimals :)
+    roundToTwo(round:number): number{
+        return Math.round(round * 100) /100;
     }
 
     getColors(): string[]{
