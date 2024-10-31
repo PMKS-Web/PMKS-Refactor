@@ -36,6 +36,7 @@ export class ThreePosSynthesis{
   @Input() input1Value: number = 0;
   @Input() label1: string = "Length";
   @Output() input1Change: EventEmitter<number> = new EventEmitter<number>();
+  @Output() Generated: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   sectionExpanded: { [key: string]: boolean } = { Basic: false };
   buttonLabel: string = 'Generate Four-Bar';
@@ -273,6 +274,7 @@ isSixBarGenerated(): boolean {
         console.log(this.mechanism.getArrayOfLinks());
       }
       this.fourBarGenerated = false;
+      this.Generated.emit(false);
     }
     else {
       let firstPoint = this.findIntersectionPoint(this.position1!.getJoints()[0]._coords, this.position2!.getJoints()[0]._coords, this.position3!.getJoints()[0]._coords);
@@ -281,6 +283,7 @@ isSixBarGenerated(): boolean {
       let fourthPoint = this.findIntersectionPoint2(this.position1!.getJoints()[1]._coords, this.position2!.getJoints()[1]._coords, this.position3!.getJoints()[1]._coords);
 
       this.fourBarGenerated = !this.fourBarGenerated;
+      this.Generated.emit(this.fourBarGenerated);
       this.cdr.detectChanges();
 
       this.mechanism.addLink(firstPoint, secondPoint);
@@ -793,7 +796,7 @@ getFirstUndefinedPosition(): number{
       }
     }
 
-    if (index === 1) {
+    else if (index === 1) {
       this.pos1Specified = false;
       this.mechanism.removePosition(this.position1!.id);
       this.resetPos(1);
@@ -842,6 +845,7 @@ allPositionsDefined(): boolean {
     // Reset flags
     this.fourBarGenerated = false;
     this.sixBarGenerated = false;
+    this.Generated.emit(false);
   }
   findIntersectionPoint(pose1_coord1: Coord, pose2_coord1: Coord, pose3_coord1: Coord) {
     //slope of Line 1

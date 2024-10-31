@@ -12,7 +12,7 @@
   </nav>
     <div class="app-panel-container">
             <app-edit-panel></app-edit-panel>
-            <app-synthesis-panel hidden></app-synthesis-panel>
+            <app-synthesis-panel hidden (passGenerated)="changeGeneratedCheck($event)"></app-synthesis-panel>
             <app-analysis-panel hidden></app-analysis-panel>
   </div>
 </div>
