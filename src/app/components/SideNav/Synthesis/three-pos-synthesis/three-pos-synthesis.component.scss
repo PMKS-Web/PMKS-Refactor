@@ -424,3 +424,179 @@
 //  margin: 0; /* Remove unnecessary margins */
 //  padding: 2px; /* Adjust padding */
 //}
+
+
+//.toggle-container {
+//  display: flex;
+//  justify-content: center;
+//  align-items: center;
+//  position: relative;
+//}
+//
+//.toggle-option {
+//  font-size: 14px;
+//  color: black;
+//}
+//
+//.toggle-option input[type="radio"] {
+//  margin-right: 6px;
+//}
+//
+//#two-points-panel {
+//  padding: 10px;
+//  background-color: #f9f9f9;
+//  border-radius: 8px;
+//}
+//
+//
+//.scroll-container {
+//  max-height: 500px;
+//  overflow-y: auto;
+//}
+//
+//.solid {
+//  border-top: 1px solid #ccc;
+//  margin: 10px 0;
+//}
+//
+///* Toggle container styling */
+//.toggle-container {
+//  display: flex;
+//  justify-content: space-around;
+//  margin-bottom: 15px;
+//}
+//
+//.toggle-option {
+//  font-size: 14px;
+//  color: black;
+//}
+//
+//.toggle-option input[type="radio"] {
+//  margin-right: 6px;
+//}
+
+.toggle-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  margin-bottom: 10px;
+}
+
+#toggle-switch {
+  display: none;
+}
+
+.toggle-label {
+  display: flex;
+  width: 150px;
+  height: 35px;
+  background-color: #e8eaf6;
+  border-radius: 15px;
+  position: relative;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: bold;
+  color: #777;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5px;
+  box-sizing: border-box;
+}
+
+.toggle-text {
+  flex: 1;
+  text-align: center;
+  transition: color 0.3s;
+}
+
+//.toggle-text-left, .toggle-text-right {
+//  position: absolute;
+//  width: 100%;
+//  text-align: center;
+//  transition: opacity 0.3s;
+//}
+//
+//.toggle-text-left {
+//  left: 10px;
+//}
+//
+//.toggle-text-right {
+//  right: 10px;
+//}
+
+.toggle-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50%;
+  height: 80%;
+  background-color: #5C6BC0;
+  color: white;
+  border-radius: 15px;
+  position: absolute;
+  top: 10%;
+  left: 3%;
+  transition: left 0.3s;
+  font-size: 12px;
+}
+
+#toggle-switch:checked + .toggle-label .toggle-indicator {
+  left: 47%;
+}
+
+#toggle-switch:checked + .toggle-label .toggle-text:first-child {
+  color: #ccc;
+}
+
+#toggle-switch:not(:checked) + .toggle-label .toggle-text:last-child {
+  color: #ccc;
+}
+
+
+/* Styles for the new panel design (Two Points) */
+#two-points-panel {
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.input-group label {
+  flex: 1;
+  font-size: 14px;
+}
+
+.input-group input {
+  width: 50px;
+  margin-right: 5px;
+  padding: 4px;
+}
+
+.calculated-values {
+  margin-top: 15px;
+  font-size: 14px;
+  color: #333;
+}
+
+#generateFourBar {
+  margin-top: 15px;
+  padding: 8px 12px;
+  font-size: 14px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#generateFourBar:hover {
+  background-color: #0056b3;
+}
+

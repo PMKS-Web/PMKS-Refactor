@@ -71,6 +71,13 @@ export class ThreePosSynthesis{
   angleSubscription: Subscription = new Subscription();
   units: string = "cm";
   angles: string = "º";
+  selectedOption: string = 'xy-angle';
+  point1X: number = 0;
+  point1Y: number = 0;
+  point2X: number = 0;
+  point2Y: number = 0;
+  distance: number = 0;
+  angle: number = 0;
 
   constructor(private stateService: StateService, private interactionService: InteractionService, private cdr: ChangeDetectorRef, private positionSolver: PositionSolverService) {
     this.mechanism = this.stateService.getMechanism();
@@ -105,6 +112,10 @@ export class ThreePosSynthesis{
 setReference(r: string) {
     this.reference = r;
 }
+
+  toggleOption(option: string): void {
+    this.selectedOption = option;
+  }
 
 getReference(): string{
     return this.reference;
@@ -943,6 +954,19 @@ allPositionsDefined(): boolean {
     const dx = coord1.x - coord2.x;
     const dy = coord1.y - coord2.y;
     return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  calculateDistanceAndAngle(): void {
+    const deltaX = this.point2X - this.point1X;
+    const deltaY = this.point2Y - this.point1Y;
+    this.distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    this.angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI); // Convert radians to degrees
+  }
+
+  generateFourBarFromTwoPoints(): void {
+    // Logic to generate a Four-Bar mechanism based on two points
+    console.log(`Generating Four-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
+
   }
 
 }
