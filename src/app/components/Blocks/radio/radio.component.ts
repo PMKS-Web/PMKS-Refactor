@@ -32,11 +32,11 @@ export class RadioComponent {
   }
 
   selectOption(option: string) {
-    this.selectedOption = option;
+    this.initialSelection = option;
     this.emitSelection();
   }
 
   emitSelection() {
-    this.selectionChanged.emit(this.selectedOption);
+    this.selectionChanged.emit(this.initialSelection);
   }
 }

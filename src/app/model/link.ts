@@ -32,11 +32,13 @@ export class Link implements RigidBody{
         '#0D453E',
       ];
 
+    private positionColorOptions = ['purple', 'orange'];
+
     constructor(id: number, jointA: Joint, jointB: Joint);
     constructor(id: number, joints: Joint[]);
     constructor(id: number, jointAORJoints: Joint | Joint[], jointB?: Joint){
         this._id = id;
-        
+
         this._mass = 0;
         this._forces = new Map();
         this._joints = new Map();
@@ -61,6 +63,12 @@ export class Link implements RigidBody{
 
 
     }
+    static createPosition(id: number, joints: Joint[]): Link {
+      const position = new Link(id, joints[0], joints[1]);
+      position._color = position.positionColorOptions[id % position.positionColorOptions.length];
+      return position;
+    }
+
     //getters
     get id(): number {
         return this._id;
@@ -140,7 +148,7 @@ export class Link implements RigidBody{
         } else {
             //may need to throw error here in future
         }
-        
+
         this.calculateCenterOfMass();
         if(this._joints.size === 1){
             throw new Error("Link now only contains 1 Joint");
@@ -149,7 +157,7 @@ export class Link implements RigidBody{
         for(let joint of this._joints.values()){
             this._name += joint.name;
         }
-        
+
     }
 
     addForce(newForce: Force){
@@ -164,6 +172,7 @@ export class Link implements RigidBody{
         }
     }
 
+    //I don't think this works
     calculateCenterOfMass(): Coord{
         let totalX = 0;
         let totalY = 0;
@@ -181,6 +190,16 @@ export class Link implements RigidBody{
 
         this._centerOfMass = new Coord(centerX, centerY);
         return this._centerOfMass;
+    }
+
+    getMidpoint(joint1: Joint, joint2: Joint): Coord{
+      let x: number;
+      let y: number;
+
+      x = (joint1.coords.x + joint2.coords.x)/2;
+      y = (joint1.coords.y + joint2.coords.y)/2;
+
+      return new Coord(x, y);
     }
 
     // find the first two non-null joints of a link. Do pythagorean math to find length
@@ -205,6 +224,7 @@ export class Link implements RigidBody{
         }
     }
 
+    // Neither does this
     // find the first tow non-empty joints in map. Calculate angle between them
     // using trigonometry (arctan)
     calculateAngle(): number | null {
@@ -396,9 +416,4 @@ export class Link implements RigidBody{
         this._color=this.linkColorOptions[index];
         console.log(this._color);
     }
-
-
-
-
-
 }

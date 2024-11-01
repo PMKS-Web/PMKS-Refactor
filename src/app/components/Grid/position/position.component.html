@@ -1,0 +1,9 @@
+<svg:g appInteractable xmlns:svg="s" [interactor]="getInteractor()">
+  <path [attr.d]="getDrawnPath()" [attr.fill]="getColor()" [attr.fill-opacity]="0.7" [attr.stroke]="getStrokeColor()" [attr.stroke-width]="7"></path>
+
+  <image *ngIf="getLocked()" xlink:href='../../../assets/icons/lock.svg' [attr.x]="getCOMX()" [attr.y]="getCOMY()" [attr.height]="90" />
+
+  <svg:text *ngIf="isHovered() || isSelected()" class="position-name" [attr.x]="getCOMX()" [attr.y]="getCOMY()" alignment-baseline="middle" text-anchor="middle">
+    {{this.position.name}}
+  </svg:text>
+</svg:g>

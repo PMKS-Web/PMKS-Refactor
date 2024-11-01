@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import {HostListener, Injectable} from '@angular/core';
 import { ContextMenuOption, Interactor } from '../controllers/interactor';
 import { Coord } from '../model/coord';
 import { ContextMenuService } from './context-menu.service';
@@ -22,7 +22,6 @@ Interactors.
     providedIn: 'root'
 })
 export class InteractionService {
-
 
     private mousePos: MousePosition;
     private objects: Interactor[] = [];

@@ -3,8 +3,8 @@
   <div class="scroll-container">
   <div style="margin-bottom:15px;">
             <!-- Each coupler position has the same length which is set here -->
-            <p class="subtitle" style="margin-right: 4px; margin-left: 6px;color:grey;font-size:14px;">Automatically create a 4-bar linkage based on 3 coupler poses.</p>
-            <p style="margin-bottom:-3px; margin-right: 4px; margin-left: 6px; margin-top: 5px;">Coupler Link Specifications</p>
+            <p class="subtitle" style="margin-right: 4px; margin-left: 6px;margin-bottom: 10px;color:black;font-size:14px;">Automatically create a 4-bar linkage based on 3 coupler poses.</p>
+            <p style="margin-bottom:-3px; margin-right: 4px; margin-left: 6px; margin-top: 15px;">Coupler Link Specifications</p>
             <div class="input-container">
               <img src="assets/icons/length.svg" alt="length icon" class="icon">
             <span class="label">Length</span>
@@ -15,10 +15,10 @@
               >help_outline
               </mat-icon>
 
-              <single-input-block class="right-aligned" [input1Value]="couplerLength" style="margin-bottom:-7px;margin-left: 41px;"
+              <single-input-block class="right-aligned" [input1Value]="2" style="margin-top:-12px;margin-left: 41px;"
             (input1Change)="setCouplerLength($event)"
 
-            unit1="cm"
+            unit1={{units}}
             [showIcon]="false"></single-input-block>
             </div>
 
@@ -33,12 +33,15 @@
                   >help_outline
                   </mat-icon>
 
-            <radio-block  id="reference"
+
+    <radio-block  id="reference"
                   [options]="['Back', 'Center', 'Front']"
-                  [initialSelection]="'Center'"
-                  (selectionChanged)="setReference($event)"
-                  >
-            </radio-block>
+                  [initialSelection]="reference"
+                  (selectionChanged)="setReference($event)">
+    </radio-block>
+
+
+
       </div>
       <div>
             <hr class="solid">
@@ -58,23 +61,24 @@
                   </div>
 
                   <!-- allows the user to enter coordinates and an angle for the position -->
-                  <div class='poseData' style="margin-right: -25px; margin-bottom: 15px; margin-top: 7px;" *ngIf='this.isPositionDefined(i)' >
-                        <dual-input-block [input1Value]="i === 1 ? pos1X : i === 2 ? pos2X : pos3X"
-                                          [input2Value]="i === 1 ? pos1Y : i === 2 ? pos2Y : pos3Y"
-                                          (input1Change)="setPosXCoord($event, 1)"
-                                          (input2Change)="setPosYCoord($event, 1)"
-                                          tooltip="Change the x and y values of the reference point of the coupler position {{i}}"
-                                          label1="X"
-                                          label2="Y"
-                                          unit1="cm"
-                                          unit2="cm"
-                                          [showIcon]="false">
+                  <div class='poseData' style="margin-right: 5px; margin-bottom: 5px; margin-top: -10px; margin-left:5px;"  *ngIf='this.isPositionDefined(i)' >
+                        <dual-input-block
+                        [input1Value]="getPosXCoord(i)"
+                        [input2Value]="getPosYCoord(i)"
+                        (input1Change)="setPosXCoord($event, i)"
+                        (input2Change)="setPosYCoord($event, i)"
+                        tooltip="Change the x and y values of the reference point of the coupler position {{i}}"
+                        label1="X"
+                        label2="Y"
+                        unit1={{units}}
+                        unit2={{units}}
+                        [showIcon]="false">
                   </dual-input-block>
-                  <single-input-block
-                    [input1Value]="i === 1 ? pos1Angle : i === 2 ? pos2Angle : pos3Angle"
-                    (input1Change)="setPositionAngle($event, i)"
+                  <single-input-block style="margin-right: 5px; margin-bottom: 5px; margin-top: 0px ; margin-left:5px; padding-right: 2px;"
+                        [input1Value]="getPosAngle(i)"
+                        (input1Change)="setPositionAngle($event, i)"
                         iconLabel1="assets/icons/angle.svg"
-                        unit1="deg"
+                        unit1={{angles}}
                         [showIcon]="false">
                   </single-input-block>
       </div>

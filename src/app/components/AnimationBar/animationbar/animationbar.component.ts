@@ -1,4 +1,4 @@
-import {Component, HostListener} from '@angular/core'
+import {Component, HostListener, Input} from '@angular/core'
 import {CompoundLinkInteractor} from 'src/app/controllers/compound-link-interactor';
 import {JointInteractor} from 'src/app/controllers/joint-interactor';
 import {LinkInteractor} from 'src/app/controllers/link-interactor';
@@ -20,21 +20,16 @@ export class AnimationBarComponent {
 
   private isAnimating: boolean = false;
   private isPausedAnimating: boolean = true;
-  constructor(public interactionService: InteractionService, private animationService: AnimationService, private unitConversionService: UnitConversionService, public panZoomService: PanZoomService) {
+  constructor(public interactionService: InteractionService, private animationService: AnimationService) {
 
   }
-  cursorPosition: string = '';
 
-  @HostListener('document:mousemove', ['$event'])
-  onMouseMove(event: MouseEvent) {
-    let screenPos: Coord = new Coord(event.offsetX, event.offsetY);
-    let currentZoomPan = this.panZoomService.getZoomPan();
-    this.cursorPosition =  this.unitConversionService.mouseCoordToModelCoord(screenPos, currentZoomPan) + "";
-  }
+  //BOTTOM BAR MOVED TO svg.component FOR CURSOR COORDINATE REASONS
 
   invalidMechanism() {
-    this.animationService.isInvalid();
+    return this.animationService.isInvalid();
   }
+
   controlAnimation(state: string) {
     switch (state) {
       case 'pause':

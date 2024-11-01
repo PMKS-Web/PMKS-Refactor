@@ -24,7 +24,12 @@ export class Joint {
     constructor(id: number, xORCoord: number | Coord, y?: number){
         this._id = id;
         // changed name to be the same as ID instead of blank
-        this._name = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".charAt(id % 52);
+        if (this.id === -1){
+          this._name = "-1";
+        }
+        else {
+          this._name = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".charAt(Math.abs(id) % 52);
+        }
         this._type = JointType.Revolute;
         this._angle = 0;
         this._isGrounded = false;
