@@ -1,4 +1,5 @@
 import { Component} from '@angular/core'
+import {StateService} from "../../../services/state.service";
 
 interface Tab {
     selected: boolean,
@@ -26,7 +27,7 @@ export class SidenavComponent {
   sidePanels = document.getElementsByClassName('app-panel-container');
 
 
-  constructor(){
+  constructor(private stateService: StateService){
   }
 
   changeGeneratedCheck(changeTo: boolean): void {
@@ -49,6 +50,7 @@ export class SidenavComponent {
       this.hide(synthPanel);
       this.hide(analysisPanel);
       this.unHide(editPanel);
+      this.stateService.changeActivePanel("Edit");
     }
     else if (clickedTab === "Synthesis"){
       this.tabs[0].selected = true;
@@ -57,6 +59,7 @@ export class SidenavComponent {
       this.hide(editPanel);
       this.hide(analysisPanel);
       this.unHide(synthPanel);
+      this.stateService.changeActivePanel("Synthesis");
     }
     else {
       this.tabs[2].selected = true;
@@ -65,6 +68,7 @@ export class SidenavComponent {
       this.hide(editPanel);
       this.hide(synthPanel);
       this.unHide(analysisPanel);
+      this.stateService.changeActivePanel("Analysis");
     }
     }
 

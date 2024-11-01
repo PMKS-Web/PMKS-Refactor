@@ -71,6 +71,7 @@ export class ThreePosSynthesis{
   angleSubscription: Subscription = new Subscription();
   units: string = "cm";
   angles: string = "º";
+  synthedMech:Link[] = [];
 
   constructor(private stateService: StateService, private interactionService: InteractionService, private cdr: ChangeDetectorRef, private positionSolver: PositionSolverService) {
     this.mechanism = this.stateService.getMechanism();
@@ -79,6 +80,7 @@ export class ThreePosSynthesis{
   ngOnInit(){
     this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe((units) => {this.units = units;});
     this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe((angles) => {this.angles = angles;});
+    this.mechanism._mechanismChange$.subscribe(() => this.checkForChange());
   }
 
   ngDoCheck() {
@@ -109,6 +111,24 @@ setReference(r: string) {
 getReference(): string{
     return this.reference;
 }
+
+  checkForChange(): void {
+    let notFound: boolean = true;
+    for (let i: number = 0; i < this.mechanism.getArrayOfLinks().length; i++){
+      for (let j = 0; j < this.synthedMech.length; j++){
+        if (this.mechanism.getArrayOfLinks()[i].name === this.synthedMech[j].name){
+          notFound = false;
+          break;
+        }
+        else notFound = true;
+      }
+    }
+    if (notFound) this.reset();
+  }
+
+  reset(): void {
+    console.log("Called");
+  }
 
   specifyPosition(index: number) {
     if (index === 1) {
@@ -287,17 +307,20 @@ isSixBarGenerated(): boolean {
       this.cdr.detectChanges();
 
       this.mechanism.addLink(firstPoint, secondPoint);
+      this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
 
       let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
       let lastJoint = this.getLastJoint(joints);
       if (lastJoint !== undefined) {
         this.mechanism.addLinkToJoint(lastJoint.id, thirdPoint);
+        this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
       }
 
       joints = this.mechanism.getJoints(); //updates list of all joints
       lastJoint = this.getLastJoint(joints);
       if (lastJoint !== undefined) {
         this.mechanism.addLinkToJoint(lastJoint.id, fourthPoint);
+        this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
       }
 
       //adds the grounded joints and input
