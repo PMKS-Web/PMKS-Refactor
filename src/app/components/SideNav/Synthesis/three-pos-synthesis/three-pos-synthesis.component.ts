@@ -20,7 +20,12 @@ import {Subscription} from "rxjs";
 
 
 
-
+interface CoordinatePosition {
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+}
 export class AppModule { }
 
 @Component({
@@ -29,6 +34,9 @@ export class AppModule { }
     styleUrls: ['./three-pos-synthesis.component.scss'],
 
 })
+
+
+
 export class ThreePosSynthesis{
 
   @Input() disabled: boolean = false;
@@ -71,13 +79,16 @@ export class ThreePosSynthesis{
   angleSubscription: Subscription = new Subscription();
   units: string = "cm";
   angles: string = "º";
+  panelVisible = false;
   selectedOption: string = 'xy-angle';
-  point1X: number = 0;
-  point1Y: number = 0;
-  point2X: number = 0;
-  point2Y: number = 0;
   distance: number = 0;
   angle: number = 0;
+  // New array for two-point mode, using the Position interface
+  twoPointPositions: CoordinatePosition[] = [
+    { x0: 0, y0: 0, x1: 0, y1: 0 },
+    { x0: 0, y0: 0, x1: 0, y1: 0 },
+    { x0: 0, y0: 0, x1: 0, y1: 0 }
+  ];
 
   constructor(private stateService: StateService, private interactionService: InteractionService, private cdr: ChangeDetectorRef, private positionSolver: PositionSolverService) {
     this.mechanism = this.stateService.getMechanism();
@@ -113,8 +124,8 @@ setReference(r: string) {
     this.reference = r;
 }
 
-  toggleOption(option: string): void {
-    this.selectedOption = option;
+  toggleOption(selectedOption: string) {
+    this.selectedOption = selectedOption;
   }
 
 getReference(): string{
@@ -956,17 +967,18 @@ allPositionsDefined(): boolean {
     return Math.sqrt(dx * dx + dy * dy);
   }
 
-  calculateDistanceAndAngle(): void {
-    const deltaX = this.point2X - this.point1X;
-    const deltaY = this.point2Y - this.point1Y;
-    this.distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-    this.angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI); // Convert radians to degrees
-  }
 
+  deletePositionTwoPoints(index:number){
+    console.log("Delete Positions");
+  }
   generateFourBarFromTwoPoints(): void {
     // Logic to generate a Four-Bar mechanism based on two points
     console.log(`Generating Four-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
 
+  }
+
+  removeAllPositionsTwoPoints(): void {
+    console.log("Remove Positions");
   }
 
 }

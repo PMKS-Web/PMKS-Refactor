@@ -1,17 +1,29 @@
 <!-- This is the panel for three position synthesis -->
 <div id="threePos">
+
+<!--  <div class="toggle-container">-->
+<!--    <input type="checkbox" id="toggle-switch" (change)="toggleOption(toggle.checked ? 'two-points' : 'xy-angle')" #toggle>-->
+<!--    <label for="toggle-switch" class="toggle-label">-->
+<!--      <span class="toggle-text">Position & Angle</span>-->
+<!--      <span class="toggle-text">Distance</span>-->
+<!--      <span class="toggle-indicator">{{ toggle.checked ? 'Distance' : 'Position & Angle' }}</span>-->
+<!--    </label>-->
+<!--  </div>-->
   <div class="toggle-container">
     <input type="checkbox" id="toggle-switch" (change)="toggleOption(toggle.checked ? 'two-points' : 'xy-angle')" #toggle>
     <label for="toggle-switch" class="toggle-label">
-      <span class="toggle-text">X, Y,/_</span>
-      <span class="toggle-text">Two Points</span>
-      <span class="toggle-indicator">{{ toggle.checked ? 'Two Points' : 'X, Y ,/_' }}</span>
+      <span class="toggle-text">Position & Angle</span>
+      <span class="toggle-text">Distance</span>
+      <span class="toggle-indicator">{{ toggle.checked ? 'Distance' : 'Position & Angle' }}</span>
+
     </label>
   </div>
 
 
+
   <div class="scroll-container" >
-  <div *ngIf="selectedOption === 'xy-angle'">
+<!--  <div *ngIf="panelVisible">-->
+    <div *ngIf="selectedOption === 'xy-angle'" class="scroll-container" >
   <div style="margin-bottom:15px;">
             <!-- Each coupler position has the same length which is set here -->
             <p class="subtitle" style="margin-right: 4px; margin-left: 6px;margin-bottom: 10px;color:black;font-size:14px;">Automatically create a 4-bar linkage based on 3 coupler poses.</p>
@@ -130,35 +142,46 @@
 </div>
 
   <!-- New Panel Design for Two Points -->
-  <div *ngIf="selectedOption === 'two-points'" id="two-points-panel">
-    <h3>Two Points Synthesis</h3>
 
-    <!-- Point 1 Inputs -->
-    <div class="input-group">
-      <label>Point 1 (X, Y):</label>
-      <input type="number" [(ngModel)]="point1X" (input)="calculateDistanceAndAngle()" placeholder="X1">
-      <span>cm</span>
-      <input type="number" [(ngModel)]="point1Y" (input)="calculateDistanceAndAngle()" placeholder="Y1">
-      <span>cm</span>
+  <div *ngIf="selectedOption === 'two-points'"  class="scroll-container">
+
+    <p class="panel-description">Automatically create a four-bar linkage based on the X and Y coordinate values for positions.</p>
+
+    <!-- Loop for three positions -->
+    <div *ngFor="let pos of twoPointPositions; let index = index" class="position-group">
+      <div class="position-header">
+        <span>Position {{ index + 1 }}</span>
+        <mat-icon id="tooltipTwoPoints" matTooltip="Specify the coordinates for Position {{ index + 1 }}" [matTooltipShowDelay]="1000">help_outline</mat-icon>
+        <button class="delete-button" (click)="deletePositionTwoPoints(index)">
+          <img src="assets/icons/trash.svg" alt="Delete Position">
+        </button>
+      </div>
+
+      <!-- Input Row for X0 and Y0 -->
+      <div class="input-row">
+        <label for="x0-{{index}}">X0</label>
+        <input id="x0-{{index}}" type="number" [(ngModel)]="pos.x0" placeholder="0" class="coordinate-input">
+
+        <label for="y0-{{index}}">Y0</label>
+        <input id="y0-{{index}}" type="number" [(ngModel)]="pos.y0" placeholder="0" class="coordinate-input">
+      </div>
+
+      <!-- Input Row for X1 and Y1 -->
+      <div class="input-row">
+        <label for="x1-{{index}}">X1</label>
+        <input id="x1-{{index}}" type="number" [(ngModel)]="pos.x1" placeholder="0" class="coordinate-input">
+
+        <label for="y1-{{index}}">Y1</label>
+        <input id="y1-{{index}}" type="number" [(ngModel)]="pos.y1" placeholder="0" class="coordinate-input">
+      </div>
     </div>
 
-    <!-- Point 2 Inputs -->
-    <div class="input-group">
-      <label>Point 2 (X, Y):</label>
-      <input type="number" [(ngModel)]="point2X" (input)="calculateDistanceAndAngle()" placeholder="X2">
-      <span>cm</span>
-      <input type="number" [(ngModel)]="point2Y" (input)="calculateDistanceAndAngle()" placeholder="Y2">
-      <span>cm</span>
+    <!-- Action Buttons -->
+    <div class="button-group">
+      <button  (click)="removeAllPositionsTwoPoints()">Remove All Positions</button>
+      <button  (click)="generateFourBarFromTwoPoints()">Generate Four-bar</button>
     </div>
-
-    <!-- Calculated Distance and Angle -->
-    <div class="calculated-values">
-      <p>Distance: {{ distance | number:'1.2-2' }} cm</p>
-      <p>Angle: {{ angle | number:'1.2-2' }}°</p>
-    </div>
-
-    <!-- Generate Four-Bar Button -->
-    <button id="generateFourBar" (click)="generateFourBarFromTwoPoints()">Generate Four-Bar</button>
   </div>
 
 </div>
+
