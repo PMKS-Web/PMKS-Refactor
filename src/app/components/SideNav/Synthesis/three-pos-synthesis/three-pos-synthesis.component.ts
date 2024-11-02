@@ -69,8 +69,10 @@ export class ThreePosSynthesis{
   private mechanism: Mechanism;
   unitSubscription: Subscription = new Subscription();
   angleSubscription: Subscription = new Subscription();
+  panelSubscription: Subscription = new Subscription();
   units: string = "cm";
   angles: string = "º";
+  panel: string = "Synthesis";
   synthedMech:Link[] = [];
 
   constructor(private stateService: StateService, private interactionService: InteractionService, private cdr: ChangeDetectorRef, private positionSolver: PositionSolverService) {
@@ -80,6 +82,7 @@ export class ThreePosSynthesis{
   ngOnInit(){
     this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe((units) => {this.units = units;});
     this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe((angles) => {this.angles = angles;});
+    this.panelSubscription = this.stateService.globalActivePanelCurrent.subscribe((panel) => {this.panel = panel;});
     this.mechanism._mechanismChange$.subscribe(() => this.checkForChange());
   }
 
@@ -113,21 +116,22 @@ getReference(): string{
 }
 
   checkForChange(): void {
-    let notFound: boolean = true;
+
     for (let i: number = 0; i < this.mechanism.getArrayOfLinks().length; i++){
       for (let j = 0; j < this.synthedMech.length; j++){
         if (this.mechanism.getArrayOfLinks()[i].name === this.synthedMech[j].name){
-          notFound = false;
           break;
         }
-        else notFound = true;
+        else this.reset();
       }
     }
-    if (notFound) this.reset();
+
   }
 
   reset(): void {
-    console.log("Called");
+    this.removeAllPositions();
+    this.reference = "Center";
+    this.couplerLength = 2;
   }
 
   specifyPosition(index: number) {
@@ -282,7 +286,7 @@ isSixBarGenerated(): boolean {
   generateFourBar() {
     //Button changes to "clear four bar" when already generated, so remove mechanism
     if (this.fourBarGenerated) {
-      let listOfLinks = this.mechanism.getArrayOfLinks();
+      let listOfLinks = this.synthedMech;
       console.log(listOfLinks);
       let len;
       let i;
@@ -294,6 +298,7 @@ isSixBarGenerated(): boolean {
         console.log(this.mechanism.getArrayOfLinks());
       }
       this.fourBarGenerated = false;
+      this.synthedMech = [];
       this.Generated.emit(false);
     }
     else {
@@ -306,20 +311,20 @@ isSixBarGenerated(): boolean {
       this.Generated.emit(this.fourBarGenerated);
       this.cdr.detectChanges();
 
-      this.mechanism.addLink(firstPoint, secondPoint);
+      this.mechanism.addLink(firstPoint, secondPoint, true);
       this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
 
       let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
       let lastJoint = this.getLastJoint(joints);
       if (lastJoint !== undefined) {
-        this.mechanism.addLinkToJoint(lastJoint.id, thirdPoint);
+        this.mechanism.addLinkToJoint(lastJoint.id, thirdPoint, true);
         this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
       }
 
       joints = this.mechanism.getJoints(); //updates list of all joints
       lastJoint = this.getLastJoint(joints);
       if (lastJoint !== undefined) {
-        this.mechanism.addLinkToJoint(lastJoint.id, fourthPoint);
+        this.mechanism.addLinkToJoint(lastJoint.id, fourthPoint, true);
         this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
       }
 
@@ -843,16 +848,18 @@ allPositionsDefined(): boolean {
 
   removeAllPositions() {
     // Remove all links regardless of whether the four-bar has been generated
-    let listOfLinks = this.mechanism.getArrayOfLinks();
-    console.log(listOfLinks);
-    let len;
-    let i;
-    for (i = 0, len = listOfLinks.length; i < len; i++) {
-      let linkId = listOfLinks[i].id;
-      console.log(linkId);
-      this.mechanism.removeLink(linkId);
-      console.log("LIST OF LINKS AFTER DELETION:");
-      console.log(this.mechanism.getArrayOfLinks());
+    if (this.panel === "Synthesis"){
+      let listOfLinks = this.synthedMech;
+      console.log(listOfLinks);
+      let len;
+      let i;
+      for (i = 0, len = listOfLinks.length; i < len; i++) {
+        let linkId = listOfLinks[i].id;
+        console.log(linkId);
+        this.mechanism.removeLink(linkId);
+        console.log("LIST OF LINKS AFTER DELETION:");
+        console.log(this.mechanism.getArrayOfLinks());
+      }
     }
 
     this.pos1Specified = false;
@@ -867,6 +874,7 @@ allPositionsDefined(): boolean {
 
     // Reset flags
     this.fourBarGenerated = false;
+    this.synthedMech = [];
     this.sixBarGenerated = false;
     this.Generated.emit(false);
   }

@@ -41,7 +41,7 @@ export class SidenavComponent {
     // There has to be a better way to do this but I'm on a time crunch
     if (clickedTab === "Edit"){
       if (this.tabs[0].selected && this.generatedCheck){
-        window.alert("Warning: Adding or removing links, joints, grounds, and inputs to the synthesized mechanism will " +
+        window.alert("Warning: Adding or removing links or joints to the synthesized mechanism will " +
           "cause that synthesis to be voided. The synthesis panel will be reset upon returning to it if you perform any of these actions.")
       }
       this.tabs[1].selected = true;
