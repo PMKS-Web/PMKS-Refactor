@@ -16,6 +16,7 @@ export class Joint {
     private _inputSpeed: number;
     private _isWelded: boolean;
     private _parentLocked: boolean;
+    private _isHidden: boolean;
 
 
 
@@ -38,6 +39,7 @@ export class Joint {
         this._inputSpeed = 0;
         this._parentLocked = false;
         this._inputSpeed = 10;
+        this._isHidden = false;
 
         if(typeof xORCoord === 'number' && y !== undefined)
         {
@@ -86,6 +88,9 @@ export class Joint {
     get locked(): boolean{
         return this._parentLocked;
     }
+    get isHidden(): boolean{
+      return this._isHidden;
+    }
     //----------------------------setters----------------------------
     set name(newName: string){
         this._name = newName;
@@ -100,6 +105,10 @@ export class Joint {
     }
     set locked(value: boolean){
         this._parentLocked = value;
+    }
+
+    set hidden(val: boolean){
+      this._isHidden = val;
     }
 
     //----------------------------Joint Modification with modifying other variables----------------------------

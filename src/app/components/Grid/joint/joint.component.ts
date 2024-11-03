@@ -8,6 +8,7 @@ import { InteractionService } from 'src/app/services/interaction.service';
 import { ClickCapture, ClickCaptureID } from 'src/app/controllers/click-capture/click-capture';
 import { CreateLinkFromJointCapture } from 'src/app/controllers/click-capture/create-link-from-joint-capture';
 import { UnitConversionService } from 'src/app/services/unit-conversion.service';
+import {Subscription} from "rxjs";
 
 @Component({
   selector: '[app-joint]',
@@ -17,6 +18,7 @@ import { UnitConversionService } from 'src/app/services/unit-conversion.service'
 export class JointComponent extends AbstractInteractiveComponent {
 
   @Input() joint!: Joint;
+
 
   constructor(public override interactionService: InteractionService,
     private stateService: StateService,
@@ -37,7 +39,8 @@ export class JointComponent extends AbstractInteractiveComponent {
   }
 
   public getRadius(): number {
-    return 18;
+    if (this.joint.isHidden) return 0;
+    else return 18;
   }
 
   public getColor(): string {
@@ -50,6 +53,10 @@ export class JointComponent extends AbstractInteractiveComponent {
     return '#FFF8E1';
   }
 
+  getName():string {
+    if (this.joint.isHidden) return "";
+    else return this.joint.name;
+  }
   getLocked():boolean {
     return this.joint.locked;
   }

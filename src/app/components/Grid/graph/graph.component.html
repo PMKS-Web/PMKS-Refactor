@@ -10,8 +10,8 @@
     <svg:g app-link [link]="link" />
 </ng-container>
 
-<ng-container *ngFor="let position of getPositions()">
-  <svg:g app-position [position]="position" />
+<ng-container class="Positions" *ngFor="let position of getPositions()">
+  <svg:g app-position [position]="position" [isHidden]="hidePosition"/>
 </ng-container>
 
 

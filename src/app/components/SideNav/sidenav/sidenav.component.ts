@@ -1,4 +1,5 @@
 import { Component} from '@angular/core'
+import {StateService} from "../../../services/state.service";
 
 interface Tab {
     selected: boolean,
@@ -21,10 +22,16 @@ export class SidenavComponent {
     {selected: false, label: 'Analysis', icon:'assets/sidenav/analyze.svg'},
   ];
 
+  generatedCheck: boolean = false;
+
   sidePanels = document.getElementsByClassName('app-panel-container');
 
 
-  constructor(){
+  constructor(private stateService: StateService){
+  }
+
+  changeGeneratedCheck(changeTo: boolean): void {
+    this.generatedCheck = changeTo;
   }
 
   togglePanel(clickedTab: string): void {
@@ -33,12 +40,17 @@ export class SidenavComponent {
     let analysisPanel = this.sidePanels[0].children[2];
     // There has to be a better way to do this but I'm on a time crunch
     if (clickedTab === "Edit"){
+      if (this.tabs[0].selected && this.generatedCheck){
+        window.alert("Warning: Adding or removing links or joints to the synthesized mechanism will " +
+          "cause that synthesis to be voided. The synthesis panel will be reset upon returning to it if you perform any of these actions.")
+      }
       this.tabs[1].selected = true;
       this.tabs[2].selected = false;
       this.tabs[0].selected = false;
       this.hide(synthPanel);
       this.hide(analysisPanel);
       this.unHide(editPanel);
+      this.stateService.changeActivePanel("Edit");
     }
     else if (clickedTab === "Synthesis"){
       this.tabs[0].selected = true;
@@ -47,6 +59,7 @@ export class SidenavComponent {
       this.hide(editPanel);
       this.hide(analysisPanel);
       this.unHide(synthPanel);
+      this.stateService.changeActivePanel("Synthesis");
     }
     else {
       this.tabs[2].selected = true;
@@ -55,6 +68,7 @@ export class SidenavComponent {
       this.hide(editPanel);
       this.hide(synthPanel);
       this.unHide(analysisPanel);
+      this.stateService.changeActivePanel("Analysis");
     }
     }
 
