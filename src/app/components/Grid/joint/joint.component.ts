@@ -53,6 +53,10 @@ export class JointComponent extends AbstractInteractiveComponent {
     return '#FFF8E1';
   }
 
+  getName():string {
+    if (this.joint.isHidden) return "";
+    else return this.joint.name;
+  }
   getLocked():boolean {
     return this.joint.locked;
   }

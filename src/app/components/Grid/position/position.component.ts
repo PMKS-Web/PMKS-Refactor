@@ -60,6 +60,12 @@ export class PositionComponent extends AbstractInteractiveComponent {
     return this.position.color; // Default color
   }
 
+
+  getName():string {
+    if (this.isHidden) return "";
+    else return this.position.name;
+  }
+
   getDrawnPath(): string {
     if (this.isHidden) {
       const hiddenJoints = this.position.joints.values()
