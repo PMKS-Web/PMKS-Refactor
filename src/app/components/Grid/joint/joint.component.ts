@@ -8,6 +8,7 @@ import { InteractionService } from 'src/app/services/interaction.service';
 import { ClickCapture, ClickCaptureID } from 'src/app/controllers/click-capture/click-capture';
 import { CreateLinkFromJointCapture } from 'src/app/controllers/click-capture/create-link-from-joint-capture';
 import { UnitConversionService } from 'src/app/services/unit-conversion.service';
+import {Subscription} from "rxjs";
 
 @Component({
   selector: '[app-joint]',
@@ -18,10 +19,13 @@ export class JointComponent extends AbstractInteractiveComponent {
 
   @Input() joint!: Joint;
 
+  hiddenSubscription = new Subscription();
+  isHidden = false;
   constructor(public override interactionService: InteractionService,
     private stateService: StateService,
     private unitConversionService: UnitConversionService) {
     super(interactionService);
+    this.hiddenSubscription = this.stateService.synthesisHiddenJointsCurrent.subscribe(joints => {this.isHidden = joints});
   }
 
   override registerInteractor(): Interactor {
@@ -37,7 +41,8 @@ export class JointComponent extends AbstractInteractiveComponent {
   }
 
   public getRadius(): number {
-    return 18;
+    if (this.isHidden) return 0;
+    else return 18;
   }
 
   public getColor(): string {
