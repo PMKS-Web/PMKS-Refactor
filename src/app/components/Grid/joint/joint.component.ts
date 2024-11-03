@@ -19,13 +19,11 @@ export class JointComponent extends AbstractInteractiveComponent {
 
   @Input() joint!: Joint;
 
-  hiddenSubscription = new Subscription();
-  isHidden = false;
+
   constructor(public override interactionService: InteractionService,
     private stateService: StateService,
     private unitConversionService: UnitConversionService) {
     super(interactionService);
-    this.hiddenSubscription = this.stateService.synthesisHiddenJointsCurrent.subscribe(joints => {this.isHidden = joints});
   }
 
   override registerInteractor(): Interactor {
@@ -41,7 +39,7 @@ export class JointComponent extends AbstractInteractiveComponent {
   }
 
   public getRadius(): number {
-    if (this.isHidden) return 0;
+    if (this.joint.isHidden) return 0;
     else return 18;
   }
 

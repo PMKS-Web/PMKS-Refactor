@@ -62,10 +62,18 @@ export class PositionComponent extends AbstractInteractiveComponent {
 
   getDrawnPath(): string {
     if (this.isHidden) {
-      this.stateService.changeJointHiding(true);
+      const hiddenJoints = this.position.joints.values()
+      for (let joint of hiddenJoints) {
+        joint.hidden = true;
+      }
       return "";
     }
-    else this.stateService.changeJointHiding(false);
+    else {
+      const unhiddenJoints = this.position.joints.values()
+      for (let joint of unhiddenJoints) {
+        joint.hidden = false;
+      }
+    }
     const radius: number = 30;
     const joints: IterableIterator<Joint> = this.position.joints.values();
     const allCoords: Coord[] = [];
