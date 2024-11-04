@@ -485,14 +485,48 @@
   margin-bottom: 5px;
 }
 
+.coupler-block {
+  background-color: #ffffff;
+  padding: 10px;
+  margin-bottom: 8px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.coupler-block p {
+  font-weight: bold;
+  font-size: 14px;
+  color: #3f51b5;
+  margin-bottom: 8px;
+}
+
+//.input-container {
+//  display: flex;
+//  align-items: center;
+//  gap: 4px; /* Adjust gap to fine-tune spacing between elements */
+//}
+//
+
+
 .lock-icon {
   width: 15px;
   height: 15px;
-  margin-left: 5px;
-  vertical-align: middle;
-  opacity: 0.6;
-  cursor: default;
+  margin-left: 10px;
+  //opacity: 0.6;
 }
+
+//.right-aligned {
+//  margin-left: auto;
+//}
+
+//.lock-icon {
+//  width: 15px;
+//  height: 15px;
+//  margin-left: 5px;
+//  vertical-align: middle;
+//  opacity: 0.6;
+//  cursor: default;
+//}
 
 
 

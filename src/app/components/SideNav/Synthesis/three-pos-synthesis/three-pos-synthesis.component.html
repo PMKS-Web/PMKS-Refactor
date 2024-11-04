@@ -25,10 +25,14 @@
   <div class="scroll-container" >
 <!--  <div *ngIf="panelVisible">-->
   <div *ngIf="selectedOption === 'xy-angle'">
-  <div style="margin-bottom:15px;">
+
+           <div style="margin-bottom:15px;">
             <!-- Each coupler position has the same length which is set here -->
-            <p class="subtitle" style="margin-right: 4px; margin-left: 6px;margin-bottom: 10px;color:black;font-size:14px;">Automatically create a 4-bar linkage based on 3 coupler poses.</p>
-            <p style="margin-bottom:-3px; margin-right: 4px; margin-left: 6px; margin-top: 15px;">Coupler Link Specifications</p>
+            <p class="subtitle" style="margin-right: 4px; margin-left: 6px;margin-bottom: 10px;color:black;font-size:14px;">
+              Automatically create a 4-bar linkage based on 3 coupler poses.</p>
+
+             <div class="coupler-block">
+             <p style="margin-bottom:-3px; margin-right: 4px; margin-left: 6px; margin-top: 15px;">Coupler Link Specifications</p>
             <div class="input-container">
               <img src="assets/icons/length.svg" alt="length icon" class="icon">
             <span class="label">Length</span>
@@ -47,6 +51,7 @@
             [showIcon]="false"></single-input-block>
             </div>
 
+
             <!-- The fixed reference is the center of rotation and you set that with the radio block -->
             <div><img src='assets/icons/referencePoint.svg' style="height: 12.5px; width: 12.5px; display: inline-block; align-items: center; margin-left: 6px;"/>
                   <p style="display:inline-block; margin-bottom:0;">Fixed Reference</p>
@@ -59,14 +64,15 @@
                   </mat-icon>
 
 
-    <radio-block  id="reference"
+                  <radio-block  id="reference"
                   [options]="['Back', 'Center', 'Front']"
                   [initialSelection]="reference"
                   (selectionChanged)="setReference($event)">
-    </radio-block>
+                  </radio-block>
 
 
 
+      </div>
       </div>
       <div>
             <hr class="solid">
