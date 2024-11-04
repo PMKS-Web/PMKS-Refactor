@@ -6,6 +6,7 @@ import { Coord } from '../model/coord';
 import { PositionSolverService } from './kinematic-solver.service';
 import { Mechanism } from '../model/mechanism';
 import { AnimationPositions } from './kinematic-solver.service';
+import { BehaviorSubject } from 'rxjs';
 
 export interface JointAnimationState {
     mechanismIndex: number,
@@ -26,6 +27,8 @@ export class AnimationService {
 
     private animationStates: JointAnimationState[];
     private invaldMechanism: boolean;
+    private animationProgressSource = new BehaviorSubject<number>(0);
+    animationProgress$ = this.animationProgressSource.asObservable();
 
     constructor(private stateService: StateService, private positionSolver: PositionSolverService) {
         this.animationStates = new Array();
@@ -82,19 +85,24 @@ export class AnimationService {
         }
     }
     singleMechanismAnimation(state: JointAnimationState) {
-        //stop if paused
         if (state.isPaused) {
             return;
         } else {
-            //get the index of the next frame
             if (state.currentFrameIndex == state.totalFrames - 1) {
                 state.currentFrameIndex = 0;
             } else {
                 state.currentFrameIndex++;
             }
+
+            const progress = state.currentFrameIndex / (state.totalFrames - 1);
+            this.updateProgress(progress);
+
             for (let jointIndex = 0; jointIndex < state.jointIDs.length; jointIndex++) {
-                this.stateService.getMechanism().getJoint(state.jointIDs[jointIndex]).setCoordinates(state.animationFrames[state.currentFrameIndex][jointIndex]);
+                this.stateService.getMechanism()
+                    .getJoint(state.jointIDs[jointIndex])
+                    .setCoordinates(state.animationFrames[state.currentFrameIndex][jointIndex]);
             }
+
             setTimeout(() => {
                 this.singleMechanismAnimation(state)
             }, Math.round((1000 * 60) / (state.inputSpeed * 360)));
@@ -133,9 +141,25 @@ export class AnimationService {
         }
         animationState.currentFrameIndex = frame;
     }
-    
+    updateProgress(progress: number) {
+        this.animationProgressSource.next(progress);
+    }
+    setAnimationProgress(progress: number) {
+        if (progress < 0 || progress > 1) {
+            return;
+        }
 
+        for (let state of this.animationStates) {
+            const frameIndex = Math.floor(progress * (state.totalFrames - 1));
+            state.currentFrameIndex = frameIndex;
 
+            for (let jointIndex = 0; jointIndex < state.jointIDs.length; jointIndex++) {
+                const joint = this.stateService.getMechanism().getJoint(state.jointIDs[jointIndex]);
+                const newPosition = state.animationFrames[frameIndex][jointIndex];
+                joint.setCoordinates(newPosition);
+            }
+        }
 
-
+        this.updateProgress(progress);
+    }
 }

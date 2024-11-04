@@ -7,6 +7,7 @@ import { ClickCapture, ClickCaptureID } from "./click-capture/click-capture";
 import { CreateLinkFromJointCapture } from "./click-capture/create-link-from-joint-capture";
 import { ContextMenuOption, Interactor } from "./interactor";
 import {Subscription} from "rxjs";
+import { PositionInteractor } from "./position-interactor";
 
 /*
 This interactor defines the following behaviors:
@@ -17,16 +18,22 @@ export class JointInteractor extends Interactor {
     private jointStart: Coord = new Coord(0,0);
     private activePanelSub = new Subscription();
     private activePanel = "Edit";
+    private _isDraggable: boolean = true;
+
     constructor(public joint: Joint, private stateService: StateService,
         private interactionService: InteractionService) {
         super(true, true);
 
         this.onDragStart$.subscribe((event) => {
-            this.jointStart = this.joint._coords;
+            if (!this.joint.locked && this._isDraggable && !this.isDraggingPosition()) {
+                this.jointStart = this.joint._coords;
+            }
         });
 
         this.onDrag$.subscribe((event) => {
-            this.stateService.getMechanism().setJointCoord(this.joint.id,this.jointStart.add(this.dragOffsetInModel!))
+            if (!this.joint.locked && this._isDraggable && !this.isDraggingPosition()) {
+                this.stateService.getMechanism().setJointCoord(this.joint.id, this.jointStart.add(this.dragOffsetInModel!))
+            }
         });
 
         this.onDragEnd$.subscribe((event) => {
@@ -42,6 +49,13 @@ export class JointInteractor extends Interactor {
 
     }
 
+    public setDraggable(value: boolean): void {
+        this._isDraggable = value;
+    }
+
+    public canDrag(): boolean {
+        return this._isDraggable && !this.joint.locked;
+    }
 
     /**
      * Determines what options should be shown for the context menu when right clicking on a joint
@@ -187,5 +201,10 @@ export class JointInteractor extends Interactor {
 
     public override type(): string{
         return "JointInteractor"
+    }
+
+    private isDraggingPosition(): boolean {
+        const selectedObject = this.interactionService.getSelectedObject();
+        return selectedObject instanceof PositionInteractor;
     }
 }
