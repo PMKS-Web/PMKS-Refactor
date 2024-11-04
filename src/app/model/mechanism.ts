@@ -476,24 +476,29 @@ export class Mechanism {
 
     //----------------------------LINK CONTEXT MENU ACTIONS----------------------------
         /**
-     * Higher Order function that performs all available actions on links
-     * 1. Checks the linkID is valid and gets the link to change
-     * 2. Attempts to perform the modification to the link based on the passed function.
-     * Outline: this.executeLinkAction(linkID, link => {});
-     * @private
-     * @param {number} linkID
-     * @param {(link: Link) => void} action
-     * @return {*}
-     * @memberof Mechanism
-     */
-    private executeLinkAction(linkID: number, action: (link: Link) => void) {
+         * Higher Order function that performs all available actions on links
+         * 1. Checks the linkID is valid and gets the link to change
+         * 2. Attempts to perform the modification to the link based on the passed function.
+         * Outline: this.executeLinkAction(linkID, link => {});
+         * @private
+         * @param {number} linkID
+         * @param {(link: Link) => void} action
+         * @param synthesized
+         * @return {*}
+         * @memberof Mechanism
+         */
+    private executeLinkAction(linkID: number, action: (link: Link) => void, synthesized?: boolean) {
         let link = this._links.get(linkID);
+        let isSynth: boolean = false;
+          if (typeof synthesized !== "undefined"){
+            isSynth = synthesized;
+          }
         if (link === undefined) {
             console.error(`Link with ID ${linkID} does not exist`);
             return;
         }
         action(link);
-        this.notifyChange();
+        if (!isSynth) this.notifyChange();
         //console.log(this);
     }
 
@@ -536,7 +541,7 @@ export class Mechanism {
      * @param {Coord} endCoord
      * @memberof Mechanism
      */
-    addLinkToLink(linkID: number, startCoord: Coord, endCoord: Coord) {
+    addLinkToLink(linkID: number, startCoord: Coord, endCoord: Coord, synthesized?: boolean) {
         this.executeLinkAction(linkID, link => {
             //create new joints and link
             let jointA = new Joint(this._jointIDCount, startCoord);
@@ -551,7 +556,7 @@ export class Mechanism {
             this._links.set(linkB.id,linkB);
             //attach links
             link.addTracer(jointA);
-        });
+        }, synthesized);
     }
     /**
      *attaches a force to a an existing link.

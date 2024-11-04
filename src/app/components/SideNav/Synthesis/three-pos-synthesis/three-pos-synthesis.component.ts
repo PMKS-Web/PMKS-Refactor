@@ -85,12 +85,12 @@ export class ThreePosSynthesis{
     this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe((angles) => {this.angles = angles;});
     this.panelSubscription = this.stateService.globalActivePanelCurrent.subscribe((panel) => {this.panel = panel;});
     this.mechanism._mechanismChange$.subscribe(() => this.checkForChange());
-    this.lockCurrentJoint();
+    //this.lockCurrentJoint();
   }
 
   ngDoCheck() {
-    this.lockCurrentJoint();
-    this.lockCurrentLink();
+    //this.lockCurrentJoint();
+    //this.lockCurrentLink();
     if (this.position1 && this.pos1Specified) {
       const newCoord = this.getNewCoord(this.position1);
       this.updatePositionCoords(1, newCoord);
@@ -120,22 +120,28 @@ getReference(): string{
 }
 
   checkForChange(): void {
-
+    let found = false;
     for (let i: number = 0; i < this.mechanism.getArrayOfLinks().length; i++){
       for (let j = 0; j < this.synthedMech.length; j++){
         if (this.mechanism.getArrayOfLinks()[i].name === this.synthedMech[j].name){
+          found = true
           break;
         }
-        else this.reset();
+        else found = false;
       }
+      if (!found) this.reset();
     }
+
+
 
   }
 
   reset(): void {
+    console.log("CALLED RESET")
     this.removeAllPositions();
     this.reference = "Center";
     this.couplerLength = 2;
+
   }
 
   specifyPosition(index: number) {
@@ -295,13 +301,22 @@ isSixBarGenerated(): boolean {
       console.log(listOfLinks);
       let len;
       let i;
-      for (i = 0, len = listOfLinks.length; i < len; i++) {
-        let linkId = listOfLinks[i].id;
+      while (this.synthedMech.length > 0) {
+        let linkId = this.synthedMech[0].id;
         console.log(linkId);
+        this.synthedMech.splice(0, 1);
         this.mechanism.removeLink(linkId);
         console.log("LIST OF LINKS AFTER DELETION:");
         console.log(this.mechanism.getArrayOfLinks());
       }
+      /*for (i = 0, len = listOfLinks.length; i < len; i++) {
+        let linkId = listOfLinks[i].id;
+        console.log(linkId);
+        this.synthedMech.splice(i);
+        this.mechanism.removeLink(linkId);
+        console.log("LIST OF LINKS AFTER DELETION:");
+        console.log(this.mechanism.getArrayOfLinks());
+      }*/
       this.setPositionsColorToDefault();
       this.fourBarGenerated = false;
       this.synthedMech = [];
@@ -409,13 +424,15 @@ isSixBarGenerated(): boolean {
 
     const adjustedAttachPoint = new Coord(attachPoint.x, attachPoint.y + 0.8);
     const newLinkEndCoord = new Coord(adjustedAttachPoint.x - 1.75, adjustedAttachPoint.y);
-    this.mechanism.addLinkToLink(groundedLink.id, adjustedAttachPoint, newLinkEndCoord);
+    this.mechanism.addLinkToLink(groundedLink.id, adjustedAttachPoint, newLinkEndCoord, true);
+    this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
 
     let newJoints = Array.from(this.mechanism.getJoints());
     let lastJoint = newJoints[newJoints.length - 1];
 
     const downwardLinkEndCoord = new Coord(lastJoint._coords.x, lastJoint._coords.y - 0.75);
-    this.mechanism.addLinkToJoint(lastJoint.id, downwardLinkEndCoord);
+    this.mechanism.addLinkToJoint(lastJoint.id, downwardLinkEndCoord, true);
+    this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
 
     newJoints = Array.from(this.mechanism.getJoints());
     lastJoint = newJoints[newJoints.length - 1];
@@ -927,9 +944,10 @@ allPositionsDefined(): boolean {
       console.log(listOfLinks);
       let len;
       let i;
-      for (i = 0, len = listOfLinks.length; i < len; i++) {
-        let linkId = listOfLinks[i].id;
+      while (this.synthedMech.length > 0) {
+        let linkId = this.synthedMech[0].id;
         console.log(linkId);
+        this.synthedMech.splice(0, 1);
         this.mechanism.removeLink(linkId);
         console.log("LIST OF LINKS AFTER DELETION:");
         console.log(this.mechanism.getArrayOfLinks());
