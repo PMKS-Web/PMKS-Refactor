@@ -358,11 +358,11 @@
 /* Target the labels for X and Y inputs */
 .dual-input-block label {
   visibility: visible;
-  margin-right: 4px; /* Adjust margin to ensure it's not overlapping */
-  display: inline-block; /* Ensure it's in the right place */
-  width: 20px; /* Ensure the label has enough space */
-  text-align: left; /* Align the text of the label to the right */
-  color: black; /* Ensure it's not being overwritten by any other style */
+  margin-right: 4px;
+  display: inline-block;
+  width: 20px;
+  text-align: left;
+  color: black;
   flex: 0;
 }
 
@@ -422,128 +422,8 @@
 
 
 
-.toggle-container {
-  display: flex;
-  justify-content: center;
-  //align-items: center;
-  //position: relative;
-  margin-bottom: 15px;
-}
 
-
-.toggle-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  margin-bottom: 10px;
-
-}
-
-#toggle-switch {
-  display: none;
-}
-
-.toggle-label {
-  display: flex;
-  width: 150px;
-  height: 35px;
-  background-color: #e8eaf6;
-  border-radius: 15px;
-  position: relative;
-  cursor: pointer;
-  font-size: 10px;
-  font-weight: bold;
-  color: #777;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 5px;
-  box-sizing: border-box;
-
-}
-
-.toggle-text {
-  flex: 1;
-  text-align: center;
-  line-height: 36px;
-  font-weight: 500;
-  width: 50%;
-  color: #777;
-  transition: color 0.3s;
-
-
-}
-
-.toggle-text.active {
-  color: #333;
-  font-weight: bold;
-
-}
-
-
- .toggle-indicator {
-  //display: flex;
-  //align-items: center;
-  //justify-content: center;
-  //width: 50%;
-  //height: 80%;
-  //background-color: #5C6BC0;
-  //color: white;
-  //border-radius: 15px;
-  //position: absolute;
-  //top: 10%;
-  //left: 3%;
-  //transition: left 0.3s;
-  //font-size: 12px;
-   display: flex;
-   align-items: center;
-   justify-content: center;
-   width: 50%; /* Keep it at 50% for equal distribution */
-   height: 80%;
-   background-color: #5C6BC0;
-   color: white;
-   border-radius: 15px;
-   position: absolute;
-   top: 10%;
-   left: 0; /* Start position */
-   transition: transform 0.3s; /* Change from `left` to `transform` for smoother transition */
-   font-size: 12px;
-   text-align: center;
-   font-weight: bold;
-
-}
-
-#toggle-switch:checked + .toggle-label .toggle-indicator {
-  //left: 47%;
-  transform: translateX(100%);
-
-}
-
-#toggle-switch:checked + .toggle-label .toggle-text:first-child {
-  color: #ccc;
-}
-
-#toggle-switch:not(:checked) + .toggle-label .toggle-text:last-child {
-  color: #ccc;
-}
-#toggle-switch:checked + .toggle-label .toggle-text {
-  color: #999;
-}
-
-#toggle-switch:checked + .toggle-label .toggle-text.active {
-  color: #ffffff;
-}
-
-///* Initial Hidden Panel Content Styling */
-//.scroll-container {
-//  display: none;
-//}
-//
-//.scroll-container.visible {
-//  display: block;
-//}
-
-// Styling for new panel
+//Styling for new panel
 
 #two-points-panel {
   padding: 10px;
@@ -560,7 +440,7 @@
 .position-group {
   background-color: #ffffff;
   padding: 8px;
-  margin-bottom: 10px;
+  margin: 0 10px 10px 10px;
   border-radius: 8px;
   border: 1px solid #ddd;
 }
@@ -569,48 +449,96 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-weight: bold;
+  padding: 0 10px;
   margin-bottom: 5px;
+  position: relative;
+  //gap: 8px;
+  //padding-left: 8px;
+  //font-weight: normal;
 }
 
-.position-header mat-icon {
+.position-header span {
+  font-weight: normal;
+}
+
+.icons {
+  position: absolute;
+  top: 0;
+  left: 40%;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.icons mat-icon, .icons img {
   font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.icons mat-icon, .icons img {
+  padding: 0;
+  margin: 0;
+}
+
+
+span.icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transform: translateY(-2px);
+}
+
+#tooltipTwoPoints {
+  font-size: 16px;
   color: #666;
+  cursor: pointer;
+}
+
+#trashTwoPoints {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.delete-button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .delete-button img {
   width: 16px;
   height: 16px;
   cursor: pointer;
+  vertical-align: middle;
 }
 
 .input-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 15px; /* Adjusted for better spacing */
   margin-bottom: 5px;
 }
 
 .input-row label {
   font-size: 12px;
   color: #666;
-  width: 30px;
+  width: 20px;
+  text-align: right;
 }
 
 .coordinate-input {
-  width: 50px;
+  width: 40px; /* Adjusted for more compact input fields */
   padding: 4px;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-
-.button-group {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
-}
-
-
 
 .button-group {
   display: flex;
@@ -655,3 +583,100 @@
 }
 
 
+
+
+// Toggle switch styling
+
+.toggle-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  margin-bottom: 15px;
+}
+
+#toggle-switch {
+  display: none;
+}
+
+.toggle-label {
+  display: flex;
+  width: 160px;
+  height: 36px;
+  background-color: #e8eaf6;
+  border-radius: 18px;
+  position: relative;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  color: #777;
+  align-items: center;
+  //padding: 0;
+  box-sizing: border-box;
+}
+
+.toggle-text {
+  flex: 1;
+  text-align: center;
+  line-height: 36px;
+  font-weight: 500;
+  color: #777;
+  transition: color 0.3s;
+}
+
+/* Distinguish between left and right texts */
+.toggle-left {
+  margin-left: 8px;
+}
+
+.toggle-right {
+  margin-right: 8px;
+}
+
+/* Indicator styling */
+//.toggle-indicator {
+//  width: 50%;
+//  height: 80%;
+//  background-color: #5C6BC0;
+//  color: white;
+//  border-radius: 18px;
+//  position: absolute;
+//  top: 10%;
+//  left: 4px;
+//  display: flex;
+//  align-items: center;
+//  justify-content: center;
+//  font-size: 12px;
+//  font-weight: bold;
+//  transition: transform 0.3s;
+//}
+
+/* Shift the indicator when checked */
+#toggle-switch:checked + .toggle-label .toggle-indicator {
+  transform: translateX(100%);
+}
+
+/* Dim inactive text */
+#toggle-switch:checked + .toggle-label .toggle-left {
+  color: #ccc;
+}
+
+#toggle-switch:not(:checked) + .toggle-label .toggle-right {
+  color: #ccc;
+}
+
+.toggle-indicator {
+  width: 50%;
+  height: 80%;
+  background-color: #5C6BC0;
+  border-radius: 18px;
+  position: absolute;
+  top: 10%;
+  left: 4px;
+  transition: transform 0.3s;
+  z-index: 1;
+}
+
+.toggle-left, .toggle-right {
+  z-index: 2;
+}

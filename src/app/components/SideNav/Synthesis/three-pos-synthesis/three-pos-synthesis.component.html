@@ -4,18 +4,19 @@
 <!--  <div class="toggle-container">-->
 <!--    <input type="checkbox" id="toggle-switch" (change)="toggleOption(toggle.checked ? 'two-points' : 'xy-angle')" #toggle>-->
 <!--    <label for="toggle-switch" class="toggle-label">-->
-<!--      <span class="toggle-text">Position & Angle</span>-->
+<!--&lt;!&ndash;      <span class="toggle-text">Position & Angle</span>&ndash;&gt;-->
 <!--      <span class="toggle-text">Distance</span>-->
 <!--      <span class="toggle-indicator">{{ toggle.checked ? 'Distance' : 'Position & Angle' }}</span>-->
 <!--    </label>-->
 <!--  </div>-->
+
+
   <div class="toggle-container">
     <input type="checkbox" id="toggle-switch" (change)="toggleOption(toggle.checked ? 'two-points' : 'xy-angle')" #toggle>
     <label for="toggle-switch" class="toggle-label">
-      <span class="toggle-text">Position & Angle</span>
-      <span class="toggle-text">Distance</span>
-      <span class="toggle-indicator">{{ toggle.checked ? 'Distance' : 'Position & Angle' }}</span>
-
+      <span class="toggle-text toggle-left">Position & Angle</span>
+      <span class="toggle-text toggle-right">Distance</span>
+      <span class="toggle-indicator"></span>
     </label>
   </div>
 
@@ -23,7 +24,7 @@
 
   <div class="scroll-container" >
 <!--  <div *ngIf="panelVisible">-->
-    <div *ngIf="selectedOption === 'xy-angle'" class="scroll-container" >
+  <div *ngIf="selectedOption === 'xy-angle'">
   <div style="margin-bottom:15px;">
             <!-- Each coupler position has the same length which is set here -->
             <p class="subtitle" style="margin-right: 4px; margin-left: 6px;margin-bottom: 10px;color:black;font-size:14px;">Automatically create a 4-bar linkage based on 3 coupler poses.</p>
@@ -68,12 +69,14 @@
       </div>
       <div>
             <hr class="solid">
-            <div *ngFor='let i of [1,2,3]'>
+            <div *ngFor='let i of [1,2,3]' class="position-container">
 
                   <!-- displays each position label, if the position is specified/defined, then the trash icon appears -->
 
-                  <div>
+                  <div class="position-header">
                     <p style="display:inline; margin: 2.5px; margin-left: 8px;">Position {{i}}</p>
+
+                    <span class="icons">
                     <mat-icon id="tooltip" matTooltip="Change the x and y values of the reference point of the coupler position {{i}}" [matTooltipShowDelay]='1000' class='label-help'
                         [matTooltipDisabled]='disabled'
                         >help_outline
@@ -81,10 +84,12 @@
                         <button id="trash" *ngIf='this.isPositionDefined(i)' (click)="this.deletePosition(i)">
                               <img id="icon" src='assets/icons/trash.svg' style="height: 13px; width: 15px; margin-bottom: -1.5px; margin-left: -2px;"/>
                         </button>
+                    </span>
                   </div>
 
                   <!-- allows the user to enter coordinates and an angle for the position -->
-                  <div class='poseData' style="margin-right: 5px; margin-bottom: 5px; margin-top: -10px; margin-left:5px;"  *ngIf='this.isPositionDefined(i)' >
+                  <div class='poseData'   *ngIf='this.isPositionDefined(i)'>
+
                         <dual-input-block
                         [input1Value]="getPosXCoord(i)"
                         [input2Value]="getPosYCoord(i)"
@@ -97,7 +102,8 @@
                         unit2={{units}}
                         [showIcon]="false">
                   </dual-input-block>
-                  <single-input-block style="margin-right: 5px; margin-bottom: 5px; margin-top: 0px ; margin-left:5px; padding-right: 2px;"
+
+                  <single-input-block
                         [input1Value]="getPosAngle(i)"
                         (input1Change)="setPositionAngle($event, i)"
                         iconLabel1="assets/icons/angle.svg"
@@ -142,8 +148,8 @@
 </div>
 
   <!-- New Panel Design for Two Points -->
-
-  <div *ngIf="selectedOption === 'two-points'"  class="scroll-container">
+  <div class="scroll-container" >
+  <div *ngIf="selectedOption === 'two-points'">
 
     <p class="panel-description">Automatically create a four-bar linkage based on the X and Y coordinate values for positions.</p>
 
@@ -151,10 +157,12 @@
     <div *ngFor="let pos of twoPointPositions; let index = index" class="position-group">
       <div class="position-header">
         <span>Position {{ index + 1 }}</span>
+        <span class="icons">
         <mat-icon id="tooltipTwoPoints" matTooltip="Specify the coordinates for Position {{ index + 1 }}" [matTooltipShowDelay]="1000">help_outline</mat-icon>
         <button class="delete-button" (click)="deletePositionTwoPoints(index)">
-          <img src="assets/icons/trash.svg" alt="Delete Position">
+          <img  id="trashTwoPoints" src="assets/icons/trash.svg" alt="Delete Position">
         </button>
+        </span>
       </div>
 
       <!-- Input Row for X0 and Y0 -->
@@ -180,8 +188,10 @@
     <div class="button-group">
       <button  (click)="removeAllPositionsTwoPoints()">Remove All Positions</button>
       <button  (click)="generateFourBarFromTwoPoints()">Generate Four-bar</button>
+      <button  (click)="generateSixBarFromTwoPoints()">Generate Six-bar</button>
     </div>
   </div>
-
+  </div>
 </div>
+
 

@@ -981,4 +981,10 @@ allPositionsDefined(): boolean {
     console.log("Remove Positions");
   }
 
+  generateSixBarFromTwoPoints(): void {
+    // Logic to generate a Four-Bar mechanism based on two points
+    console.log(`Generating Six-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
+
+  }
+
 }
