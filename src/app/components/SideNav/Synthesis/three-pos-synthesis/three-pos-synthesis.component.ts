@@ -150,22 +150,28 @@ getReference(): string{
 }
 
   checkForChange(): void {
-
+    let found = false;
     for (let i: number = 0; i < this.mechanism.getArrayOfLinks().length; i++){
       for (let j = 0; j < this.synthedMech.length; j++){
         if (this.mechanism.getArrayOfLinks()[i].name === this.synthedMech[j].name){
+          found = true
           break;
         }
-        else this.reset();
+        else found = false;
       }
+      if (!found) this.reset();
     }
+
+
 
   }
 
   reset(): void {
+    console.log("CALLED RESET")
     this.removeAllPositions();
     this.reference = "Center";
     this.couplerLength = 2;
+
   }
 
   specifyPosition(index: number) {
@@ -325,13 +331,23 @@ isSixBarGenerated(): boolean {
       console.log(listOfLinks);
       let len;
       let i;
-      for (i = 0, len = listOfLinks.length; i < len; i++) {
-        let linkId = listOfLinks[i].id;
+      while (this.synthedMech.length > 0) {
+        let linkId = this.synthedMech[0].id;
         console.log(linkId);
+        this.synthedMech.splice(0, 1);
         this.mechanism.removeLink(linkId);
         console.log("LIST OF LINKS AFTER DELETION:");
         console.log(this.mechanism.getArrayOfLinks());
       }
+      /*for (i = 0, len = listOfLinks.length; i < len; i++) {
+        let linkId = listOfLinks[i].id;
+        console.log(linkId);
+        this.synthedMech.splice(i);
+        this.mechanism.removeLink(linkId);
+        console.log("LIST OF LINKS AFTER DELETION:");
+        console.log(this.mechanism.getArrayOfLinks());
+      }*/
+      this.setPositionsColorToDefault()
       this.fourBarGenerated = false;
       this.synthedMech = [];
       this.Generated.emit(false);
@@ -385,16 +401,86 @@ isSixBarGenerated(): boolean {
     }
   }
 
-generateSixBar() {
-  this.sixBarGenerated = !this.sixBarGenerated;
-  /*if (this.buttonLabel === 'Generate Four-Bar') {
-    this.buttonLabel = 'Clear Four-Bar';
-  } else {
-    this.buttonLabel = 'Generate Four-Bar';
+  generateSixBar() {
+    this.sixBarGenerated = !this.sixBarGenerated;
+    //clear the six-bar
+    if (!this.sixBarGenerated) {
+      const listOfLinks = this.mechanism.getArrayOfLinks();
+      for (const link of listOfLinks) {
+        this.mechanism.removeLink(link.id);
+      }
+      this.setPositionsColorToDefault();
+      console.log("Six-bar has been cleared");
+      this.cdr.detectChanges();
+      return;
+    }
+
+    //change the inputs to ground
+    const joints = this.mechanism.getJoints();
+    for (const joint of joints) {
+      if (joint.isInput) {
+        joint.removeInput();
+        joint.addGround();
+      }
+    }
+
+    //find the ground and add a new link to that link
+    const links = this.mechanism.getArrayOfLinks();
+    let groundedLink: Link | null = null;
+
+    for (const link of links) {
+      const linkJoints = link.getJoints();
+      let isGroundedLink = true;
+
+      for (const joint of linkJoints) {
+        if (joint.isInput) {
+          isGroundedLink = false;
+          break;
+        }
+      }
+      if (isGroundedLink) {
+        groundedLink = link;
+        break;
+      }
+    }
+    if (!groundedLink) {
+      console.error("no grounded link");
+      return;
+    }
+
+    const linkJoints = groundedLink.getJoints();
+    const firstJoint = linkJoints[0];
+    const attachPoint = firstJoint._coords;
+
+    const adjustedAttachPoint = new Coord(attachPoint.x, attachPoint.y + 0.8);
+    const newLinkEndCoord = new Coord(adjustedAttachPoint.x - 1.75, adjustedAttachPoint.y);
+    this.mechanism.addLinkToLink(groundedLink.id, adjustedAttachPoint, newLinkEndCoord, true);
+    this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
+
+    let newJoints = Array.from(this.mechanism.getJoints());
+    let lastJoint = newJoints[newJoints.length - 1];
+
+    const downwardLinkEndCoord = new Coord(lastJoint._coords.x, lastJoint._coords.y - 0.75);
+    this.mechanism.addLinkToJoint(lastJoint.id, downwardLinkEndCoord, true);
+    this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
+
+    newJoints = Array.from(this.mechanism.getJoints());
+    lastJoint = newJoints[newJoints.length - 1];
+
+    lastJoint.addGround();
+    lastJoint.addInput();
+
+    this.cdr.detectChanges();
+    this.positionSolver.solvePositions();
+    this.verifyMechanismPath();
   }
-  */
-  this.cdr.detectChanges();
-}
+
+  setPositionsColorToDefault() {
+    const positions = this.mechanism.getPositions();
+    for (const position of positions) {
+      position.setColor('#5E646D87');
+    }
+  }
 
 //clearSixBar() {
     //this.sixBarGenerated = false;
@@ -888,9 +974,10 @@ allPositionsDefined(): boolean {
       console.log(listOfLinks);
       let len;
       let i;
-      for (i = 0, len = listOfLinks.length; i < len; i++) {
-        let linkId = listOfLinks[i].id;
+      while (this.synthedMech.length > 0) {
+        let linkId = this.synthedMech[0].id;
         console.log(linkId);
+        this.synthedMech.splice(0, 1);
         this.mechanism.removeLink(linkId);
         console.log("LIST OF LINKS AFTER DELETION:");
         console.log(this.mechanism.getArrayOfLinks());
