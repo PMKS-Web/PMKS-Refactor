@@ -23,7 +23,6 @@ Interactors.
 })
 export class InteractionService {
 
-
     private mousePos: MousePosition;
     private objects: Interactor[] = [];
     private selected = new Set<Interactor>(); // set of currently-selected objects

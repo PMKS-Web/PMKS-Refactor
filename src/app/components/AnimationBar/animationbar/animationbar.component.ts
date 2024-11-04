@@ -10,7 +10,6 @@ import { UnitConversionService } from 'src/app/services/unit-conversion.service'
 import {join} from "@angular/compiler-cli";
 import {Coord} from "../../../model/coord";
 import {PanZoomService} from "../../../services/pan-zoom.service";
-import {SvgComponent} from "../../Grid/svg/svg.component";
 
 @Component({
   selector: 'app-animation-bar',
@@ -25,15 +24,10 @@ export class AnimationBarComponent {
 
   }
 
-  @Input() cursorPosition: string = '';
+  //BOTTOM BAR MOVED TO svg.component FOR CURSOR COORDINATE REASONS
 
   invalidMechanism() {
     return this.animationService.isInvalid();
-  }
-
-  getDegrees() {
-    //put in animation service? to get specific number of degrees.
-    return "N/A"
   }
 
   controlAnimation(state: string) {

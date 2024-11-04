@@ -15,6 +15,7 @@
       <radio-block id="globalUnits"
                    [options]="['English (in)', 'Metric (cm)', 'SI (m)']"
                    [initialSelection]="'Metric (cm)'"
+                   (selectionChanged)="changeUnits($event)"
       >
       </radio-block>
       <p class="units">Angle Units <mat-icon matTooltip="Blah blah blah" [matTooltipShowDelay]='1000' class='tooltip'
@@ -23,6 +24,7 @@
       <radio-block id="angleUnits"
                    [options]="['Degree (º)', 'Radian (c)']"
                    [initialSelection]="'Degree (º)'"
+                   (selectionChanged)="changeAngle($event)"
       >
       </radio-block>
     </div>
