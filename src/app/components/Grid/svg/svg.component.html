@@ -11,18 +11,18 @@
 
 <div id='bottomBar' *ngIf="invalidMechanism()">
   <ul>
-    <li id="DoF1">Degrees of Freedom: {{ getDegrees() }}</li>
-    <li>Position: {{cursorPosition}}</li>
-    <li>Units: {{units}}, {{angles}}</li>
+    <li id="DoF1"><span style="font-weight:550">Degrees of Freedom:</span> {{ getDegrees() }}</li>
+    <li><span style="font-weight:550">Pointer Location:</span> {{cursorPosition}}</li>
+    <li><span style="font-weight:550">Units:</span> {{units}}, {{angles}}</li>
     <li>PMKS Refactor Version 1</li>
   </ul>
 </div>
 
 <div id='bottomBar' *ngIf="!invalidMechanism()">
   <ul>
-    <li id="DoF2">Degrees of Freedom: 1</li>
-    <li>Position:{{cursorPosition}}</li>
-    <li>Units: {{units}}, {{angles}}</li>
+    <li id="DoF2"><span style="font-weight:550">Degrees of Freedom:</span> 1</li>
+    <li><span style="font-weight:550">Position:</span>{{cursorPosition}}</li>
+    <li><span style="font-weight:550">Units:</span> {{units}}, {{angles}}</li>
     <li>PMKS Refactor Version 1</li>
   </ul>
 </div>

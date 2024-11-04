@@ -17,6 +17,7 @@ import {PositionSolverService} from "../../../../services/kinematic-solver.servi
 import { DoCheck } from '@angular/core';
 import {JointInteractor} from "../../../../controllers/joint-interactor";
 import {Position} from "../../../../model/position";
+import {Subscription} from "rxjs";
 
 
 
@@ -36,6 +37,7 @@ export class ThreePosSynthesis{
   @Input() input1Value: number = 0;
   @Input() label1: string = "Length";
   @Output() input1Change: EventEmitter<number> = new EventEmitter<number>();
+  @Output() Generated: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   sectionExpanded: { [key: string]: boolean } = { Basic: false };
   buttonLabel: string = 'Generate Four-Bar';
@@ -66,42 +68,24 @@ export class ThreePosSynthesis{
   coord1C = new Coord(this.pos3X - this.couplerLength / 2, this.pos3Y);
   coord2C = new Coord(this.pos3X + this.couplerLength / 2, this.pos3Y);
   private mechanism: Mechanism;
+  unitSubscription: Subscription = new Subscription();
+  angleSubscription: Subscription = new Subscription();
+  panelSubscription: Subscription = new Subscription();
+  units: string = "cm";
+  angles: string = "º";
+  panel: string = "Synthesis";
+  synthedMech:Link[] = [];
 
   constructor(private stateService: StateService, private interactionService: InteractionService, private cdr: ChangeDetectorRef, private positionSolver: PositionSolverService) {
     this.mechanism = this.stateService.getMechanism();
   }
 
-  ngOnInit(): void {
+  ngOnInit(){
+    this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe((units) => {this.units = units;});
+    this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe((angles) => {this.angles = angles;});
+    this.panelSubscription = this.stateService.globalActivePanelCurrent.subscribe((panel) => {this.panel = panel;});
+    this.mechanism._mechanismChange$.subscribe(() => this.checkForChange());
     this.lockCurrentJoint();
-  }
-
-  getMechanism(): Mechanism {
-    return this.stateService.getMechanism();
-  }
-
-  getCurrentJoint() {
-    let currentJointInteractor = this.interactionService.getSelectedObject();
-
-    if (currentJointInteractor instanceof JointInteractor) {
-      currentJointInteractor.draggable = false; // Always lock dragging for joints
-    }
-    return (currentJointInteractor as JointInteractor).getJoint();
-  }
-
-  lockCurrentJoint(): void {
-    let currentJointInteractor = this.interactionService.getSelectedObject();
-
-    if (currentJointInteractor instanceof JointInteractor) {
-      currentJointInteractor.draggable = false; // Always lock dragging for joints
-    }
-  }
-
-  lockCurrentLink(): void {
-    let currentLinkInteractor = this.interactionService.getSelectedObject();
-
-    if (currentLinkInteractor instanceof LinkInteractor) {
-      currentLinkInteractor.draggable = true; // Ensure links are draggable
-    }
   }
 
   ngDoCheck() {
@@ -134,6 +118,25 @@ setReference(r: string) {
 getReference(): string{
     return this.reference;
 }
+
+  checkForChange(): void {
+
+    for (let i: number = 0; i < this.mechanism.getArrayOfLinks().length; i++){
+      for (let j = 0; j < this.synthedMech.length; j++){
+        if (this.mechanism.getArrayOfLinks()[i].name === this.synthedMech[j].name){
+          break;
+        }
+        else this.reset();
+      }
+    }
+
+  }
+
+  reset(): void {
+    this.removeAllPositions();
+    this.reference = "Center";
+    this.couplerLength = 2;
+  }
 
   specifyPosition(index: number) {
     if (index === 1) {
@@ -288,7 +291,7 @@ isSixBarGenerated(): boolean {
   generateFourBar() {
     //Button changes to "clear four bar" when already generated, so remove mechanism
     if (this.fourBarGenerated) {
-      let listOfLinks = this.mechanism.getArrayOfLinks();
+      let listOfLinks = this.synthedMech;
       console.log(listOfLinks);
       let len;
       let i;
@@ -301,6 +304,8 @@ isSixBarGenerated(): boolean {
       }
       this.setPositionsColorToDefault();
       this.fourBarGenerated = false;
+      this.synthedMech = [];
+      this.Generated.emit(false);
     }
     else {
       let firstPoint = this.findIntersectionPoint(this.position1!.getJoints()[0]._coords, this.position2!.getJoints()[0]._coords, this.position3!.getJoints()[0]._coords);
@@ -309,20 +314,24 @@ isSixBarGenerated(): boolean {
       let fourthPoint = this.findIntersectionPoint2(this.position1!.getJoints()[1]._coords, this.position2!.getJoints()[1]._coords, this.position3!.getJoints()[1]._coords);
 
       this.fourBarGenerated = !this.fourBarGenerated;
+      this.Generated.emit(this.fourBarGenerated);
       this.cdr.detectChanges();
 
-      this.mechanism.addLink(firstPoint, secondPoint);
+      this.mechanism.addLink(firstPoint, secondPoint, true);
+      this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
 
       let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
       let lastJoint = this.getLastJoint(joints);
       if (lastJoint !== undefined) {
-        this.mechanism.addLinkToJoint(lastJoint.id, thirdPoint);
+        this.mechanism.addLinkToJoint(lastJoint.id, thirdPoint, true);
+        this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
       }
 
       joints = this.mechanism.getJoints(); //updates list of all joints
       lastJoint = this.getLastJoint(joints);
       if (lastJoint !== undefined) {
-        this.mechanism.addLinkToJoint(lastJoint.id, fourthPoint);
+        this.mechanism.addLinkToJoint(lastJoint.id, fourthPoint, true);
+        this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
       }
 
       //adds the grounded joints and input
@@ -889,7 +898,7 @@ getFirstUndefinedPosition(): number{
       }
     }
 
-    if (index === 1) {
+    else if (index === 1) {
       this.pos1Specified = false;
       this.mechanism.removePosition(this.position1!.id);
       this.resetPos(1);
@@ -913,16 +922,18 @@ allPositionsDefined(): boolean {
 
   removeAllPositions() {
     // Remove all links regardless of whether the four-bar has been generated
-    let listOfLinks = this.mechanism.getArrayOfLinks();
-    console.log(listOfLinks);
-    let len;
-    let i;
-    for (i = 0, len = listOfLinks.length; i < len; i++) {
-      let linkId = listOfLinks[i].id;
-      console.log(linkId);
-      this.mechanism.removeLink(linkId);
-      console.log("LIST OF LINKS AFTER DELETION:");
-      console.log(this.mechanism.getArrayOfLinks());
+    if (this.panel === "Synthesis"){
+      let listOfLinks = this.synthedMech;
+      console.log(listOfLinks);
+      let len;
+      let i;
+      for (i = 0, len = listOfLinks.length; i < len; i++) {
+        let linkId = listOfLinks[i].id;
+        console.log(linkId);
+        this.mechanism.removeLink(linkId);
+        console.log("LIST OF LINKS AFTER DELETION:");
+        console.log(this.mechanism.getArrayOfLinks());
+      }
     }
 
     this.pos1Specified = false;
@@ -937,7 +948,9 @@ allPositionsDefined(): boolean {
 
     // Reset flags
     this.fourBarGenerated = false;
+    this.synthedMech = [];
     this.sixBarGenerated = false;
+    this.Generated.emit(false);
   }
   findIntersectionPoint(pose1_coord1: Coord, pose2_coord1: Coord, pose3_coord1: Coord) {
     //slope of Line 1

@@ -11,6 +11,7 @@ import { Mechanism } from 'src/app/model/mechanism';
 import { InteractionService } from 'src/app/services/interaction.service';
 import { StateService } from 'src/app/services/state.service';
 import { UnitConversionService } from 'src/app/services/unit-conversion.service';
+import {Subscription} from "rxjs";
 
 @Component({
   selector: '[app-graph]',
@@ -19,9 +20,29 @@ import { UnitConversionService } from 'src/app/services/unit-conversion.service'
 })
 export class GraphComponent {
 
+  panelSubscription: Subscription = new Subscription();
+  panel: string = "Edit";
+  positionDisplay = document.getElementsByClassName("Positions");
+  hidePosition: boolean = false;
+
   constructor(private stateService: StateService, private interactorService: InteractionService,
               private unitConverter: UnitConversionService) {
     console.log("GraphComponent.constructor");
+  }
+
+  ngOnInit() {
+    this.panelSubscription = this.stateService.globalActivePanelCurrent.subscribe((panel) => this.panelChanged(panel));
+  }
+
+  private panelChanged(panel: string) {
+    /*let displayedPositions = this.positionDisplay[0].children;
+    for (let i = 0; i < displayedPositions.length; i++) {
+      if (panel === "Edit" || panel === "Analysis") {
+        displayedPositions[i].setAttribute("hidden", "true");
+      }
+      else displayedPositions[i].removeAttribute("hidden");
+    }*/
+    this.hidePosition = panel === "Edit" || panel === "Analysis";
   }
 
   public getJoints(): Joint[] {

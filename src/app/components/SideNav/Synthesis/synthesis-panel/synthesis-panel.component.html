@@ -11,7 +11,7 @@
       <collapsible-subsection [expanded]='true'  titleLabel='Three Position Synthesis' [expanded]="sectionExpanded['LBasic']"
       (opened)="sectionExpanded['threePos'] = true"
     (closed)="sectionExpanded['threePos'] = false">
-      <three-pos-synthesis></three-pos-synthesis>
+      <three-pos-synthesis (Generated)="changeGeneratedCheck($event)"></three-pos-synthesis>
     </collapsible-subsection>
 
 

@@ -21,6 +21,7 @@ export class Mechanism {
     public _mechanismChange$ = this._mechanismChange.asObservable();
     private _positions: Map<number, Position> = new Map();
     private _positionIDCount: number = 0;
+    private _synthesizedMechArr: Link[] = [];
 
     constructor() {
         this._joints = new Map();
@@ -54,9 +55,14 @@ export class Mechanism {
      * 2. from grid to link
      * @param {Coord} coordOne
      * @param {Coord} coordTwo
+     * @param synthesized
      * @memberof Mechanism
      */
-    addLink(coordOne: Coord, coordTwo: Coord) {
+    addLink(coordOne: Coord, coordTwo: Coord, synthesized?: boolean) {
+        let isSynth = false;
+        if (typeof synthesized !== 'undefined') {
+          isSynth = synthesized;
+        }
         let jointA = new Joint(this._jointIDCount, coordOne);
         this._jointIDCount++;
         let jointB = new Joint(this._jointIDCount, coordTwo);
@@ -66,7 +72,9 @@ export class Mechanism {
         let linkA = new Link(this._linkIDCount, [jointA,jointB]);
         this._linkIDCount++;
         this._links.set(linkA.id, linkA);
-        this.notifyChange();
+        if (!isSynth) {
+          this.notifyChange();
+        }
         //console.log(this);
     }
 
@@ -109,11 +117,16 @@ export class Mechanism {
      * @param {string} errorMsg
      * @param {string} successMsg
      * @param {(joint: any) => void} action
+     * @param synthesized
      * @return {*}
      * @memberof Mechanism
      */
-    private executeJointAction(jointID: number, canPerformAction: (joint: Joint) => boolean, errorMsg: string, successMsg: string, action: (joint: any) => void): boolean {
+    private executeJointAction(jointID: number, canPerformAction: (joint: Joint) => boolean, errorMsg: string, successMsg: string, action: (joint: any) => void, synthesized?: boolean): boolean {
         let joint = this._joints.get(jointID);
+        let isSynth = false;
+        if (typeof synthesized !== "undefined"){
+          isSynth = synthesized;
+        }
         if (joint === undefined) {
             console.error(`Joint with ID ${jointID} does not exist`);
             return false;
@@ -130,7 +143,7 @@ export class Mechanism {
         try {
             action(joint);
             //console.log(`Joint with ID ${jointID} ${successMsg}`);
-            this.notifyChange();
+            if (!isSynth) this.notifyChange();
             //console.log(this);
             return true;
         } catch (error: any) {
@@ -289,11 +302,11 @@ export class Mechanism {
      * Given a joint's ID, and a Coordinate, creates a new joint with the coordinate, and a new Link containing the passed Joint, and the new joint.
      * TODO: Account for creating a link between two joints
      * @param {number} jointID
-     * @param {Coord} coordOne
+     * @param coordOneORJointID
+     * @param synthesized
      * @memberof Mechanism
      */
-    addLinkToJoint(jointID: number, coordOneORJointID: Coord | number) {
-
+    addLinkToJoint(jointID: number, coordOneORJointID: Coord | number, synthesized?: boolean) {
         this.executeJointAction(jointID, (joint) => true, 'cannot have a new link added','has had a new link added', (joint) =>{
             let jointB: Joint;
             if(typeof coordOneORJointID !== 'number'){
@@ -308,7 +321,7 @@ export class Mechanism {
             let linkA = new Link(this._linkIDCount, joint, jointB);
             this._linkIDCount++;
             this._links.set(linkA.id, linkA);
-        });
+        }, synthesized);
     }
 
     /**

@@ -16,9 +16,15 @@ export class StateService {
     private mechanism: Mechanism;
     //Need to use BehaviorSubjects when moving data between unrelated components
     private globalUnits = new BehaviorSubject("Metric (cm)");
+    private globalUnitsSuffix = new BehaviorSubject("cm")
     private globalAngles = new BehaviorSubject("Degree (º)");
+    private globalAnglesSuffix = new BehaviorSubject("º");
+    private globalActivePanel = new BehaviorSubject("Edit");
     globalUnitsCurrent = this.globalUnits.asObservable();
+    globalUSuffixCurrent = this.globalUnitsSuffix.asObservable();
     globalAnglesCurrent = this.globalAngles.asObservable();
+    globalASuffixCurrent = this.globalAnglesSuffix.asObservable();
+    globalActivePanelCurrent = this.globalActivePanel.asObservable();
 
     constructor() {
         console.log("StateService constructor");
@@ -27,12 +33,19 @@ export class StateService {
 
     }
 
-    public changeUnits (units: string){
-      this.globalUnits.next(units);
+
+    public changeActivePanel(panel: string): void {
+      this.globalActivePanel.next(panel);
     }
 
-    public changeAngles (angles: string){
+    public changeUnits (units: string, suffix: string){
+      this.globalUnits.next(units);
+      this.globalUnitsSuffix.next(suffix);
+    }
+
+    public changeAngles (angles: string, suffix: string){
       this.globalAngles.next(angles);
+      this.globalAnglesSuffix.next(suffix);
     }
 
     public getMechanism(): Mechanism {

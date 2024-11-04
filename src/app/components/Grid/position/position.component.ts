@@ -19,6 +19,7 @@ import { UnitConversionService } from "src/app/services/unit-conversion.service"
 export class PositionComponent extends AbstractInteractiveComponent {
 
   @Input() position!: Position;
+  @Input() isHidden: boolean = false;
 
   constructor(
     public override interactionService: InteractionService,
@@ -59,7 +60,26 @@ export class PositionComponent extends AbstractInteractiveComponent {
     return this.position.color; // Default color
   }
 
+
+  getName():string {
+    if (this.isHidden) return "";
+    else return this.position.name;
+  }
+
   getDrawnPath(): string {
+    if (this.isHidden) {
+      const hiddenJoints = this.position.joints.values()
+      for (let joint of hiddenJoints) {
+        joint.hidden = true;
+      }
+      return "";
+    }
+    else {
+      const unhiddenJoints = this.position.joints.values()
+      for (let joint of unhiddenJoints) {
+        joint.hidden = false;
+      }
+    }
     const radius: number = 30;
     const joints: IterableIterator<Joint> = this.position.joints.values();
     const allCoords: Coord[] = [];
