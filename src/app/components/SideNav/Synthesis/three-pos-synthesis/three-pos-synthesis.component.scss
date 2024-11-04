@@ -419,6 +419,80 @@
   background-color: #e9ecef;  // Slightly darker background on hover
 }
 
+.scroll-container {
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.position-container {
+  background-color: #ffffff;
+  padding: 4px 6px;
+  margin-bottom: 8px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.position-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: bold;
+  //padding-bottom: 4px;
+  margin-bottom: 4px;
+}
+
+.position-header p {
+  margin: 0;
+  font-weight: normal;
+  font-size: 14px;
+}
+
+.icons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.poseData {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 5px;
+  //padding-top: 5px;
+  //padding-left: 10px;
+}
+
+.dual-input-block,  .single-input-block {
+  margin: 0;
+  padding: 2px 0;
+}
+
+.delete-button img {
+  width: 16px;
+  height: 16px;
+}
+
+#specify,
+#removeAll,
+#generateFourBar {
+  height: 36px;
+  width: 70%;
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: 18px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.lock-icon {
+  width: 15px;
+  height: 15px;
+  margin-left: 5px;
+  vertical-align: middle;
+  opacity: 0.6;
+  cursor: default;
+}
 
 
 
