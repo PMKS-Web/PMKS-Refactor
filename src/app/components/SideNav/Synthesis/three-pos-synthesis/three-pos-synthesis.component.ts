@@ -299,6 +299,7 @@ isSixBarGenerated(): boolean {
         console.log("LIST OF LINKS AFTER DELETION:");
         console.log(this.mechanism.getArrayOfLinks());
       }
+      this.setPositionsColorToDefault();
       this.fourBarGenerated = false;
     }
     else {
@@ -346,16 +347,84 @@ isSixBarGenerated(): boolean {
     }
   }
 
-generateSixBar() {
-  this.sixBarGenerated = !this.sixBarGenerated;
-  /*if (this.buttonLabel === 'Generate Four-Bar') {
-    this.buttonLabel = 'Clear Four-Bar';
-  } else {
-    this.buttonLabel = 'Generate Four-Bar';
+  generateSixBar() {
+    this.sixBarGenerated = !this.sixBarGenerated;
+    //clear the six-bar
+    if (!this.sixBarGenerated) {
+      const listOfLinks = this.mechanism.getArrayOfLinks();
+      for (const link of listOfLinks) {
+        this.mechanism.removeLink(link.id);
+      }
+      this.setPositionsColorToDefault();
+      console.log("Six-bar has been cleared");
+      this.cdr.detectChanges();
+      return;
+    }
+
+    //change the inputs to ground
+    const joints = this.mechanism.getJoints();
+    for (const joint of joints) {
+      if (joint.isInput) {
+        joint.removeInput();
+        joint.addGround();
+      }
+    }
+
+    //find the ground and add a new link to that link
+    const links = this.mechanism.getArrayOfLinks();
+    let groundedLink: Link | null = null;
+
+    for (const link of links) {
+      const linkJoints = link.getJoints();
+      let isGroundedLink = true;
+
+      for (const joint of linkJoints) {
+        if (joint.isInput) {
+          isGroundedLink = false;
+          break;
+        }
+      }
+      if (isGroundedLink) {
+        groundedLink = link;
+        break;
+      }
+    }
+    if (!groundedLink) {
+      console.error("no grounded link");
+      return;
+    }
+
+    const linkJoints = groundedLink.getJoints();
+    const firstJoint = linkJoints[0];
+    const attachPoint = firstJoint._coords;
+
+    const adjustedAttachPoint = new Coord(attachPoint.x, attachPoint.y + 0.8);
+    const newLinkEndCoord = new Coord(adjustedAttachPoint.x - 1.75, adjustedAttachPoint.y);
+    this.mechanism.addLinkToLink(groundedLink.id, adjustedAttachPoint, newLinkEndCoord);
+
+    let newJoints = Array.from(this.mechanism.getJoints());
+    let lastJoint = newJoints[newJoints.length - 1];
+
+    const downwardLinkEndCoord = new Coord(lastJoint._coords.x, lastJoint._coords.y - 0.75);
+    this.mechanism.addLinkToJoint(lastJoint.id, downwardLinkEndCoord);
+
+    newJoints = Array.from(this.mechanism.getJoints());
+    lastJoint = newJoints[newJoints.length - 1];
+
+    lastJoint.addGround();
+    lastJoint.addInput();
+
+    this.cdr.detectChanges();
+    this.positionSolver.solvePositions();
+    this.verifyMechanismPath();
   }
-  */
-  this.cdr.detectChanges();
-}
+
+  setPositionsColorToDefault() {
+    const positions = this.mechanism.getPositions();
+    for (const position of positions) {
+      position.setColor('#5E646D87');
+    }
+  }
 
 //clearSixBar() {
     //this.sixBarGenerated = false;
