@@ -36,12 +36,14 @@
       <span id='secLabel'>sec</span>
     </div>
 
-    <mat-slider
-      min='0'
-      max='5'
-      step="0.1"
-    >
-      <input id='slider' matSliderThumb />
+    <mat-slider>
+      <input matSliderThumb
+             [value]="sliderValue"
+             [disabled]="!getIsAnimating()"
+             (valueChange)="onSliderChange($event)"
+             min="0"
+             max="100"
+             step="0.1">
     </mat-slider>
   </div>
   <div id='viewButtons'>
