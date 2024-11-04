@@ -317,7 +317,7 @@ isSixBarGenerated(): boolean {
         console.log("LIST OF LINKS AFTER DELETION:");
         console.log(this.mechanism.getArrayOfLinks());
       }*/
-      this.setPositionsColorToDefault();
+      this.setPositionsColorToDefault()
       this.fourBarGenerated = false;
       this.synthedMech = [];
       this.Generated.emit(false);
