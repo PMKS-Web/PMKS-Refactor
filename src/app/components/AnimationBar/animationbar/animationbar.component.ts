@@ -20,8 +20,12 @@ export class AnimationBarComponent {
 
   private isAnimating: boolean = false;
   private isPausedAnimating: boolean = true;
-  constructor(public interactionService: InteractionService, private animationService: AnimationService) {
+  sliderValue: number = 0;
 
+  constructor(public interactionService: InteractionService, private animationService: AnimationService) {
+    this.animationService.animationProgress$.subscribe(progress => {
+      this.sliderValue = progress * 100;
+    });
   }
 
   //BOTTOM BAR MOVED TO svg.component FOR CURSOR COORDINATE REASONS
@@ -41,20 +45,12 @@ export class AnimationBarComponent {
         this.animationService.animateMechanisms(true);
         this.isAnimating = true;
         this.isPausedAnimating = false;
-        //for some reason this doesn't work
-        // if (this.interactionService.isDragging){
-        //   this.snackBar.open("Cannot edit while animation is playing", '', {
-        //     panelClass: 'my-custom-snackbar',
-        //     horizontalPosition: 'center',
-        //     verticalPosition: 'top',
-        //     duration: 4000,
-        //   });
-        // }
         break;
       case 'stop':
         this.animationService.reset();
         this.isAnimating = false;
         this.isPausedAnimating = true;
+        this.sliderValue = 0;
         break;
     }
   }
@@ -93,7 +89,10 @@ export class AnimationBarComponent {
     return index;
   }
 
-
-
+  onSliderChange(value: number) {
+    if (this.isAnimating && this.isPausedAnimating) {
+      this.animationService.setAnimationProgress(value / 100);
+    }
+  }
 
 }
