@@ -15,6 +15,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ChangeDetectorRef } from '@angular/core';
 import {PositionSolverService} from "../../../../services/kinematic-solver.service";
 import { DoCheck } from '@angular/core';
+import {JointInteractor} from "../../../../controllers/joint-interactor";
 import {Position} from "../../../../model/position";
 import {Subscription} from "rxjs";
 
@@ -79,14 +80,47 @@ export class ThreePosSynthesis{
     this.mechanism = this.stateService.getMechanism();
   }
 
-  ngOnInit(){
+  ngOnInit(): void {
+    this.lockCurrentJoint();
     this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe((units) => {this.units = units;});
     this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe((angles) => {this.angles = angles;});
     this.panelSubscription = this.stateService.globalActivePanelCurrent.subscribe((panel) => {this.panel = panel;});
     this.mechanism._mechanismChange$.subscribe(() => this.checkForChange());
   }
 
+  getMechanism(): Mechanism {
+    return this.stateService.getMechanism();
+  }
+
+  getCurrentJoint() {
+    let currentJointInteractor = this.interactionService.getSelectedObject();
+
+    if (currentJointInteractor instanceof JointInteractor) {
+        currentJointInteractor.setDraggable(false);
+    }
+    return (currentJointInteractor as JointInteractor).getJoint();
+  }
+
+  lockCurrentJoint(): void {
+    let currentJointInteractor = this.interactionService.getSelectedObject();
+
+    if (currentJointInteractor instanceof JointInteractor) {
+        currentJointInteractor.getJoint().locked = true;
+        currentJointInteractor.setDraggable(false);
+    }
+  }
+
+  lockCurrentLink(): void {
+    let currentLinkInteractor = this.interactionService.getSelectedObject();
+
+    if (currentLinkInteractor instanceof LinkInteractor) {
+      currentLinkInteractor.draggable = true; // Ensure links are draggable
+    }
+  }
+
   ngDoCheck() {
+    this.lockCurrentJoint();
+    this.lockCurrentLink();
     if (this.position1 && this.pos1Specified) {
       const newCoord = this.getNewCoord(this.position1);
       this.updatePositionCoords(1, newCoord);
@@ -193,8 +227,8 @@ getReference(): string{
   }
 
   updatePositionCoords(posNum: number, newCoord: Coord) {
-    const roundedX = parseFloat(newCoord.x.toFixed(2));
-    const roundedY = parseFloat(newCoord.y.toFixed(2));
+    const roundedX = parseFloat(newCoord.x.toFixed(3));
+    const roundedY = parseFloat(newCoord.y.toFixed(3));
 
     if (posNum === 1) {
       this.pos1X = roundedX;
@@ -214,7 +248,7 @@ getReference(): string{
     const deltaY = joint2.coords.y - joint1.coords.y;
     let angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI); // Convert radians to degrees
     if (angle < 0) {
-      angle += 360; // Normalize to 0-360
+      angle += 360;
     }
     return angle;
   }
@@ -224,7 +258,8 @@ getReference(): string{
     if (normalizedAngle < 0) {
       normalizedAngle += 360;
     }
-    const roundedAngle = Math.round(normalizedAngle);
+
+    const roundedAngle = parseFloat(normalizedAngle.toFixed(3));
 
     if (posNum === 1) {
       this.pos1Angle = roundedAngle;
