@@ -67,6 +67,7 @@ export class ThreePosSynthesis{
   coord2B = new Coord(this.pos2X + this.couplerLength / 2, this.pos2Y);
   coord1C = new Coord(this.pos3X - this.couplerLength / 2, this.pos3Y);
   coord2C = new Coord(this.pos3X + this.couplerLength / 2, this.pos3Y);
+  notifNeeded = false;
   private mechanism: Mechanism;
   unitSubscription: Subscription = new Subscription();
   angleSubscription: Subscription = new Subscription();
@@ -84,7 +85,7 @@ export class ThreePosSynthesis{
     this.lockCurrentJoint();
     this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe((units) => {this.units = units;});
     this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe((angles) => {this.angles = angles;});
-    this.panelSubscription = this.stateService.globalActivePanelCurrent.subscribe((panel) => {this.panel = panel;});
+    this.panelSubscription = this.stateService.globalActivePanelCurrent.subscribe((panel) => {this.panel = panel; this.sendNotif()});
     this.mechanism._mechanismChange$.subscribe(() => this.checkForChange());
   }
 
@@ -151,19 +152,24 @@ getReference(): string{
 
   checkForChange(): void {
     let found = false;
-    for (let i: number = 0; i < this.mechanism.getArrayOfLinks().length; i++){
-      for (let j = 0; j < this.synthedMech.length; j++){
-        if (this.mechanism.getArrayOfLinks()[i].name === this.synthedMech[j].name){
+    for (let i: number = 0; i < this.synthedMech.length; i++){
+      for (let j = 0; j < this.mechanism.getArrayOfLinks().length; j++){
+        if (this.synthedMech[i].name === this.mechanism.getArrayOfLinks()[j].name){
           found = true
           break;
         }
         else found = false;
       }
-      if (!found) this.reset();
+      if (!found) {this.reset(); this.notifNeeded = false;}
     }
+    if (found) this.notifNeeded = true;
+  }
 
-
-
+  sendNotif() {
+    if (this.notifNeeded && this.panel === "Synthesis"){
+      window.alert("Please recalculate position accuracy using the \"Recalculate Positions\" button.");
+    }
+    this.notifNeeded = false;
   }
 
   reset(): void {
