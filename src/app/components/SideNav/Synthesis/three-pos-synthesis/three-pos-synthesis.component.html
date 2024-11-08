@@ -10,12 +10,13 @@
 <!--    </label>-->
 <!--  </div>-->
 
+  <p class="synthesis-description">Define 3 specific coupler positions to synthesize a linkage mechanism.</p>
 
   <div class="toggle-container">
     <input type="checkbox" id="toggle-switch" (change)="toggleOption(toggle.checked ? 'two-points' : 'xy-angle')" #toggle>
     <label for="toggle-switch" class="toggle-label">
-      <span class="toggle-text toggle-left">Position & Angle</span>
-      <span class="toggle-text toggle-right">Distance</span>
+      <span class="toggle-text toggle-left">Length & Angle</span>
+      <span class="toggle-text toggle-right">End Points</span>
       <span class="toggle-indicator"></span>
     </label>
   </div>
@@ -28,11 +29,13 @@
 
            <div style="margin-bottom:15px;">
             <!-- Each coupler position has the same length which is set here -->
-            <p class="subtitle" style="margin-right: 4px; margin-left: 6px;margin-bottom: 10px;color:black;font-size:14px;">
+            <p class="subtitle" style="margin-right: 4px; margin-left: 6px;margin-bottom: 10px;color:#757575;font-size:14px;">
               Automatically create a 4-bar linkage based on 3 coupler poses.</p>
 
+
+             <p class="coupler-title" style="margin-bottom:-3px; margin-right: 4px; margin-left: 6px; margin-top: 15px;">Coupler Link Specifications</p>
              <div class="coupler-block">
-             <p style="margin-bottom:-3px; margin-right: 4px; margin-left: 6px; margin-top: 15px;">Coupler Link Specifications</p>
+
             <div class="input-container">
               <img src="assets/icons/length.svg" alt="length icon" class="icon">
             <span class="label">Length</span>
@@ -54,7 +57,7 @@
 
             <!-- The fixed reference is the center of rotation and you set that with the radio block -->
             <div><img src='assets/icons/referencePoint.svg' style="height: 12.5px; width: 12.5px; display: inline-block; align-items: center; margin-left: 6px;"/>
-                  <p style="display:inline-block; margin-bottom:0;">Fixed Reference</p>
+                  <p  class="fixedReference-title"style="display:inline-block; margin-bottom:0;">Fixed Reference</p>
             </div>
                   <mat-icon id="fixedReferenceTooltip"
                         matTooltip="The center of rotation of the end-effector link, and what the position coordinate represents" [matTooltipShowDelay]='1000'
@@ -81,7 +84,7 @@
                   <!-- displays each position label, if the position is specified/defined, then the trash icon appears -->
 
                   <div class="position-header">
-                    <p style="display:inline; margin: 2.5px; margin-left: 8px;">Position {{i}}</p>
+                    <p style="display:inline; margin: 2.5px; margin-left: 8px; margin-bottom: 0px">Position {{i}}</p>
 
                     <span class="icons">
                     <mat-icon id="tooltip" matTooltip="Change the x and y values of the reference point of the coupler position {{i}}" [matTooltipShowDelay]='1000' class='label-help'
@@ -129,8 +132,9 @@
     <hr class="solid2">
 <!-- If all positions are defined you can then generate a four bar or delete all positions -->
     <div *ngIf='!this.allPositionsDefined()' class="definedButtons">
-      <button id="removeAllGrey" >Remove All Positions</button>
+
       <button id="generateFourBarGrey">Generate Four-Bar</button>
+      <button id="removeAllGrey" >Remove All Positions</button>
     </div>
 
     <div *ngIf='this.allPositionsDefined()' class="definedButtons">
@@ -160,42 +164,75 @@
 
     <p class="panel-description">Automatically create a four-bar linkage based on the X and Y coordinate values for positions.</p>
 
+<!--    &lt;!&ndash; Loop for three positions &ndash;&gt;-->
+<!--    <div *ngFor="let pos of twoPointPositions; let index = index" class="position-group">-->
+<!--      <div class="position-header">-->
+<!--        <span>Position {{ index + 1 }}</span>-->
+<!--        <span class="icons">-->
+<!--        <mat-icon id="tooltipTwoPoints" matTooltip="Specify the coordinates for Position {{ index + 1 }}" [matTooltipShowDelay]="1000">help_outline</mat-icon>-->
+<!--        <button class="delete-button" (click)="deletePositionTwoPoints(index)">-->
+<!--          <img  id="trashTwoPoints" src="assets/icons/trash.svg" alt="Delete Position">-->
+<!--        </button>-->
+<!--        </span>-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Input Row for X0 and Y0 &ndash;&gt;-->
+<!--      <div class="input-row">-->
+<!--        <label for="x0-{{index}}">X0</label>-->
+<!--        <input id="x0-{{index}}" type="number" [(ngModel)]="pos.x0" placeholder="0" class="coordinate-input">-->
+
+<!--        <label for="y0-{{index}}">Y0</label>-->
+<!--        <input id="y0-{{index}}" type="number" [(ngModel)]="pos.y0" placeholder="0" class="coordinate-input">-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Input Row for X1 and Y1 &ndash;&gt;-->
+<!--      <div class="input-row">-->
+<!--        <label for="x1-{{index}}">X1</label>-->
+<!--        <input id="x1-{{index}}" type="number" [(ngModel)]="pos.x1" placeholder="0" class="coordinate-input">-->
+
+<!--        <label for="y1-{{index}}">Y1</label>-->
+<!--        <input id="y1-{{index}}" type="number" [(ngModel)]="pos.y1" placeholder="0" class="coordinate-input">-->
+<!--      </div>-->
+<!--    </div>-->
+
     <!-- Loop for three positions -->
     <div *ngFor="let pos of twoPointPositions; let index = index" class="position-group">
       <div class="position-header">
         <span>Position {{ index + 1 }}</span>
         <span class="icons">
-        <mat-icon id="tooltipTwoPoints" matTooltip="Specify the coordinates for Position {{ index + 1 }}" [matTooltipShowDelay]="1000">help_outline</mat-icon>
-        <button class="delete-button" (click)="deletePositionTwoPoints(index)">
-          <img  id="trashTwoPoints" src="assets/icons/trash.svg" alt="Delete Position">
-        </button>
-        </span>
+      <mat-icon id="tooltipTwoPoints" matTooltip="Specify the coordinates for Position {{ index + 1 }}" [matTooltipShowDelay]="1000">help_outline</mat-icon>
+      <button class="delete-button" (click)="deletePositionTwoPoints(index)">
+        <img id="trashTwoPoints" src="assets/icons/trash.svg" alt="Delete Position">
+      </button>
+    </span>
       </div>
 
-      <!-- Input Row for X0 and Y0 -->
+      <!-- Calculate the starting label number for each position based on index -->
       <div class="input-row">
-        <label for="x0-{{index}}">X0</label>
-        <input id="x0-{{index}}" type="number" [(ngModel)]="pos.x0" placeholder="0" class="coordinate-input">
+        <label for="x{{index * 2 + 1}}">X{{index * 2 + 1}}</label>
+        <input id="x{{index * 2 + 1}}" type="number" [(ngModel)]="pos.x0" placeholder="0" class="coordinate-input">
 
-        <label for="y0-{{index}}">Y0</label>
-        <input id="y0-{{index}}" type="number" [(ngModel)]="pos.y0" placeholder="0" class="coordinate-input">
+        <label for="y{{index * 2 + 1}}">Y{{index * 2 + 1}}</label>
+        <input id="y{{index * 2 + 1}}" type="number" [(ngModel)]="pos.y0" placeholder="0" class="coordinate-input">
       </div>
 
-      <!-- Input Row for X1 and Y1 -->
       <div class="input-row">
-        <label for="x1-{{index}}">X1</label>
-        <input id="x1-{{index}}" type="number" [(ngModel)]="pos.x1" placeholder="0" class="coordinate-input">
+        <label for="x{{index * 2 + 2}}">X{{index * 2 + 2}}</label>
+        <input id="x{{index * 2 + 2}}" type="number" [(ngModel)]="pos.x1" placeholder="0" class="coordinate-input">
 
-        <label for="y1-{{index}}">Y1</label>
-        <input id="y1-{{index}}" type="number" [(ngModel)]="pos.y1" placeholder="0" class="coordinate-input">
+        <label for="y{{index * 2 + 2}}">Y{{index * 2 + 2}}</label>
+        <input id="y{{index * 2 + 2}}" type="number" [(ngModel)]="pos.y1" placeholder="0" class="coordinate-input">
       </div>
     </div>
 
+
+
     <!-- Action Buttons -->
     <div class="button-group">
-      <button  (click)="removeAllPositionsTwoPoints()">Remove All Positions</button>
+
       <button  (click)="generateFourBarFromTwoPoints()">Generate Four-bar</button>
-      <button  (click)="generateSixBarFromTwoPoints()">Generate Six-bar</button>
+<!--      <button  (click)="generateSixBarFromTwoPoints()">Generate Six-bar</button>-->
+      <button  (click)="removeAllPositionsTwoPoints()">Remove All Positions</button>
     </div>
   </div>
   </div>

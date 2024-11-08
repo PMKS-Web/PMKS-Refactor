@@ -11,7 +11,7 @@
     <div class="input-section">
       <img *ngIf="iconLabel1!==undefined" src="{{iconLabel1}}" style="height:14px;">
       <label for="input1"> {{label1}}</label>
-      <input style="padding-right:10px;" type="number" id="input1" [(ngModel)]="input1Value"
+      <input style="padding-right:5px;" type="number" id="input1" [(ngModel)]="input1Value"
              (keyup.enter)="onEnterKeyInput1()" (blur)="onBlurInput1()"/>
              <span class="unit" style="margin-left:-38px;">{{unit1}}</span>
     </div>
