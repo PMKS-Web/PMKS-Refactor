@@ -113,6 +113,10 @@ export class ThreePosSynthesis{
 
     if (currentLinkInteractor instanceof LinkInteractor && this.panel === "Synthesis") {
       currentLinkInteractor.draggable = true;
+      const joints = this.mechanism.getJoints();
+      for (const joint of joints) {
+        joint.locked = false;
+      }
     }
   }
 
