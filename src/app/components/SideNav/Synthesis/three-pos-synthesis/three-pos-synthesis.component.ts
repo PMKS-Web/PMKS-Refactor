@@ -25,6 +25,7 @@ interface CoordinatePosition {
   y0: number;
   x1: number;
   y1: number;
+  defined: boolean;
 }
 export class AppModule { }
 
@@ -85,9 +86,9 @@ export class ThreePosSynthesis{
   angle: number = 0;
   // New array for two-point mode, using the Position interface
   twoPointPositions: CoordinatePosition[] = [
-    { x0: 0, y0: 0, x1: 0, y1: 0 },
-    { x0: 0, y0: 0, x1: 0, y1: 0 },
-    { x0: 0, y0: 0, x1: 0, y1: 0 }
+    { x0: 0, y0: 0, x1: 0, y1: 0 , defined: false},
+    { x0: 0, y0: 0, x1: 0, y1: 0, defined: false },
+    { x0: 0, y0: 0, x1: 0, y1: 0,defined: false }
   ];
 
   constructor(private stateService: StateService, private interactionService: InteractionService, private cdr: ChangeDetectorRef, private positionSolver: PositionSolverService) {
@@ -153,6 +154,8 @@ getReference(): string{
       this.position3.name = "Position 3";
     }
   }
+
+
 
   getNewCoord(position: Position): Coord {
     let joint: Joint;
@@ -810,6 +813,8 @@ getFirstUndefinedPosition(): number{
     return 0;
 }
 
+
+
   deletePosition(index: number) {
     // Remove all links if the four-bar has been generated
     if (this.fourBarGenerated) {
@@ -967,9 +972,22 @@ allPositionsDefined(): boolean {
     return Math.sqrt(dx * dx + dy * dy);
   }
 
+  getFirstUndefinedPositionEndPoints() :number {
+      return this.twoPointPositions.findIndex(position => !position.defined )
+      }
+
+  specifyPositionEndPoints(index: number){
+    console.log(index);
+    if (index >= 0 && index < this.twoPointPositions.length) {
+      this.twoPointPositions[index].defined = true;
+    }
+  }
 
   deletePositionTwoPoints(index:number){
     console.log("Delete Positions");
+    if (index >= 0 && index < this.twoPointPositions.length) {
+      this.twoPointPositions[index] = { x0: 0, y0: 0, x1: 0, y1: 0, defined: false };
+    }
   }
   generateFourBarFromTwoPoints(): void {
     // Logic to generate a Four-Bar mechanism based on two points
@@ -978,7 +996,14 @@ allPositionsDefined(): boolean {
   }
 
   removeAllPositionsTwoPoints(): void {
-    console.log("Remove Positions");
+    this.twoPointPositions.forEach(pos => {
+      pos.defined = false;
+      pos.x0 = 0;
+      pos.y0 = 0;
+      pos.x1 = 0;
+      pos.y1 = 0;
+    });
+    console.log("All positions removed");
   }
 
   generateSixBarFromTwoPoints(): void {

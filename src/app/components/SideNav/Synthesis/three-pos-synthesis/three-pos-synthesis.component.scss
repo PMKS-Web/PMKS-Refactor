@@ -261,7 +261,7 @@
     font-size: 16px;
     padding-top: 2px;
     //display: flex;
-    //margin-left: -47px;
+    //margin-left: -49px;
     //margin-top: 6px;
     //margin-bottom: -5px;
     display: inline-flex;
@@ -383,7 +383,7 @@
 }
 
 .single-input-block span.unit {
-  margin-left: 2px; /* Reduce space between angle value and 'deg' */
+  margin-left: 2px !important; /* Reduce space between angle value and 'deg' */
   padding-left: 0px;
 }
 
@@ -407,19 +407,19 @@
 }
 
 .selected-option {
-  background-color: #007bff;  // Blue background for selected option
-  color: white;               // White text for selected option
+  background-color: #007bff;
+  color: white;
   font-weight: bold;
 }
 
 .unselected-option {
-  background-color: white;    // White background for unselected options
-  color: #007bff;             // Blue text for unselected options
+  background-color: white;
+  color: #007bff;
   border: 1px solid #ccc;
 }
 
 .radio-block-option:hover {
-  background-color: #e9ecef;  // Slightly darker background on hover
+  background-color: #e9ecef;
 }
 
 .scroll-container {
@@ -715,7 +715,23 @@ span.icons {
   box-shadow: none;
 }
 
-
+#specifyEndPoints{
+  margin:0 auto;
+  display:block;
+  //background-color: white;
+  width: 60%;
+  height: 40px;
+  border-radius: 20px;
+  //border: 1px solid black;
+  //margin-top: 3px;
+  //margin-bottom: 20px;
+  background-color: #e8eaf6;
+  font-weight: bold;
+  font-size: 12.8px;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  color: #3F51B5;
+  border: none;
+}
 
 
 

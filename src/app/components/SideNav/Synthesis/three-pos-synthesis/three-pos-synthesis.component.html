@@ -164,43 +164,14 @@
 
     <p class="panel-description">Automatically create a four-bar linkage based on the X and Y coordinate values for positions.</p>
 
-<!--    &lt;!&ndash; Loop for three positions &ndash;&gt;-->
-<!--    <div *ngFor="let pos of twoPointPositions; let index = index" class="position-group">-->
-<!--      <div class="position-header">-->
-<!--        <span>Position {{ index + 1 }}</span>-->
-<!--        <span class="icons">-->
-<!--        <mat-icon id="tooltipTwoPoints" matTooltip="Specify the coordinates for Position {{ index + 1 }}" [matTooltipShowDelay]="1000">help_outline</mat-icon>-->
-<!--        <button class="delete-button" (click)="deletePositionTwoPoints(index)">-->
-<!--          <img  id="trashTwoPoints" src="assets/icons/trash.svg" alt="Delete Position">-->
-<!--        </button>-->
-<!--        </span>-->
-<!--      </div>-->
-
-<!--      &lt;!&ndash; Input Row for X0 and Y0 &ndash;&gt;-->
-<!--      <div class="input-row">-->
-<!--        <label for="x0-{{index}}">X0</label>-->
-<!--        <input id="x0-{{index}}" type="number" [(ngModel)]="pos.x0" placeholder="0" class="coordinate-input">-->
-
-<!--        <label for="y0-{{index}}">Y0</label>-->
-<!--        <input id="y0-{{index}}" type="number" [(ngModel)]="pos.y0" placeholder="0" class="coordinate-input">-->
-<!--      </div>-->
-
-<!--      &lt;!&ndash; Input Row for X1 and Y1 &ndash;&gt;-->
-<!--      <div class="input-row">-->
-<!--        <label for="x1-{{index}}">X1</label>-->
-<!--        <input id="x1-{{index}}" type="number" [(ngModel)]="pos.x1" placeholder="0" class="coordinate-input">-->
-
-<!--        <label for="y1-{{index}}">Y1</label>-->
-<!--        <input id="y1-{{index}}" type="number" [(ngModel)]="pos.y1" placeholder="0" class="coordinate-input">-->
-<!--      </div>-->
-<!--    </div>-->
 
     <!-- Loop for three positions -->
     <div *ngFor="let pos of twoPointPositions; let index = index" class="position-group">
       <div class="position-header">
         <span>Position {{ index + 1 }}</span>
         <span class="icons">
-      <mat-icon id="tooltipTwoPoints" matTooltip="Specify the coordinates for Position {{ index + 1 }}" [matTooltipShowDelay]="1000">help_outline</mat-icon>
+      <mat-icon id="tooltipTwoPoints" matTooltip="Specify the coordinates for Position {{ index + 1 }}"
+                [matTooltipShowDelay]="1000">help_outline</mat-icon>
       <button class="delete-button" (click)="deletePositionTwoPoints(index)">
         <img id="trashTwoPoints" src="assets/icons/trash.svg" alt="Delete Position">
       </button>
@@ -208,7 +179,7 @@
       </div>
 
       <!-- Calculate the starting label number for each position based on index -->
-      <div class="input-row">
+      <div class="input-row" *ngIf="pos.defined">
         <label for="x{{index * 2 + 1}}">X{{index * 2 + 1}}</label>
         <input id="x{{index * 2 + 1}}" type="number" [(ngModel)]="pos.x0" placeholder="0" class="coordinate-input">
 
@@ -216,13 +187,21 @@
         <input id="y{{index * 2 + 1}}" type="number" [(ngModel)]="pos.y0" placeholder="0" class="coordinate-input">
       </div>
 
-      <div class="input-row">
+      <div class="input-row" *ngIf="pos.defined">
         <label for="x{{index * 2 + 2}}">X{{index * 2 + 2}}</label>
         <input id="x{{index * 2 + 2}}" type="number" [(ngModel)]="pos.x1" placeholder="0" class="coordinate-input">
 
         <label for="y{{index * 2 + 2}}">Y{{index * 2 + 2}}</label>
         <input id="y{{index * 2 + 2}}" type="number" [(ngModel)]="pos.y1" placeholder="0" class="coordinate-input">
       </div>
+
+
+      <!--If positions has not yet been created and its the first position, show specify position button  -->
+      <div class="positionCreateEndPoints" *ngIf="!pos.defined && getFirstUndefinedPositionEndPoints() === index">
+        <button id="specifyEndPoints" (click)="this.specifyPositionEndPoints(index)">Specify Position</button>
+
+      </div>
+
     </div>
 
 
