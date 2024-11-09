@@ -25,13 +25,13 @@ export class JointInteractor extends Interactor {
         super(true, true);
 
         this.onDragStart$.subscribe((event) => {
-            if (!this.joint.locked && this._isDraggable && !this.isDraggingPosition()) {
+            if ((!this.joint.locked || this.activePanel === "Edit") && this._isDraggable) {
                 this.jointStart = this.joint._coords;
             }
         });
 
         this.onDrag$.subscribe((event) => {
-            if (!this.joint.locked && this._isDraggable && !this.isDraggingPosition()) {
+            if ((!this.joint.locked || this.activePanel === "Edit") && this._isDraggable) {
                 this.stateService.getMechanism().setJointCoord(this.joint.id, this.jointStart.add(this.dragOffsetInModel!))
             }
         });

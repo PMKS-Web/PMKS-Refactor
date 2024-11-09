@@ -95,8 +95,7 @@ export class ThreePosSynthesis{
   getCurrentJoint() {
     let currentJointInteractor = this.interactionService.getSelectedObject();
 
-    if (currentJointInteractor instanceof JointInteractor) {
-        currentJointInteractor.setDraggable(false);
+    if (currentJointInteractor instanceof JointInteractor && this.panel === "Synthesis") {
     }
     return (currentJointInteractor as JointInteractor).getJoint();
   }
@@ -104,23 +103,24 @@ export class ThreePosSynthesis{
   lockCurrentJoint(): void {
     let currentJointInteractor = this.interactionService.getSelectedObject();
 
-    if (currentJointInteractor instanceof JointInteractor) {
-        currentJointInteractor.getJoint().locked = true;
-        currentJointInteractor.setDraggable(false);
+    if (currentJointInteractor instanceof JointInteractor && this.panel === "Synthesis") {
+      currentJointInteractor.getJoint().locked = true;
     }
   }
 
   lockCurrentLink(): void {
     let currentLinkInteractor = this.interactionService.getSelectedObject();
 
-    if (currentLinkInteractor instanceof LinkInteractor) {
-      currentLinkInteractor.draggable = true; // Ensure links are draggable
+    if (currentLinkInteractor instanceof LinkInteractor && this.panel === "Synthesis") {
+      currentLinkInteractor.draggable = true;
     }
   }
 
   ngDoCheck() {
-    this.lockCurrentJoint();
-    this.lockCurrentLink();
+    if (this.panel === "Synthesis") {
+      this.lockCurrentJoint();
+      this.lockCurrentLink();
+    }
     if (this.position1 && this.pos1Specified) {
       const newCoord = this.getNewCoord(this.position1);
       this.updatePositionCoords(1, newCoord);
