@@ -989,11 +989,6 @@ allPositionsDefined(): boolean {
       this.twoPointPositions[index] = { x0: 0, y0: 0, x1: 0, y1: 0, defined: false };
     }
   }
-  generateFourBarFromTwoPoints(): void {
-    // Logic to generate a Four-Bar mechanism based on two points
-    console.log(`Generating Four-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
-
-  }
 
   removeAllPositionsTwoPoints(): void {
     this.twoPointPositions.forEach(pos => {
@@ -1004,6 +999,12 @@ allPositionsDefined(): boolean {
       pos.y1 = 0;
     });
     console.log("All positions removed");
+  }
+
+  generateFourBarFromTwoPoints(): void {
+    // Logic to generate a Four-Bar mechanism based on two points
+    console.log(`Generating Four-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
+
   }
 
   generateSixBarFromTwoPoints(): void {

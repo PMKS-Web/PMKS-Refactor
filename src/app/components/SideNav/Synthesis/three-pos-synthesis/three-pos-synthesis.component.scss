@@ -342,7 +342,7 @@
   display: flex;
   align-items: center;
   //justify-content: flex-start;
-  gap: 2px; /* Add a slight gap to adjust space between elements */
+  gap: 2px;
 }
 
 /* Targeting input fields for X and Y values */
@@ -377,7 +377,7 @@
 }
 
 .single-input-block input {
-  padding-right: 0px; /* Similar adjustment for angle */
+  padding-right: 0px;
   margin-right: 0px;
   width: auto;
 }
@@ -655,7 +655,7 @@ span.icons {
 .input-row {
   display: flex;
   align-items: center;
-  gap: 15px; /* Adjusted for better spacing */
+  gap: 15px;
   margin-bottom: 5px;
 }
 
@@ -667,7 +667,7 @@ span.icons {
 }
 
 .coordinate-input {
-  width: 40px; /* Adjusted for more compact input fields */
+  width: 40px;
   padding: 4px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -753,7 +753,7 @@ span.icons {
 
 .toggle-label {
   display: flex;
-  width: 220px; /* Adjust width to fit both labels */
+  width: 220px;
   height: 36px;
   background-color: #e0e0e0;
   border-radius: 8px;
@@ -775,20 +775,20 @@ span.icons {
   z-index: 2;
 }
 
-/* Adjust toggle text spans for better alignment and fit */
+
 .toggle-left, .toggle-right {
   z-index: 2;
-  width: 50%; /* Ensures both sides are equal in width */
-  padding: 0; /* Remove extra padding to avoid overflow */
+  width: 50%;
+  padding: 0;
   text-align: center;
   line-height: 36px;
   font-weight: bold;
   font-size: 12px;
-  color: #fff; /* Adjusted color for visibility */
+  color: #fff;
   transition: color 0.3s;
   overflow: hidden;
-  white-space: nowrap; /* Prevents text wrapping */
-  text-overflow: ellipsis; /* Adds ellipsis if text overflows */
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 
