@@ -329,7 +329,7 @@ isSixBarGenerated(): boolean {
   // }
 
   generateFourBar() {
-    //Button changes to "clear four bar" when already generated, so remove mechanism
+    //button changes to "clear four bar" when already generated, so remove mechanism
     if (this.fourBarGenerated) {
       let listOfLinks = this.synthedMech;
       console.log(listOfLinks);
@@ -361,7 +361,6 @@ isSixBarGenerated(): boolean {
       let secondPoint = this.position1!.getJoints()[0]._coords;
       let thirdPoint = this.position1!.getJoints()[1]._coords;
       let fourthPoint = this.findIntersectionPoint2(this.position1!.getJoints()[1]._coords, this.position2!.getJoints()[1]._coords, this.position3!.getJoints()[1]._coords);
-
       this.fourBarGenerated = !this.fourBarGenerated;
       this.Generated.emit(this.fourBarGenerated);
       this.cdr.detectChanges();
@@ -398,12 +397,41 @@ isSixBarGenerated(): boolean {
         }
         index++
       }
+
+
+      let arrayOfJoints = this.mechanism.getArrayOfJoints();
+      arrayOfJoints[6].addGround();
+      arrayOfJoints[6].addInput();
+      arrayOfJoints[9].addGround();
+
+      this.positionSolver.solvePositions();
+      this.verifyMechanismPath();
+
+      let initialGreenCount = this.mechanism.getArrayOfPositions().filter(position => position.color === 'green').length;
+
+      if (initialGreenCount < 3) {//since is not the best we check the other input joint, to see of that gives better result
+        arrayOfJoints[6].removeInput();
+        arrayOfJoints[9].addInput();
+        arrayOfJoints[6].addGround();
+
+        this.positionSolver.solvePositions();
+        this.verifyMechanismPath();
+        let alternativeGreenCount = this.mechanism.getArrayOfPositions().filter(position => position.color === 'green').length;
+
+        if (initialGreenCount >= alternativeGreenCount) { //go back to initial conf
+          arrayOfJoints[9].removeInput();
+          arrayOfJoints[6].addInput();
+          arrayOfJoints[9].addGround();
+        }
+      }
+
       this.positionSolver.solvePositions();
       this.verifyMechanismPath();
       console.log(this.positionSolver.getAnimationPositions());
       console.log(this.mechanism);
     }
   }
+
 
   generateSixBar() {
     this.sixBarGenerated = !this.sixBarGenerated;

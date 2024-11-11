@@ -909,6 +909,11 @@ export class Mechanism {
     getJoints(): IterableIterator<Joint>{
         return this._joints.values();
     }
+
+    getArrayOfJoints(): Array<Joint>{
+      return Array.from(this._joints.values());
+    }
+
     getIndependentLinks(): IterableIterator<Link>{
         let allLinks: Map<number,Link> = new Map();
         for(let [id,link] of this._links){
