@@ -9,6 +9,8 @@ import { PanZoomService } from 'src/app/services/pan-zoom.service';
 import { UnitConversionService } from 'src/app/services/unit-conversion.service';
 import {AnimationService} from "../../../services/animation.service";
 import {Subscription} from "rxjs";
+import { Mechanism } from 'src/app/model/mechanism';
+import { Joint } from 'src/app/model/joint';
 
 @Component({
   selector: 'app-svg',
@@ -70,5 +72,42 @@ export class SvgComponent extends AbstractInteractiveComponent {
     let mouseCoords = this.interactionService.getMousePos();
     this.cursorPosition = " x: " + mouseCoords.model.x.toFixed(2) + ", y: " + mouseCoords.model.y.toFixed(2);
   }
+
+  swapInputAndGround() {
+    const mechanism: Mechanism = this.stateService.getMechanism();
+    const joints = mechanism.getJoints();
+
+    let inputJoint: Joint | undefined;
+    let groundJoint: Joint | undefined;
+
+    for (const joint of joints) {
+        if (joint.isInput) {
+            inputJoint = joint;
+        }
+        if (joint.isGrounded) {
+            groundJoint = joint;
+        }
+    }
+
+    if (inputJoint && groundJoint) {
+        console.log("Before Swap:");
+        console.log("Input Joint:", inputJoint);
+        console.log("Ground Joint:", groundJoint);
+
+        // Swap input and ground states
+        inputJoint.removeInput(); // Remove input from the current input joint
+        console.log("After removeInput, Input Joint:", inputJoint); // Debugging log
+
+        groundJoint.addInput();    // Set the ground joint as input
+        groundJoint.removeGround(); // Remove ground from the new input joint
+        inputJoint.addGround();     // Set the previous input joint as ground
+
+        console.log("After Swap:");
+        console.log("Input Joint:", inputJoint);
+        console.log("Ground Joint:", groundJoint);
+    } else {
+        console.warn("Input or Ground Joint not found!");
+    }
+}
 
 }
