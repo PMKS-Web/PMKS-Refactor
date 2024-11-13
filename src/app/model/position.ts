@@ -15,6 +15,7 @@ export class Position implements RigidBody {
   private _forces: Map<number, Force>;
   private _color: string = "";
   private _isLocked: boolean;
+  private _referencePoint: string = "Center";
 
   private positionColorOptions = [
     '#5E646D87'
@@ -84,6 +85,10 @@ export class Position implements RigidBody {
     return this._isLocked;
   }
 
+  get refPoint(): string {
+    return this._referencePoint;
+  }
+
   // Setters
   set name(value: string) {
     this._name = value;
@@ -112,6 +117,29 @@ export class Position implements RigidBody {
     });
   }
 
+  setReference(refPoint:string) {
+    this._referencePoint = refPoint; //Needed for component
+    const joints = this.getJoints();
+    //2 is default reference point in the middle, 0 is leftmost joint, 1 is rightmost joint
+    if (refPoint === "Center") {
+      joints[2].hidden = false;
+      joints[2].reference = true;
+      joints[0].reference = false;
+      joints[1].reference = false;
+    }
+    else if (refPoint === "Back"){
+      joints[2].hidden = true;
+      joints[2].reference = false;
+      joints[0].reference = true;
+      joints[1].reference = false;
+    }
+    else if (refPoint === "Front"){
+      joints[2].hidden = true
+      joints[2].reference = false;
+      joints[0].reference = false;
+      joints[1].reference = true;
+    }
+  }
 
   removeJoint(idORRef: number | Joint) {
     let id: number;

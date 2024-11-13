@@ -148,6 +148,9 @@ export class ThreePosSynthesis{
 
 setReference(r: string) {
     this.reference = r;
+    this.position1?.setReference(this.reference);
+    this.position2?.setReference(this.reference);
+    this.position3?.setReference(this.reference);
 }
 
 getReference(): string{
@@ -191,18 +194,21 @@ getReference(): string{
       const positions = this.mechanism.getArrayOfPositions();
       this.position1 = positions[positions.length - 1];
       this.position1.name = "Position 1";
+      this.position1.setReference(this.reference);
     } else if (index === 2) {
       this.pos2Specified = true;
       this.mechanism.addPos(this.coord1B, this.coord2B);
       const positions = this.mechanism.getArrayOfPositions();
       this.position2 = positions[positions.length - 1];
       this.position2.name = "Position 2";
+      this.position2.setReference(this.reference);
     } else if (index === 3) {
       this.pos3Specified = true;
       this.mechanism.addPos(this.coord1C, this.coord2C);
       const positions = this.mechanism.getArrayOfPositions();
       this.position3 = positions[positions.length - 1];
       this.position3.name = "Position 3";
+      this.position3.setReference(this.reference);
     }
   }
 
@@ -394,11 +400,11 @@ isSixBarGenerated(): boolean {
       joints = this.mechanism.getJoints(); //instead of using it hard coded just do first and last on the list, we could do a getter for this.
       let index = 0;
       for (const joint of joints) {
-        if (index === 6) { //using index so we arent dependent on ID of the joints
+        if (index === 9) { //using index so we arent dependent on ID of the joints
           joint.addGround();
           joint.addInput();
         }
-        if (index === 9) {
+        if (index === 12) {
           joint.addGround();
         }
         index++
@@ -406,9 +412,9 @@ isSixBarGenerated(): boolean {
 
 
       let arrayOfJoints = this.mechanism.getArrayOfJoints();
-      arrayOfJoints[6].addGround();
-      arrayOfJoints[6].addInput();
       arrayOfJoints[9].addGround();
+      arrayOfJoints[9].addInput();
+      arrayOfJoints[12].addGround();
 
       this.positionSolver.solvePositions();
       this.verifyMechanismPath();
@@ -416,18 +422,18 @@ isSixBarGenerated(): boolean {
       let initialGreenCount = this.mechanism.getArrayOfPositions().filter(position => position.color === 'green').length;
 
       if (initialGreenCount < 3) {//since is not the best we check the other input joint, to see of that gives better result
-        arrayOfJoints[6].removeInput();
-        arrayOfJoints[9].addInput();
-        arrayOfJoints[6].addGround();
+        arrayOfJoints[9].removeInput();
+        arrayOfJoints[12].addInput();
+        arrayOfJoints[9].addGround();
 
         this.positionSolver.solvePositions();
         this.verifyMechanismPath();
         let alternativeGreenCount = this.mechanism.getArrayOfPositions().filter(position => position.color === 'green').length;
 
         if (initialGreenCount >= alternativeGreenCount) { //go back to initial conf
-          arrayOfJoints[9].removeInput();
-          arrayOfJoints[6].addInput();
-          arrayOfJoints[9].addGround();
+          arrayOfJoints[12].removeInput();
+          arrayOfJoints[9].addInput();
+          arrayOfJoints[12].addGround();
         }
       }
 
@@ -1096,7 +1102,8 @@ allPositionsDefined(): boolean {
     const animationPaths = this.positionSolver.getAnimationPositions();
 
     userPositions.forEach(position => {
-      const positionCoords = position!.getJoints().map(joint => joint._coords);//converts positions joints into cords in a array
+      const nonCenter = position!.getJoints().slice(0,2)
+      const positionCoords = nonCenter.map(joint => joint._coords);//converts positions joints into coords in a array
       let allMatched = true;
 
       for (const coord of positionCoords) {
