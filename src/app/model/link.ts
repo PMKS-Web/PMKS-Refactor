@@ -102,6 +102,14 @@ export class Link implements RigidBody{
         return this._isLocked;
     }
 
+    get length(): number {
+      let l = this.calculateLength();
+      if (l) {
+        return parseFloat(l.toFixed(2));
+      }
+      else throw new Error('Length is null');
+    }
+
     //setters
     set name(value: string) {
         this._name = value;

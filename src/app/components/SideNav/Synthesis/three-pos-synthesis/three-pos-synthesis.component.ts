@@ -555,6 +555,7 @@ setCouplerLength(x: number){
           this.position1.setLength(this.couplerLength, this.position1.getJoints()[0]);
           this.setPosXCoord(centerCoord.x, 1);
           this.setPosYCoord(centerCoord.y, 1);
+          this.position1.getJoints()[2].setCoordinates(centerCoord);
         }
         if (this.position2) {
           const centerCoord = this.getNewCoord(this.position2);
