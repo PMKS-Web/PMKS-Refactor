@@ -67,6 +67,7 @@ export class ThreePosSynthesis{
   coord1C = new Coord(this.pos3X - this.couplerLength / 2, this.pos3Y);
   coord2C = new Coord(this.pos3X + this.couplerLength / 2, this.pos3Y);
   notifNeeded = false;
+  recalcNeeded = false;
   private mechanism: Mechanism;
   unitSubscription: Subscription = new Subscription();
   angleSubscription: Subscription = new Subscription();
@@ -189,7 +190,8 @@ getReference(): string{
 
   sendNotif() {
     if (this.notifNeeded && this.panel === "Synthesis"){
-      window.alert("Please recalculate position accuracy using the \"Recalculate Positions\" button.");
+      window.alert("Please recalculate position accuracy using the \"Evaluate Positions\" button.");
+      this.recalcNeeded = true;
     }
     this.notifNeeded = false;
   }
@@ -1227,6 +1229,7 @@ allPositionsDefined(): boolean {
         position!.setColor('red');
       }
     });
+    this.recalcNeeded = false;
   }
 
   calculateDistance(coord1: Coord, coord2: Coord): number {

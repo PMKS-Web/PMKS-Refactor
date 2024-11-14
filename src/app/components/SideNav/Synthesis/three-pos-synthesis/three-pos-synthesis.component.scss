@@ -180,6 +180,21 @@
   background-color: #3F51B5;
 }
 
+#recalcGray{
+  margin:0 auto;
+  display:inherit;
+  width: 60%;
+  height: 40px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  margin-top: 3px;
+  margin-bottom: 10px;
+  background-color: #e8eaf6;
+  color: #808080;
+  border: none;
+}
+
   #generateFourBar{
     margin:0 auto;
     display:inherit;
@@ -196,7 +211,7 @@
     border: none;
     font-family: Roboto, "Helvetica Neue", sans-serif;
   }
-  #generateFourBarGrey{
+  .generateFourBarGrey{
     margin:0 auto;
     display:inherit;
     background-color: white;

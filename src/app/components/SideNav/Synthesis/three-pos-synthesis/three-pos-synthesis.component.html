@@ -94,7 +94,7 @@
 <!-- If all positions are defined you can then generate a four bar or delete all positions -->
     <div *ngIf='!this.allPositionsDefined()' class="definedButtons">
       <button id="removeAllGrey" >Remove All Positions</button>
-      <button id="generateFourBarGrey">Generate Four-Bar</button>
+      <button class="generateFourBarGrey">Generate Four-Bar</button>
     </div>
 
     <div *ngIf='this.allPositionsDefined()' class="definedButtons">
@@ -102,7 +102,7 @@
       <button *ngIf="!isSixBarGenerated()" id="generateFourBar" (click)="generateFourBar()">
         {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
       </button>
-      <button *ngIf="isSixBarGenerated()" id="generateFourBarGrey" >Generate Four-Bar</button>
+      <button *ngIf="isSixBarGenerated()" class="generateFourBarGrey" >Generate Four-Bar</button>
 
 
       <!-- once a four bar is generated you are able to generate a six bar -->
@@ -113,9 +113,16 @@
         <div *ngIf="isSixBarGenerated()" class="definedButtons">
            <!-- {{ buttonLabel }} -->
         </div>
-        <button id="recalc" (click)="verifyMechanismPath()">
-          Recalculate Positions
-        </button>
+        <div *ngIf="recalcNeeded" class="definedButtons">
+          <button id="recalc" (click)="verifyMechanismPath()">
+            Evaluate Positions
+          </button>
+        </div>
+        <div *ngIf="!recalcNeeded" class="definedButtons">
+          <button id="recalcGray">
+            Evaluate Positions
+          </button>
+        </div>
       </div>
     </div>
 
