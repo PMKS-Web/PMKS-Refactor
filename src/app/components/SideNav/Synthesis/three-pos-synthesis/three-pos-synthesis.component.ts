@@ -360,8 +360,6 @@ isSixBarGenerated(): boolean {
     if (this.fourBarGenerated) {
       let listOfLinks = this.synthedMech;
       console.log(listOfLinks);
-      let len;
-      let i;
       while (this.synthedMech.length > 0) {
         let linkId = this.synthedMech[0].id;
         console.log(linkId);
@@ -464,9 +462,15 @@ isSixBarGenerated(): boolean {
     this.sixBarGenerated = !this.sixBarGenerated;
     //clear the six-bar
     if (!this.sixBarGenerated) {
-      const listOfLinks = this.mechanism.getArrayOfLinks();
-      for (const link of listOfLinks) {
-        this.mechanism.removeLink(link.id);
+      let listOfLinks = this.synthedMech;
+      console.log(listOfLinks);
+      while (this.synthedMech.length > 0) {
+        let linkId = this.synthedMech[0].id;
+        console.log(linkId);
+        this.synthedMech.splice(0, 1);
+        this.mechanism.removeLink(linkId);
+        console.log("LIST OF LINKS AFTER DELETION:");
+        console.log(this.mechanism.getArrayOfLinks());
       }
       this.setPositionsColorToDefault();
       console.log("Six-bar has been cleared");
