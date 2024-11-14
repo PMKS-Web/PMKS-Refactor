@@ -209,21 +209,21 @@ getReference(): string{
       const positions = this.mechanism.getArrayOfPositions();
       this.position1 = positions[positions.length - 1];
       this.position1.name = "Position 1";
-      this.position1.setReference(this.reference);
+      this.setReference(this.reference);
     } else if (index === 2) {
       this.pos2Specified = true;
       this.mechanism.addPos(this.coord1B, this.coord2B);
       const positions = this.mechanism.getArrayOfPositions();
       this.position2 = positions[positions.length - 1];
       this.position2.name = "Position 2";
-      this.position2.setReference(this.reference);
+      this.setReference(this.reference);
     } else if (index === 3) {
       this.pos3Specified = true;
       this.mechanism.addPos(this.coord1C, this.coord2C);
       const positions = this.mechanism.getArrayOfPositions();
       this.position3 = positions[positions.length - 1];
       this.position3.name = "Position 3";
-      this.position3.setReference(this.reference);
+      this.setReference(this.reference);
     }
   }
 
