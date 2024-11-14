@@ -44,10 +44,12 @@ export class JointComponent extends AbstractInteractiveComponent {
   }
 
   public getColor(): string {
-    if (this.getInteractor().isSelected) {
+    if (this.joint.isReference){
+      return '#000000';
+    }
+    if (this.getInteractor().isSelected && !this.joint.isReference) {
       return '#FFCA28'
-
-    } else if(this.isHovered()){
+    } else if(this.isHovered() && !this.joint.isReference){
       return '#FFECB3'
     }
     return '#FFF8E1';

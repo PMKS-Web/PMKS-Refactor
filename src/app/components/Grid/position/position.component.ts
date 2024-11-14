@@ -63,7 +63,7 @@ export class PositionComponent extends AbstractInteractiveComponent {
 
   getName():string {
     if (this.isHidden) return "";
-    else return this.position.name;
+    else return this.position.name + "\nLength: " + this.position.length;
   }
 
   getDrawnPath(): string {
@@ -75,9 +75,12 @@ export class PositionComponent extends AbstractInteractiveComponent {
       return "";
     }
     else {
-      const unhiddenJoints = this.position.joints.values()
-      for (let joint of unhiddenJoints) {
-        joint.hidden = false;
+      const unhiddenJoints = this.position.getJoints();
+      for (let i = 0; i < unhiddenJoints.length-1; i++) {
+        unhiddenJoints[i].hidden = false;
+      }
+      if (this.position.refPoint === "Center") {
+        unhiddenJoints[unhiddenJoints.length-1].hidden = false;
       }
     }
     const radius: number = 30;

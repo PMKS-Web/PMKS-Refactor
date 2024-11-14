@@ -1,6 +1,7 @@
 .link-name {
     font-size: 3em;
-
+  width: 3em;
+  white-space: pre-line;
     user-select: none;
     -webkit-user-select: none; /* Safari */
     -moz-user-select: none;    /* Firefox */

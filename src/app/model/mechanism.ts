@@ -22,6 +22,7 @@ export class Mechanism {
     private _positions: Map<number, Position> = new Map();
     private _positionIDCount: number = 0;
     private _synthesizedMechArr: Link[] = [];
+    private _refIdCount: number = -1;
 
     constructor() {
         this._joints = new Map();
@@ -85,10 +86,19 @@ export class Mechanism {
     let jointB = new Joint(this._jointIDCount, coordTwo);
     this._jointIDCount++;
 
+    //Create pseudo joint for fixed reference point, do not add to maps, default to center
+    const centerX = (jointA.coords.x + jointB.coords.x) / 2;
+    const centerY = (jointA.coords.y + jointB.coords.y) / 2;
+    let jointC = new Joint(this._refIdCount, new Coord(centerX, centerY));
+    jointC.hidden = true;
+    jointC.reference = true;
+    this._refIdCount--;
+
     this._joints.set(jointA.id, jointA);
     this._joints.set(jointB.id, jointB);
+    this._joints.set(jointC.id, jointC);
 
-    let position = new Position(this._positionIDCount, [jointA, jointB]);
+    let position = new Position(this._positionIDCount, [jointA, jointB, jointC]);
 
     this._positionIDCount++;
     this._positions.set(position.id, position);
@@ -533,6 +543,23 @@ export class Mechanism {
             link.addTracer(jointA);
         });
     }
+
+  /**
+   * attaches a tracer point(effectively a joint) to an existing position
+   *
+   * @param {number} posID
+   * @param {Coord} coord
+   * @memberof Mechanism
+   */
+  addJointToPosition(posID: number, coord: Coord) {
+    this.executePositionAction(posID, position => {
+      let jointA = new Joint(this._jointIDCount, coord);
+      this._jointIDCount++;
+      this._joints.set(jointA.id, jointA);
+      position.addTracer(jointA);
+    });
+  }
+
     /**
      * attaches a new link to another link at a point along the existing link which is not a joint.
      *
