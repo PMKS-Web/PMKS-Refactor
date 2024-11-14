@@ -10,22 +10,23 @@
 <!--    </label>-->
 <!--  </div>-->
 
-  <p class="synthesis-description">Define 3 specific coupler positions to synthesize a linkage.</p>
-
-  <div class="toggle-container">
-    <input type="checkbox" id="toggle-switch" (change)="toggleOption(toggle.checked ? 'two-points' : 'xy-angle')" #toggle>
-    <label for="toggle-switch" class="toggle-label">
-      <span class="toggle-text toggle-left">Length & Angle</span>
-      <span class="toggle-text toggle-right">End Points</span>
-      <span class="toggle-indicator"></span>
-    </label>
-  </div>
 
 
 
   <div class="scroll-container" >
 <!--  <div *ngIf="panelVisible">-->
-  <div *ngIf="selectedOption === 'xy-angle'">
+    <p class="synthesis-description">Define 3 specific coupler positions to synthesize a linkage.</p>
+
+    <div class="toggle-container">
+      <input type="checkbox" id="toggle-switch" (change)="toggleOption(toggle.checked ? 'two-points' : 'xy-angle')" #toggle>
+      <label for="toggle-switch" class="toggle-label">
+        <span class="toggle-text toggle-left">Length & Angle</span>
+        <span class="toggle-text toggle-right">End Points</span>
+        <span class="toggle-indicator"></span>
+      </label>
+    </div>
+
+    <div *ngIf="selectedOption === 'xy-angle'">
 
            <div style="margin-bottom:15px;">
             <!-- Each coupler position has the same length which is set here -->

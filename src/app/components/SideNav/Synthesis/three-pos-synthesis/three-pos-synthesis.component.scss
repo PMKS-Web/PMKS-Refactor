@@ -1,51 +1,63 @@
+//  font-size: 12px !important;
+//}
 @use 'sass:map';
 @use '@angular/material' as mat;
 
 @mixin css($theme) {
-    // Get the color config from the theme.
-    $color-config: mat.m2-get-color-config($theme);
-    // Get the primary color palette from the color-config.
-    $primary-palette: map.get($color-config, 'primary');
-    $accent-palette: map.get($color-config, 'accent');
-    $typography-config: mat.m2-get-typography-config($theme);
-    $background: map.get($theme, background);
-    $foreground: map.get($theme, foreground);
+  // Get the color config from the theme.
+  $color-config: mat.m2-get-color-config($theme);
+  // Get the primary color palette from the color-config.
+  $primary-palette: map.get($color-config, 'primary');
+  $accent-palette: map.get($color-config, 'accent');
+  $typography-config: mat.m2-get-typography-config($theme);
+  $background: map.get($theme, background);
+  $foreground: map.get($theme, foreground);
 }
 
 #threePos {
   background-color: white;
   border-radius: 3px;
-  margin-left: 5px;
-  }
+  //margin-left: 5px;
+  padding: 0;
+  margin:0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 
-  .scroll-container {
-    max-height: calc(100vh - 150px);
-    overflow:hidden;
-    overflow-y:auto;
-  }
+}
 
-  .scroll-container::-webkit-scrollbar {
+.scroll-container {
+  flex: 1;
+  //max-height: 80vh;
+  min-height: 60%;
+  max-height: 85%;
+  overflow-y: scroll;
+  box-sizing: border-box;
+  padding-right: 5px;
+}
+
+.scroll-container::-webkit-scrollbar {
   width: 8px;
-  }
+}
 
-  .scroll-container::-webkit-scrollbar-track {
+.scroll-container::-webkit-scrollbar-track {
   background: rgba(63, 81, 181, 0.9);
-  }
+}
 
-  .scroll-container::-webkit-scrollbar-thumb {
+.scroll-container::-webkit-scrollbar-thumb {
   background: rgba(63, 81, 181, 0.22);
-  }
+}
 
-  .scroll-container::-webkit-scrollbar-thumb:hover {
+.scroll-container::-webkit-scrollbar-thumb:hover {
   background: rgba(63, 81, 181, 0.67);
-  }
+}
 
-  .scroll-container::-webkit-scrollbar-button {
+.scroll-container::-webkit-scrollbar-button {
   display: none;
-  }
+}
 
-  /* Firefox Browsers*/
-  @supports (-moz-appearance: none) {
+/* Firefox Browsers*/
+@supports (-moz-appearance: none) {
   .scroll-container {
     scrollbar-width: thin;
     scrollbar-color: rgba(63, 81, 181, 0.9) #f1f1f1;
@@ -54,90 +66,90 @@
 
 
 .flex-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: flex-start;
-  }
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+}
 
 
 
-  .icon {
-    width: 15px;
-    height: 15px;
-    margin-right: 6px;
-    margin-left: 6px;
-    margin-top: 1px;
-    margin-bottom: -2px;
-  }
+.icon {
+  width: 15px;
+  height: 15px;
+  margin-right: 6px;
+  margin-left: 6px;
+  margin-top: 1px;
+  margin-bottom: -2px;
+}
 
 .label {
-    font-size: 14px;
-    margin-left: 1px;
-    margin-right: auto;
-    min-width:100px;
-    max-width: 100px;
-    margin-bottom: -3px;
-    font-family:Roboto, "Helvetica Neue", sans-serif;
-  }
+  font-size: 14px;
+  margin-left: 1px;
+  margin-right: auto;
+  min-width:100px;
+  max-width: 100px;
+  margin-bottom: -3px;
+  font-family:Roboto, "Helvetica Neue", sans-serif;
+}
 
-  .left-aligned {
-    margin-right: auto; /* Pushes this element to the left */
-  }
+.left-aligned {
+  margin-right: auto; /* Pushes this element to the left */
+}
 
-  hr.solid {
-    border-top: 1px solid rgba(63, 81, 181, 0.1);
-  }
+hr.solid {
+  border-top: 1px solid rgba(63, 81, 181, 0.1);
+}
 
-  hr.solid2 {
-    border-top: 1px solid rgba(63, 81, 181, 0.1);
-    margin-top: 10px;
-    margin-bottom: 10px;
-  }
+hr.solid2 {
+  border-top: 1px solid rgba(63, 81, 181, 0.1);
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
 
-  .right-aligned {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    margin-right: 0px;
-    margin-top: 10px;
-    gap: 2px;
-  }
+.right-aligned {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-right: 0px;
+  margin-top: 10px;
+  gap: 2px;
+}
 
 .right-aligned span {
   margin-left: 0px;
 }
 
-  //.subtitle {
-  //  display: block;
-  //  margin-top: 0px;
-  //  margin-bottom: 10px;
-  //  margin-left: 10px;
-  //  margin-right: 10px;
-  //  font-family: Roboto, "Helvetica Neue", sans-serif;
-  //  //font-weight: 400;
-  //  //line-height: 18px;
-  //  //letter-spacing: 0.25px;
-  //  font-size: 14px;
-  //  text-align: left;
-  //  font-weight: normal;
-  //}
+//.subtitle {
+//  display: block;
+//  margin-top: 0px;
+//  margin-bottom: 10px;
+//  margin-left: 10px;
+//  margin-right: 10px;
+//  font-family: Roboto, "Helvetica Neue", sans-serif;
+//  //font-weight: 400;
+//  //line-height: 18px;
+//  //letter-spacing: 0.25px;
+//  font-size: 14px;
+//  text-align: left;
+//  font-weight: normal;
+//}
 
-  #lengthAndAngle {
-    max-height: 20px;
-  }
+#lengthAndAngle {
+  max-height: 20px;
+}
 
-  .row {
-    display: flex;
-  }
+.row {
+  display: flex;
+}
 
 
-  #trash {
-    background-color: white;
-    border: none;
-    display: inline-block;
-    margin-left: -8px;
-  }
+#trash {
+  background-color: white;
+  border: none;
+  display: inline-block;
+  margin-left: -8px;
+}
 #generateSixBar{
   margin:0 auto;
   display:inherit;
@@ -161,155 +173,153 @@
   background-color: #3F51B5;
 }
 
-  #generateFourBar{
-    margin:0 auto;
-    display:inherit;
-    background-color: white;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
-    width: 60%;
-    height: 40px;
-    border-radius: 20px;
-    border: 1px solid black;
-    margin-top: 3px;
-    margin-bottom: 8px;
-    background-color: #e8eaf6;
-    font-weight: bold;
-    color: #3F51B5;
-    border: none;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
-  }
-  #generateFourBarGrey{
-    margin:0 auto;
-    display:inherit;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
-    background-color: white;
-    width: 60%;
-    height: 40px;
-    border-radius: 20px;
-    border: 1px solid black;
-    margin-top: 3px;
-    margin-bottom: 10px;
-    font-weight: bold;
-    background-color: #e8eaf6;
-    color: #808080;
-    border: none;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
-  }
+#generateFourBar{
+  margin:0 auto;
+  display:inherit;
+  background-color: white;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  width: 60%;
+  height: 40px;
+  border-radius: 20px;
+  border: 1px solid black;
+  margin-top: 3px;
+  margin-bottom: 8px;
+  background-color: #e8eaf6;
+  font-weight: bold;
+  color: #3F51B5;
+  border: none;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+#generateFourBarGrey{
+  margin:0 auto;
+  display:inherit;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: white;
+  width: 60%;
+  height: 40px;
+  border-radius: 20px;
+  border: 1px solid black;
+  margin-top: 3px;
+  margin-bottom: 10px;
+  font-weight: bold;
+  background-color: #e8eaf6;
+  color: #808080;
+  border: none;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
 
-  #generateFourBar:hover {
-    color: #e8eaf6;
-    background-color: #3F51B5;
-  }
+#generateFourBar:hover {
+  color: #e8eaf6;
+  background-color: #3F51B5;
+}
 
-  #removeAll{
-    margin:0 auto;
-    display:inherit;
-    background-color: #ffcccb;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
-    width: 60%;
-    height: 40px;
-    border-radius: 20px;
-    font-weight: bold;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
-    border: 1px solid red;
-    color: red;
-    margin-top: 8px;
-    margin-bottom: 8px;
-    border: none;
-  }
+#removeAll{
+  margin:0 auto;
+  display:inherit;
+  background-color: #ffcccb;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  width: 60%;
+  height: 40px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  border: 1px solid red;
+  color: red;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  border: none;
+}
 
-  #removeAllGrey{
-    margin:0 auto;
-    display:inherit;
-   background-color: #e8eaf6;
-    color: #808080;
-    width: 60%;
-    height: 40px;
-    border-radius: 20px;
-    border: 1px solid black;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
-    font-weight: bold;
-    // margin-top: 12px;
-    margin-bottom: 6px;
-    border: none;
-  }
+#removeAllGrey{
+  margin:0 auto;
+  display:inherit;
+  background-color: #e8eaf6;
+  color: #808080;
+  width: 60%;
+  height: 40px;
+  border-radius: 20px;
+  border: 1px solid black;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-weight: bold;
+  // margin-top: 12px;
+  margin-bottom: 6px;
+  border: none;
+}
 
 
 
-  #removeAll:hover {
-    color: #ffcccb;
-    background-color: red;
-  }
+#removeAll:hover {
+  color: #ffcccb;
+  background-color: red;
+}
 
-  #specify {
-    margin:0 auto;
-    display:block;
-    background-color: white;
-    width: 60%;
-    height: 40px;
-    border-radius: 20px;
-    border: 1px solid black;
-    margin-top: 3px;
-    margin-bottom: 20px;
-    background-color: #e8eaf6;
-    font-weight: bold;
-    font-size: 12.8px;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
-    color: #3F51B5;
-    border: none;
-  }
+#specify {
+  margin:0 auto;
+  display:block;
+  background-color: white;
+  width: 60%;
+  height: 40px;
+  border-radius: 20px;
+  border: 1px solid black;
+  margin-top: 3px;
+  margin-bottom: 20px;
+  background-color: #e8eaf6;
+  font-weight: bold;
+  font-size: 12.8px;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  color: #3F51B5;
+  border: none;
+}
 
-  #specify:hover {
-    color: #e8eaf6;
-    background-color: #3F51B5;
-    cursor:pointer ;
-  }
+#specify:hover {
+  color: #e8eaf6;
+  background-color: #3F51B5;
+  cursor:pointer ;
+}
 
-  #lengthTooltip {
-    color: #3f51b5;
-    font-size: 16px;
-    padding-top: 2px;
-    //display: flex;
-    //margin-left: -49px;
-    //margin-top: 6px;
-    //margin-bottom: -5px;
-    display: inline-flex;
-    margin-left: -52px !important;
-    margin-top: 0;
-    margin-bottom: 0;
-    align-items: center;
-  }
+#lengthTooltip {
+  color: #3f51b5;
+  font-size: 16px;
+  padding-top: 2px;
+  //display: flex;
+  //margin-left: -49px;
+  //margin-top: 6px;
+  //margin-bottom: -5px;
+  display: inline-flex;
+  margin-left: -52px !important;
+  margin-top: 0;
+  margin-bottom: 0;
+  align-items: center;
+}
 
-  #fixedReferenceTooltip {
-    color: #3f51b5;
-    font-size: 17px;
-    padding-top: 0px;
-    display: flex;
-    margin-left: 130px;
-    margin-top: -27px;
+#fixedReferenceTooltip {
+  color: #3f51b5;
+  font-size: 17px;
+  padding-top: 0px;
+  display: flex;
+  margin-left: 130px;
+  margin-top: -27px;
 
-  }
+}
 
-  #tooltip {
-    color: #3f51b5;
-    font-size: 16px;
-    vertical-align: middle;
-    padding-top: 2px;
-    margin-left: 0px;
-    margin-bottom: -4px;
-  }
+#tooltip {
+  color: #3f51b5;
+  font-size: 16px;
+  vertical-align: middle;
+  padding-top: 2px;
+  margin-left: 0px;
+  margin-bottom: -4px;
+}
 
-  #reference {
-    display: flex;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
-    justify-content: center;
-    align-items: center;
-    //font-size: 12px !important;
-  }
+#reference {
+  display: flex;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  justify-content: center;
+  align-items: center;
+  //font-size: 12px !important;
+}
 
 //#reference .mdc-button__label {
-//  font-size: 12px !important;
-//}
 
 
 
@@ -832,9 +842,9 @@ span.icons {
   text-align: center;
   line-height: 36px;
   font-weight: bold;
-  //color: #3f51b5;
+  color: #3f51b5;
   transition: color 0.3s;
-  padding: 0; /* Remove extra padding */
+  padding: 0;
   z-index: 2;
 }
 
@@ -854,6 +864,14 @@ span.icons {
   text-overflow: ellipsis;
 }
 
+/* Default colors for left and right */
+.toggle-left {
+  color: #ffffff; /* Active color when 'Length & Angle' is selected */
+}
+
+.toggle-right {
+  color: #ffffff; /* Inactive color */
+}
 
 /* Indicator styling */
 .toggle-indicator {
@@ -883,7 +901,18 @@ span.icons {
   color: #3f51b5;
 }
 
+#toggle-switch:checked + .toggle-label .toggle-right {
+  //color: #3f51b5;
+  color: #ffffff;
+}
+
 #toggle-switch:not(:checked) + .toggle-label .toggle-right {
+  //color: #ffffff;
+  color: #3f51b5;
+
+}
+
+#toggle-switch:not(:checked) + .toggle-label .toggle-left {
   color: #ffffff;
 }
 

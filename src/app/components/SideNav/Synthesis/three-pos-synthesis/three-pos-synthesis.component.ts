@@ -1016,6 +1016,9 @@ allPositionsDefined(): boolean {
 
 
 
+
+
+
   generateFourBarFromTwoPoints(): void {
     // Logic to generate a Four-Bar mechanism based on two points
     console.log(`Generating Four-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
