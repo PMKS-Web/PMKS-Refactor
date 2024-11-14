@@ -28,7 +28,10 @@ export class PositionInteractor extends Interactor {
     this.onDrag$.subscribe((event) => {
       this.jointsStartPosModel.forEach((coord: Coord, jointID: number) => {
         const joint = this.position.joints.get(jointID);
-        if (joint) {
+        if (this.position.locked){
+          this.stateService.getMechanism().setJointCoord(jointID, coord.add(this.dragOffsetInModel!));
+        }
+        else if (joint) {
           const wasLocked = joint.locked;
           joint.locked = false;
           this.stateService.getMechanism().setJointCoord(jointID, coord.add(this.dragOffsetInModel!));

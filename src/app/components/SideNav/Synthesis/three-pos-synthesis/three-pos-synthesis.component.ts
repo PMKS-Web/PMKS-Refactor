@@ -367,6 +367,9 @@ isSixBarGenerated(): boolean {
         console.log(linkId);
         this.synthedMech.splice(0, 1);
         this.mechanism.removeLink(linkId);
+        this.position1!.locked = false;
+        this.position2!.locked = false;
+        this.position3!.locked = false;
         console.log("LIST OF LINKS AFTER DELETION:");
         console.log(this.mechanism.getArrayOfLinks());
       }
@@ -454,6 +457,9 @@ isSixBarGenerated(): boolean {
 
       this.positionSolver.solvePositions();
       this.verifyMechanismPath();
+      this.position1!.locked = true;
+      this.position2!.locked = true;
+      this.position3!.locked = true;
       console.log(this.positionSolver.getAnimationPositions());
       console.log(this.mechanism);
     }
@@ -471,6 +477,9 @@ isSixBarGenerated(): boolean {
         console.log(linkId);
         this.synthedMech.splice(0, 1);
         this.mechanism.removeLink(linkId);
+        this.position1!.locked = false;
+        this.position2!.locked = false;
+        this.position3!.locked = false;
         console.log("LIST OF LINKS AFTER DELETION:");
         console.log(this.mechanism.getArrayOfLinks());
       }
@@ -534,7 +543,6 @@ isSixBarGenerated(): boolean {
 
     lastJoint.addGround();
     lastJoint.addInput();
-
     this.cdr.detectChanges();
     this.positionSolver.solvePositions();
     this.verifyMechanismPath();
@@ -1190,6 +1198,7 @@ allPositionsDefined(): boolean {
 
     return new Coord(x1, y1);
   }
+
   verifyMechanismPath() {
     const threshold = 0.09;
     const userPositions = [this.position1, this.position2, this.position3];
