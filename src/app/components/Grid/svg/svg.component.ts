@@ -79,32 +79,45 @@ export class SvgComponent extends AbstractInteractiveComponent {
 
     let inputJoint: Joint | undefined;
     let groundJoint: Joint | undefined;
+    let otherGroundJoint: Joint | undefined;
 
+    // Identify the input joint and the two ground joints
     for (const joint of joints) {
         if (joint.isInput) {
             inputJoint = joint;
         }
         if (joint.isGrounded) {
-            groundJoint = joint;
+            if (!groundJoint) {
+                groundJoint = joint; // First ground joint
+            } else {
+                otherGroundJoint = joint; // Second ground joint
+            }
         }
     }
 
-    if (inputJoint && groundJoint) {
+    if (inputJoint && groundJoint && otherGroundJoint) {
         console.log("Before Swap:");
         console.log("Input Joint:", inputJoint);
-        console.log("Ground Joint:", groundJoint);
+        console.log("Current Ground Joint:", groundJoint);
+        console.log("Other Ground Joint:", otherGroundJoint);
 
-        // Swap input and ground states
-        inputJoint.removeInput(); // Remove input from the current input joint
+        // Remove input from the current input joint
+        inputJoint.removeInput(); 
         console.log("After removeInput, Input Joint:", inputJoint); // Debugging log
 
-        groundJoint.addInput();    // Set the ground joint as input
-        groundJoint.removeGround(); // Remove ground from the new input joint
-        inputJoint.addGround();     // Set the previous input joint as ground
+        // Check which ground joint currently has the input
+        if (inputJoint === groundJoint) {
+            // If the input joint was the current ground joint, add input to the other ground joint
+            otherGroundJoint.addInput(); // Set the other ground joint as input
+        } else {
+            // If the input joint was not the current ground joint, add input to the current ground joint
+            groundJoint.addInput(); // Set the current ground joint as input
+        }
 
         console.log("After Swap:");
         console.log("Input Joint:", inputJoint);
-        console.log("Ground Joint:", groundJoint);
+        console.log("Current Ground Joint:", groundJoint);
+        console.log("Other Ground Joint:", otherGroundJoint);
     } else {
         console.warn("Input or Ground Joint not found!");
     }
