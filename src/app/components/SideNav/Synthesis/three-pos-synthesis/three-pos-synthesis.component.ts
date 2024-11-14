@@ -1001,6 +1001,21 @@ allPositionsDefined(): boolean {
     console.log("All positions removed");
   }
 
+  // onPositionChange(): void {
+  //   // Recalculate the positions based on the updated user input
+  //   this.positionSolverService.solvePositions();
+  //
+  //   // Update the display on the grid
+  //   const positions = this.positionSolverService.getAnimationPositions();
+  //   positions.forEach((position) => {
+  //     // Call your method to update the position on the grid
+  //     this.interactionService.startDraggingObject(new Link(position)); // Adjust this part as necessary
+  //   });
+  // }
+
+
+
+
   generateFourBarFromTwoPoints(): void {
     // Logic to generate a Four-Bar mechanism based on two points
     console.log(`Generating Four-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
