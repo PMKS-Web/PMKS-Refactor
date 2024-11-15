@@ -84,11 +84,11 @@ export class PositionComponent extends AbstractInteractiveComponent {
       }
     }
     const radius: number = 30;
-    const joints: IterableIterator<Joint> = this.position.joints.values();
+    const joints = this.position.getJoints();
     const allCoords: Coord[] = [];
 
-    for (let joint of joints) {
-      let coord: Coord = joint._coords;
+    for (let i = 0; i < joints.length-1; i++) {
+      let coord: Coord = joints[i]._coords;
       coord = this.unitConversionService.modelCoordToSVGCoord(coord);
       allCoords.push(coord);
     }

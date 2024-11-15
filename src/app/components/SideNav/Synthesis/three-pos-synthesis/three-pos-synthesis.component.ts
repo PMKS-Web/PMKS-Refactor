@@ -236,12 +236,7 @@ getReference(): string{
     } else if (this.reference === "Front") {
       joint = position.getJoints()[1]; // Second joint for "Front"
     } else if (this.reference === "Center") {
-      const joints = position.getJoints();
-      const joint1 = joints[0];
-      const joint2 = joints[1];
-      const centerX = (joint1.coords.x + joint2.coords.x) / 2;
-      const centerY = (joint1.coords.y + joint2.coords.y) / 2;
-      return new Coord(centerX, centerY);
+      joint = position.getJoints()[2];
     } else {
       // Default to "Back" if reference is not recognized
       joint = position.getJoints()[0];
@@ -619,13 +614,14 @@ setPosXCoord(x: number, posNum: number) {
       const distanceMoved = Math.abs(centerCoord.x - x);
       if (centerCoord.x < x){
         backJoint.setCoordinates(new Coord (backJoint.coords.x + distanceMoved, backJoint.coords.y));
-        frontJoint.setCoordinates(new Coord (frontJoint.coords.x + distanceMoved, frontJoint.coords.y));
         midJoint.setCoordinates(new Coord (midJoint.coords.x + distanceMoved, midJoint.coords.y));
+        frontJoint.setCoordinates(new Coord (frontJoint.coords.x + distanceMoved, frontJoint.coords.y));
+
       }
       else {
         backJoint.setCoordinates(new Coord (backJoint.coords.x - distanceMoved, backJoint.coords.y));
-        frontJoint.setCoordinates(new Coord (frontJoint.coords.x - distanceMoved, frontJoint.coords.y));
         midJoint.setCoordinates(new Coord (midJoint.coords.x - distanceMoved, midJoint.coords.y));
+        frontJoint.setCoordinates(new Coord (frontJoint.coords.x - distanceMoved, frontJoint.coords.y));
       }
     }
     else if (this.reference === "Back") {
