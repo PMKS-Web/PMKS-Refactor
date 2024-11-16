@@ -27,6 +27,12 @@ interface CoordinatePosition {
   y1: number;
   defined: boolean;
 }
+
+interface PositionLock {
+  lockedLength: number;
+  isLocked: boolean;
+}
+
 export class AppModule { }
 
 @Component({
@@ -90,6 +96,15 @@ export class ThreePosSynthesis{
     { x0: 0, y0: 0, x1: 0, y1: 0, defined: false },
     { x0: 0, y0: 0, x1: 0, y1: 0,defined: false }
   ];
+  isLengthLocked: boolean = false;
+  showLockMessage: boolean = false;  // Controls the visibility of the message
+  positionLocks: PositionLock[] = [
+    { isLocked: false, lockedLength: 2 }, // Position 1
+    { isLocked: false, lockedLength: 2 }, // Position 2
+    { isLocked: false, lockedLength: 2 }  // Position 3
+  ];
+
+
 
   constructor(private stateService: StateService, private interactionService: InteractionService, private cdr: ChangeDetectorRef, private positionSolver: PositionSolverService) {
     this.mechanism = this.stateService.getMechanism();
@@ -120,6 +135,8 @@ export class ThreePosSynthesis{
       this.updatePositionAngle(3, angle);
     }
   }
+
+
 
 setReference(r: string) {
     this.reference = r;
@@ -209,6 +226,8 @@ getReference(): string{
     }
     this.cdr.detectChanges();
   }
+
+
 
   calculateAngle(joint1: Joint, joint2: Joint): number {
     const deltaX = joint2.coords.x - joint1.coords.x;
@@ -409,7 +428,12 @@ setCouplerLength(x: number){
     }
 }
 
-setPosXCoord(x: number, posNum: number) {
+
+
+
+
+
+  setPosXCoord(x: number, posNum: number) {
   if (posNum === 1) {
     this.pos1X = x;
     const backJoint = this.position1!.getJoints()[0];
@@ -971,6 +995,41 @@ allPositionsDefined(): boolean {
     const dy = coord1.y - coord2.y;
     return Math.sqrt(dx * dx + dy * dy);
   }
+
+  toggleLengthLock() {
+    this.isLengthLocked = !this.isLengthLocked;
+
+    // / Show the message when locking is activated
+    if (this.isLengthLocked) {
+      this.showLockMessage = true;
+
+      // Hide the message after 5 seconds
+      setTimeout(() => {
+        this.showLockMessage = false;
+      }, 5000);
+    }
+
+    // Update each position's lock state
+    this.positionLocks.forEach((positionLock, index) => {
+      positionLock.isLocked = this.isLengthLocked;
+      positionLock.lockedLength = this.couplerLength; // Lock to current coupler length
+      console.log(`Position ${index + 1} lock state:`, positionLock.isLocked);
+    });
+
+    this.cdr.detectChanges();
+  }
+
+  unlockPositions() {
+    this.positionLocks.forEach(positionLock => {
+      positionLock.isLocked = false;
+    });
+    console.log(this.positionLocks);
+  }
+
+
+
+
+
 
   getFirstUndefinedPositionEndPoints() :number {
       return this.twoPointPositions.findIndex(position => !position.defined )

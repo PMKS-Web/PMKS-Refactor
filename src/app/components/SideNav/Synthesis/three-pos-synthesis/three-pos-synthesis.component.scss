@@ -160,7 +160,6 @@ hr.solid2 {
   border-radius: 20px;
   border: 1px solid black;
   font-weight: bold;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
   margin-top: 3px;
   margin-bottom: 10px;
   background-color: #e8eaf6;
@@ -194,18 +193,19 @@ hr.solid2 {
   margin:0 auto;
   display:inherit;
   font-family: Roboto, "Helvetica Neue", sans-serif;
-  background-color: white;
+  //background-color: white;
   width: 60%;
   height: 40px;
   border-radius: 20px;
-  border: 1px solid black;
+  //border: 1px solid black;
   margin-top: 3px;
   margin-bottom: 10px;
   font-weight: bold;
   background-color: #e8eaf6;
   color: #808080;
   border: none;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  cursor:pointer;
+
 }
 
 #generateFourBar:hover {
@@ -214,44 +214,78 @@ hr.solid2 {
 }
 
 #removeAll{
-  margin:0 auto;
-  display:inherit;
-  background-color: #ffcccb;
+  //margin:0 auto;
+  //display:inherit;
+  //background-color: #ffcccb;
+  //font-family: Roboto, "Helvetica Neue", sans-serif;
+  //width: 60%;
+  //height: 40px;
+  //border-radius: 20px;
+  //font-weight: bold;
+  //font-family: Roboto, "Helvetica Neue", sans-serif;
+  //border: 1px solid red;
+  //color: red;
+  //margin-top: 8px;
+  //margin-bottom: 8px;
+  //border: none;
+
+  margin: 0 auto;
+  display: inherit;
+  background-color: #ffe6e6;
   font-family: Roboto, "Helvetica Neue", sans-serif;
   width: 60%;
   height: 40px;
-  border-radius: 20px;
+  //border-radius: 20px;
   font-weight: bold;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-  border: 1px solid red;
-  color: red;
-  margin-top: 8px;
-  margin-bottom: 8px;
-  border: none;
+  font-size: 14px;
+  color: #a94442;
+  border:none;
+  //border: 1px solid #cc0000;
+  transition: background-color 0.3s, color 0.3s;
+  cursor:pointer;
+}
+
+/* Hover effect */
+#removeAll:hover {
+  background-color: #ffcccc;
+  color: #a94442;
 }
 
 #removeAllGrey{
+  //margin:0 auto;
+  //display:inherit;
+  //background-color: #e8eaf6;
+  //color: #808080;
+  //width: 60%;
+  //height: 40px;
+  //border-radius: 20px;
+  ////border: 1px solid black;
+  //font-family: Roboto, "Helvetica Neue", sans-serif;
+  //font-weight: bold;
+  //// margin-top: 12px;
+  //margin-bottom: 6px;
+  //border: none;
+
   margin:0 auto;
   display:inherit;
-  background-color: #e8eaf6;
-  color: #808080;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  //background-color: white;
   width: 60%;
   height: 40px;
   border-radius: 20px;
-  border: 1px solid black;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  //border: 1px solid black;
+  margin-top: 3px;
+  margin-bottom: 10px;
   font-weight: bold;
-  // margin-top: 12px;
-  margin-bottom: 6px;
+  background-color: #e8eaf6;
+  color: #808080;
   border: none;
+  cursor:pointer;
 }
 
 
 
-#removeAll:hover {
-  color: #ffcccb;
-  background-color: red;
-}
+
 
 #specify {
   margin:0 auto;
@@ -319,10 +353,6 @@ hr.solid2 {
   //font-size: 12px !important;
 }
 
-//#reference .mdc-button__label {
-
-
-
 .referenceJointSelect {
     height: 28px;
     margin: 2px;
@@ -336,82 +366,7 @@ hr.solid2 {
     color: #e8eaf6;
     background-color: #3F51B5;
   }
-/* Adjusting input fields */
-.poseData {
-  display: flex;
-  flex-direction: column;/* Ensure the X, Y, and angle inputs are on the different row */
-  justify-content: space-between;
-  align-items: center;
-  //justify-content: flex-start;
-  //align-items: flex-start;
-  gap: 0px; /* Reduces space between X, Y, and deg blocks */
-  //margin-right: 0; /* Remove negative margin */
-  //margin-bottom: 15px;
-  //margin-top: 7px;
 
-}
-
-/* For the input fields (X, Y, and angle) */
-#threePos input[type="number"] {
-  padding-right: 2px !important;  /* Reducing padding to make it closer to the unit */
-  width: 60px !important;  /* Adjust the width to ensure tighter spacing */
-}
-
-/* For the unit span (cm, deg) */
-#threePos span.unit {
-  margin-left: 2px !important;  /* Reduce the space between the value and unit */
-}
-
-
-/* Ensure input field does not push the label off the screen */
-.dual-input-block {
-  display: flex;
-  align-items: center;
-  //justify-content: flex-start;
-  gap: 2px;
-}
-
-/* Targeting input fields for X and Y values */
-.dual-input-block input {
-  padding-right: 2px;  /* Reduce the space between the value and the unit */
-  margin-right: 0px;
-  width: auto;
-  //flex: 1;
-}
-
-.dual-input-block span.unit {
-  margin-left: 2px; /* Reduce the space between the number and 'cm' */
-  padding-left: 0px;
-}
-
-/* Target the labels for X and Y inputs */
-.dual-input-block label {
-  visibility: visible;
-  margin-right: 4px;
-  display: inline-block;
-  width: 20px;
-  text-align: left;
-  color: black;
-  flex: 0;
-}
-
-.single-input-block {
-  display: flex;
-  align-items: center;
-  //justify-content: flex-start;
-  gap: 2px;
-}
-
-.single-input-block input {
-  padding-right: 0px;
-  margin-right: 0px;
-  width: auto;
-}
-
-.single-input-block span.unit {
-  margin-left: 2px !important; /* Reduce space between angle value and 'deg' */
-  padding-left: 0px;
-}
 
 
 .fixed-reference-options {
@@ -451,11 +406,13 @@ hr.solid2 {
 .scroll-container {
   max-height: calc(100vh - 150px);
   overflow-y: auto;
+  overflow-x: hidden;
   padding-right: 5px;
 }
 
 .position-container {
   background-color: #ffffff;
+  //background-color: #f8f9fa;
   padding: 4px 6px;
   margin-bottom: 8px;
   border: 1px solid #ddd;
@@ -477,6 +434,7 @@ hr.solid2 {
   font-weight: bold;
   //padding-bottom: 4px;
   margin-bottom: 4px;
+
 }
 
 .position-header p {
@@ -493,19 +451,25 @@ hr.solid2 {
   gap: 4px;
 }
 
-.poseData {
+div.poseData {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  flex-wrap: wrap;
+  //align-items:center;
+  gap: 8px;
   padding: 0 5px;
-  //padding-top: 5px;
-  //padding-left: 10px;
+  //overflow: hidden;
+
 }
 
-.dual-input-block,  .single-input-block {
-  margin: 0;
-  padding: 2px 0;
-}
+//.dual-input-block,  .single-input-block {
+//  flex:1;
+//  margin: 0;
+//  padding: 2px 0;
+//}
+
+
+
 
 .delete-button img {
   width: 16px;
@@ -523,6 +487,7 @@ hr.solid2 {
   border-radius: 18px;
   margin-top: 5px;
   margin-bottom: 5px;
+  cursor: pointer;
 }
 
 coupler-specifications-container {
@@ -580,17 +545,46 @@ coupler-specifications-container {
   padding-right: 5px !important;
   padding-bottom: 0;
   margin-top: -15px;
+  gap: 2px;
 
 }
 
-
+/* Icon and tooltip adjustments */
+.icon, .label, .label-help {
+  margin-right: 5px;
+}
 
 .lock-icon {
   width: 15px;
   height: 15px;
   margin-left: 10px;
+  cursor: pointer;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  opacity: 0.8;
   //opacity: 0.6;
 }
+
+.lock-icon.locked {
+  opacity: 1;
+  cursor: pointer;
+  transform: scale(1.5); /* Slightly enlarges the icon when locked */
+  filter: hue-rotate(120deg); /* Adds a color shift to indicate locked state */
+}
+
+.notification-message {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  font-size: 14px;
+  border-radius: 5px;
+  z-index: 1000;
+  text-align: center;
+}
+
 
 .synthesis-description,.subtitle {
   display: block;
@@ -610,6 +604,7 @@ coupler-specifications-container {
 
   margin-top:-12px !important;
   margin-left: 41px !important;
+
 }
 
 //.lock-icon {
@@ -866,11 +861,11 @@ span.icons {
 
 /* Default colors for left and right */
 .toggle-left {
-  color: #ffffff; /* Active color when 'Length & Angle' is selected */
+  color: #ffffff;
 }
 
 .toggle-right {
-  color: #ffffff; /* Inactive color */
+  color: #ffffff;
 }
 
 /* Indicator styling */

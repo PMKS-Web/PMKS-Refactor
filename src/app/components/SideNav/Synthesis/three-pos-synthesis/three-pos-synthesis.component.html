@@ -15,6 +15,7 @@
 
   <div class="scroll-container" >
 <!--  <div *ngIf="panelVisible">-->
+
     <p class="synthesis-description">Define 3 specific coupler positions to synthesize a linkage.</p>
 
     <div class="toggle-container">
@@ -37,20 +38,39 @@
              <p class="coupler-title" style="margin-bottom:-3px; margin-right: 10px; margin-left: 10px; margin-top: 15px;">Coupler Link Specifications</p>
                <div class="coupler-block">
                   <div class="input-container">
+<!--                     Length Image-->
                       <img src="assets/icons/length.svg" alt="length icon" class="icon">
+                    <!--                     Length label-->
                       <span class="label" >Length</span>
+                    <!--                     Length tooltip-->
                       <mat-icon id="lengthTooltip"
-                        matTooltip="The length of the end-effector link" [matTooltipShowDelay]='1000'
+                        matTooltip="The length of the end-effector link"
+                        [matTooltipShowDelay]='1000'
                         class='label-help'
                         [matTooltipDisabled]='disabled'
-                      >help_outline
+                        >help_outline
                       </mat-icon>
 
-                      <img src="assets/icons/lock.svg" alt="lock icon" class="lock-icon">
-                      <single-input-block class="right-aligned" [input1Value]="2" style="margin-top:-12px !important;margin-left: 41px;"
+                    <!-- Lock Icon with Click Handler -->
+                      <img src="assets/icons/lock.svg"
+                           alt="lock icon"
+                           class="lock-icon"
+                           (click)="toggleLengthLock()"
+                           [class.locked]="isLengthLocked"
+                      >
+
+                      <single-input-block
+                            class="right-aligned"
+                            [input1Value]="2" style="margin-top:-12px !important;margin-left: 41px;"
                             (input1Change)="setCouplerLength($event)"
                             unit1={{units}}
-                           [showIcon]="false"></single-input-block>
+                            [showIcon]="false">
+                      </single-input-block>
+
+                    <div class="notification-message" *ngIf="showLockMessage">
+                      Links are locked on the grid, but you can change the length of the coupler links from the input section in the synthesis panel.
+                    </div>
+
                   </div>
 
 
