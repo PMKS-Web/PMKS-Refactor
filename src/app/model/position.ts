@@ -16,6 +16,7 @@ export class Position implements RigidBody {
   private _color: string = "";
   private _isLocked: boolean;
   private _referencePoint: string = "Center";
+  private _angle: number;
 
   private positionColorOptions = [
     '#5E646D87'
@@ -36,6 +37,7 @@ export class Position implements RigidBody {
     this._joints = new Map();
     this._color = this.positionColorOptions[id % this.positionColorOptions.length];
     this._isLocked = false;
+    this._angle = 0;
 
     if (Array.isArray(jointAORJoints)) {
       jointAORJoints.forEach(joint => {
@@ -97,6 +99,10 @@ export class Position implements RigidBody {
     else throw new Error('Length is null');
   }
 
+  get angle(): number {
+    return this._angle;
+  }
+
   // Setters
   set name(value: string) {
     this._name = value;
@@ -111,6 +117,9 @@ export class Position implements RigidBody {
     this.updateLocks(value);
   }
 
+  set angle(value) {
+    this._angle = value;
+  }
   addTracer(newJoint: Joint) {
     this._joints.set(newJoint.id, newJoint);
     this.calculateCenterOfMass();

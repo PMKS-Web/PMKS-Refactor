@@ -63,7 +63,7 @@ export class PositionComponent extends AbstractInteractiveComponent {
 
   getName():string {
     if (this.isHidden) return "";
-    else return this.position.name + "\nLength: " + this.position.length;
+    else return this.position.name + "\nLength: " + this.position.length + "\nAngle: " + this.position.angle;
   }
 
   getDrawnPath(): string {

@@ -335,10 +335,13 @@ getReference(): string{
 
     if (posNum === 1) {
       this.pos1Angle = roundedAngle;
+      this.position1!.angle = roundedAngle;
     } else if (posNum === 2) {
       this.pos2Angle = roundedAngle;
+      this.position2!.angle = roundedAngle
     } else if (posNum === 3) {
       this.pos3Angle = roundedAngle;
+      this.position3!.angle = roundedAngle
     }
     this.cdr.detectChanges();
   }
@@ -346,16 +349,19 @@ getReference(): string{
 resetPos(pos: number){
     if(pos==1){
         this.pos1Angle=0;
+        this.position1!.angle = 0;
         this.pos1X=0;
         this.pos1Y=0;
     }
     else if(pos==2){
         this.pos2Angle=0;
+        this.position2!.angle = 0;
         this.pos2X=-2.5;
         this.pos2Y=0;
     }
     else {
         this.pos3Angle=0;
+        this.position3!.angle = 0;
         this.pos3X=2.5;
         this.pos3Y=0;
     }
@@ -934,6 +940,7 @@ setPosYCoord(y: number, posNum: number){
 
     if (posNum === 1 && this.position1) {
       this.pos1Angle = angle;
+      this.position1.angle = angle;
       const backJoint = this.position1.getJoints()[0];
       const frontJoint = this.position1.getJoints()[1];
       const midJoint = this.position1.getJoints()[2];
@@ -973,6 +980,7 @@ setPosYCoord(y: number, posNum: number){
       }
     } else if (posNum === 2 && this.position2) {
       this.pos2Angle = angle;
+      this.position2.angle = angle;
       const backJoint = this.position2.getJoints()[0];
       const frontJoint = this.position2.getJoints()[1];
       const midJoint = this.position2.getJoints()[2];
@@ -1012,6 +1020,7 @@ setPosYCoord(y: number, posNum: number){
       }
     } else if (posNum === 3 && this.position3) {
       this.pos3Angle = angle;
+      this.position3.angle = angle;
       const backJoint = this.position3.getJoints()[0];
       const frontJoint = this.position3.getJoints()[1];
       const midJoint = this.position3.getJoints()[2];
