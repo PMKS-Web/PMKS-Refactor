@@ -176,18 +176,21 @@
                  <button id="generateSixBar" (click)="generateSixBar()">
                    {{ sixBarGenerated ? 'Clear Six-Bar' : 'Generate Six-Bar' }}
                  </button>
+               </div>
 
+               <div *ngIf="isFourBarGenerated()" class="definedButtons">
+                 <div *ngIf="recalcNeeded">
+                   <button id="recalc" (click)="verifyMechanismPath()">
+                     Evaluate Positions
+                   </button>
+                 </div>
+                 <div *ngIf="!recalcNeeded">
+                   <button id="recalcGray">
+                     Evaluate Positions
+                   </button>
+                 </div>
                </div>
-               <div *ngIf="recalcNeeded" class="definedButtons">
-                 <button id="recalc" (click)="verifyMechanismPath()">
-                   Evaluate Positions
-                 </button>
-               </div>
-               <div *ngIf="!recalcNeeded" class="definedButtons">
-                 <button id="recalcGray">
-                   Evaluate Positions
-                 </button>
-               </div>
+
 
              </div>
            </div>
@@ -270,5 +273,5 @@
   </div>
   </div>
 </div>
-
+</div>
 
