@@ -34,6 +34,8 @@ interface PositionLock {
   isLocked: boolean;
 }
 
+type CoordinateField = 'x0' | 'y0' | 'x1' | 'y1'; // Explicitly define valid keys
+
 export class AppModule { }
 
 @Component({
@@ -112,6 +114,9 @@ export class ThreePosSynthesis{
     { isLocked: false, lockedLength: 2 }, // Position 2
     { isLocked: false, lockedLength: 2 }  // Position 3
   ];
+  // Flags to control placeholder visibility
+  placeholderFlags : { [key: number]: { x0: boolean; y0: boolean; x1: boolean; y1: boolean } } = {};
+
 
 
 
@@ -123,6 +128,10 @@ export class ThreePosSynthesis{
     this.lockCurrentJoint();
     this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe((units) => {this.units = units;});
     this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe((angles) => {this.angles = angles;});
+
+    this.twoPointPositions.forEach((_, index) => {
+    this.placeholderFlags[index] = { x0: true, y0: true, x1: true, y1: true };
+    });
     this.panelSubscription = this.stateService.globalActivePanelCurrent.subscribe((panel) => {this.panel = panel; this.sendNotif()});
     this.mechanism._mechanismChange$.subscribe(() => this.checkForChange());
   }
@@ -1322,10 +1331,6 @@ allPositionsDefined(): boolean {
   }
 
 
-
-
-
-
   getFirstUndefinedPositionEndPoints() :number {
       return this.twoPointPositions.findIndex(position => !position.defined )
       }
@@ -1334,6 +1339,15 @@ allPositionsDefined(): boolean {
     console.log(index);
     if (index >= 0 && index < this.twoPointPositions.length) {
       this.twoPointPositions[index].defined = true;
+    }
+
+    if (!this.placeholderFlags[index]) {
+      this.placeholderFlags[index] = { x0: false, y0: false, x1: false, y1: false };
+    } else {
+      this.placeholderFlags[index].x0 = false;
+      this.placeholderFlags[index].y0 = false;
+      this.placeholderFlags[index].x1 = false;
+      this.placeholderFlags[index].y1 = false;
     }
   }
 
@@ -1369,13 +1383,32 @@ allPositionsDefined(): boolean {
 
 
 
+// Handles focus event to hide placeholder
+  handleFocus(index: number, field: 'x0' | 'y0' | 'x1' | 'y1'): void {
+    if (this.twoPointPositions[index][field] === 0) {
+      this.twoPointPositions[index][field] = '' as any;
+    }
+  }
 
 
+// Handles blur event to restore placeholder if input is empty
+  handleBlur(index: number, field: 'x0' | 'y0' | 'x1' | 'y1'): void {
+    const value = this.twoPointPositions[index][field];
+
+    // Check if the value is empty or invalid
+    if (value === null || value === undefined || `${value}` === '') {
+      this.twoPointPositions[index][field] = 0;
+      this.placeholderFlags[index][field] = true;
+    } else {
+      this.placeholderFlags[index][field] = false;
+  }
+  }
 
 
   generateFourBarFromTwoPoints(): void {
     // Logic to generate a Four-Bar mechanism based on two points
     console.log(`Generating Four-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
+    console.log('Current Values of Two Point Positions:', this.twoPointPositions);
 
   }
 
