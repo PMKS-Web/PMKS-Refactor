@@ -21,6 +21,18 @@ import {Subscription} from "rxjs";
 
 
 
+interface CoordinatePosition {
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+  defined: boolean;
+}
+
+interface PositionLock {
+  lockedLength: number;
+  isLocked: boolean;
+}
 
 export class AppModule { }
 
@@ -30,6 +42,9 @@ export class AppModule { }
     styleUrls: ['./three-pos-synthesis.component.scss'],
 
 })
+
+
+
 export class ThreePosSynthesis{
 
   @Input() disabled: boolean = false;
@@ -80,6 +95,25 @@ export class ThreePosSynthesis{
   xvals = [this.pos1X, this.pos2X, this.pos3X];
   yvals = [this.pos1Y, this.pos2Y, this.pos3Y];
   anglevals = [this.pos1Angle, this.pos2Angle, this.pos3Angle];
+  panelVisible = false;
+  selectedOption: string = 'xy-angle';
+  distance: number = 0;
+  angle: number = 0;
+  // New array for two-point mode, using the Position interface
+  twoPointPositions: CoordinatePosition[] = [
+    { x0: 0, y0: 0, x1: 0, y1: 0 , defined: false},
+    { x0: 0, y0: 0, x1: 0, y1: 0, defined: false },
+    { x0: 0, y0: 0, x1: 0, y1: 0,defined: false }
+  ];
+  isLengthLocked: boolean = false;
+  showLockMessage: boolean = false;  // Controls the visibility of the message
+  positionLocks: PositionLock[] = [
+    { isLocked: false, lockedLength: 2 }, // Position 1
+    { isLocked: false, lockedLength: 2 }, // Position 2
+    { isLocked: false, lockedLength: 2 }  // Position 3
+  ];
+
+
 
   constructor(private stateService: StateService, private interactionService: InteractionService, private cdr: ChangeDetectorRef, private positionSolver: PositionSolverService) {
     this.mechanism = this.stateService.getMechanism();
@@ -167,6 +201,10 @@ export class ThreePosSynthesis{
         this.setPosXCoord(this.pos3X, 3);
         this.setPosYCoord(this.pos3Y, 3);
       }
+  }
+
+  toggleOption(selectedOption: string) {
+    this.selectedOption = selectedOption;
   }
 
 getReference(): string{
@@ -282,7 +320,7 @@ getReference(): string{
     const deltaY = joint2.coords.y - joint1.coords.y;
     let angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI); // Convert radians to degrees
     if (angle < 0) {
-      angle += 360;
+      angle += 360; // Normalize to 0-360
     }
     return angle;
   }
@@ -1012,6 +1050,7 @@ setPosYCoord(y: number, posNum: number){
         ));
       }
     }
+    this.cdr.detectChanges();
   }
 
   getReferenceJoint(position: Position): Joint {
@@ -1241,6 +1280,100 @@ allPositionsDefined(): boolean {
     const dx = coord1.x - coord2.x;
     const dy = coord1.y - coord2.y;
     return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  toggleLengthLock() {
+    this.isLengthLocked = !this.isLengthLocked;
+
+    // / Show the message when locking is activated
+    if (this.isLengthLocked) {
+      this.showLockMessage = true;
+
+      // Hide the message after 5 seconds
+      setTimeout(() => {
+        this.showLockMessage = false;
+      }, 5000);
+    }
+
+    // Update each position's lock state
+    this.positionLocks.forEach((positionLock, index) => {
+      positionLock.isLocked = this.isLengthLocked;
+      positionLock.lockedLength = this.couplerLength; // Lock to current coupler length
+      console.log(`Position ${index + 1} lock state:`, positionLock.isLocked);
+    });
+
+    this.cdr.detectChanges();
+  }
+
+  unlockPositions() {
+    this.positionLocks.forEach(positionLock => {
+      positionLock.isLocked = false;
+    });
+    console.log(this.positionLocks);
+  }
+
+
+
+
+
+
+  getFirstUndefinedPositionEndPoints() :number {
+      return this.twoPointPositions.findIndex(position => !position.defined )
+      }
+
+  specifyPositionEndPoints(index: number){
+    console.log(index);
+    if (index >= 0 && index < this.twoPointPositions.length) {
+      this.twoPointPositions[index].defined = true;
+    }
+  }
+
+  deletePositionTwoPoints(index:number){
+    console.log("Delete Positions");
+    if (index >= 0 && index < this.twoPointPositions.length) {
+      this.twoPointPositions[index] = { x0: 0, y0: 0, x1: 0, y1: 0, defined: false };
+    }
+  }
+
+  removeAllPositionsTwoPoints(): void {
+    this.twoPointPositions.forEach(pos => {
+      pos.defined = false;
+      pos.x0 = 0;
+      pos.y0 = 0;
+      pos.x1 = 0;
+      pos.y1 = 0;
+    });
+    console.log("All positions removed");
+  }
+
+  // onPositionChange(): void {
+  //   // Recalculate the positions based on the updated user input
+  //   this.positionSolverService.solvePositions();
+  //
+  //   // Update the display on the grid
+  //   const positions = this.positionSolverService.getAnimationPositions();
+  //   positions.forEach((position) => {
+  //     // Call your method to update the position on the grid
+  //     this.interactionService.startDraggingObject(new Link(position)); // Adjust this part as necessary
+  //   });
+  // }
+
+
+
+
+
+
+
+  generateFourBarFromTwoPoints(): void {
+    // Logic to generate a Four-Bar mechanism based on two points
+    console.log(`Generating Four-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
+
+  }
+
+  generateSixBarFromTwoPoints(): void {
+    // Logic to generate a Four-Bar mechanism based on two points
+    console.log(`Generating Six-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
+
   }
 
 }
