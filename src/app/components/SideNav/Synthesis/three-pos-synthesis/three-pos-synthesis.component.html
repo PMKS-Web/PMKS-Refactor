@@ -222,22 +222,79 @@
       </div>
 
       <!-- Calculate the starting label number for each position based on index -->
+<!--      <div class="input-row" *ngIf="pos.defined">-->
+<!--        <label for="x{{index * 2 + 1}}">X{{index * 2 + 1}}</label>-->
+
+<!--        <input id="x{{index * 2 + 1}}"-->
+<!--               type="number"-->
+<!--               [(ngModel)]="pos.x0"-->
+<!--               [placeholder]="placeholderFlags[index].x0 ? 'X' + (index * 2 + 1) : ''"-->
+<!--               class="coordinate-input"-->
+<!--               (focus)="clearPlaceholder(index, 'x0')"-->
+<!--               (blur)="restorePlaceholder(index, 'x0')"-->
+<!--               >-->
+
+<!--        <label for="y{{index * 2 + 1}}">Y{{index * 2 + 1}}</label>-->
+<!--        <input id="y{{index * 2 + 1}}"-->
+<!--               type="number"-->
+<!--               [(ngModel)]="pos.y0"-->
+<!--               [placeholder]="placeholderFlags[index].y0 ? 'Y' + (index * 2 + 1) : ''"-->
+<!--               class="coordinate-input"-->
+<!--               (focus)="clearPlaceholder(index, 'y0')"-->
+<!--               (blur)="restorePlaceholder(index, 'y0')"-->
+<!--        >-->
+<!--      </div>-->
+
+<!--      <div class="input-row" *ngIf="pos.defined">-->
+<!--        <label for="x{{index * 2 + 2}}">X{{index * 2 + 2}}</label>-->
+<!--        <input id="x{{index * 2 + 2}}" type="number" [(ngModel)]="pos.x1"  placeholder="0" class="coordinate-input">-->
+
+<!--        <label for="y{{index * 2 + 2}}">Y{{index * 2 + 2}}</label>-->
+<!--        <input id="y{{index * 2 + 2}}" type="number" [(ngModel)]="pos.y1"  placeholder="0" class="coordinate-input">-->
+<!--      </div>-->
+
       <div class="input-row" *ngIf="pos.defined">
         <label for="x{{index * 2 + 1}}">X{{index * 2 + 1}}</label>
-        <input id="x{{index * 2 + 1}}" type="number" [(ngModel)]="pos.x0"  placeholder="0" class="coordinate-input"
-               >
+
+        <input id="x{{index * 2 + 1}}"
+               type="number"
+               [(ngModel)]="twoPointPositions[index].x0"
+               (focus)="handleFocus(index, 'x0')"
+               (blur)="handleBlur(index, 'x0')"
+               [placeholder]="twoPointPositions[index].x0 === 0 || twoPointPositions[index].x0 === undefined ? '0' : ''"
+               class="coordinate-input">
 
         <label for="y{{index * 2 + 1}}">Y{{index * 2 + 1}}</label>
-        <input id="y{{index * 2 + 1}}" type="number" [(ngModel)]="pos.y0" placeholder="0" class="coordinate-input">
+
+        <input id="y{{index * 2 + 1}}"
+               type="number"
+               [(ngModel)]="twoPointPositions[index].y0"
+               (focus)="handleFocus(index, 'y0')"
+               (blur)="handleBlur(index, 'y0')"
+               [placeholder]="twoPointPositions[index].y0 === 0 || twoPointPositions[index].y0 === undefined ? '0' : ''"
+               class="coordinate-input">
       </div>
 
       <div class="input-row" *ngIf="pos.defined">
         <label for="x{{index * 2 + 2}}">X{{index * 2 + 2}}</label>
-        <input id="x{{index * 2 + 2}}" type="number" [(ngModel)]="pos.x1"  placeholder="0" class="coordinate-input">
+        <input id="x{{index * 2 + 2}}"
+               type="number"
+               [(ngModel)]="twoPointPositions[index].x1"
+               (focus)="handleFocus(index, 'x1')"
+               (blur)="handleBlur(index, 'x1')"
+               [placeholder]="twoPointPositions[index].x1 === 0 || twoPointPositions[index].x1 === undefined ? '0' : ''"
+               class="coordinate-input">
 
         <label for="y{{index * 2 + 2}}">Y{{index * 2 + 2}}</label>
-        <input id="y{{index * 2 + 2}}" type="number" [(ngModel)]="pos.y1"  placeholder="0" class="coordinate-input">
+        <input id="y{{index * 2 + 2}}"
+               type="number"
+               [(ngModel)]="twoPointPositions[index].y1"
+               (focus)="handleFocus(index, 'y1')"
+               (blur)="handleBlur(index, 'y1')"
+               [placeholder]="twoPointPositions[index].y1 === 0 || twoPointPositions[index].y1 === undefined ? '0' : ''"
+               class="coordinate-input">
       </div>
+
 
 
       <!--If positions has not yet been created and its the first position, show specify position button  -->
