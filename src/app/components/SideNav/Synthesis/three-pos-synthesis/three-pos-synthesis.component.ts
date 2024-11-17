@@ -1383,12 +1383,27 @@ allPositionsDefined(): boolean {
   }
 
   removeAllPositionsTwoPoints(): void {
-    this.twoPointPositions.forEach(pos => {
+    this.twoPointPositions.forEach((pos, index) => {
       pos.defined = false;
       pos.x0 = 0;
       pos.y0 = 0;
       pos.x1 = 0;
       pos.y1 = 0;
+
+      // Handle removal of positions from the mechanism
+      if (index === 0) {
+        this.pos1Specified = false;
+        this.mechanism.removePosition(this.position1!.id);
+        this.resetPos(1);
+      } else if (index === 1) {
+        this.pos2Specified = false;
+        this.mechanism.removePosition(this.position2!.id);
+        this.resetPos(2);
+      } else if (index === 2) {
+        this.pos3Specified = false;
+        this.mechanism.removePosition(this.position3!.id);
+        this.resetPos(3);
+      }
     });
     console.log("All positions removed");
   }
@@ -1412,88 +1427,75 @@ allPositionsDefined(): boolean {
 
 
   generateFourBarFromTwoPoints(): void {
-    // Logic to generate a Four-Bar mechanism based on two points
     if (this.fourBarGenerated) {
-        // Clear the existing four-bar if already generated
-        let listOfLinks = this.synthedMech;
-        console.log(listOfLinks);
-        while (this.synthedMech.length > 0) {
-            let linkId = this.synthedMech[0].id;
-            console.log(linkId);
-            this.synthedMech.splice(0, 1);
-            this.mechanism.removeLink(linkId);
-            this.position1!.locked = false;
-            this.position2!.locked = false;
-            this.position3!.locked = false;
-            console.log("LIST OF LINKS AFTER DELETION:");
-            console.log(this.mechanism.getArrayOfLinks());
-        }
-        this.setPositionsColorToDefault();
-        this.fourBarGenerated = false;
-        this.synthedMech = [];
-        this.Generated.emit(false);
+      // Clear the existing four-bar if already generated
+      while (this.synthedMech.length > 0) {
+        let linkId = this.synthedMech[0].id;
+        this.synthedMech.splice(0, 1);
+        this.mechanism.removeLink(linkId);
+      }
+      this.setPositionsColorToDefault();
+      this.fourBarGenerated = false;
+      this.synthedMech = [];
+      this.Generated.emit(false);
     } else {
-        // Assuming twoPointPositions[0] and twoPointPositions[1] are used for generating the four-bar
-        const firstPoint = new Coord(this.twoPointPositions[0].x0, this.twoPointPositions[0].y0);
-        const secondPoint = new Coord(this.twoPointPositions[0].x1, this.twoPointPositions[0].y1);
-        const thirdPoint = new Coord(this.twoPointPositions[1].x0, this.twoPointPositions[1].y0);
-        const fourthPoint = new Coord(this.twoPointPositions[1].x1, this.twoPointPositions[1].y1);
+      // Assuming twoPointPositions[0] and twoPointPositions[1] are used for generating the four-bar
+      const firstPoint = new Coord(this.twoPointPositions[0].x0, this.twoPointPositions[0].y0);
+      const secondPoint = new Coord(this.twoPointPositions[0].x1, this.twoPointPositions[0].y1);
+      const thirdPoint = new Coord(this.twoPointPositions[1].x0, this.twoPointPositions[1].y0);
+      const fourthPoint = new Coord(this.twoPointPositions[1].x1, this.twoPointPositions[1].y1);
 
-        this.fourBarGenerated = !this.fourBarGenerated;
-        this.Generated.emit(this.fourBarGenerated);
-        this.cdr.detectChanges();
+      this.mechanism.addLink(firstPoint, secondPoint, true);
+      this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
 
-        this.mechanism.addLink(firstPoint, secondPoint, true);
+      let joints = this.mechanism.getJoints();
+      let lastJoint = this.getLastJoint(joints);
+      if (lastJoint !== undefined) {
+        this.mechanism.addLinkToJoint(lastJoint.id, thirdPoint, true);
         this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
+      }
 
-        let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
-        let lastJoint = this.getLastJoint(joints);
-        if (lastJoint !== undefined) {
-            this.mechanism.addLinkToJoint(lastJoint.id, thirdPoint, true);
-            this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
-        }
+      joints = this.mechanism.getJoints();
+      lastJoint = this.getLastJoint(joints);
+      if (lastJoint !== undefined) {
+        this.mechanism.addLinkToJoint(lastJoint.id, fourthPoint, true);
+        this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
+      }
 
-        joints = this.mechanism.getJoints(); //updates list of all joints
-        lastJoint = this.getLastJoint(joints);
-        if (lastJoint !== undefined) {
-            this.mechanism.addLinkToJoint(lastJoint.id, fourthPoint, true);
-            this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
-        }
+      // Add grounded joints and input
+      let arrayOfJoints = this.mechanism.getArrayOfJoints();
+      arrayOfJoints[9].addGround();
+      arrayOfJoints[9].addInput();
+      arrayOfJoints[12].addGround();
 
-        // Add grounded joints and input
-        let arrayOfJoints = this.mechanism.getArrayOfJoints();
+      this.positionSolver.solvePositions();
+      this.verifyMechanismPath();
+
+      let initialGreenCount = this.mechanism.getArrayOfPositions().filter(position => position.color === 'green').length;
+
+      if (initialGreenCount < 3) { // Check the other input joint for better results
+        arrayOfJoints[9].removeInput();
+        arrayOfJoints[12].addInput();
         arrayOfJoints[9].addGround();
-        arrayOfJoints[9].addInput();
-        arrayOfJoints[12].addGround();
 
         this.positionSolver.solvePositions();
         this.verifyMechanismPath();
+        let alternativeGreenCount = this.mechanism.getArrayOfPositions().filter(position => position.color === 'green').length;
 
-        let initialGreenCount = this.mechanism.getArrayOfPositions().filter(position => position.color === 'green').length;
-
-        if (initialGreenCount < 3) { // Check the other input joint for better results
-            arrayOfJoints[9].removeInput();
-            arrayOfJoints[12].addInput();
-            arrayOfJoints[9].addGround();
-
-            this.positionSolver.solvePositions();
-            this.verifyMechanismPath();
-            let alternativeGreenCount = this.mechanism.getArrayOfPositions().filter(position => position.color === 'green').length;
-
-            if (initialGreenCount >= alternativeGreenCount) { // Revert to initial configuration
-                arrayOfJoints[12].removeInput();
-                arrayOfJoints[9].addInput();
-                arrayOfJoints[12].addGround();
-            }
+        if (initialGreenCount >= alternativeGreenCount) { // Revert to initial configuration
+          arrayOfJoints[12].removeInput();
+          arrayOfJoints[9].addInput();
+          arrayOfJoints[12].addGround();
         }
+      }
 
-        this.positionSolver.solvePositions();
-        this.verifyMechanismPath();
-        this.position1!.locked = true;
-        this.position2!.locked = true;
-        this.position3!.locked = true;
-        console.log(this.positionSolver.getAnimationPositions());
-        console.log(this.mechanism);
+      this.positionSolver.solvePositions();
+      this.verifyMechanismPath();
+      this.position1!.locked = true;
+      this.position2!.locked = true;
+      this.position3!.locked = true;
+      this.fourBarGenerated = true;
+      this.Generated.emit(true);
     }
   }
 
@@ -1502,4 +1504,7 @@ allPositionsDefined(): boolean {
     console.log(`Generating Six-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
 
   }
+
+
+
 }
