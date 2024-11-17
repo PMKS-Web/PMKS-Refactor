@@ -71,6 +71,10 @@ export class Mechanism {
         this._joints.set(jointA.id, jointA);
         this._joints.set(jointB.id, jointB);
         let linkA = new Link(this._linkIDCount, [jointA,jointB]);
+        if (linkA.calculateAngle() === null) {
+          linkA.angle = 0
+        }
+        else linkA.angle = parseFloat(linkA.calculateAngle()!.toFixed(2));
         this._linkIDCount++;
         this._links.set(linkA.id, linkA);
         if (!isSynth) {

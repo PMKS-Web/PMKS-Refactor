@@ -16,6 +16,7 @@ export class Link implements RigidBody{
     private _forces: Map<number, Force>;
     private _color: string = "";
     private _isLocked: boolean;
+    private _angle: number;
 
     private linkColorOptions = [
         '#727FD5',
@@ -44,6 +45,7 @@ export class Link implements RigidBody{
         this._joints = new Map();
         this._color = this.linkColorOptions[id % this.linkColorOptions.length];
         this._isLocked = false;
+        this._angle = 0;
 
         if(Array.isArray(jointAORJoints)){
             jointAORJoints.forEach(joint => {
@@ -110,6 +112,10 @@ export class Link implements RigidBody{
       else throw new Error('Length is null');
     }
 
+    get angle(): number {
+      return this._angle;
+    }
+
     //setters
     set name(value: string) {
         this._name = value;
@@ -122,6 +128,10 @@ export class Link implements RigidBody{
     set locked(value: boolean) {
         this._isLocked = value;
         this.updateLocks(value);
+    }
+
+    set angle(value: number) {
+      this._angle = value;
     }
 
     addTracer(newJoint: Joint){
@@ -264,6 +274,7 @@ export class Link implements RigidBody{
                 angleInDegrees += 360;
             }
 
+            this._angle = parseFloat(angleInDegrees.toFixed(2));
             return angleInDegrees;
         } else {
             // Handle the case where one or both joints are not found
@@ -349,13 +360,23 @@ export class Link implements RigidBody{
 
 
         // Calculate the angle difference
-        const angleDifference = newAngle - currentAngle;
+        let angleDifference = newAngle - currentAngle;
 
         // Convert currentAngle to radians
         const currentAngleInRadians = (currentAngle * Math.PI) / 180;
 
         // Calculate the new angle in radians
         let angleInRadians = (angleDifference * Math.PI) / 180;
+
+
+        // Ensure the angle is in the range of +180 to -180 degrees
+        if (angleDifference > 180) {
+          angleDifference -= 360;
+        } else if (angleDifference < -180) {
+          angleDifference += 360;
+        }
+
+        this._angle = parseFloat(angleDifference.toFixed(2));
 
         // Calculate the new coordinates of jointTwo
         const newX = jointOne.coords.x + currentDistance * Math.cos(currentAngleInRadians + angleInRadians);

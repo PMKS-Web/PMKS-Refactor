@@ -78,6 +78,7 @@ export class LinkEditPanelComponent{
     return 0; // or handle null/undefined case as per your application logic
   }
 
+  //I think this is getting called continuously, should probably find a way to amend that
   getLinkAngle(): number {
     const angle = this.getSelectedObject().calculateAngle();
     console.log(`Angle in degrees from calculateAngle: ${angle}`);
