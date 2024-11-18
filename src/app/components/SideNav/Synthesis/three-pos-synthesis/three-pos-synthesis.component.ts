@@ -132,7 +132,11 @@ export class ThreePosSynthesis{
     this.twoPointPositions.forEach((_, index) => {
     this.placeholderFlags[index] = { x0: true, y0: true, x1: true, y1: true };
     });
-    this.panelSubscription = this.stateService.globalActivePanelCurrent.subscribe((panel) => {this.panel = panel; this.sendNotif()});
+    this.panelSubscription = this.stateService.globalActivePanelCurrent.subscribe((panel) => {
+      this.panel = panel;
+      this.sendNotif();
+      this.changePosLocks();
+    });
     this.mechanism._mechanismChange$.subscribe(() => this.checkForChange());
   }
 
@@ -248,7 +252,31 @@ getReference(): string{
     this.removeAllPositions();
     this.reference = "Center";
     this.couplerLength = 2;
+  }
 
+  changePosLocks(): void {
+    if (this.panel === "Synthesis" && this.fourBarGenerated){
+      if (this.position1 instanceof Position) {
+        this.position1.locked = true;
+      }
+      if (this.position2 instanceof Position) {
+        this.position2.locked = true;
+      }
+      if (this.position3 instanceof Position) {
+        this.position3.locked = true;
+      }
+    }
+    else {
+      if (this.position1 instanceof Position) {
+        this.position1.locked = false;
+      }
+      if (this.position2 instanceof Position) {
+        this.position2.locked = false;
+      }
+      if (this.position3 instanceof Position) {
+        this.position3.locked = false;
+      }
+    }
   }
 
   specifyPosition(index: number) {
