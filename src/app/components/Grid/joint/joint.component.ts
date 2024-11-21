@@ -77,6 +77,9 @@ export class JointComponent extends AbstractInteractiveComponent {
   isCCW(){
     return this.joint.inputSpeed >= 0;
   }
+  isRef() {
+    return this.joint.isReference;
+  }
 
   getTranslation(): string{
     return "translate(" +

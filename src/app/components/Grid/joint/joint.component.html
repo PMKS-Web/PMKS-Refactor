@@ -67,7 +67,17 @@
         -->
 
 
-    } @else {
+    }
+  @if (isRef()){
+    <!-- Need more elegant way to do this WITHOUT using <image> -->
+    <svg width="65" height="65" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
+         [attr.x]="getX()-23"
+         [attr.y]="getY()-22">
+    <!-- This centers it where the joints would regularly be, I don't know why -->
+      <path d="M7.07 0V14M0 6.79H14M11.62 6.72C11.62 9.27156 9.55156 11.34 7 11.34C4.44844 11.34 2.38 9.27156 2.38 6.72C2.38 4.16844 4.44844 2.1 7 2.1C9.55156 2.1 11.62 4.16844 11.62 6.72Z" stroke="black"/>
+    </svg>
+  }
+    @else {
         <svg:circle
             [attr.cx]="getX()"
             [attr.cy]="getY()"
