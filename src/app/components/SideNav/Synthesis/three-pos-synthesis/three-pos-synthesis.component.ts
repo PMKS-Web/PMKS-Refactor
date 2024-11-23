@@ -1,4 +1,14 @@
-import {Component, Input, OnInit, OnChanges, Output, EventEmitter, numberAttribute, HostListener} from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  OnChanges,
+  Output,
+  EventEmitter,
+  numberAttribute,
+  HostListener,
+  input
+} from '@angular/core';
 import { Interactor } from 'src/app/controllers/interactor';
 import { LinkInteractor } from 'src/app/controllers/link-interactor';
 import { Link } from 'src/app/model/link';
@@ -103,9 +113,9 @@ export class ThreePosSynthesis{
   angle: number = 0;
   // New array for two-point mode, using the Position interface
   twoPointPositions: CoordinatePosition[] = [
-    { x0: 0, y0: 0, x1: 0, y1: 0 , defined: false},
-    { x0: 0, y0: 0, x1: 0, y1: 0, defined: false },
-    { x0: 0, y0: 0, x1: 0, y1: 0,defined: false }
+    { x0: -1, y0: 0, x1: 1, y1: 0 , defined: false},
+    { x0: -3.5, y0: 0, x1: -1.5, y1: 0, defined: false },
+    { x0: 1.5, y0: 0, x1: 3.5, y1: 0,defined: false }
   ];
   isLengthLocked: boolean = false;
   showLockMessage: boolean = false;  // Controls the visibility of the message
@@ -389,18 +399,21 @@ resetPos(pos: number){
         this.position1!.angle = 0;
         this.pos1X=0;
         this.pos1Y=0;
+        this.twoPointPositions[0] = { x0: -1, y0: 0, x1: 1, y1: 0, defined: false };
     }
     else if(pos==2){
         this.pos2Angle=0;
         this.position2!.angle = 0;
         this.pos2X=-2.5;
         this.pos2Y=0;
+        this.twoPointPositions[1] = { x0: -3.5, y0: 0, x1: -1.5, y1: 0, defined: false };
     }
     else {
         this.pos3Angle=0;
         this.position3!.angle = 0;
         this.pos3X=2.5;
         this.pos3Y=0;
+        this.twoPointPositions[2] = { x0: 1.5, y0: 0, x1: 3.5, y1: 0, defined: false };
     }
 }
 
@@ -709,7 +722,7 @@ setPosXCoord(x: number, posNum: number) {
       const distanceMoved = Math.abs(backJoint.coords.x - x); //Find offset amt
       if (backJoint.coords.x < x){ //if moving positive, add front by amount moved, and vice-versa
         frontJoint.setCoordinates(new Coord(frontJoint.coords.x + distanceMoved, frontJoint.coords.y));
-        midJoint.setCoordinates(new Coord (midJoint.coords.x + distanceMoved, midJoint.coords.y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x + distanceMoved, midJoint.coords.y)); //Probably no longer needed as joints themselves are being set as references now
         backJoint.setCoordinates(new Coord(x, backJoint.coords.y));
       }
       else {
@@ -1199,8 +1212,6 @@ allPositionsDefined(): boolean {
     if (this.panel === "Synthesis"){
       let listOfLinks = this.synthedMech;
       console.log(listOfLinks);
-      let len;
-      let i;
       while (this.synthedMech.length > 0) {
         let linkId = this.synthedMech[0].id;
         console.log(linkId);
@@ -1353,8 +1364,9 @@ verifyMechanismPath() {
 
   specifyPositionEndPoints(index: number){
     console.log(index);
-    if (index >= 0 && index < this.twoPointPositions.length) {
-      this.twoPointPositions[index].defined = true;
+    if (index >= 0) {
+      this.twoPointPositions[index-1].defined = true;
+      this.specifyPosition(index);
     }
 
     if (!this.placeholderFlags[index]) {
@@ -1420,6 +1432,40 @@ verifyMechanismPath() {
   }
   }
 
+  pipeToEndPoint(e: Event, posNum: number, endPoint: string) {
+    let val = parseFloat((e.target as HTMLInputElement).value);
+    switch (endPoint) {
+      case "x1":
+        this.setPosX1CoordEndPoints(parseFloat(val.toFixed(2)), posNum);
+        break;
+      case "y1":
+        this.setPosY1CoordEndPoints(parseFloat(val.toFixed(2)), posNum);
+        break;
+      case "x2":
+        this.setPosX2CoordEndPoints(parseFloat(val.toFixed(2)), posNum);
+        break;
+      case "y2":
+        this.setPosY2CoordEndPoints(parseFloat(val.toFixed(2)), posNum);
+        break;
+    }
+
+  }
+
+  setPosX1CoordEndPoints(x: number, posNum: number) {
+    console.log("CALLED WITH " + x + " ON " + posNum);
+  }
+
+  setPosX2CoordEndPoints(x: number, posNum: number) {
+    console.log("CALLED WITH " + x + " ON " + posNum);
+  }
+
+  setPosY1CoordEndPoints(y: number, posNum: number) {
+    console.log("CALLED WITH " + y + " ON " + posNum);
+  }
+
+  setPosY2CoordEndPoints(y: number, posNum: number) {
+    console.log("CALLED WITH " + y + " ON " + posNum);
+  }
 
   generateFourBarFromTwoPoints(): void {
     // Logic to generate a Four-Bar mechanism based on two points

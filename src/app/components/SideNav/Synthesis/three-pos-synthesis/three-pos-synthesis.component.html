@@ -222,13 +222,13 @@
 
 
     <!-- Loop for three positions -->
-    <div *ngFor="let pos of twoPointPositions; let index = index" class="position-group">
+    <div *ngFor="let index of [0,1,2]" class="position-group">
       <div class="position-header">
         <span>Position {{ index + 1 }}</span>
         <span class="icons">
       <mat-icon id="tooltipTwoPoints" matTooltip="Specify the coordinates for Position {{ index + 1 }}"
                 [matTooltipShowDelay]="1000">help_outline</mat-icon>
-      <button class="delete-button" (click)="deletePositionTwoPoints(index)">
+      <button class="delete-button" (click)="this.deletePosition(index)">
         <img id="trashTwoPoints" src="assets/icons/trash.svg" alt="Delete Position">
       </button>
     </span>
@@ -266,7 +266,7 @@
 <!--        <input id="y{{index * 2 + 2}}" type="number" [(ngModel)]="pos.y1"  placeholder="0" class="coordinate-input">-->
 <!--      </div>-->
 
-      <div class="input-row" *ngIf="pos.defined">
+      <div class="input-row" *ngIf="this.isPositionDefined(index+1)">
         <label for="x{{index * 2 + 1}}">X{{index * 2 + 1}}</label>
 
         <input id="x{{index * 2 + 1}}"
@@ -275,6 +275,7 @@
                (focus)="handleFocus(index, 'x0')"
                (blur)="handleBlur(index, 'x0')"
                [placeholder]="twoPointPositions[index].x0 === 0 || twoPointPositions[index].x0 === undefined ? '0' : ''"
+               (keyup.enter)="pipeToEndPoint($event, index+1, 'x1')"
                class="coordinate-input">
 
         <label for="y{{index * 2 + 1}}">Y{{index * 2 + 1}}</label>
@@ -285,10 +286,11 @@
                (focus)="handleFocus(index, 'y0')"
                (blur)="handleBlur(index, 'y0')"
                [placeholder]="twoPointPositions[index].y0 === 0 || twoPointPositions[index].y0 === undefined ? '0' : ''"
+               (keyup.enter)="pipeToEndPoint($event, index+1, 'y1')"
                class="coordinate-input">
       </div>
 
-      <div class="input-row" *ngIf="pos.defined">
+      <div class="input-row" *ngIf="this.isPositionDefined(index+1)">
         <label for="x{{index * 2 + 2}}">X{{index * 2 + 2}}</label>
         <input id="x{{index * 2 + 2}}"
                type="number"
@@ -296,6 +298,7 @@
                (focus)="handleFocus(index, 'x1')"
                (blur)="handleBlur(index, 'x1')"
                [placeholder]="twoPointPositions[index].x1 === 0 || twoPointPositions[index].x1 === undefined ? '0' : ''"
+               (keyup.enter)="pipeToEndPoint($event, index+1, 'x2')"
                class="coordinate-input">
 
         <label for="y{{index * 2 + 2}}">Y{{index * 2 + 2}}</label>
@@ -305,14 +308,15 @@
                (focus)="handleFocus(index, 'y1')"
                (blur)="handleBlur(index, 'y1')"
                [placeholder]="twoPointPositions[index].y1 === 0 || twoPointPositions[index].y1 === undefined ? '0' : ''"
+               (keyup.enter)="pipeToEndPoint($event, index+1, 'y2')"
                class="coordinate-input">
       </div>
 
 
 
       <!--If positions has not yet been created and its the first position, show specify position button  -->
-      <div class="positionCreateEndPoints" *ngIf="!pos.defined && getFirstUndefinedPositionEndPoints() === index">
-        <button id="specifyEndPoints" (click)="this.specifyPositionEndPoints(index)">Specify Position</button>
+      <div class="positionCreateEndPoints" *ngIf="getFirstUndefinedPosition() === index+1">
+        <button id="specifyEndPoints" (click)="this.specifyPositionEndPoints(index+1)">Specify Position</button>
 
       </div>
 
@@ -323,9 +327,10 @@
     <!-- Action Buttons -->
     <div class="button-group">
 
-      <button  (click)="generateFourBarFromTwoPoints()">Generate Four-bar</button>
+      <button  (click)="generateFourBar()">Generate Four-bar</button>
 <!--      <button  (click)="generateSixBarFromTwoPoints()">Generate Six-bar</button>-->
-      <button  (click)="removeAllPositionsTwoPoints()">Remove All Positions</button>
+      <!-- evaluate positions button -->
+      <button  (click)="removeAllPositions()">Remove All Positions</button>
     </div>
   </div>
   </div>

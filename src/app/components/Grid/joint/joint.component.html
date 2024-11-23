@@ -68,7 +68,7 @@
 
 
     }
-  @if (isRef()){
+  @if (isRef() && !this.joint.isHidden){
     <!-- Need more elegant way to do this WITHOUT using <image> -->
     <svg width="65" height="65" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
          [attr.x]="getX()-23"
