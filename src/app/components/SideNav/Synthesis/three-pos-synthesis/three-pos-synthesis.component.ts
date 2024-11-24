@@ -5,23 +5,15 @@ import {
   OnChanges,
   Output,
   EventEmitter,
-  numberAttribute,
   HostListener,
-  input
 } from '@angular/core';
-import { Interactor } from 'src/app/controllers/interactor';
 import { LinkInteractor } from 'src/app/controllers/link-interactor';
 import { Link } from 'src/app/model/link';
 import { Mechanism } from 'src/app/model/mechanism';
 import { InteractionService } from 'src/app/services/interaction.service';
 import { StateService } from 'src/app/services/state.service';
 import { Joint } from 'src/app/model/joint';
-import { ColorService } from 'src/app/services/color.service';
-import { FormControl, FormGroup } from "@angular/forms";
-import { LinkComponent } from 'src/app/components/Grid/link/link.component';
 import { Coord } from 'src/app/model/coord';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { ChangeDetectorRef } from '@angular/core';
 import {PositionSolverService} from "../../../../services/kinematic-solver.service";
 import { DoCheck } from '@angular/core';
@@ -55,8 +47,6 @@ export class AppModule { }
 
 })
 
-
-
 export class ThreePosSynthesis{
 
   @Input() disabled: boolean = false;
@@ -67,7 +57,6 @@ export class ThreePosSynthesis{
   @Output() Generated: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   sectionExpanded: { [key: string]: boolean } = { Basic: false };
-  buttonLabel: string = 'Generate Four-Bar';
   reference: string = "Center";
   couplerLength: number = 2;
   pos1X: number = 0;
@@ -95,7 +84,6 @@ export class ThreePosSynthesis{
   coord2C = new Coord(this.pos3X + this.couplerLength / 2, this.pos3Y);
   notifNeeded = false;
   recalcNeeded = false;
-  private mechanism: Mechanism;
   unitSubscription: Subscription = new Subscription();
   angleSubscription: Subscription = new Subscription();
   panelSubscription: Subscription = new Subscription();
@@ -103,11 +91,6 @@ export class ThreePosSynthesis{
   angles: string = "º";
   panel: string = "Synthesis";
   synthedMech:Link[] = [];
-  positions  = [this.position1, this.position2, this.position3];
-  xvals = [this.pos1X, this.pos2X, this.pos3X];
-  yvals = [this.pos1Y, this.pos2Y, this.pos3Y];
-  anglevals = [this.pos1Angle, this.pos2Angle, this.pos3Angle];
-  panelVisible = false;
   selectedOption: string = 'xy-angle';
   distance: number = 0;
   angle: number = 0;
@@ -126,7 +109,7 @@ export class ThreePosSynthesis{
   ];
   // Flags to control placeholder visibility
   placeholderFlags : { [key: number]: { x0: boolean; y0: boolean; x1: boolean; y1: boolean } } = {};
-
+  private mechanism: Mechanism;
 
 
 
@@ -644,10 +627,6 @@ isSixBarGenerated(): boolean {
     }
   }
 
-//clearSixBar() {
-    //this.sixBarGenerated = false;
-  //}
-
 setCouplerLength(x: number){
     if (x > 0) {
 
@@ -660,16 +639,10 @@ setCouplerLength(x: number){
           joint1.coords.x = mid.x
         }
         if (this.position2) {
-          this.position2.setLength(this.couplerLength, this.position2.getJoints()[0]);
-          const centerCoord = this.getReferenceJoint(this.position2);
-          this.setPosXCoord(centerCoord.coords.x, 2);
-          this.setPosYCoord(centerCoord.coords.y, 2);
+
         }
         if (this.position3) {
-          const centerCoord = this.getNewCoord(this.position3);
-          this.position3.setLength(this.couplerLength, this.position3.getJoints()[0]);
-          this.setPosXCoord(centerCoord.x, 3);
-          this.setPosYCoord(centerCoord.y, 3);
+
         }
       } else if (this.reference === "Back") {
         if (this.position1) {
@@ -1349,18 +1322,6 @@ verifyMechanismPath() {
     this.cdr.detectChanges();
   }
 
-  unlockPositions() {
-    this.positionLocks.forEach(positionLock => {
-      positionLock.isLocked = false;
-    });
-    console.log(this.positionLocks);
-  }
-
-
-  getFirstUndefinedPositionEndPoints() :number {
-      return this.twoPointPositions.findIndex(position => !position.defined )
-      }
-
   specifyPositionEndPoints(index: number){
     console.log(index);
     if (index >= 0) {
@@ -1377,38 +1338,6 @@ verifyMechanismPath() {
       this.placeholderFlags[index].y1 = false;
     }
   }
-
-  deletePositionTwoPoints(index:number){
-    console.log("Delete Positions");
-    if (index >= 0 && index < this.twoPointPositions.length) {
-      this.twoPointPositions[index] = { x0: 0, y0: 0, x1: 0, y1: 0, defined: false };
-    }
-  }
-
-  removeAllPositionsTwoPoints(): void {
-    this.twoPointPositions.forEach(pos => {
-      pos.defined = false;
-      pos.x0 = 0;
-      pos.y0 = 0;
-      pos.x1 = 0;
-      pos.y1 = 0;
-    });
-    console.log("All positions removed");
-  }
-
-  // onPositionChange(): void {
-  //   // Recalculate the positions based on the updated user input
-  //   this.positionSolverService.solvePositions();
-  //
-  //   // Update the display on the grid
-  //   const positions = this.positionSolverService.getAnimationPositions();
-  //   positions.forEach((position) => {
-  //     // Call your method to update the position on the grid
-  //     this.interactionService.startDraggingObject(new Link(position)); // Adjust this part as necessary
-  //   });
-  // }
-
-
 
 // Handles focus event to hide placeholder
   handleFocus(index: number, field: 'x0' | 'y0' | 'x1' | 'y1'): void {
@@ -1552,19 +1481,6 @@ verifyMechanismPath() {
         midjoint3.setCoordinates(centerCoord3.coords);
         break;
     }
-  }
-
-  generateFourBarFromTwoPoints(): void {
-    // Logic to generate a Four-Bar mechanism based on two points
-    console.log(`Generating Four-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
-    console.log('Current Values of Two Point Positions:', this.twoPointPositions);
-
-  }
-
-  generateSixBarFromTwoPoints(): void {
-    // Logic to generate a Four-Bar mechanism based on two points
-    console.log(`Generating Six-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
-
   }
 
 }
