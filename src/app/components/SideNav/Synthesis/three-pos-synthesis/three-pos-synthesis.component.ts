@@ -184,28 +184,58 @@ export class ThreePosSynthesis{
 
   ngDoCheck() {
     if (this.panel === "Synthesis") {
-      this.lockCurrentJoint();
-      this.lockCurrentLink();
+        this.lockCurrentJoint();
+        this.lockCurrentLink();
     }
+
+    // Dynamically update "Length and Angle" panel
     if (this.position1 && this.pos1Specified) {
-      const newCoord = this.getNewCoord(this.position1);
-      this.updatePositionCoords(1, newCoord);
-      const angle = this.calculateAngle(this.position1.getJoints()[0], this.position1.getJoints()[1]);
-      this.updatePositionAngle(1, angle);
+        const newCoord = this.getNewCoord(this.position1);
+        this.updatePositionCoords(1, newCoord);
+        const angle = this.calculateAngle(this.position1.getJoints()[0], this.position1.getJoints()[1]);
+        this.updatePositionAngle(1, angle);
     }
     if (this.position2 && this.pos2Specified) {
-      const newCoord = this.getNewCoord(this.position2);
-      this.updatePositionCoords(2, newCoord);
-      const angle = this.calculateAngle(this.position2.getJoints()[0], this.position2.getJoints()[1]);
-      this.updatePositionAngle(2, angle);
+        const newCoord = this.getNewCoord(this.position2);
+        this.updatePositionCoords(2, newCoord);
+        const angle = this.calculateAngle(this.position2.getJoints()[0], this.position2.getJoints()[1]);
+        this.updatePositionAngle(2, angle);
     }
     if (this.position3 && this.pos3Specified) {
-      const newCoord = this.getNewCoord(this.position3);
-      this.updatePositionCoords(3, newCoord);
-      const angle = this.calculateAngle(this.position3.getJoints()[0], this.position3.getJoints()[1]);
-      this.updatePositionAngle(3, angle);
+        const newCoord = this.getNewCoord(this.position3);
+        this.updatePositionCoords(3, newCoord);
+        const angle = this.calculateAngle(this.position3.getJoints()[0], this.position3.getJoints()[1]);
+        this.updatePositionAngle(3, angle);
     }
-  }
+
+    // Dynamically update "End Points" panel
+    if (this.position1 && this.pos1Specified) {
+        this.updateEndPointPanel(1, this.position1);
+    }
+    if (this.position2 && this.pos2Specified) {
+        this.updateEndPointPanel(2, this.position2);
+    }
+    if (this.position3 && this.pos3Specified) {
+        this.updateEndPointPanel(3, this.position3);
+    }
+}
+
+updateEndPointPanel(positionIndex: number, position: Position): void {
+  const index = positionIndex - 1; // Adjust for zero-based indexing
+
+  const backJoint = position.getJoints()[0];
+  const frontJoint = position.getJoints()[1];
+
+  // Update `twoPointPositions` with the current joint coordinates
+  this.twoPointPositions[index].x0 = backJoint.coords.x;
+  this.twoPointPositions[index].y0 = backJoint.coords.y;
+  this.twoPointPositions[index].x1 = frontJoint.coords.x;
+  this.twoPointPositions[index].y1 = frontJoint.coords.y;
+
+  // Ensure Angular change detection picks up the updates
+  this.cdr.detectChanges();
+}
+
 
   setReference(r: string) {
       this.reference = r;
