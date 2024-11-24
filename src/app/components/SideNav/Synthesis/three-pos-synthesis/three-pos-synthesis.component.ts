@@ -633,16 +633,34 @@ setCouplerLength(x: number){
       this.couplerLength = x;
       if (this.reference === "Center") {
         if (this.position1) {
-          const mid = this.getReferenceJoint(this.position1).coords;
+          const angle = this.pos1Angle;
+          const halfLength = x/2;
+          this.setPositionAngle(0, 1); //Make Position flat to perform calculation
           let joint1 = this.position1.getJoints()[0];
           let joint2 = this.position1.getJoints()[1];
-          joint1.coords.x = mid.x
+          joint1.coords.x = joint1.coords.x - halfLength;
+          joint2.coords.x = joint2.coords.x + halfLength; //Space outer two joints equidistant about the center of the position
+          this.setPositionAngle(angle, 1); //Give position its original angle back
         }
         if (this.position2) {
-
+          const angle = this.pos2Angle;
+          const halfLength = x/2;
+          this.setPositionAngle(0, 2); //Make Position flat to perform calculation
+          let joint1 = this.position2.getJoints()[0];
+          let joint2 = this.position2.getJoints()[1];
+          joint1.coords.x = joint1.coords.x - halfLength;
+          joint2.coords.x = joint2.coords.x + halfLength; //Space outer two joints equidistant about the center of the position
+          this.setPositionAngle(angle, 2); //Give position its original angle back
         }
         if (this.position3) {
-
+          const angle = this.pos1Angle;
+          const halfLength = x/2;
+          this.setPositionAngle(0, 3); //Make Position flat to perform calculation
+          let joint1 = this.position3.getJoints()[0];
+          let joint2 = this.position3.getJoints()[1];
+          joint1.coords.x = joint1.coords.x - halfLength;
+          joint2.coords.x = joint2.coords.x + halfLength; //Space outer two joints equidistant about the center of the position
+          this.setPositionAngle(angle, 3); //Give position its original angle back
         }
       } else if (this.reference === "Back") {
         if (this.position1) {
