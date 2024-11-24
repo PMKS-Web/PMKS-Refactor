@@ -226,15 +226,16 @@ updateEndPointPanel(positionIndex: number, position: Position): void {
   const backJoint = position.getJoints()[0];
   const frontJoint = position.getJoints()[1];
 
-  // Update `twoPointPositions` with the current joint coordinates
-  this.twoPointPositions[index].x0 = backJoint.coords.x;
-  this.twoPointPositions[index].y0 = backJoint.coords.y;
-  this.twoPointPositions[index].x1 = frontJoint.coords.x;
-  this.twoPointPositions[index].y1 = frontJoint.coords.y;
+  // Update `twoPointPositions` with the current joint coordinates rounded to hundredths
+  this.twoPointPositions[index].x0 = parseFloat(backJoint.coords.x.toFixed(2));
+  this.twoPointPositions[index].y0 = parseFloat(backJoint.coords.y.toFixed(2));
+  this.twoPointPositions[index].x1 = parseFloat(frontJoint.coords.x.toFixed(2));
+  this.twoPointPositions[index].y1 = parseFloat(frontJoint.coords.y.toFixed(2));
 
   // Ensure Angular change detection picks up the updates
   this.cdr.detectChanges();
 }
+
 
 
   setReference(r: string) {
