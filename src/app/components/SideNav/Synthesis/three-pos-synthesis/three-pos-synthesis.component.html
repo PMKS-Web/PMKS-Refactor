@@ -228,7 +228,7 @@
         <span class="icons">
       <mat-icon id="tooltipTwoPoints" matTooltip="Specify the coordinates for Position {{ index + 1 }}"
                 [matTooltipShowDelay]="1000">help_outline</mat-icon>
-      <button class="delete-button" (click)="this.deletePosition(index)">
+      <button class="delete-button" (click)="this.deletePosition(index+1)">
         <img id="trashTwoPoints" src="assets/icons/trash.svg" alt="Delete Position">
       </button>
     </span>

@@ -654,17 +654,16 @@ setCouplerLength(x: number){
       this.couplerLength = x;
       if (this.reference === "Center") {
         if (this.position1) {
-          const centerCoord = this.getNewCoord(this.position1);
-          this.position1.setLength(this.couplerLength, this.position1.getJoints()[0]);
-          this.setPosXCoord(centerCoord.x, 1);
-          this.setPosYCoord(centerCoord.y, 1);
-          this.position1.getJoints()[2].setCoordinates(centerCoord);
+          const mid = this.getReferenceJoint(this.position1).coords;
+          let joint1 = this.position1.getJoints()[0];
+          let joint2 = this.position1.getJoints()[1];
+          joint1.coords.x = mid.x
         }
         if (this.position2) {
-          const centerCoord = this.getNewCoord(this.position2);
           this.position2.setLength(this.couplerLength, this.position2.getJoints()[0]);
-          this.setPosXCoord(centerCoord.x, 2);
-          this.setPosYCoord(centerCoord.y, 2);
+          const centerCoord = this.getReferenceJoint(this.position2);
+          this.setPosXCoord(centerCoord.coords.x, 2);
+          this.setPosYCoord(centerCoord.coords.y, 2);
         }
         if (this.position3) {
           const centerCoord = this.getNewCoord(this.position3);
@@ -1452,19 +1451,107 @@ verifyMechanismPath() {
   }
 
   setPosX1CoordEndPoints(x: number, posNum: number) {
-    console.log("CALLED WITH " + x + " ON " + posNum);
+    switch (posNum){
+      case 1:
+        const x1 = this.position1!.getJoints()[0];
+        const midjoint1 = this.position1!.getJoints()[2];
+        x1.setCoordinates(new Coord(x, x1.coords.y));
+        const centerCoord1 = this.getReferenceJoint(this.position1!);
+        midjoint1.setCoordinates(centerCoord1.coords);
+        break;
+      case 2:
+        const x2 = this.position2!.getJoints()[0];
+        const midjoint2 = this.position2!.getJoints()[2];
+        x2.setCoordinates(new Coord(x, x2.coords.y));
+        const centerCoord2 = this.getReferenceJoint(this.position2!);
+        midjoint2.setCoordinates(centerCoord2.coords);
+        break;
+      case 3:
+        const x3 = this.position3!.getJoints()[0];
+        const midjoint3 = this.position3!.getJoints()[2];
+        x3.setCoordinates(new Coord(x, x3.coords.y));
+        const centerCoord3 = this.getReferenceJoint(this.position3!);
+        midjoint3.setCoordinates(centerCoord3.coords);
+        break;
+    }
   }
 
   setPosX2CoordEndPoints(x: number, posNum: number) {
-    console.log("CALLED WITH " + x + " ON " + posNum);
+    switch (posNum){
+      case 1:
+        const x1 = this.position1!.getJoints()[1];
+        const midjoint1 = this.position1!.getJoints()[2];
+        x1.setCoordinates(new Coord(x, x1.coords.y));
+        const centerCoord1 = this.getReferenceJoint(this.position1!);
+        midjoint1.setCoordinates(centerCoord1.coords);
+        break;
+      case 2:
+        const x2 = this.position2!.getJoints()[1];
+        const midjoint2 = this.position2!.getJoints()[2];
+        x2.setCoordinates(new Coord(x, x2.coords.y));
+        const centerCoord2 = this.getReferenceJoint(this.position2!);
+        midjoint2.setCoordinates(centerCoord2.coords);
+        break;
+      case 3:
+        const x3 = this.position3!.getJoints()[1];
+        const midjoint3 = this.position3!.getJoints()[2];
+        x3.setCoordinates(new Coord(x, x3.coords.y));
+        const centerCoord3 = this.getReferenceJoint(this.position3!);
+        midjoint3.setCoordinates(centerCoord3.coords);
+        break;
+    }
   }
 
   setPosY1CoordEndPoints(y: number, posNum: number) {
-    console.log("CALLED WITH " + y + " ON " + posNum);
+    switch (posNum){
+      case 1:
+        const y1 = this.position1!.getJoints()[0];
+        const midjoint1 = this.position1!.getJoints()[2];
+        y1.setCoordinates(new Coord(y1.coords.x, y));
+        const centerCoord1 = this.getReferenceJoint(this.position1!);
+        midjoint1.setCoordinates(centerCoord1.coords);
+        break;
+      case 2:
+        const y2 = this.position2!.getJoints()[0];
+        const midjoint2 = this.position2!.getJoints()[2];
+        y2.setCoordinates(new Coord(y2.coords.x, y));
+        const centerCoord2 = this.getReferenceJoint(this.position2!);
+        midjoint2.setCoordinates(centerCoord2.coords);
+        break;
+      case 3:
+        const y3 = this.position3!.getJoints()[0];
+        const midjoint3 = this.position3!.getJoints()[2];
+        y3.setCoordinates(new Coord(y3.coords.x, y));
+        const centerCoord3 = this.getReferenceJoint(this.position3!);
+        midjoint3.setCoordinates(centerCoord3.coords);
+        break;
+    }
   }
 
   setPosY2CoordEndPoints(y: number, posNum: number) {
-    console.log("CALLED WITH " + y + " ON " + posNum);
+    switch (posNum){
+      case 1:
+        const y1 = this.position1!.getJoints()[1];
+        const midjoint1 = this.position1!.getJoints()[2];
+        y1.setCoordinates(new Coord(y1.coords.x, y));
+        const centerCoord1 = this.getReferenceJoint(this.position1!);
+        midjoint1.setCoordinates(centerCoord1.coords);
+        break;
+      case 2:
+        const y2 = this.position2!.getJoints()[1];
+        const midjoint2 = this.position2!.getJoints()[2];
+        y2.setCoordinates(new Coord(y2.coords.x, y));
+        const centerCoord2 = this.getReferenceJoint(this.position2!);
+        midjoint2.setCoordinates(centerCoord2.coords);
+        break;
+      case 3:
+        const y3 = this.position3!.getJoints()[1];
+        const midjoint3 = this.position3!.getJoints()[2];
+        y3.setCoordinates(new Coord(y3.coords.x, y));
+        const centerCoord3 = this.getReferenceJoint(this.position3!);
+        midjoint3.setCoordinates(centerCoord3.coords);
+        break;
+    }
   }
 
   generateFourBarFromTwoPoints(): void {
