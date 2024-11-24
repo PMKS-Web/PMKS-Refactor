@@ -22,8 +22,22 @@ export class SVGPathService {
     return this.calculateConvexPath(hullCoords,radius);
   }
 
+  getSinglePosDrawnPath(allCoords: Coord[], radius: number): string {
+
+    //check if coordinates are collinear. If they are, use the two returned coords(the end points) to draw a line
+    let collinearCoords: Coord[] | undefined = this.findCollinearCoords(allCoords);
+    if(collinearCoords !== undefined){
+      //build path string between two coords
+      return this.calculateTwoPointPath(collinearCoords[0],collinearCoords[1],radius);
+    }
+    //If not collinear, use grahamScan to determine hull Points
+    //(The points which make up a convex polygon containing the least number of "joints" in drawing order)
+    let hullCoords: Coord[] = this.grahamScan(allCoords);
+    return this.calculateConvexPath(hullCoords,radius);
+  }
+
   private findCollinearCoords(coords: Coord[]): Coord[] | undefined {
-    // Check if there are at least two coords to form a line
+
     if (coords.length < 2) {
       return undefined;
     }
@@ -31,21 +45,21 @@ export class SVGPathService {
     const sortedcoords = coords.slice().sort((a, b) => a.x - b.x || a.y - b.y);
     const start = sortedcoords[0];
     const end = sortedcoords[sortedcoords.length - 1];
-  
+
     // Calculate the slope of the line formed by the start and end coords
     const slope = (end.y - start.y) / (end.x - start.x);
-  
+
     // Check if all other coords are on the same line
     for (let i = 1; i < sortedcoords.length - 1; i++) {
       const point = sortedcoords[i];
       const tempSlope = (point.y - start.y) / (point.x - start.x);
-  
+
       // If the slope is not equal, the coords are not collinear
       if (tempSlope !== slope) {
         return undefined;
       }
     }
-  
+
     // If all coords have the same slope with the 'start' point, they are collinear
     return [start, end];
   }
@@ -57,14 +71,14 @@ export class SVGPathService {
         startPoint = point;
       }
     }
-  
+
     // Sort the coords by polar angle with the startPoint
     coords.sort((a, b) => {
       const angleA = Math.atan2(a.y - startPoint.y, a.x - startPoint.x);
       const angleB = Math.atan2(b.y - startPoint.y, b.x - startPoint.x);
       return angleA - angleB;
     });
-  
+
     // Initialize the convex hull with the start point
     const hull = [startPoint];
     // Process the sorted coords
@@ -77,7 +91,7 @@ export class SVGPathService {
     }
     return hull;
   }
-  
+
   // Helper function to determine if three coords make a counter-clockwise turn
   isCounterClockwise(c1: Coord, c2: Coord, c3: Coord): boolean {
     const crossProduct = (c2.x - c1.x) * (c3.y - c1.y) - (c2.y - c1.y) * (c3.x - c1.x);
@@ -144,7 +158,7 @@ calculateConvexPath(hullPoints: Coord[], r: number): string {
   getCompoundLinkSVG(): string{
     return ``;
   }
-  
+
 
 
 }

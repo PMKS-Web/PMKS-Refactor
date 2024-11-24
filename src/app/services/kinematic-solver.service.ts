@@ -553,6 +553,10 @@ export class PositionSolverService {
         }
     }
 
+  public getAnimationPositions(): Coord[][] {
+    return this.animationPositions.flatMap(entry => entry.positions);
+  }
+
 }
 
 

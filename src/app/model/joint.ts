@@ -16,6 +16,8 @@ export class Joint {
     private _inputSpeed: number;
     private _isWelded: boolean;
     private _parentLocked: boolean;
+    private _isHidden: boolean;
+    private _isReference: boolean;
 
 
 
@@ -24,11 +26,11 @@ export class Joint {
     constructor(id: number, xORCoord: number | Coord, y?: number){
         this._id = id;
         // changed name to be the same as ID instead of blank
-        if (this.id === -1){
-          this._name = "-1";
+        if (this.id <= -1){
+          this._name = "Reference Point";
         }
         else {
-          this._name = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".charAt(id % 52);
+          this._name = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".charAt(Math.abs(id) % 52);
         }
         this._type = JointType.Revolute;
         this._angle = 0;
@@ -38,6 +40,8 @@ export class Joint {
         this._inputSpeed = 0;
         this._parentLocked = false;
         this._inputSpeed = 10;
+        this._isHidden = false;
+        this._isReference = false;
 
         if(typeof xORCoord === 'number' && y !== undefined)
         {
@@ -86,6 +90,12 @@ export class Joint {
     get locked(): boolean{
         return this._parentLocked;
     }
+    get isHidden(): boolean{
+      return this._isHidden;
+    }
+    get isReference(): boolean{
+      return this._isReference
+    }
     //----------------------------setters----------------------------
     set name(newName: string){
         this._name = newName;
@@ -100,6 +110,14 @@ export class Joint {
     }
     set locked(value: boolean){
         this._parentLocked = value;
+    }
+
+    set hidden(val: boolean){
+      this._isHidden = val;
+    }
+
+    set reference(val: boolean){
+      this._isReference = val;
     }
 
     //----------------------------Joint Modification with modifying other variables----------------------------

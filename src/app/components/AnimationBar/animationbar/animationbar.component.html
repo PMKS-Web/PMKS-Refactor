@@ -36,12 +36,14 @@
       <span id='secLabel'>sec</span>
     </div>
 
-    <mat-slider
-      min='0'
-      max='5'
-      step="0.1"
-    >
-      <input id='slider' matSliderThumb />
+    <mat-slider>
+      <input matSliderThumb
+             [value]="sliderValue"
+             [disabled]="!getIsAnimating()"
+             (valueChange)="onSliderChange($event)"
+             min="0"
+             max="100"
+             step="0.1">
     </mat-slider>
   </div>
   <div id='viewButtons'>
@@ -92,22 +94,4 @@
     </button>
   </div>
 </div>
-<div id='bottomBar' *ngIf="invalidMechanism()">
-  <ul>
-    <li>Degrees of Freedom: N/A</li>
-    <li>Position:{{cursorPosition}}</li>
-    <li>Units: N/A</li>
-    <li style='flex-grow: 1'></li>
-    <li>PMKS Refactor Version 1</li>
-  </ul>
-</div>
 
-<div id='bottomBar' *ngIf="!invalidMechanism()">
-  <ul>
-    <li>Degrees of Freedom: 1</li>
-    <li>Position:{{cursorPosition}}</li>
-    <li>Units: N/A</li>
-    <li style='flex-grow: 1'></li>
-    <li>PMKS Refactor Version 1</li>
-  </ul>
-</div>

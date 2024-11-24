@@ -1,4 +1,14 @@
-import {Component, Input, OnInit, OnChanges, Output, EventEmitter, numberAttribute, HostListener} from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  OnChanges,
+  Output,
+  EventEmitter,
+  numberAttribute,
+  HostListener,
+  input
+} from '@angular/core';
 import { Interactor } from 'src/app/controllers/interactor';
 import { LinkInteractor } from 'src/app/controllers/link-interactor';
 import { Link } from 'src/app/model/link';
@@ -16,10 +26,25 @@ import { ChangeDetectorRef } from '@angular/core';
 import {PositionSolverService} from "../../../../services/kinematic-solver.service";
 import { DoCheck } from '@angular/core';
 import {JointInteractor} from "../../../../controllers/joint-interactor";
+import {Position} from "../../../../model/position";
+import {Subscription} from "rxjs";
 
 
-//import {ViewEncapsulation} from "@angular/core";
 
+interface CoordinatePosition {
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+  defined: boolean;
+}
+
+interface PositionLock {
+  lockedLength: number;
+  isLocked: boolean;
+}
+
+type CoordinateField = 'x0' | 'y0' | 'x1' | 'y1'; // Explicitly define valid keys
 
 export class AppModule { }
 
@@ -27,40 +52,39 @@ export class AppModule { }
     selector: 'three-pos-synthesis',
     templateUrl: './three-pos-synthesis.component.html',
     styleUrls: ['./three-pos-synthesis.component.scss'],
-    // encapsulation: ViewEncapsulation.None
 
 })
-export class ThreePosSynthesis{
 
-    /*  THE POSITION VALUES ARE ALL HARD CODED BECAUSE THE BACKEND ISN'T SET UP
-        ALL OF THESE FUNCTIONS SHOULD BE WRITTEN IN THE BACK END AND CALLED TO ON THE FRONT END */
+
+
+export class ThreePosSynthesis{
 
   @Input() disabled: boolean = false;
   @Input() tooltip: string = '';
   @Input() input1Value: number = 0;
   @Input() label1: string = "Length";
   @Output() input1Change: EventEmitter<number> = new EventEmitter<number>();
+  @Output() Generated: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   sectionExpanded: { [key: string]: boolean } = { Basic: false };
   buttonLabel: string = 'Generate Four-Bar';
   reference: string = "Center";
-  positions: number[] = [];
   couplerLength: number = 2;
   pos1X: number = 0;
   pos1Y: number = 0;
   pos1Angle: number = 0;
   pos1Specified: boolean = false;
-  pos2X: number = 0;
+  pos2X: number = -2.5;
   pos2Y: number = 0;
   pos2Angle: number = 0;
   pos2Specified: boolean = false;
-  pos3X: number = 0;
+  pos3X: number = 2.5;
   pos3Y: number = 0;
   pos3Angle: number = 0;
   pos3Specified: boolean = false;
-  position1: Link | null = null;
-  position2: Link | null = null;
-  position3: Link | null = null;
+  position1: Position | null = null;
+  position2: Position | null = null;
+  position3: Position | null = null;
   fourBarGenerated: boolean = false;
   sixBarGenerated: boolean = false;
   coord1A = new Coord(this.pos1X - this.couplerLength / 2, this.pos1Y);
@@ -69,7 +93,42 @@ export class ThreePosSynthesis{
   coord2B = new Coord(this.pos2X + this.couplerLength / 2, this.pos2Y);
   coord1C = new Coord(this.pos3X - this.couplerLength / 2, this.pos3Y);
   coord2C = new Coord(this.pos3X + this.couplerLength / 2, this.pos3Y);
+  notifNeeded = false;
+  recalcNeeded = false;
   private mechanism: Mechanism;
+  unitSubscription: Subscription = new Subscription();
+  angleSubscription: Subscription = new Subscription();
+  panelSubscription: Subscription = new Subscription();
+  units: string = "cm";
+  angles: string = "º";
+  panel: string = "Synthesis";
+  synthedMech:Link[] = [];
+  positions  = [this.position1, this.position2, this.position3];
+  xvals = [this.pos1X, this.pos2X, this.pos3X];
+  yvals = [this.pos1Y, this.pos2Y, this.pos3Y];
+  anglevals = [this.pos1Angle, this.pos2Angle, this.pos3Angle];
+  panelVisible = false;
+  selectedOption: string = 'xy-angle';
+  distance: number = 0;
+  angle: number = 0;
+  // New array for two-point mode, using the Position interface
+  twoPointPositions: CoordinatePosition[] = [
+    { x0: -1, y0: 0, x1: 1, y1: 0 , defined: false},
+    { x0: -3.5, y0: 0, x1: -1.5, y1: 0, defined: false },
+    { x0: 1.5, y0: 0, x1: 3.5, y1: 0,defined: false }
+  ];
+  isLengthLocked: boolean = false;
+  showLockMessage: boolean = false;  // Controls the visibility of the message
+  positionLocks: PositionLock[] = [
+    { isLocked: false, lockedLength: 2 }, // Position 1
+    { isLocked: false, lockedLength: 2 }, // Position 2
+    { isLocked: false, lockedLength: 2 }  // Position 3
+  ];
+  // Flags to control placeholder visibility
+  placeholderFlags : { [key: number]: { x0: boolean; y0: boolean; x1: boolean; y1: boolean } } = {};
+
+
+
 
   constructor(private stateService: StateService, private interactionService: InteractionService, private cdr: ChangeDetectorRef, private positionSolver: PositionSolverService) {
     this.mechanism = this.stateService.getMechanism();
@@ -77,8 +136,19 @@ export class ThreePosSynthesis{
 
   ngOnInit(): void {
     this.lockCurrentJoint();
-  }
+    this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe((units) => {this.units = units;});
+    this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe((angles) => {this.angles = angles;});
 
+    this.twoPointPositions.forEach((_, index) => {
+    this.placeholderFlags[index] = { x0: true, y0: true, x1: true, y1: true };
+    });
+    this.panelSubscription = this.stateService.globalActivePanelCurrent.subscribe((panel) => {
+      this.panel = panel;
+      this.sendNotif();
+      this.changePosLocks();
+    });
+    this.mechanism._mechanismChange$.subscribe(() => this.checkForChange());
+  }
 
   getMechanism(): Mechanism {
     return this.stateService.getMechanism();
@@ -87,8 +157,7 @@ export class ThreePosSynthesis{
   getCurrentJoint() {
     let currentJointInteractor = this.interactionService.getSelectedObject();
 
-    if (currentJointInteractor instanceof JointInteractor) {
-      currentJointInteractor.draggable = false; // Always lock dragging for joints
+    if (currentJointInteractor instanceof JointInteractor && this.panel === "Synthesis") {
     }
     return (currentJointInteractor as JointInteractor).getJoint();
   }
@@ -96,22 +165,28 @@ export class ThreePosSynthesis{
   lockCurrentJoint(): void {
     let currentJointInteractor = this.interactionService.getSelectedObject();
 
-    if (currentJointInteractor instanceof JointInteractor) {
-      currentJointInteractor.draggable = false; // Always lock dragging for joints
+    if (currentJointInteractor instanceof JointInteractor && this.panel === "Synthesis") {
+      currentJointInteractor.getJoint().locked = true;
     }
   }
 
   lockCurrentLink(): void {
     let currentLinkInteractor = this.interactionService.getSelectedObject();
 
-    if (currentLinkInteractor instanceof LinkInteractor) {
-      currentLinkInteractor.draggable = true; // Ensure links are draggable
+    if (currentLinkInteractor instanceof LinkInteractor && this.panel === "Synthesis") {
+      currentLinkInteractor.draggable = true;
+      const joints = this.mechanism.getJoints();
+      for (const joint of joints) {
+        joint.locked = false;
+      }
     }
   }
 
   ngDoCheck() {
-    this.lockCurrentJoint();
-    this.lockCurrentLink();
+    if (this.panel === "Synthesis") {
+      this.lockCurrentJoint();
+      this.lockCurrentLink();
+    }
     if (this.position1 && this.pos1Specified) {
       const newCoord = this.getNewCoord(this.position1);
       this.updatePositionCoords(1, newCoord);
@@ -132,46 +207,121 @@ export class ThreePosSynthesis{
     }
   }
 
-  setReference(option: string) {
-    this.reference = option;  // Updates the currently selected option
+  setReference(r: string) {
+      this.reference = r;
+      if (this.position1){
+        this.position1.setReference(this.reference);
+        this.setPosXCoord(this.pos1X, 1);
+        this.setPosYCoord(this.pos1Y, 1);
+      }
+      if (this.position2){
+        this.position2.setReference(this.reference);
+        this.setPosXCoord(this.pos2X, 2);
+        this.setPosYCoord(this.pos2Y, 2);
+      }
+      if (this.position3){
+        this.position3.setReference(this.reference);
+        this.setPosXCoord(this.pos3X, 3);
+        this.setPosYCoord(this.pos3Y, 3);
+      }
+  }
+
+  toggleOption(selectedOption: string) {
+    this.selectedOption = selectedOption;
   }
 
 getReference(): string{
     return this.reference;
 }
 
-  specifyPosition(index: number) {
-    if (index === 1) {
-      this.pos1Specified = true;
-      this.mechanism.addLink(this.coord1A, this.coord2A);
-      const links = this.mechanism.getArrayOfLinks();
-      this.position1 = links[links.length - 1];
-    } else if (index === 2) {
-      this.pos2Specified = true;
-      this.mechanism.addLink(this.coord1B, this.coord2B);
-      const links = this.mechanism.getArrayOfLinks();
-      this.position2 = links[links.length - 1];
-    } else if (index === 3) {
-      this.pos3Specified = true;
-      this.mechanism.addLink(this.coord1C, this.coord2C);
-      const links = this.mechanism.getArrayOfLinks();
-      this.position3 = links[links.length - 1];
+  checkForChange(): void {
+    let found = false;
+    for (let i: number = 0; i < this.synthedMech.length; i++){
+      for (let j = 0; j < this.mechanism.getArrayOfLinks().length; j++){
+        if (this.synthedMech[i].name === this.mechanism.getArrayOfLinks()[j].name){
+          found = true
+          break;
+        }
+        else found = false;
+      }
+      if (!found) {this.reset(); this.notifNeeded = false;}
+    }
+    if (found) this.notifNeeded = true;
+  }
+
+  sendNotif() {
+    if (this.notifNeeded && this.panel === "Synthesis"){
+      window.alert("Please recalculate position accuracy using the \"Evaluate Positions\" button.");
+      this.recalcNeeded = true;
+    }
+    this.notifNeeded = false;
+  }
+
+  reset(): void {
+    console.log("CALLED RESET")
+    this.removeAllPositions();
+    this.reference = "Center";
+    this.couplerLength = 2;
+  }
+
+  changePosLocks(): void {
+    if (this.panel === "Synthesis" && this.fourBarGenerated){
+      if (this.position1 instanceof Position) {
+        this.position1.locked = true;
+      }
+      if (this.position2 instanceof Position) {
+        this.position2.locked = true;
+      }
+      if (this.position3 instanceof Position) {
+        this.position3.locked = true;
+      }
+    }
+    else {
+      if (this.position1 instanceof Position) {
+        this.position1.locked = false;
+      }
+      if (this.position2 instanceof Position) {
+        this.position2.locked = false;
+      }
+      if (this.position3 instanceof Position) {
+        this.position3.locked = false;
+      }
     }
   }
 
-  getNewCoord(position: Link): Coord {
+  specifyPosition(index: number) {
+    if (index === 1) {
+      this.pos1Specified = true;
+      this.mechanism.addPos(this.coord1A, this.coord2A);
+      const positions = this.mechanism.getArrayOfPositions();
+      this.position1 = positions[positions.length - 1];
+      this.position1.name = "Position 1";
+      this.setReference(this.reference);
+    } else if (index === 2) {
+      this.pos2Specified = true;
+      this.mechanism.addPos(this.coord1B, this.coord2B);
+      const positions = this.mechanism.getArrayOfPositions();
+      this.position2 = positions[positions.length - 1];
+      this.position2.name = "Position 2";
+      this.setReference(this.reference);
+    } else if (index === 3) {
+      this.pos3Specified = true;
+      this.mechanism.addPos(this.coord1C, this.coord2C);
+      const positions = this.mechanism.getArrayOfPositions();
+      this.position3 = positions[positions.length - 1];
+      this.position3.name = "Position 3";
+      this.setReference(this.reference);
+    }
+  }
+
+  getNewCoord(position: Position): Coord {
     let joint: Joint;
     if (this.reference === "Back") {
       joint = position.getJoints()[0]; // First joint for "Back"
     } else if (this.reference === "Front") {
       joint = position.getJoints()[1]; // Second joint for "Front"
     } else if (this.reference === "Center") {
-      const joints = position.getJoints();
-      const joint1 = joints[0];
-      const joint2 = joints[1];
-      const centerX = (joint1.coords.x + joint2.coords.x) / 2;
-      const centerY = (joint1.coords.y + joint2.coords.y) / 2;
-      return new Coord(centerX, centerY);
+      joint = position.getJoints()[2];
     } else {
       // Default to "Back" if reference is not recognized
       joint = position.getJoints()[0];
@@ -217,7 +367,7 @@ getReference(): string{
     const deltaY = joint2.coords.y - joint1.coords.y;
     let angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI); // Convert radians to degrees
     if (angle < 0) {
-      angle += 360;
+      angle += 360; // Normalize to 0-360
     }
     return angle;
   }
@@ -231,10 +381,13 @@ getReference(): string{
 
     if (posNum === 1) {
       this.pos1Angle = roundedAngle;
+      this.position1!.angle = roundedAngle;
     } else if (posNum === 2) {
       this.pos2Angle = roundedAngle;
+      this.position2!.angle = roundedAngle
     } else if (posNum === 3) {
       this.pos3Angle = roundedAngle;
+      this.position3!.angle = roundedAngle
     }
     this.cdr.detectChanges();
   }
@@ -242,18 +395,24 @@ getReference(): string{
 resetPos(pos: number){
     if(pos==1){
         this.pos1Angle=0;
+        this.position1!.angle = 0;
         this.pos1X=0;
         this.pos1Y=0;
+        this.twoPointPositions[0] = { x0: -1, y0: 0, x1: 1, y1: 0, defined: false };
     }
     else if(pos==2){
         this.pos2Angle=0;
-        this.pos2X=0;
+        this.position2!.angle = 0;
+        this.pos2X=-2.5;
         this.pos2Y=0;
+        this.twoPointPositions[1] = { x0: -3.5, y0: 0, x1: -1.5, y1: 0, defined: false };
     }
     else {
         this.pos3Angle=0;
-        this.pos3X=0;
+        this.position3!.angle = 0;
+        this.pos3X=2.5;
         this.pos3Y=0;
+        this.twoPointPositions[2] = { x0: 1.5, y0: 0, x1: 3.5, y1: 0, defined: false };
     }
 }
 
@@ -286,70 +445,203 @@ isSixBarGenerated(): boolean {
   //   this.coord2C = new Coord(this.pos3X + this.couplerLength / 2, this.pos3Y);
   // }
 
-  generateFourBar(){
-    let listOfLinks = this.mechanism.getArrayOfLinks();
-    console.log(listOfLinks);
-    let len;
-    let i;
-    for (i = 0, len = listOfLinks.length; i < len; i++) {
-      let linkId = listOfLinks[i].id;
-      console.log(linkId);
-      this.mechanism.removeLink(linkId);
-      console.log("LIST OF LINKS AFTER DELETION:");
-      console.log(this.mechanism.getArrayOfLinks());
+  generateFourBar() {
+    //button changes to "clear four bar" when already generated, so remove mechanism
+    if (this.fourBarGenerated) {
+      let listOfLinks = this.synthedMech;
+      console.log(listOfLinks);
+      while (this.synthedMech.length > 0) {
+        let linkId = this.synthedMech[0].id;
+        console.log(linkId);
+        this.synthedMech.splice(0, 1);
+        this.mechanism.removeLink(linkId);
+        this.position1!.locked = false;
+        this.position2!.locked = false;
+        this.position3!.locked = false;
+        console.log("LIST OF LINKS AFTER DELETION:");
+        console.log(this.mechanism.getArrayOfLinks());
+      }
+      /*for (i = 0, len = listOfLinks.length; i < len; i++) {
+        let linkId = listOfLinks[i].id;
+        console.log(linkId);
+        this.synthedMech.splice(i);
+        this.mechanism.removeLink(linkId);
+        console.log("LIST OF LINKS AFTER DELETION:");
+        console.log(this.mechanism.getArrayOfLinks());
+      }*/
+      this.setPositionsColorToDefault()
+      this.fourBarGenerated = false;
+      this.synthedMech = [];
+      this.Generated.emit(false);
+    }
+    else {
+      let firstPoint = this.findIntersectionPoint(this.position1!.getJoints()[0]._coords, this.position2!.getJoints()[0]._coords, this.position3!.getJoints()[0]._coords);
+      let secondPoint = this.position1!.getJoints()[0]._coords;
+      let thirdPoint = this.position1!.getJoints()[1]._coords;
+      let fourthPoint = this.findIntersectionPoint2(this.position1!.getJoints()[1]._coords, this.position2!.getJoints()[1]._coords, this.position3!.getJoints()[1]._coords);
+      this.fourBarGenerated = !this.fourBarGenerated;
+      this.Generated.emit(this.fourBarGenerated);
+      this.cdr.detectChanges();
+
+      this.mechanism.addLink(firstPoint, secondPoint, true);
+      this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
+
+      let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
+      let lastJoint = this.getLastJoint(joints);
+      if (lastJoint !== undefined) {
+        this.mechanism.addLinkToJoint(lastJoint.id, thirdPoint, true);
+        this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
+      }
+
+      joints = this.mechanism.getJoints(); //updates list of all joints
+      lastJoint = this.getLastJoint(joints);
+      if (lastJoint !== undefined) {
+        this.mechanism.addLinkToJoint(lastJoint.id, fourthPoint, true);
+        this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
+      }
+
+      //adds the grounded joints and input
+
+      //TO-DO get the location of the last joint in the joints array ans start th eindex from there because now we have joints in this array fromn the positions.!
+      joints = this.mechanism.getJoints(); //instead of using it hard coded just do first and last on the list, we could do a getter for this.
+      let index = 0;
+      for (const joint of joints) {
+        if (index === 9) { //using index so we arent dependent on ID of the joints
+          joint.addGround();
+          joint.addInput();
+        }
+        if (index === 12) {
+          joint.addGround();
+        }
+        index++
+      }
+
+
+      let arrayOfJoints = this.mechanism.getArrayOfJoints();
+      arrayOfJoints[9].addGround();
+      arrayOfJoints[9].addInput();
+      arrayOfJoints[12].addGround();
+
+      this.positionSolver.solvePositions();
+      this.verifyMechanismPath();
+
+      let initialGreenCount = this.mechanism.getArrayOfPositions().filter(position => position.color === 'green').length;
+
+      if (initialGreenCount < 3) {//since is not the best we check the other input joint, to see of that gives better result
+        arrayOfJoints[9].removeInput();
+        arrayOfJoints[12].addInput();
+        arrayOfJoints[9].addGround();
+
+        this.positionSolver.solvePositions();
+        this.verifyMechanismPath();
+        let alternativeGreenCount = this.mechanism.getArrayOfPositions().filter(position => position.color === 'green').length;
+
+        if (initialGreenCount >= alternativeGreenCount) { //go back to initial conf
+          arrayOfJoints[12].removeInput();
+          arrayOfJoints[9].addInput();
+          arrayOfJoints[12].addGround();
+        }
+      }
+
+      this.positionSolver.solvePositions();
+      this.verifyMechanismPath();
+      this.position1!.locked = true;
+      this.position2!.locked = true;
+      this.position3!.locked = true;
+      console.log(this.positionSolver.getAnimationPositions());
+      console.log(this.mechanism);
+    }
+  }
+
+
+  generateSixBar() {
+    this.sixBarGenerated = !this.sixBarGenerated;
+    //clear the six-bar
+    if (!this.sixBarGenerated) {
+      let listOfLinks = this.synthedMech;
+      console.log(listOfLinks);
+      while (this.synthedMech.length > 0) {
+        let linkId = this.synthedMech[0].id;
+        console.log(linkId);
+        this.synthedMech.splice(0, 1);
+        this.mechanism.removeLink(linkId);
+        this.position1!.locked = false;
+        this.position2!.locked = false;
+        this.position3!.locked = false;
+        console.log("LIST OF LINKS AFTER DELETION:");
+        console.log(this.mechanism.getArrayOfLinks());
+      }
+      this.setPositionsColorToDefault();
+      console.log("Six-bar has been cleared");
+      this.cdr.detectChanges();
+      return;
     }
 
-    let firstPoint = this.findIntersectionPoint(this.position1!.getJoints()[0]._coords, this.position2!.getJoints()[0]._coords, this.position3!.getJoints()[0]._coords);
-    let secondPoint = this.position1!.getJoints()[0]._coords;
-    let thirdPoint = this.position1!.getJoints()[1]._coords;
-    let fourthPoint = this.findIntersectionPoint2(this.position1!.getJoints()[1]._coords, this.position2!.getJoints()[1]._coords, this.position3!.getJoints()[1]._coords);
-
-    this.fourBarGenerated = !this.fourBarGenerated;
-    this.cdr.detectChanges();
-
-    this.mechanism.addLink(firstPoint, secondPoint);
-
-    let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
-    let lastJoint= this.getLastJoint(joints);
-    if (lastJoint !== undefined) {
-      this.mechanism.addLinkToJoint(lastJoint.id, thirdPoint);
-    }
-
-    joints=this.mechanism.getJoints(); //updates list of all joints
-    lastJoint= this.getLastJoint(joints);
-    if (lastJoint !== undefined) {
-      this.mechanism.addLinkToJoint(lastJoint.id, fourthPoint);
-    }
-
-    //adds the grounded joints and input
-
-
-    joints=this.mechanism.getJoints(); //instead of using it hard coded just do first and last on the list, we could do a getter for this.
-    let index = 0;
+    //change the inputs to ground
+    const joints = this.mechanism.getJoints();
     for (const joint of joints) {
-      if(index === 0){ //using index so we arent dependent on ID of the joints
-        joint.addGround();
-        joint.addInput();
-      }
-      if(index === 3){
+      if (joint.isInput) {
+        joint.removeInput();
         joint.addGround();
       }
-      index++
     }
+
+    //find the ground and add a new link to that link
+    const links = this.mechanism.getArrayOfLinks();
+    let groundedLink: Link | null = null;
+
+    for (const link of links) {
+      const linkJoints = link.getJoints();
+      let isGroundedLink = true;
+
+      for (const joint of linkJoints) {
+        if (joint.isInput) {
+          isGroundedLink = false;
+          break;
+        }
+      }
+      if (isGroundedLink) {
+        groundedLink = link;
+        break;
+      }
+    }
+    if (!groundedLink) {
+      console.error("no grounded link");
+      return;
+    }
+
+    const linkJoints = groundedLink.getJoints();
+    const firstJoint = linkJoints[0];
+    const attachPoint = firstJoint._coords;
+
+    const adjustedAttachPoint = new Coord(attachPoint.x, attachPoint.y + 0.8);
+    const newLinkEndCoord = new Coord(adjustedAttachPoint.x - 1.75, adjustedAttachPoint.y);
+    this.mechanism.addLinkToLink(groundedLink.id, adjustedAttachPoint, newLinkEndCoord, true);
+    this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
+
+    let newJoints = Array.from(this.mechanism.getJoints());
+    let lastJoint = newJoints[newJoints.length - 1];
+
+    const downwardLinkEndCoord = new Coord(lastJoint._coords.x, lastJoint._coords.y - 0.75);
+    this.mechanism.addLinkToJoint(lastJoint.id, downwardLinkEndCoord, true);
+    this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
+
+    newJoints = Array.from(this.mechanism.getJoints());
+    lastJoint = newJoints[newJoints.length - 1];
+
+    lastJoint.addGround();
+    lastJoint.addInput();
+    this.cdr.detectChanges();
     this.positionSolver.solvePositions();
-    console.log(this.mechanism);
+    this.verifyMechanismPath();
   }
 
-generateSixBar() {
-  this.sixBarGenerated = !this.sixBarGenerated;
-  /*if (this.buttonLabel === 'Generate Four-Bar') {
-    this.buttonLabel = 'Clear Four-Bar';
-  } else {
-    this.buttonLabel = 'Generate Four-Bar';
+  setPositionsColorToDefault() {
+    const positions = this.mechanism.getPositions();
+    for (const position of positions) {
+      position.setColor('#5E646D87');
+    }
   }
-  */
-  this.cdr.detectChanges();
-}
 
 //clearSixBar() {
     //this.sixBarGenerated = false;
@@ -361,16 +653,16 @@ setCouplerLength(x: number){
       this.couplerLength = x;
       if (this.reference === "Center") {
         if (this.position1) {
-          const centerCoord = this.getNewCoord(this.position1);
-          this.position1.setLength(this.couplerLength, this.position1.getJoints()[0]);
-          this.setPosXCoord(centerCoord.x, 1);
-          this.setPosYCoord(centerCoord.y, 1);
+          const mid = this.getReferenceJoint(this.position1).coords;
+          let joint1 = this.position1.getJoints()[0];
+          let joint2 = this.position1.getJoints()[1];
+          joint1.coords.x = mid.x
         }
         if (this.position2) {
-          const centerCoord = this.getNewCoord(this.position2);
           this.position2.setLength(this.couplerLength, this.position2.getJoints()[0]);
-          this.setPosXCoord(centerCoord.x, 2);
-          this.setPosYCoord(centerCoord.y, 2);
+          const centerCoord = this.getReferenceJoint(this.position2);
+          this.setPosXCoord(centerCoord.coords.x, 2);
+          this.setPosYCoord(centerCoord.coords.y, 2);
         }
         if (this.position3) {
           const centerCoord = this.getNewCoord(this.position3);
@@ -403,41 +695,50 @@ setCouplerLength(x: number){
 }
 
 setPosXCoord(x: number, posNum: number) {
+    //This can all be simplified into for loop w/ array for positions
   if (posNum === 1) {
     this.pos1X = x;
     const backJoint = this.position1!.getJoints()[0];
     const frontJoint = this.position1!.getJoints()[1];
+    const midJoint = this.position1!.getJoints()[2]; //For reference point
     if (this.reference === "Center") {
       let centerCoord = this.getNewCoord(this.position1!);
       const distanceMoved = Math.abs(centerCoord.x - x);
       if (centerCoord.x < x){
         backJoint.setCoordinates(new Coord (backJoint.coords.x + distanceMoved, backJoint.coords.y));
-        frontJoint.setCoordinates(new Coord (frontJoint.coords.x + distanceMoved, frontJoint.coords.y))
+        midJoint.setCoordinates(new Coord (midJoint.coords.x + distanceMoved, midJoint.coords.y));
+        frontJoint.setCoordinates(new Coord (frontJoint.coords.x + distanceMoved, frontJoint.coords.y));
+
       }
       else {
         backJoint.setCoordinates(new Coord (backJoint.coords.x - distanceMoved, backJoint.coords.y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x - distanceMoved, midJoint.coords.y));
         frontJoint.setCoordinates(new Coord (frontJoint.coords.x - distanceMoved, frontJoint.coords.y));
       }
     }
     else if (this.reference === "Back") {
       const distanceMoved = Math.abs(backJoint.coords.x - x); //Find offset amt
       if (backJoint.coords.x < x){ //if moving positive, add front by amount moved, and vice-versa
-        backJoint.setCoordinates(new Coord(x, backJoint.coords.y));
         frontJoint.setCoordinates(new Coord(frontJoint.coords.x + distanceMoved, frontJoint.coords.y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x + distanceMoved, midJoint.coords.y)); //Probably no longer needed as joints themselves are being set as references now
+        backJoint.setCoordinates(new Coord(x, backJoint.coords.y));
       }
       else {
-        backJoint.setCoordinates(new Coord(x, backJoint.coords.y));
         frontJoint.setCoordinates(new Coord(frontJoint.coords.x - distanceMoved , frontJoint.coords.y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x - distanceMoved, midJoint.coords.y));
+        backJoint.setCoordinates(new Coord(x, backJoint.coords.y));
       }
     }
     else {
       const distanceMoved = Math.abs(frontJoint.coords.x - x);
       if (frontJoint.coords.x < x){
         frontJoint.setCoordinates(new Coord(x, frontJoint.coords.y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x + distanceMoved, midJoint.coords.y));
         backJoint.setCoordinates(new Coord(backJoint.coords.x + distanceMoved, backJoint.coords.y));
       }
       else {
         frontJoint.setCoordinates(new Coord(x, frontJoint.coords.y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x - distanceMoved, midJoint.coords.y));
         backJoint.setCoordinates(new Coord(backJoint.coords.x - distanceMoved, backJoint.coords.y));
       }
     }
@@ -447,26 +748,31 @@ setPosXCoord(x: number, posNum: number) {
     this.pos2X = x;
     const backJoint = this.position2!.getJoints()[0];
     const frontJoint = this.position2!.getJoints()[1];
+    const midJoint = this.position2!.getJoints()[2];
     if (this.reference === "Center") {
       let centerCoord = this.getNewCoord(this.position2!);
       const distanceMoved = Math.abs(centerCoord.x - x);
       if (centerCoord.x < x){
         backJoint.setCoordinates(new Coord (backJoint.coords.x + distanceMoved, backJoint.coords.y));
-        frontJoint.setCoordinates(new Coord (frontJoint.coords.x + distanceMoved, frontJoint.coords.y))
+        frontJoint.setCoordinates(new Coord (frontJoint.coords.x + distanceMoved, frontJoint.coords.y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x + distanceMoved, midJoint.coords.y));
       }
       else {
         backJoint.setCoordinates(new Coord (backJoint.coords.x - distanceMoved, backJoint.coords.y));
         frontJoint.setCoordinates(new Coord (frontJoint.coords.x - distanceMoved, frontJoint.coords.y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x - distanceMoved, midJoint.coords.y));
       }
     }
     else if (this.reference === "Back") {
       const distanceMoved = Math.abs(backJoint.coords.x - x); //Find offset amt
       if (backJoint.coords.x < x){ //if moving positive, add front by amount moved, and vice-versa
         backJoint.setCoordinates(new Coord(x, backJoint.coords.y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x + distanceMoved, midJoint.coords.y));
         frontJoint.setCoordinates(new Coord(frontJoint.coords.x + distanceMoved, frontJoint.coords.y));
       }
       else {
         backJoint.setCoordinates(new Coord(x, backJoint.coords.y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x - distanceMoved, midJoint.coords.y));
         frontJoint.setCoordinates(new Coord(frontJoint.coords.x - distanceMoved , frontJoint.coords.y));
       }
     }
@@ -474,10 +780,12 @@ setPosXCoord(x: number, posNum: number) {
       const distanceMoved = Math.abs(frontJoint.coords.x - x);
       if (frontJoint.coords.x < x){
         frontJoint.setCoordinates(new Coord(x, frontJoint.coords.y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x + distanceMoved, midJoint.coords.y));
         backJoint.setCoordinates(new Coord(backJoint.coords.x + distanceMoved, backJoint.coords.y));
       }
       else {
         frontJoint.setCoordinates(new Coord(x, frontJoint.coords.y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x - distanceMoved, midJoint.coords.y));
         backJoint.setCoordinates(new Coord(backJoint.coords.x - distanceMoved, backJoint.coords.y));
       }
     }
@@ -487,27 +795,32 @@ setPosXCoord(x: number, posNum: number) {
       this.pos3X = x;
     const backJoint = this.position3!.getJoints()[0];
     const frontJoint = this.position3!.getJoints()[1];
+    const midJoint = this.position3!.getJoints()[2];
     if (this.reference === "Center") {
       let centerCoord = this.getNewCoord(this.position3!);
       const distanceMoved = Math.abs(centerCoord.x - x);
       if (centerCoord.x < x){
         backJoint.setCoordinates(new Coord (backJoint.coords.x + distanceMoved, backJoint.coords.y));
-        frontJoint.setCoordinates(new Coord (frontJoint.coords.x + distanceMoved, frontJoint.coords.y))
+        frontJoint.setCoordinates(new Coord (frontJoint.coords.x + distanceMoved, frontJoint.coords.y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x + distanceMoved, midJoint.coords.y));
       }
       else {
         backJoint.setCoordinates(new Coord (backJoint.coords.x - distanceMoved, backJoint.coords.y));
         frontJoint.setCoordinates(new Coord (frontJoint.coords.x - distanceMoved, frontJoint.coords.y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x - distanceMoved, midJoint.coords.y));
       }
     }
     else if (this.reference === "Back") {
       const distanceMoved = Math.abs(backJoint.coords.x - x); //Find offset amt
       if (backJoint.coords.x < x){ //if moving positive, add front by amount moved, and vice-versa
         backJoint.setCoordinates(new Coord(x, backJoint.coords.y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x + distanceMoved, midJoint.coords.y));
         frontJoint.setCoordinates(new Coord(frontJoint.coords.x + distanceMoved, frontJoint.coords.y));
       }
 
       else {
         backJoint.setCoordinates(new Coord(x, backJoint.coords.y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x - distanceMoved, midJoint.coords.y));
         frontJoint.setCoordinates(new Coord(frontJoint.coords.x - distanceMoved , frontJoint.coords.y));
       }
     }
@@ -515,10 +828,12 @@ setPosXCoord(x: number, posNum: number) {
       const distanceMoved = Math.abs(frontJoint.coords.x - x);
       if (frontJoint.coords.x < x){
         frontJoint.setCoordinates(new Coord(x, frontJoint.coords.y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x + distanceMoved, midJoint.coords.y));
         backJoint.setCoordinates(new Coord(backJoint.coords.x + distanceMoved, backJoint.coords.y));
       }
       else {
         frontJoint.setCoordinates(new Coord(x, frontJoint.coords.y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x - distanceMoved, midJoint.coords.y));
         backJoint.setCoordinates(new Coord(backJoint.coords.x - distanceMoved, backJoint.coords.y));
       }
     }
@@ -531,27 +846,32 @@ setPosYCoord(y: number, posNum: number){
     this.pos1Y = y;
     const backJoint = this.position1!.getJoints()[0];
     const frontJoint = this.position1!.getJoints()[1];
+    const midJoint = this.position1!.getJoints()[2];
     if (this.reference === "Center") {
       let centerCoord = this.getNewCoord(this.position1!);
       const distanceMoved = Math.abs(centerCoord.y - y);
       if (centerCoord.y < y){
         backJoint.setCoordinates(new Coord (backJoint.coords.x, backJoint.coords.y + distanceMoved));
-        frontJoint.setCoordinates(new Coord (frontJoint.coords.x, frontJoint.coords.y + distanceMoved))
+        frontJoint.setCoordinates(new Coord (frontJoint.coords.x, frontJoint.coords.y + distanceMoved));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x, midJoint.coords.y + distanceMoved));
       }
       else {
         backJoint.setCoordinates(new Coord (backJoint.coords.x, backJoint.coords.y - distanceMoved));
         frontJoint.setCoordinates(new Coord (frontJoint.coords.x, frontJoint.coords.y - distanceMoved));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x, midJoint.coords.y - distanceMoved));
       }
     }
     else if (this.reference === "Back") {
       const distanceMoved = Math.abs(backJoint.coords.y - y); //Find offset amt
       if (backJoint.coords.y < y){ //if moving positive, add front by amount moved, and vice-versa
         backJoint.setCoordinates(new Coord(backJoint.coords.x, y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x, midJoint.coords.y + distanceMoved));
         frontJoint.setCoordinates(new Coord(frontJoint.coords.x, frontJoint.coords.y + distanceMoved));
       }
 
       else {
         backJoint.setCoordinates(new Coord(backJoint.coords.x, y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x, midJoint.coords.y - distanceMoved));
         frontJoint.setCoordinates(new Coord(frontJoint.coords.x, frontJoint.coords.y - distanceMoved));
       }
     }
@@ -559,10 +879,12 @@ setPosYCoord(y: number, posNum: number){
       const distanceMoved = Math.abs(frontJoint.coords.y - y);
       if (frontJoint.coords.y < y){
         frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x, midJoint.coords.y + distanceMoved));
         backJoint.setCoordinates(new Coord(backJoint.coords.x, backJoint.coords.y + distanceMoved));
       }
       else {
         frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x, midJoint.coords.y - distanceMoved));
         backJoint.setCoordinates(new Coord(backJoint.coords.x, backJoint.coords.y - distanceMoved));
       }
     }
@@ -571,26 +893,31 @@ setPosYCoord(y: number, posNum: number){
   else if(posNum === 2){
     const backJoint = this.position2!.getJoints()[0];
     const frontJoint = this.position2!.getJoints()[1];
+    const midJoint = this.position2!.getJoints()[2];
     if (this.reference === "Center") {
       let centerCoord = this.getNewCoord(this.position2!);
       const distanceMoved = Math.abs(centerCoord.y - y);
       if (centerCoord.y < y){
         backJoint.setCoordinates(new Coord (backJoint.coords.x, backJoint.coords.y + distanceMoved));
-        frontJoint.setCoordinates(new Coord (frontJoint.coords.x, frontJoint.coords.y + distanceMoved))
+        frontJoint.setCoordinates(new Coord (frontJoint.coords.x, frontJoint.coords.y + distanceMoved));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x, midJoint.coords.y + distanceMoved));
       }
       else {
         backJoint.setCoordinates(new Coord (backJoint.coords.x, backJoint.coords.y - distanceMoved));
         frontJoint.setCoordinates(new Coord (frontJoint.coords.x, frontJoint.coords.y - distanceMoved));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x, midJoint.coords.y - distanceMoved));
       }
     }
     else if (this.reference === "Back") {
       const distanceMoved = Math.abs(backJoint.coords.y - y); //Find offset amt
       if (backJoint.coords.y < y){ //if moving positive, add front by amount moved, and vice-versa
         backJoint.setCoordinates(new Coord(backJoint.coords.x, y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x, midJoint.coords.y + distanceMoved));
         frontJoint.setCoordinates(new Coord(frontJoint.coords.x, frontJoint.coords.y + distanceMoved));
       }
       else {
         backJoint.setCoordinates(new Coord(backJoint.coords.x, y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x, midJoint.coords.y - distanceMoved));
         frontJoint.setCoordinates(new Coord(frontJoint.coords.x, frontJoint.coords.y - distanceMoved));
       }
     }
@@ -598,10 +925,12 @@ setPosYCoord(y: number, posNum: number){
       const distanceMoved = Math.abs(frontJoint.coords.y - y);
       if (frontJoint.coords.y < y){
         frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x, midJoint.coords.y + distanceMoved));
         backJoint.setCoordinates(new Coord(backJoint.coords.x, backJoint.coords.y + distanceMoved));
       }
       else {
         frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x, midJoint.coords.y - distanceMoved));
         backJoint.setCoordinates(new Coord(backJoint.coords.x, backJoint.coords.y - distanceMoved));
       }
     }
@@ -611,25 +940,30 @@ setPosYCoord(y: number, posNum: number){
     this.pos3Y = y;
     const backJoint = this.position3!.getJoints()[0];
     const frontJoint = this.position3!.getJoints()[1];
+    const midJoint = this.position3!.getJoints()[2];
     if (this.reference === "Center") {
       let centerCoord = this.getNewCoord(this.position3!);
       const distanceMoved = Math.abs(centerCoord.y - y);
       if (centerCoord.y < y){
         backJoint.setCoordinates(new Coord (backJoint.coords.x, backJoint.coords.y + distanceMoved));
-        frontJoint.setCoordinates(new Coord (frontJoint.coords.x, frontJoint.coords.y + distanceMoved))
+        frontJoint.setCoordinates(new Coord (frontJoint.coords.x, frontJoint.coords.y + distanceMoved));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x, midJoint.coords.y + distanceMoved));
       }
       else {
         backJoint.setCoordinates(new Coord (backJoint.coords.x, backJoint.coords.y - distanceMoved));
         frontJoint.setCoordinates(new Coord (frontJoint.coords.x, frontJoint.coords.y - distanceMoved));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x, midJoint.coords.y - distanceMoved));
       }
     }
     else if (this.reference === "Back") {
       const distanceMoved = Math.abs(backJoint.coords.y - y); //Find offset amt
       if (backJoint.coords.y < y) { //if moving positive, add front by amount moved, and vice-versa
         backJoint.setCoordinates(new Coord(backJoint.coords.x, y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x, midJoint.coords.y + distanceMoved));
         frontJoint.setCoordinates(new Coord(frontJoint.coords.x, frontJoint.coords.y + distanceMoved));
       } else {
         backJoint.setCoordinates(new Coord(backJoint.coords.x, y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x, midJoint.coords.y - distanceMoved));
         frontJoint.setCoordinates(new Coord(frontJoint.coords.x, frontJoint.coords.y - distanceMoved));
       }
     }
@@ -637,10 +971,12 @@ setPosYCoord(y: number, posNum: number){
       const distanceMoved = Math.abs(frontJoint.coords.y - y);
       if (frontJoint.coords.y < y) {
         frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x, midJoint.coords.y + distanceMoved));
         backJoint.setCoordinates(new Coord(backJoint.coords.x, backJoint.coords.y + distanceMoved));
       }
       else {
         frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y));
+        midJoint.setCoordinates(new Coord (midJoint.coords.x, midJoint.coords.y - distanceMoved));
         backJoint.setCoordinates(new Coord(backJoint.coords.x, backJoint.coords.y - distanceMoved));
       }
     }
@@ -652,8 +988,10 @@ setPosYCoord(y: number, posNum: number){
 
     if (posNum === 1 && this.position1) {
       this.pos1Angle = angle;
+      this.position1.angle = angle;
       const backJoint = this.position1.getJoints()[0];
       const frontJoint = this.position1.getJoints()[1];
+      const midJoint = this.position1.getJoints()[2];
       const referenceJoint = this.getReferenceJoint(this.position1);
       const centerX = referenceJoint.coords.x;
       const centerY = referenceJoint.coords.y;
@@ -664,6 +1002,7 @@ setPosYCoord(y: number, posNum: number){
           centerX - halfLength * Math.cos(radians),
           centerY - halfLength * Math.sin(radians)
         ));
+        midJoint.setCoordinates(new Coord (centerX, centerY));
         frontJoint.setCoordinates(new Coord(
           centerX + halfLength * Math.cos(radians),
           centerY + halfLength * Math.sin(radians)
@@ -673,16 +1012,26 @@ setPosYCoord(y: number, posNum: number){
           centerX + this.couplerLength * Math.cos(radians),
           centerY + this.couplerLength * Math.sin(radians)
         ));
+        midJoint.setCoordinates(new Coord (
+          centerX + Math.cos(radians),
+          centerY + Math.sin(radians)
+        ));
       } else if (this.reference === "Front") {
         backJoint.setCoordinates(new Coord(
           centerX - this.couplerLength * Math.cos(radians),
           centerY - this.couplerLength * Math.sin(radians)
         ));
+        midJoint.setCoordinates(new Coord (
+          centerX - Math.cos(radians),
+          centerY - Math.sin(radians)
+        ));
       }
     } else if (posNum === 2 && this.position2) {
       this.pos2Angle = angle;
+      this.position2.angle = angle;
       const backJoint = this.position2.getJoints()[0];
       const frontJoint = this.position2.getJoints()[1];
+      const midJoint = this.position2.getJoints()[2];
       const referenceJoint = this.getReferenceJoint(this.position2);
       const centerX = referenceJoint.coords.x;
       const centerY = referenceJoint.coords.y;
@@ -693,6 +1042,7 @@ setPosYCoord(y: number, posNum: number){
           centerX - halfLength * Math.cos(radians),
           centerY - halfLength * Math.sin(radians)
         ));
+        midJoint.setCoordinates(new Coord (centerX, centerY));
         frontJoint.setCoordinates(new Coord(
           centerX + halfLength * Math.cos(radians),
           centerY + halfLength * Math.sin(radians)
@@ -702,16 +1052,26 @@ setPosYCoord(y: number, posNum: number){
           centerX + this.couplerLength * Math.cos(radians),
           centerY + this.couplerLength * Math.sin(radians)
         ));
+        midJoint.setCoordinates(new Coord (
+          centerX + Math.cos(radians),
+          centerY + Math.sin(radians)
+        ));
       } else if (this.reference === "Front") {
         backJoint.setCoordinates(new Coord(
           centerX - this.couplerLength * Math.cos(radians),
           centerY - this.couplerLength * Math.sin(radians)
         ));
+        midJoint.setCoordinates(new Coord (
+          centerX - Math.cos(radians),
+          centerY - Math.sin(radians)
+        ));
       }
     } else if (posNum === 3 && this.position3) {
       this.pos3Angle = angle;
+      this.position3.angle = angle;
       const backJoint = this.position3.getJoints()[0];
       const frontJoint = this.position3.getJoints()[1];
+      const midJoint = this.position3.getJoints()[2];
       const referenceJoint = this.getReferenceJoint(this.position3);
       const centerX = referenceJoint.coords.x;
       const centerY = referenceJoint.coords.y;
@@ -722,6 +1082,7 @@ setPosYCoord(y: number, posNum: number){
           centerX - halfLength * Math.cos(radians),
           centerY - halfLength * Math.sin(radians)
         ));
+        midJoint.setCoordinates(new Coord (centerX, centerY));
         frontJoint.setCoordinates(new Coord(
           centerX + halfLength * Math.cos(radians),
           centerY + halfLength * Math.sin(radians)
@@ -731,17 +1092,25 @@ setPosYCoord(y: number, posNum: number){
           centerX + this.couplerLength * Math.cos(radians),
           centerY + this.couplerLength * Math.sin(radians)
         ));
+        midJoint.setCoordinates(new Coord (
+          centerX + Math.cos(radians),
+          centerY + Math.sin(radians)
+        ));
       } else if (this.reference === "Front") {
         backJoint.setCoordinates(new Coord(
           centerX - this.couplerLength * Math.cos(radians),
           centerY - this.couplerLength * Math.sin(radians)
+        ));
+        midJoint.setCoordinates(new Coord (
+          centerX - Math.cos(radians),
+          centerY - Math.sin(radians)
         ));
       }
     }
     this.cdr.detectChanges();
   }
 
-  getReferenceJoint(position: Link): Joint {
+  getReferenceJoint(position: Position): Joint {
     if (this.reference === "Back") {
       return position.getJoints()[0];
     } else if (this.reference === "Front") {
@@ -807,28 +1176,25 @@ getFirstUndefinedPosition(): number{
 }
 
   deletePosition(index: number) {
-    if (index === 1) {
-      this.pos1Specified = false;
-    } else if (index === 2) {
-      this.pos2Specified = false;
-    } else if (index === 3) {
-      this.pos3Specified = false;
-    }
-
     // Remove all links if the four-bar has been generated
     if (this.fourBarGenerated) {
-      let listOfLinks = this.mechanism.getArrayOfLinks();
-      console.log(listOfLinks);
-      let len;
-      let i;
-      for (i = 0, len = listOfLinks.length; i < len; i++) {
-        let linkId = listOfLinks[i].id;
-        console.log(linkId);
-        this.mechanism.removeLink(linkId);
-        console.log("LIST OF LINKS AFTER DELETION:");
-        console.log(this.mechanism.getArrayOfLinks());
+      if (window.confirm("This action will delete the entire mechanism and all other coupler positions. Are you sure?")){
+        this.removeAllPositions();
       }
-      this.fourBarGenerated = false;
+    }
+
+    else if (index === 1) {
+      this.pos1Specified = false;
+      this.mechanism.removePosition(this.position1!.id);
+      this.resetPos(1);
+    } else if (index === 2) {
+      this.pos2Specified = false;
+      this.mechanism.removePosition(this.position2!.id);
+      this.resetPos(2);
+    } else if (index === 3) {
+      this.pos3Specified = false;
+      this.mechanism.removePosition(this.position3!.id);
+      this.resetPos(3);
     }
   }
 
@@ -841,27 +1207,34 @@ allPositionsDefined(): boolean {
 
   removeAllPositions() {
     // Remove all links regardless of whether the four-bar has been generated
-    let listOfLinks = this.mechanism.getArrayOfLinks();
-    console.log(listOfLinks);
-    let len;
-    let i;
-    for (i = 0, len = listOfLinks.length; i < len; i++) {
-      let linkId = listOfLinks[i].id;
-      console.log(linkId);
-      this.mechanism.removeLink(linkId);
-      console.log("LIST OF LINKS AFTER DELETION:");
-      console.log(this.mechanism.getArrayOfLinks());
+    if (this.panel === "Synthesis"){
+      let listOfLinks = this.synthedMech;
+      console.log(listOfLinks);
+      while (this.synthedMech.length > 0) {
+        let linkId = this.synthedMech[0].id;
+        console.log(linkId);
+        this.synthedMech.splice(0, 1);
+        this.mechanism.removeLink(linkId);
+        console.log("LIST OF LINKS AFTER DELETION:");
+        console.log(this.mechanism.getArrayOfLinks());
+      }
     }
 
-    // Reset positions
-    for (let i = 1; i <= 3; i++) {
-      this.deletePosition(i);
-      this.resetPos(i);
-    }
+    this.pos1Specified = false;
+    this.mechanism.removePosition(this.position1!.id);
+    this.resetPos(1);
+    this.pos2Specified = false;
+    this.mechanism.removePosition(this.position2!.id);
+    this.resetPos(2);
+    this.pos3Specified = false;
+    this.mechanism.removePosition(this.position3!.id);
+    this.resetPos(3);
 
     // Reset flags
     this.fourBarGenerated = false;
+    this.synthedMech = [];
     this.sixBarGenerated = false;
+    this.Generated.emit(false);
   }
   findIntersectionPoint(pose1_coord1: Coord, pose2_coord1: Coord, pose3_coord1: Coord) {
     //slope of Line 1
@@ -915,4 +1288,282 @@ allPositionsDefined(): boolean {
 
     return new Coord(x1, y1);
   }
+
+verifyMechanismPath() {
+    const threshold = 0.09;
+    const userPositions = [this.position1, this.position2, this.position3];
+    const animationPaths = this.positionSolver.getAnimationPositions();
+
+    userPositions.forEach(position => {
+      const positionCoords = position!.getJoints().slice(0, 2).map(joint => joint._coords); //map the joints into coords, cutting the reference joint out of the array
+      let positionMatched = false; //to check if both left and right joint pass throughh
+
+      for (const path of animationPaths) {
+        const bothJointsMatched = positionCoords.every(coord => {
+          return path.some(pathPoint => this.calculateDistance(coord, pathPoint) <= threshold);
+        });
+
+        if (bothJointsMatched) {
+          positionMatched = true;
+          break;
+        }
+      }
+
+
+      if (positionMatched) {
+        position!.setColor('green');
+      } else {
+        position!.setColor('red');
+      }
+    });
+    this.recalcNeeded = false;
+  }
+
+  calculateDistance(coord1: Coord, coord2: Coord): number {
+    const dx = coord1.x - coord2.x;
+    const dy = coord1.y - coord2.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  toggleLengthLock() {
+    this.isLengthLocked = !this.isLengthLocked;
+
+    // / Show the message when locking is activated
+    if (this.isLengthLocked) {
+      this.showLockMessage = true;
+
+      // Hide the message after 5 seconds
+      setTimeout(() => {
+        this.showLockMessage = false;
+      }, 5000);
+    }
+
+    // Update each position's lock state
+    this.positionLocks.forEach((positionLock, index) => {
+      positionLock.isLocked = this.isLengthLocked;
+      positionLock.lockedLength = this.couplerLength; // Lock to current coupler length
+      console.log(`Position ${index + 1} lock state:`, positionLock.isLocked);
+    });
+
+    this.cdr.detectChanges();
+  }
+
+  unlockPositions() {
+    this.positionLocks.forEach(positionLock => {
+      positionLock.isLocked = false;
+    });
+    console.log(this.positionLocks);
+  }
+
+
+  getFirstUndefinedPositionEndPoints() :number {
+      return this.twoPointPositions.findIndex(position => !position.defined )
+      }
+
+  specifyPositionEndPoints(index: number){
+    console.log(index);
+    if (index >= 0) {
+      this.twoPointPositions[index-1].defined = true;
+      this.specifyPosition(index);
+    }
+
+    if (!this.placeholderFlags[index]) {
+      this.placeholderFlags[index] = { x0: false, y0: false, x1: false, y1: false };
+    } else {
+      this.placeholderFlags[index].x0 = false;
+      this.placeholderFlags[index].y0 = false;
+      this.placeholderFlags[index].x1 = false;
+      this.placeholderFlags[index].y1 = false;
+    }
+  }
+
+  deletePositionTwoPoints(index:number){
+    console.log("Delete Positions");
+    if (index >= 0 && index < this.twoPointPositions.length) {
+      this.twoPointPositions[index] = { x0: 0, y0: 0, x1: 0, y1: 0, defined: false };
+    }
+  }
+
+  removeAllPositionsTwoPoints(): void {
+    this.twoPointPositions.forEach(pos => {
+      pos.defined = false;
+      pos.x0 = 0;
+      pos.y0 = 0;
+      pos.x1 = 0;
+      pos.y1 = 0;
+    });
+    console.log("All positions removed");
+  }
+
+  // onPositionChange(): void {
+  //   // Recalculate the positions based on the updated user input
+  //   this.positionSolverService.solvePositions();
+  //
+  //   // Update the display on the grid
+  //   const positions = this.positionSolverService.getAnimationPositions();
+  //   positions.forEach((position) => {
+  //     // Call your method to update the position on the grid
+  //     this.interactionService.startDraggingObject(new Link(position)); // Adjust this part as necessary
+  //   });
+  // }
+
+
+
+// Handles focus event to hide placeholder
+  handleFocus(index: number, field: 'x0' | 'y0' | 'x1' | 'y1'): void {
+    if (this.twoPointPositions[index][field] === 0) {
+      this.twoPointPositions[index][field] = '' as any;
+    }
+  }
+
+
+// Handles blur event to restore placeholder if input is empty
+  handleBlur(index: number, field: 'x0' | 'y0' | 'x1' | 'y1'): void {
+    const value = this.twoPointPositions[index][field];
+
+    // Check if the value is empty or invalid
+    if (value === null || value === undefined || `${value}` === '') {
+      this.twoPointPositions[index][field] = 0;
+      this.placeholderFlags[index][field] = true;
+    } else {
+      this.placeholderFlags[index][field] = false;
+  }
+  }
+
+  pipeToEndPoint(e: Event, posNum: number, endPoint: string) {
+    let val = parseFloat((e.target as HTMLInputElement).value);
+    switch (endPoint) {
+      case "x1":
+        this.setPosX1CoordEndPoints(parseFloat(val.toFixed(2)), posNum);
+        break;
+      case "y1":
+        this.setPosY1CoordEndPoints(parseFloat(val.toFixed(2)), posNum);
+        break;
+      case "x2":
+        this.setPosX2CoordEndPoints(parseFloat(val.toFixed(2)), posNum);
+        break;
+      case "y2":
+        this.setPosY2CoordEndPoints(parseFloat(val.toFixed(2)), posNum);
+        break;
+    }
+
+  }
+
+  setPosX1CoordEndPoints(x: number, posNum: number) {
+    switch (posNum){
+      case 1:
+        const x1 = this.position1!.getJoints()[0];
+        const midjoint1 = this.position1!.getJoints()[2];
+        x1.setCoordinates(new Coord(x, x1.coords.y));
+        const centerCoord1 = this.getReferenceJoint(this.position1!);
+        midjoint1.setCoordinates(centerCoord1.coords);
+        break;
+      case 2:
+        const x2 = this.position2!.getJoints()[0];
+        const midjoint2 = this.position2!.getJoints()[2];
+        x2.setCoordinates(new Coord(x, x2.coords.y));
+        const centerCoord2 = this.getReferenceJoint(this.position2!);
+        midjoint2.setCoordinates(centerCoord2.coords);
+        break;
+      case 3:
+        const x3 = this.position3!.getJoints()[0];
+        const midjoint3 = this.position3!.getJoints()[2];
+        x3.setCoordinates(new Coord(x, x3.coords.y));
+        const centerCoord3 = this.getReferenceJoint(this.position3!);
+        midjoint3.setCoordinates(centerCoord3.coords);
+        break;
+    }
+  }
+
+  setPosX2CoordEndPoints(x: number, posNum: number) {
+    switch (posNum){
+      case 1:
+        const x1 = this.position1!.getJoints()[1];
+        const midjoint1 = this.position1!.getJoints()[2];
+        x1.setCoordinates(new Coord(x, x1.coords.y));
+        const centerCoord1 = this.getReferenceJoint(this.position1!);
+        midjoint1.setCoordinates(centerCoord1.coords);
+        break;
+      case 2:
+        const x2 = this.position2!.getJoints()[1];
+        const midjoint2 = this.position2!.getJoints()[2];
+        x2.setCoordinates(new Coord(x, x2.coords.y));
+        const centerCoord2 = this.getReferenceJoint(this.position2!);
+        midjoint2.setCoordinates(centerCoord2.coords);
+        break;
+      case 3:
+        const x3 = this.position3!.getJoints()[1];
+        const midjoint3 = this.position3!.getJoints()[2];
+        x3.setCoordinates(new Coord(x, x3.coords.y));
+        const centerCoord3 = this.getReferenceJoint(this.position3!);
+        midjoint3.setCoordinates(centerCoord3.coords);
+        break;
+    }
+  }
+
+  setPosY1CoordEndPoints(y: number, posNum: number) {
+    switch (posNum){
+      case 1:
+        const y1 = this.position1!.getJoints()[0];
+        const midjoint1 = this.position1!.getJoints()[2];
+        y1.setCoordinates(new Coord(y1.coords.x, y));
+        const centerCoord1 = this.getReferenceJoint(this.position1!);
+        midjoint1.setCoordinates(centerCoord1.coords);
+        break;
+      case 2:
+        const y2 = this.position2!.getJoints()[0];
+        const midjoint2 = this.position2!.getJoints()[2];
+        y2.setCoordinates(new Coord(y2.coords.x, y));
+        const centerCoord2 = this.getReferenceJoint(this.position2!);
+        midjoint2.setCoordinates(centerCoord2.coords);
+        break;
+      case 3:
+        const y3 = this.position3!.getJoints()[0];
+        const midjoint3 = this.position3!.getJoints()[2];
+        y3.setCoordinates(new Coord(y3.coords.x, y));
+        const centerCoord3 = this.getReferenceJoint(this.position3!);
+        midjoint3.setCoordinates(centerCoord3.coords);
+        break;
+    }
+  }
+
+  setPosY2CoordEndPoints(y: number, posNum: number) {
+    switch (posNum){
+      case 1:
+        const y1 = this.position1!.getJoints()[1];
+        const midjoint1 = this.position1!.getJoints()[2];
+        y1.setCoordinates(new Coord(y1.coords.x, y));
+        const centerCoord1 = this.getReferenceJoint(this.position1!);
+        midjoint1.setCoordinates(centerCoord1.coords);
+        break;
+      case 2:
+        const y2 = this.position2!.getJoints()[1];
+        const midjoint2 = this.position2!.getJoints()[2];
+        y2.setCoordinates(new Coord(y2.coords.x, y));
+        const centerCoord2 = this.getReferenceJoint(this.position2!);
+        midjoint2.setCoordinates(centerCoord2.coords);
+        break;
+      case 3:
+        const y3 = this.position3!.getJoints()[1];
+        const midjoint3 = this.position3!.getJoints()[2];
+        y3.setCoordinates(new Coord(y3.coords.x, y));
+        const centerCoord3 = this.getReferenceJoint(this.position3!);
+        midjoint3.setCoordinates(centerCoord3.coords);
+        break;
+    }
+  }
+
+  generateFourBarFromTwoPoints(): void {
+    // Logic to generate a Four-Bar mechanism based on two points
+    console.log(`Generating Four-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
+    console.log('Current Values of Two Point Positions:', this.twoPointPositions);
+
+  }
+
+  generateSixBarFromTwoPoints(): void {
+    // Logic to generate a Four-Bar mechanism based on two points
+    console.log(`Generating Six-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
+
+  }
+
 }

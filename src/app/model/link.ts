@@ -16,6 +16,7 @@ export class Link implements RigidBody{
     private _forces: Map<number, Force>;
     private _color: string = "";
     private _isLocked: boolean;
+    private _angle: number;
 
     private linkColorOptions = [
         '#727FD5',
@@ -32,16 +33,19 @@ export class Link implements RigidBody{
         '#0D453E',
       ];
 
+    private positionColorOptions = ['purple', 'orange'];
+
     constructor(id: number, jointA: Joint, jointB: Joint);
     constructor(id: number, joints: Joint[]);
     constructor(id: number, jointAORJoints: Joint | Joint[], jointB?: Joint){
         this._id = id;
-        
+
         this._mass = 0;
         this._forces = new Map();
         this._joints = new Map();
         this._color = this.linkColorOptions[id % this.linkColorOptions.length];
         this._isLocked = false;
+        this._angle = 0;
 
         if(Array.isArray(jointAORJoints)){
             jointAORJoints.forEach(joint => {
@@ -61,6 +65,12 @@ export class Link implements RigidBody{
 
 
     }
+    static createPosition(id: number, joints: Joint[]): Link {
+      const position = new Link(id, joints[0], joints[1]);
+      position._color = position.positionColorOptions[id % position.positionColorOptions.length];
+      return position;
+    }
+
     //getters
     get id(): number {
         return this._id;
@@ -94,6 +104,18 @@ export class Link implements RigidBody{
         return this._isLocked;
     }
 
+    get length(): number {
+      let l = this.calculateLength();
+      if (l) {
+        return parseFloat(l.toFixed(2));
+      }
+      else throw new Error('Length is null');
+    }
+
+    get angle(): number {
+      return this._angle;
+    }
+
     //setters
     set name(value: string) {
         this._name = value;
@@ -106,6 +128,10 @@ export class Link implements RigidBody{
     set locked(value: boolean) {
         this._isLocked = value;
         this.updateLocks(value);
+    }
+
+    set angle(value: number) {
+      this._angle = value;
     }
 
     addTracer(newJoint: Joint){
@@ -140,7 +166,7 @@ export class Link implements RigidBody{
         } else {
             //may need to throw error here in future
         }
-        
+
         this.calculateCenterOfMass();
         if(this._joints.size === 1){
             throw new Error("Link now only contains 1 Joint");
@@ -149,7 +175,7 @@ export class Link implements RigidBody{
         for(let joint of this._joints.values()){
             this._name += joint.name;
         }
-        
+
     }
 
     addForce(newForce: Force){
@@ -248,6 +274,7 @@ export class Link implements RigidBody{
                 angleInDegrees += 360;
             }
 
+            this._angle = parseFloat(angleInDegrees.toFixed(2));
             return angleInDegrees;
         } else {
             // Handle the case where one or both joints are not found
@@ -333,13 +360,23 @@ export class Link implements RigidBody{
 
 
         // Calculate the angle difference
-        const angleDifference = newAngle - currentAngle;
+        let angleDifference = newAngle - currentAngle;
 
         // Convert currentAngle to radians
         const currentAngleInRadians = (currentAngle * Math.PI) / 180;
 
         // Calculate the new angle in radians
         let angleInRadians = (angleDifference * Math.PI) / 180;
+
+
+        // Ensure the angle is in the range of +180 to -180 degrees
+        if (angleDifference > 180) {
+          angleDifference -= 360;
+        } else if (angleDifference < -180) {
+          angleDifference += 360;
+        }
+
+        this._angle = parseFloat(angleDifference.toFixed(2));
 
         // Calculate the new coordinates of jointTwo
         const newX = jointOne.coords.x + currentDistance * Math.cos(currentAngleInRadians + angleInRadians);
@@ -408,9 +445,4 @@ export class Link implements RigidBody{
         this._color=this.linkColorOptions[index];
         console.log(this._color);
     }
-
-
-
-
-
 }

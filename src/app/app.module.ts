@@ -69,6 +69,8 @@ import {MatExpansionModule} from "@angular/material/expansion";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatSliderModule} from "@angular/material/slider";
 
+import { PositionComponent } from './components/Grid/position/position.component';
+
 @NgModule({
   declarations: [
     InteractionDirective,
@@ -121,6 +123,7 @@ import {MatSliderModule} from "@angular/material/slider";
     FeedbackPanelComponent,
     SavePanelComponent,
     SharePanelComponent,
+    PositionComponent,
   ],
   imports: [
     BrowserModule,

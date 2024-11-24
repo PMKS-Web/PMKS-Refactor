@@ -2,6 +2,8 @@ import {Component, EventEmitter, Input, Output} from '@angular/core'
 import { InteractionService } from 'src/app/services/interaction.service'
 import { JointInteractor } from 'src/app/controllers/joint-interactor';
 import { ToolbarComponent } from 'src/app/components/ToolBar/toolbar/toolbar.component';
+import {StateService} from "../../../services/state.service";
+import {Subscription} from "rxjs";
 
 interface panel{
   gridenabled:boolean;
@@ -25,13 +27,41 @@ export class SettingsPanelComponent{
 
   gridEnabled: boolean= true;
   minorGridEnabled: boolean = true;
+  unitSubscription: Subscription = new Subscription();
+  angleSubscription: Subscription = new Subscription();
+  units: string = "Metric (cm)";
+  angles: string = "Degree (º)";
+
   @Input() iconClass: string = ''; // Add this line
 
-  constructor(private interactionService: InteractionService, public toolbarComponent: ToolbarComponent){
+  constructor(private interactionService: InteractionService, public toolbarComponent: ToolbarComponent, private stateService: StateService) {
 
   }
   @Output() valueChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
   public value: boolean = this.gridEnabled;
+
+  ngOnInit() {
+    this.unitSubscription = this.stateService.globalUnitsCurrent.subscribe((units) => {this.units = units;});
+    this.angleSubscription = this.stateService.globalAnglesCurrent.subscribe((angles) => {this.angles = angles;});
+  }
+
+  changeUnits(newUnits: string){
+    console.log(newUnits);
+    if (newUnits === "English (in)"){
+      this.stateService.changeUnits(newUnits, "in")
+    }
+    else if (newUnits === "SI (m)"){
+      this.stateService.changeUnits(newUnits, "m")
+    }
+    else this.stateService.changeUnits(newUnits, "cm");
+  }
+
+  changeAngle(newAngle: string){
+    if (newAngle === "Radian (rad)"){
+      this.stateService.changeAngles(newAngle, "rad")
+    }
+    else this.stateService.changeAngles(newAngle, "º");
+  }
 
   toggle() {
     this.value = !this.value;
@@ -61,6 +91,11 @@ export class SettingsPanelComponent{
 
   getMinorGridEnabled(): boolean{
     return this.minorGridEnabled;
+  }
+
+  ngOnDestroy() {
+    this.unitSubscription.unsubscribe();
+    this.angleSubscription.unsubscribe();
   }
 
 }

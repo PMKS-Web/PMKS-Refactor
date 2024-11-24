@@ -58,6 +58,9 @@ export class LinkComponent extends AbstractInteractiveComponent {
 
   }
 
+  getName():string {
+    return this.link.name + "\nLength: " + this.link.length + "\nAngle: " + this.link.angle;
+  }
 
 	getDrawnPath(): string{
 	let radius: number = 30;

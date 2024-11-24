@@ -49,7 +49,7 @@
                             (input1Change)="setLinkLength($event)"
                             (input2Change)="setLinkAngle($event)"
                             iconLabel1="assets/icons/length.svg" iconLabel2="assets/icons/angle.svg"
-                            unit1="cm" unit2="deg"
+                            unit1={{units}} unit2={{angles}}
                             tooltip="Enter the length and angle of the link">
             Link Length and Angle
           </dual-input-block>
@@ -69,12 +69,12 @@
           <div id="container">
             <div *ngFor='let joint of getLinkComponents(); let i = index;'>
               <dual-input-block
-                [input1Value]="this.roundToFour(joint.coords.x)"
-                [input2Value]="this.roundToFour(joint.coords.y)"
+                [input1Value]="this.roundToTwo(joint.coords.x)"
+                [input2Value]="this.roundToTwo(joint.coords.y)"
                 (input1Change)="joint.coords.x=($event)"
                 (input2Change)="joint.coords.y=($event)"
                 label1="X" label2="Y"
-                unit1="cm" unit2="cm"
+                unit1={{units}} unit2={{units}}
                 tooltip="Change joint positions">
                 Joint {{ joint.name }}
               </dual-input-block>
