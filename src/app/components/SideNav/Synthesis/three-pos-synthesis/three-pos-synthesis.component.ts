@@ -1553,6 +1553,67 @@ verifyMechanismPath() {
     }
   }
 
+  onInputChange(event: Event, positionIndex: number, coordType: 'x0' | 'y0' | 'x1' | 'y1'): void {
+    const inputElement = event.target as HTMLInputElement; // Safely cast
+    const value = parseFloat(inputElement.value); // Parse the value as a number
+    if (!isNaN(value)) {
+        this.updateEndPointCoords(positionIndex, coordType, value);
+    } else {
+        console.error('Invalid input: Not a number');
+    }
+}
+
+
+  updateEndPointCoords(positionIndex: number, coordType: 'x0' | 'y0' | 'x1' | 'y1', value: number): void {
+    // Validate position index
+    if (positionIndex < 1 || positionIndex > 3) {
+        console.error("Invalid position index. It must be 1, 2, or 3.");
+        return;
+    }
+
+    const index = positionIndex - 1; // Convert 1-based index to 0-based
+    this.twoPointPositions[index][coordType] = value;
+    // Get the corresponding position object (e.g., position1, position2, position3)
+    let position: any;
+    switch (positionIndex) {
+        case 1:
+            position = this.position1;
+            break;
+        case 2:
+            position = this.position2;
+            break;
+        case 3:
+            position = this.position3;
+            break;
+    }
+    if (position) {
+        const jointIndex = coordType === 'x0' || coordType === 'y0' ? 0 : 1; // Map coordType to joint index
+        const joint = position.getJoints()[jointIndex];
+
+        // Update the x or y coordinate of the joint
+        if (coordType === 'x0' || coordType === 'x1') {
+            joint.setCoordinates(new Coord(value, joint.coords.y));
+        } else {
+            joint.setCoordinates(new Coord(joint.coords.x, value));
+        }
+    }
+
+    // Trigger Angular change detection to reflect updates in the UI
+    this.cdr.detectChanges();
+}
+
+getEndPointCoords(positionIndex: number, coordType: 'x0' | 'y0' | 'x1' | 'y1'): number {
+    // Validate position index
+    if (positionIndex < 1 || positionIndex > 3) {
+        console.error("Invalid position index. It must be 1, 2, or 3.");
+        return 0; // Default value in case of invalid index
+    }
+
+    const index = positionIndex - 1; // Convert 1-based index to 0-based
+    return this.twoPointPositions[index][coordType];
+}
+
+
   generateFourBarFromTwoPoints(): void {
     // Logic to generate a Four-Bar mechanism based on two points
     console.log(`Generating Four-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
