@@ -376,7 +376,8 @@ isSixBarGenerated(): boolean {
         console.log("LIST OF LINKS AFTER DELETION:");
         console.log(this.mechanism.getArrayOfLinks());
       }*/
-      this.setPositionsColorToDefault()
+      this.setPositionsColorToDefault();
+      this.mechanism.clearTrajectories();
       this.fourBarGenerated = false;
       this.synthedMech = [];
       this.Generated.emit(false);
@@ -479,6 +480,7 @@ isSixBarGenerated(): boolean {
         console.log(this.mechanism.getArrayOfLinks());
       }
       this.setPositionsColorToDefault();
+      this.mechanism.clearTrajectories();
       console.log("Six-bar has been cleared");
       this.cdr.detectChanges();
       return;
@@ -1201,34 +1203,22 @@ allPositionsDefined(): boolean {
     const animationPaths = this.positionSolver.getAnimationPositions();
 
     userPositions.forEach(position => {
-      const nonCenter = position!.getJoints().slice(0,2)
-      const positionCoords = nonCenter.map(joint => joint._coords);//converts positions joints into coords in a array
-      let allMatched = true;
+      const positionCoords = position!.getJoints().slice(0, 2).map(joint => joint._coords); //map the joints into coords, cutting the reference joint out of the array
+      let positionMatched = false; //to check if both left and right joint pass throughh
 
-      for (const coord of positionCoords) {
-        let jointMatched = false; //to check if both left and right joint pass throughh
+      for (const path of animationPaths) {
+        const bothJointsMatched = positionCoords.every(coord => {
+          return path.some(pathPoint => this.calculateDistance(coord, pathPoint) <= threshold);
+        });
 
-        for (const path of animationPaths) {
-          for (const pathPoint of path) {
-            const distance = this.calculateDistance(coord, pathPoint);
-            if (distance <= threshold) {
-              jointMatched = true;
-              break;
-            }
-          }
-          if (jointMatched){
-            break;
-          }
-        }
-
-        if (!jointMatched) {
-          allMatched = false;
+        if (bothJointsMatched) {
+          positionMatched = true;
           break;
         }
       }
 
 
-      if (allMatched) {
+      if (positionMatched) {
         position!.setColor('green');
       } else {
         position!.setColor('red');
@@ -1236,6 +1226,7 @@ allPositionsDefined(): boolean {
     });
     this.recalcNeeded = false;
   }
+
 
   calculateDistance(coord1: Coord, coord2: Coord): number {
     const dx = coord1.x - coord2.x;
