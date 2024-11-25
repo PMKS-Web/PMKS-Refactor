@@ -236,35 +236,39 @@
   <!-- Input for back joint (x0, y0) -->
   <div class="input-row" *ngIf="isPositionDefined(index + 1)">
     <label for="x{{index * 2 + 1}}">X{{index * 2 + 1}}</label>
-    <input id="x{{index * 2 + 1}}" 
-           type="number" 
-           [(ngModel)]="twoPointPositions[index].x0"
-           (input)="onInputChange($event, index + 1, 'x0')"
-           class="coordinate-input">
+    <input id="x{{index * 2 + 1}}"
+    type="text"
+    [value]="twoPointPositions[index].x0 === null ? '' : twoPointPositions[index].x0"
+    (input)="handleInput($event, index, 'x0')"
+    (blur)="defaultToZero(index, 'x0')"
+    class="coordinate-input">
 
     <label for="y{{index * 2 + 1}}">Y{{index * 2 + 1}}</label>  
     <input id="y{{index * 2 + 1}}"
-          type="number"
-         [(ngModel)]="twoPointPositions[index].y0"
-          (input)="onInputChange($event, index + 1, 'y0')"
-         class="coordinate-input">
+    type="text"
+    [value]="twoPointPositions[index].y0 === null ? '' : twoPointPositions[index].y0"
+    (input)="handleInput($event, index, 'y0')"
+    (blur)="defaultToZero(index, 'y0')"
+    class="coordinate-input">
   </div>
 
   <!-- Input for front joint (x1, y1) -->
   <div class="input-row" *ngIf="isPositionDefined(index + 1)">
     <label for="x{{index * 2 + 2}}">X{{index * 2 + 2}}</label>
-    <input id="x{{index * 2 + 1}}" 
-           type="number" 
-           [(ngModel)]="twoPointPositions[index].x1"
-           (input)="onInputChange($event, index + 1, 'x1')"
-           class="coordinate-input">
+    <input id="x{{index * 2 + 1}}"
+    type="text"
+    [value]="twoPointPositions[index].x1 === null ? '' : twoPointPositions[index].x1"
+    (input)="handleInput($event, index, 'x1')"
+    (blur)="defaultToZero(index, 'x1')"
+    class="coordinate-input">
 
     <label for="y{{index * 2 + 2}}">Y{{index * 2 + 2}}</label>
     <input id="y{{index * 2 + 1}}"
-          type="number"
-         [(ngModel)]="twoPointPositions[index].y1"
-          (input)="onInputChange($event, index + 1, 'y1')"
-         class="coordinate-input">
+    type="text"
+    [value]="twoPointPositions[index].y1 === null ? '' : twoPointPositions[index].y1"
+    (input)="handleInput($event, index, 'y1')"
+    (blur)="defaultToZero(index, 'y1')"
+    class="coordinate-input">
   </div>
 
 

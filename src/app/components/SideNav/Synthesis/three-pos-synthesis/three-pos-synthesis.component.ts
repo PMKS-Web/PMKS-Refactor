@@ -1461,6 +1461,32 @@ verifyMechanismPath() {
   }
   }
 
+  handleInput(event: Event, index: number, coordType: 'x0' | 'y0' | 'x1' | 'y1'): void {
+    const inputElement = event.target as HTMLInputElement;
+
+    // Allow temporary empty or negative values
+    const value = inputElement.value;
+
+    if (value === '' || value === '-') {
+        // Allow empty or negative sign temporarily
+        this.twoPointPositions[index][coordType] = NaN; // Use NaN for invalid number state
+    } else {
+        // Parse and store valid numeric values
+        const parsedValue = parseFloat(value);
+        this.twoPointPositions[index][coordType] = isNaN(parsedValue) ? 0 : parsedValue;
+    }
+}
+
+defaultToZero(index: number, coordType: 'x0' | 'y0' | 'x1' | 'y1'): void {
+    const value = this.twoPointPositions[index][coordType];
+
+    // Check for NaN (temporary invalid state) and reset to 0
+    if (isNaN(value)) {
+        this.twoPointPositions[index][coordType] = 0;
+    }
+}
+
+
   pipeToEndPoint(e: Event, posNum: number, endPoint: string) {
     let val = parseFloat((e.target as HTMLInputElement).value);
     switch (endPoint) {
