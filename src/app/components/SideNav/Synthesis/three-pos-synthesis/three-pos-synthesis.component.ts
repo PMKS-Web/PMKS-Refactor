@@ -453,7 +453,8 @@ isSixBarGenerated(): boolean {
         console.log("LIST OF LINKS AFTER DELETION:");
         console.log(this.mechanism.getArrayOfLinks());
       }*/
-      this.setPositionsColorToDefault()
+      this.setPositionsColorToDefault();
+      this.mechanism.clearTrajectories();
       this.fourBarGenerated = false;
       this.synthedMech = [];
       this.Generated.emit(false);
@@ -556,6 +557,7 @@ isSixBarGenerated(): boolean {
         console.log(this.mechanism.getArrayOfLinks());
       }
       this.setPositionsColorToDefault();
+      this.mechanism.clearTrajectories();
       console.log("Six-bar has been cleared");
       this.cdr.detectChanges();
       return;
@@ -1310,6 +1312,7 @@ verifyMechanismPath() {
     });
     this.recalcNeeded = false;
   }
+
 
   calculateDistance(coord1: Coord, coord2: Coord): number {
     const dx = coord1.x - coord2.x;
