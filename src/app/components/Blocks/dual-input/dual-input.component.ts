@@ -21,6 +21,8 @@ export class DualInputComponent {
   @Input() iconLabel2: string | undefined;
 
 
+
+
   @Output() input1Change: EventEmitter<number> = new EventEmitter<number>();
   @Output() input2Change: EventEmitter<number> = new EventEmitter<number>();
 

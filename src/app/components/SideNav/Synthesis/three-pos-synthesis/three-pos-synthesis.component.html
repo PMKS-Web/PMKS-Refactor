@@ -61,7 +61,7 @@
 
                       <single-input-block
                             class="right-aligned"
-                            [input1Value]="2" style="margin-top:-12px !important;margin-left: 41px;"
+                            [input1Value]="2" style="margin-top:0px !important; margin-left: 25px !important;  padding-left:0px !important;"
                             (input1Change)="setCouplerLength($event)"
                             unit1={{units}}
                             [showIcon]="false">
@@ -101,7 +101,7 @@
                    <!-- displays each position label, if the position is specified/defined, then the trash icon appears -->
 
                    <div class="position-header">
-                        <p style="display:block; margin-right: auto;margin-left: 8px; margin-bottom: 0px;text-align: left !important;">Position {{i}}</p>
+                        <p style="display:block ; margin-right: auto ;margin-left: 8px ;margin-bottom: 0px;text-align: left !important;">Position {{i}}</p>
 
                         <span class="icons">
                         <mat-icon style="margin-right:2px;margin-top: 2px; border-right: 5px; " id="tooltip" matTooltip="Change the x and y values of the reference point of the coupler position {{i}}" [matTooltipShowDelay]='1000' class='label-help'
@@ -127,6 +127,7 @@
                         label2="Y"
                         unit1={{units}}
                         unit2={{units}}
+
                         [showIcon]="false">
                   </dual-input-block>
 
@@ -155,14 +156,6 @@
                    <button id="removeAllGrey" >Remove All Positions</button>
                  </div>
 
-             <!--    <div *ngIf='this.allPositionsDefined()' class="definedButtons">-->
-
-<!--      <button *ngIf="isSixBarGenerated()" id="generateFourBarGrey" >Generate Four-Bar</button>-->
-<!--      <button id="removeAll" (click)="removeAllPositions()">Remove All Positions</button>-->
-<!--      <button *ngIf="!isSixBarGenerated()" id="generateFourBar" (click)="generateFourBar()">-->
-<!--        {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}-->
-<!--      </button>-->
-
              <div *ngIf="this.allPositionsDefined()" class="definedButtons">
 
                <!-- Place Generate Four-Bar first -->
@@ -183,18 +176,6 @@
            </div>
   </div>
 
-<!--               &lt;!&ndash; Greyed out button if six-bar is generated &ndash;&gt;-->
-<!--               <button *ngIf="isSixBarGenerated()" id="generateFourBarGrey">Generate Four-Bar</button>-->
-
-      <!-- once a four bar is generated you are able to generate a six bar -->
-<!--      <div *ngIf='isFourBarGenerated()' class="definedButtons">-->
-<!--        <button id="generateSixBar" (click)="generateSixBar()">-->
-<!--          {{ sixBarGenerated ? 'Clear Six-Bar' : 'Generate Six-Bar' }}-->
-<!--        </button>-->
-<!--        <div *ngIf="isSixBarGenerated()" class="definedButtons">-->
-<!--           &lt;!&ndash; {{ buttonLabel }} &ndash;&gt;-->
-<!--        </div>-->
-<!--      </div>-->
 
 
 
@@ -202,12 +183,12 @@
 
   <!------------------------------ New Panel Design for End Points  ------------------------------------>
 
-  <div class="scroll-container" >
+<!--  <div class="scroll-container" >-->
   <div *ngIf="selectedOption === 'two-points'">
 
     <p class="panel-description">Automatically create a four-bar linkage based on the X and Y coordinate values for positions.</p>
 
-
+    <div class="positions-container">
     <!-- Loop for three positions -->
     <div *ngFor="let pos of twoPointPositions; let index = index" class="position-group">
       <div class="position-header">
@@ -221,37 +202,7 @@
     </span>
       </div>
 
-      <!-- Calculate the starting label number for each position based on index -->
-<!--      <div class="input-row" *ngIf="pos.defined">-->
-<!--        <label for="x{{index * 2 + 1}}">X{{index * 2 + 1}}</label>-->
 
-<!--        <input id="x{{index * 2 + 1}}"-->
-<!--               type="number"-->
-<!--               [(ngModel)]="pos.x0"-->
-<!--               [placeholder]="placeholderFlags[index].x0 ? 'X' + (index * 2 + 1) : ''"-->
-<!--               class="coordinate-input"-->
-<!--               (focus)="clearPlaceholder(index, 'x0')"-->
-<!--               (blur)="restorePlaceholder(index, 'x0')"-->
-<!--               >-->
-
-<!--        <label for="y{{index * 2 + 1}}">Y{{index * 2 + 1}}</label>-->
-<!--        <input id="y{{index * 2 + 1}}"-->
-<!--               type="number"-->
-<!--               [(ngModel)]="pos.y0"-->
-<!--               [placeholder]="placeholderFlags[index].y0 ? 'Y' + (index * 2 + 1) : ''"-->
-<!--               class="coordinate-input"-->
-<!--               (focus)="clearPlaceholder(index, 'y0')"-->
-<!--               (blur)="restorePlaceholder(index, 'y0')"-->
-<!--        >-->
-<!--      </div>-->
-
-<!--      <div class="input-row" *ngIf="pos.defined">-->
-<!--        <label for="x{{index * 2 + 2}}">X{{index * 2 + 2}}</label>-->
-<!--        <input id="x{{index * 2 + 2}}" type="number" [(ngModel)]="pos.x1"  placeholder="0" class="coordinate-input">-->
-
-<!--        <label for="y{{index * 2 + 2}}">Y{{index * 2 + 2}}</label>-->
-<!--        <input id="y{{index * 2 + 2}}" type="number" [(ngModel)]="pos.y1"  placeholder="0" class="coordinate-input">-->
-<!--      </div>-->
 
       <div class="input-row" *ngIf="pos.defined">
         <label for="x{{index * 2 + 1}}">X{{index * 2 + 1}}</label>
@@ -306,16 +257,36 @@
     </div>
 
 
+    </div>
+
+
+
+
 
     <!-- Action Buttons -->
-    <div class="button-group">
-
-      <button  (click)="generateFourBarFromTwoPoints()">Generate Four-bar</button>
+    <div  *ngIf="!this.allPositionsDefinedTwoPoints()" class="button-group">
+          <button  id="generateFourBarTwoPointsGrey"     (click)="generateFourBarFromTwoPoints()">Generate Four-bar</button>
 <!--      <button  (click)="generateSixBarFromTwoPoints()">Generate Six-bar</button>-->
-      <button  (click)="removeAllPositionsTwoPoints()">Remove All Positions</button>
+          <button   id="removeAllTwoPointsGrey" (click)="removeAllPositionsTwoPoints()">Remove All Positions</button>
     </div>
+
+    <div *ngIf="this.allPositionsDefinedTwoPoints()" class="button-group">
+      <!-- Place Generate Four-Bar first -->
+      <button *ngIf="!isSixBarGeneratedTwoPoints()" id="generateFourBarTwoPoints" (click)="generateFourBarFromTwoPoints()">
+        {{ fourBarGeneratedTwoPoints ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
+      </button>
+      <button id="removeAllTwoPoints" (click)="removeAllPositionsTwoPoints()">Remove All Positions</button>
+
+      <!-- Generate Six-Bar Button -->
+      <div *ngIf="isFourBarGeneratedTwoPoints()" class="button-group">
+        <button id="generateSixBarTwoPoints" (click)="generateSixBarFromTwoPoints()">
+          {{ sixBarGeneratedTwoPoints ? 'Clear Six-Bar' : 'Generate Six-Bar' }}
+        </button>
+      </div>
+    </div>
+
   </div>
-  </div>
+</div>
 </div>
 
 

@@ -112,12 +112,17 @@ hr.solid2 {
   align-items: center;
   justify-content: flex-end;
   margin-right: 0px;
-  margin-top: 10px;
-  gap: 2px;
+  margin-top: 10px !important;
+  gap: 5px;
+  //padding-left:-20px!important;
 }
 
 .right-aligned span {
   margin-left: 0px;
+}
+
+.single-input-block span.unit {
+
 }
 
 //.subtitle {
@@ -320,10 +325,12 @@ hr.solid2 {
   //margin-top: 6px;
   //margin-bottom: -5px;
   display: inline-flex;
-  margin-left: -52px !important;
+  margin-left: -61px !important;
   margin-top: 0;
   margin-bottom: 0;
   align-items: center;
+
+
 }
 
 #fixedReferenceTooltip {
@@ -453,9 +460,9 @@ hr.solid2 {
 
 div.poseData {
   display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-  //align-items:center;
+  flex-direction:column;
+  //flex-wrap: wrap;
+  align-items:center;
   gap: 8px;
   padding: 0 5px;
   //overflow: hidden;
@@ -557,7 +564,7 @@ coupler-specifications-container {
 .lock-icon {
   width: 15px;
   height: 15px;
-  margin-left: 10px;
+  margin-left: 2px;
   cursor: pointer;
   transition: opacity 0.3s ease, transform 0.3s ease;
   opacity: 0.8;
@@ -634,11 +641,17 @@ coupler-specifications-container {
 }
 
 .position-group {
+  display:flex;
+  flex-direction: column;
   background-color: #ffffff;
-  padding: 8px;
+  padding: 10px;
   margin: 0 10px 10px 10px;
   border-radius: 8px;
   border: 1px solid #ddd;
+  //width:230px;
+  width:100%;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.01);
+  box-sizing: border-box;
 }
 
 .position-header {
@@ -723,6 +736,7 @@ span.icons {
 .input-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 15px;
   margin-bottom: 5px;
 }
@@ -735,10 +749,17 @@ span.icons {
 }
 
 .coordinate-input {
-  width: 40px;
+  flex: 1;
+  width: 50px;
   padding: 4px;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+.positionCreateEndPoints {
+  display: flex;
+  justify-content: center;
+  margin-top: 5px;
 }
 
 .button-group {
@@ -783,24 +804,148 @@ span.icons {
   box-shadow: none;
 }
 
-#specifyEndPoints{
-  margin:0 auto;
-  display:block;
-  //background-color: white;
+//#specifyEndPoints{
+//  margin:0 auto;
+//  display:block;
+//  width: 80%;
+//  height: 36px;
+//  border-radius: 20px;
+//  background-color: #e8eaf6;
+//  font-weight: bold;
+//  font-size: 12px;
+//  font-family: Roboto, "Helvetica Neue", sans-serif;
+//  color: #3F51B5;
+//  border: none;
+//}
+
+#specifyEndPoints,
+{
+  background-color: #e8eaf6;
+  border: 1px solid #cccccc;
+  color: #808080;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 8px 12px;
+  border-radius: 24px;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s, box-shadow 0.2s;
   width: 80%;
-  height: 36px;
+}
+
+.positions-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+#generateFourBarTwoPoints{
+  margin:0 auto;
+  display:inherit;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  width: 65%;
+  height: 35px;
+  border-radius: 20px;
+  margin-top: 3px;
+  margin-bottom: 8px;
+  text-align: center;
+  background-color: #e8eaf6;
+  font-weight: bold;
+  color: #3F51B5;
+  border: none;
+
+}
+#generateFourBarTwoPointsGrey{
+  margin:0 auto;
+  display:inherit;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  //background-color: white;
+  width: 65%;
+  height: 35px;
   border-radius: 20px;
   //border: 1px solid black;
   //margin-top: 3px;
-  //margin-bottom: 20px;
+  //margin-bottom: 10px;
+  text-align: center!important;
+  font-weight: bold;
   background-color: #e8eaf6;
+  color: #808080;
+  border: none;
+  cursor:pointer;
+
+}
+
+#generateFourBarTwoPoints:hover {
+  color: #e8eaf6;
+  background-color: #3F51B5;
+}
+
+
+#removeAllTwoPoints{
+
+  margin: 0 auto;
+  display: inherit;
+  background-color: #ffe6e6;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  width: 65%;
+  height: 35px;
+  //border-radius: 20px;
   font-weight: bold;
   font-size: 12px;
+  color: #a94442;
+  border:none;
+  //border: 1px solid #cc0000;
+  transition: background-color 0.3s, color 0.3s;
+  cursor:pointer;
+}
+
+/* Hover effect */
+#removeAllTwoPoints:hover {
+  background-color: #ffcccc;
+  color: #a94442;
+}
+
+#removeAllTwoPointsGrey{
+  margin:0 auto;
+  display:inherit;
   font-family: Roboto, "Helvetica Neue", sans-serif;
+  //background-color: white;
+  width: 65%;
+  height: 35px;
+  border-radius: 20px;
+  //border: 1px solid black;
+  margin-top: 3px;
+  margin-bottom: 10px;
+  font-weight: bold;
+  background-color: #e8eaf6;
+  color: #808080;
+  border: none;
+  cursor:pointer;
+}
+
+#generateSixBarTwoPoints{
+  margin:0 auto;
+  display:inherit;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  //background-color: white;
+  width: 65%;
+  height: 35px;
+  border-radius: 20px;
+  //border: 1px solid black;
+  font-weight: bold;
+  margin-top: 3px;
+  margin-bottom: 10px;
+  background-color: #e8eaf6;
   color: #3F51B5;
   border: none;
 }
 
+#generateSixBarTwoPoints:hover{
+  color: #e8eaf6;
+  background-color: #3F51B5;
+}
 
 
 

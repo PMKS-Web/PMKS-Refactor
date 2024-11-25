@@ -107,7 +107,8 @@ export class ThreePosSynthesis{
   ];
   // Flags to control placeholder visibility
   placeholderFlags : { [key: number]: { x0: boolean; y0: boolean; x1: boolean; y1: boolean } } = {};
-
+  fourBarGeneratedTwoPoints:boolean = false;
+  sixBarGeneratedTwoPoints: boolean = false;
 
 
 
@@ -1063,7 +1064,6 @@ allPositionsDefined(): boolean {
       this.twoPointPositions[index] = { x0: 0, y0: 0, x1: 0, y1: 0, defined: false };
     }
   }
-
   removeAllPositionsTwoPoints(): void {
     this.twoPointPositions.forEach(pos => {
       pos.defined = false;
@@ -1073,6 +1073,8 @@ allPositionsDefined(): boolean {
       pos.y1 = 0;
     });
     console.log("All positions removed");
+    this.fourBarGeneratedTwoPoints = false;
+    this.sixBarGeneratedTwoPoints = false;
   }
 
   // onPositionChange(): void {
@@ -1083,7 +1085,7 @@ allPositionsDefined(): boolean {
   //   const positions = this.positionSolverService.getAnimationPositions();
   //   positions.forEach((position) => {
   //     // Call your method to update the position on the grid
-  //     this.interactionService.startDraggingObject(new Link(position)); // Adjust this part as necessary
+  //     this.interactionService.startDraggingObject(new Link(position));
   //   });
   // }
 
@@ -1110,17 +1112,37 @@ allPositionsDefined(): boolean {
   }
   }
 
+  allPositionsDefinedTwoPoints():boolean{
+    return this.twoPointPositions.every(pos => pos.defined);
+  }
+
+
+// Check if a four-bar linkage is generated
+  isFourBarGeneratedTwoPoints(): boolean {
+    return this.fourBarGeneratedTwoPoints;
+  }
+
+// Check if a six-bar linkage is generated
+  isSixBarGeneratedTwoPoints(): boolean {
+    return this.sixBarGeneratedTwoPoints;
+  }
 
   generateFourBarFromTwoPoints(): void {
     // Logic to generate a Four-Bar mechanism based on two points
     console.log(`Generating Four-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
     console.log('Current Values of Two Point Positions:', this.twoPointPositions);
+    if (this.isFourBarGenerated()) {
+      this.sixBarGeneratedTwoPoints = !this.sixBarGeneratedTwoPoints;
+    }
 
   }
 
   generateSixBarFromTwoPoints(): void {
     // Logic to generate a Four-Bar mechanism based on two points
     console.log(`Generating Six-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
+    if (this.isFourBarGenerated()) {
+      this.sixBarGeneratedTwoPoints = !this.sixBarGeneratedTwoPoints;
+    }
 
   }
 
