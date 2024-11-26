@@ -538,7 +538,6 @@ isSixBarGenerated(): boolean {
     }
   }
 
-
   generateSixBar() {
     this.sixBarGenerated = !this.sixBarGenerated;
     //clear the six-bar
@@ -553,7 +552,7 @@ isSixBarGenerated(): boolean {
         this.position1!.locked = false;
         this.position2!.locked = false;
         this.position3!.locked = false;
-        console.log("LIST OF LINKS AFTER DELETION:");
+        console.log("LIST OF LINKS AFTER DELETION:")
         console.log(this.mechanism.getArrayOfLinks());
       }
       this.setPositionsColorToDefault();
