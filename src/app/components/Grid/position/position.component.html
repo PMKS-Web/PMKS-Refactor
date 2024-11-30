@@ -1,13 +1,13 @@
 <svg:g appInteractable="" xmlns:svg="s" [interactor]="getInteractor()">
   <path [attr.d]="getDrawnPath()" [attr.fill]="getColor()" [attr.fill-opacity]="0.7" [attr.stroke]="getStrokeColor()" [attr.stroke-width]="7"></path>
 
-  <image *ngIf="getLocked()" xlink:href='../../../assets/icons/lock.svg' [attr.x]="getCOMX()" [attr.y]="getCOMY()" [attr.height]="90"></image>
-  @if (isHovered() || isSelected()) {
+  <image *ngIf="getLocked()" xlink:href='../../../assets/icons/lock.svg' [attr.x]="getCOMX()+225" [attr.y]="getCOMY()-35" [attr.height]="65"></image>
+  @if (isHovered() || isSelected() && !this.isHidden) {
     <path [attr.d]="getLengthSVG()" stroke="black" stroke-width="7"></path>
-    <text class="position-name" [attr.x]="getCOMX()" [attr.y]="getCOMY() - 100" >{{getLength()}}</text>
+    <text class="position-name" [attr.x]="getCOMX()" [attr.y]="getCOMY() - 100" alignment-baseline="middle" text-anchor="middle">{{getLength()}}</text>
+    <text class="position-name" [attr.x]="getCOMX()" [attr.y]="getCOMY()" alignment-baseline="middle" text-anchor="middle">
+      <tspan [attr.x]="getCOMX()" dy="1.5em">{{this.position.name}}</tspan>
+      <tspan [attr.x]="getCOMX()" dy="1.5em">Angle: {{this.position.angle}}</tspan>
+    </text>
   }
-  <text *ngIf="isHovered() || isSelected() && !this.isHidden" class="position-name" [attr.x]="getCOMX()" [attr.y]="getCOMY()" alignment-baseline="middle" text-anchor="middle">
-    <tspan x="0" dy="1.5em">{{this.position.name}}</tspan>
-    <tspan x="0" dy="1.5em">Angle: {{this.position.angle}}</tspan>
-  </text>
 </svg:g>
