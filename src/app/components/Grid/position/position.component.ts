@@ -60,10 +60,14 @@ export class PositionComponent extends AbstractInteractiveComponent {
     return this.position.color; // Default color
   }
 
+  getLength(): string {
+    if (this.isHidden) return "";
+    else return this.position.length.toString();
+  }
 
   getName():string {
     if (this.isHidden) return "";
-    else return this.position.name + "\nLength: " + this.position.length + "\nAngle: " + this.position.angle;
+    else return this.position.name + "\nAngle: " + this.position.angle;
   }
 
   getDrawnPath(): string {
@@ -95,4 +99,18 @@ export class PositionComponent extends AbstractInteractiveComponent {
 
     return this.svgPathService.getSinglePosDrawnPath(allCoords, radius);
   }
+
+  getLengthSVG(): string {
+    const joints = this.position.getJoints();
+    const allCoords: Coord[] = [];
+
+    for (let i = 0; i < joints.length-1; i++) {
+      let coord: Coord = joints[i]._coords;
+      coord = this.unitConversionService.modelCoordToSVGCoord(coord);
+      allCoords.push(coord);
+    }
+
+    return this.svgPathService.calculateLengthSVGPath(allCoords[0], allCoords[1]);
+  }
+
 }
