@@ -22,6 +22,27 @@ export class SVGPathService {
     return this.calculateConvexPath(hullCoords,radius);
   }
 
+  getTrajectoryDrawnPath(allCoords: Coord[], radius: number): string {
+    if (allCoords.length === 0) {
+      return '';
+    }
+
+    //check if coordinates are collinear. If they are, use the two returned coords(the end points) to draw a line
+    const collinearCoords: Coord[] | undefined = this.findCollinearCoords(allCoords);
+    if (collinearCoords !== undefined) {
+
+      return this.calculateTwoPointPath(collinearCoords[0], collinearCoords[1], radius);
+    }
+
+    let pathData = `M ${allCoords[0].x},${allCoords[0].y} `;
+    for (let i = 1; i < allCoords.length; i++) {
+      const currentCoord = allCoords[i];
+      pathData += `L ${currentCoord.x},${currentCoord.y} `;
+    }
+
+    return pathData.trim();
+  }
+
   getSinglePosDrawnPath(allCoords: Coord[], radius: number): string {
 
     //check if coordinates are collinear. If they are, use the two returned coords(the end points) to draw a line

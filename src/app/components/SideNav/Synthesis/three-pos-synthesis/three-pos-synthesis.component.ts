@@ -1222,6 +1222,7 @@ allPositionsDefined(): boolean {
     this.pos3Specified = false;
     this.mechanism.removePosition(this.position3!.id);
     this.resetPos(3);
+    this.mechanism.clearTrajectories();
 
     // Reset flags
     this.fourBarGenerated = false;

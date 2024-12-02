@@ -24,7 +24,7 @@ export class TrajectoryComponent {
     const svgCoords = this.trajectory.map(coord =>
       this.unitConversionService.modelCoordToSVGCoord(coord)
     );
-    return this.svgPathService.getSingleLinkDrawnPath(svgCoords, 2);
+    return this.svgPathService.getTrajectoryDrawnPath(svgCoords, 2);
   }
 
   getStrokeColor(): string {
