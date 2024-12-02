@@ -61,7 +61,7 @@
 
                       <single-input-block
                             class="right-aligned"
-                            [input1Value]="2" style="margin-top:0px !important; margin-left: 25px !important;  padding-left:0px !important;"
+                            [input1Value]="2" style="margin-top:0; !important; margin-left: 25px !important;  padding-left:0 !important;"
                             (input1Change)="setCouplerLength($event)"
                             unit1={{units}}
                             [showIcon]="false">
@@ -76,8 +76,8 @@
 
             <!-- The fixed reference is the center of rotation and you set that with the radio block -->
                   <div class="fixed-reference">
-                      <img src='assets/icons/referencePoint.svg' style="height: 12.5px; width: 12.5px; display: inline-block; align-items: center; margin-left: 6px;"/>
-                      <p  class="fixedReference-title"style="display:inline-block; margin-bottom:0;">Fixed Reference</p>
+                      <img alt="fixed-reference" src='assets/icons/referencePoint.svg' style="height: 12.5px; width: 12.5px; display: inline-block; align-items: center; margin-left: 6px;"/>
+                      <p  class="fixedReference-title" style="display:inline-block; margin-bottom:0;">Fixed Reference</p>
 
                       <mat-icon id="fixedReferenceTooltip"
                         matTooltip="The center of rotation of the end-effector link, and what the position coordinate represents" [matTooltipShowDelay]='1000'
@@ -101,7 +101,7 @@
                    <!-- displays each position label, if the position is specified/defined, then the trash icon appears -->
 
                    <div class="position-header">
-                        <p style="display:block ; margin-right: auto ;margin-left: 8px ;margin-bottom: 0px;text-align: left !important;">Position {{i}}</p>
+                        <p style="display:block ; margin-right: auto ;margin-left: 8px ;margin-bottom: 0;text-align: left !important;">Position {{i}}</p>
 
                         <span class="icons">
                         <mat-icon style="margin-right:2px;margin-top: 2px; border-right: 5px; " id="tooltip" matTooltip="Change the x and y values of the reference point of the coupler position {{i}}" [matTooltipShowDelay]='1000' class='label-help'
@@ -109,7 +109,7 @@
                         >help_outline
                         </mat-icon>
                         <button id="trash" *ngIf='this.isPositionDefined(i)' (click)="this.deletePosition(i)">
-                              <img id="icon" src='assets/icons/trash.svg' style="height: 13px; width: 15px; margin-bottom: -5px; margin-left: -2px;"/>
+                              <img alt="trash-icon"  id="icon" src='assets/icons/trash.svg' style="height: 13px; width: 15px; margin-bottom: -5px; margin-left: -2px;"/>
                         </button>
                         </span>
                   </div>
@@ -213,7 +213,13 @@
                (focus)="handleFocus(index, 'x0')"
                (blur)="handleBlur(index, 'x0')"
                [placeholder]="twoPointPositions[index].x0 === 0 || twoPointPositions[index].x0 === undefined ? '0' : ''"
-               class="coordinate-input">
+               (change)="validateInput(index, 'x0')"
+               matTooltip="Invalid value entered! Must be up to 2 decimal places."
+               [matTooltipDisabled]="isValidInput(index, 'x0')"
+               class="coordinate-input"
+               [class.invalid]="!isValidInput(index, 'x0')"
+
+        >
 
         <label for="y{{index * 2 + 1}}">Y{{index * 2 + 1}}</label>
 
@@ -223,7 +229,12 @@
                (focus)="handleFocus(index, 'y0')"
                (blur)="handleBlur(index, 'y0')"
                [placeholder]="twoPointPositions[index].y0 === 0 || twoPointPositions[index].y0 === undefined ? '0' : ''"
-               class="coordinate-input">
+               (change)="validateInput(index, 'y0')"
+               matTooltip="Invalid value entered! Must be up to 2 decimal places."
+               [matTooltipDisabled]="isValidInput(index, 'y0')"
+               class="coordinate-input"
+               [class.invalid]="!isValidInput(index, 'y0')"
+        >
       </div>
 
       <div class="input-row" *ngIf="pos.defined">
@@ -234,7 +245,12 @@
                (focus)="handleFocus(index, 'x1')"
                (blur)="handleBlur(index, 'x1')"
                [placeholder]="twoPointPositions[index].x1 === 0 || twoPointPositions[index].x1 === undefined ? '0' : ''"
-               class="coordinate-input">
+               (change)="validateInput(index, 'x0')"
+               matTooltip="Invalid value entered! Must be up to 2 decimal places."
+               [matTooltipDisabled]="isValidInput(index, 'x1')"
+               class="coordinate-input"
+               [class.invalid]="!isValidInput(index, 'x1')"
+        >
 
         <label for="y{{index * 2 + 2}}">Y{{index * 2 + 2}}</label>
         <input id="y{{index * 2 + 2}}"
@@ -243,7 +259,12 @@
                (focus)="handleFocus(index, 'y1')"
                (blur)="handleBlur(index, 'y1')"
                [placeholder]="twoPointPositions[index].y1 === 0 || twoPointPositions[index].y1 === undefined ? '0' : ''"
-               class="coordinate-input">
+               (change)="validateInput(index, 'y1')"
+               matTooltip="Invalid value entered! Must be up to 2 decimal places."
+               [matTooltipDisabled]="isValidInput(index, 'y1')"
+               class="coordinate-input"
+               [class.invalid]="!isValidInput(index, 'y1')"
+        >
       </div>
 
 
