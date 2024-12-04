@@ -178,3 +178,9 @@ input:hover + .slider:before{
   flex-grow: 1;
   margin-right: 5px;
 }
+
+#version {
+  display: flex;
+  flex-direction: row-reverse;
+  margin: 5px;
+}
