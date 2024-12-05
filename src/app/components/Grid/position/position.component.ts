@@ -82,6 +82,17 @@ export class PositionComponent extends AbstractInteractiveComponent {
     return this.unitConversionService.modelCoordToSVGCoord(new Coord(x,y)).y;
   }
 
+  getLowestY(): number {
+    let joints = this.position.getJoints();
+    let y;
+    if (joints[0].coords.y < joints[1].coords.y) {
+      y = joints[0].coords.y;
+    }
+    else y = joints[1].coords.y;
+
+    return this.unitConversionService.modelCoordToSVGCoord(new Coord(this.getCOMX(),y)).y;
+  }
+
   getStrokeColor(): string {
     if (this.getInteractor().isSelected) {
       return '#FFCA28';
