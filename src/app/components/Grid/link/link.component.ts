@@ -127,7 +127,7 @@ export class LinkComponent extends AbstractInteractiveComponent {
     const joints = this.link.getJoints();
     const allCoords: Coord[] = [];
 
-    for (let i = 0; i < joints.length-1; i++) {
+    for (let i = 0; i < joints.length; i++) {
       let coord: Coord = joints[i]._coords;
       coord = this.unitConversionService.modelCoordToSVGCoord(coord);
       allCoords.push(coord);

@@ -185,8 +185,8 @@ calculateConvexPath(hullPoints: Coord[], r: number): string {
 
   calculateLengthSVGPath(coord1: Coord, coord2: Coord): string {
     // Calculate perpendicular direction vectors for the line
-    const dirFirstToSecond = this.perpendicularDirection(coord1, coord2);
-    const dirSecondToFirst = this.perpendicularDirection(coord2, coord1);
+    //const dirFirstToSecond = this.perpendicularDirection(coord1, coord2);
+    //const dirSecondToFirst = this.perpendicularDirection(coord2, coord1);
     // Create the rounded line path
     let pathData = `M ${coord1.x},${coord1.y - 100} `; // Move to the first point
     pathData += `V ${coord1.y - 50} `;
