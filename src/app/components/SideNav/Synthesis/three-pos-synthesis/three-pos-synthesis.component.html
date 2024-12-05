@@ -61,10 +61,11 @@
 
                       <single-input-block
                             class="right-aligned"
-                            [input1Value]="2" style="margin-top:0; !important; margin-left: 25px !important;  padding-left:0 !important;"
+                            [input1Value]="2" style="margin-top:0; !important; margin-left: 25px !important;padding-right: 2px !important; padding-left: 0 !important;"
                             (input1Change)="setCouplerLength($event)"
                             unit1={{units}}
                             [showIcon]="false">
+
                       </single-input-block>
 
                     <div class="notification-message" *ngIf="showLockMessage">

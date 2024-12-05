@@ -113,16 +113,17 @@ hr.solid2 {
   justify-content: flex-end;
   margin-right: 0px;
   margin-top: 10px !important;
-  gap: 5px;
+  gap: 15px !important;
   //padding-left:-20px!important;
 }
 
 .right-aligned span {
   margin-left: 0px;
+
 }
 
 .single-input-block span.unit {
-
+  gap: 15px !important;
 }
 
 //.subtitle {
@@ -165,11 +166,13 @@ hr.solid2 {
   border-radius: 20px;
   border: 1px solid black;
   font-weight: bold;
-  margin-top: 3px;
+  margin-top: 15px;
   margin-bottom: 10px;
   background-color: #e8eaf6;
   color: #3F51B5;
   border: none;
+  font-size: 12px;
+
 }
 
 #generateSixBar:hover{
@@ -462,8 +465,8 @@ div.poseData {
   display: flex;
   flex-direction:column;
   //flex-wrap: wrap;
-  align-items:center;
-  gap: 8px;
+  align-items:start;
+  gap: 3px;
   padding: 0 5px;
   //overflow: hidden;
 
@@ -492,25 +495,27 @@ div.poseData {
   font-size: 12px;
   padding: 8px 10px;
   border-radius: 18px;
-  margin-top: 5px;
-  margin-bottom: 5px;
+  margin-top: 15px;
+  margin-bottom: 10px;
   cursor: pointer;
+  gap: 5px;
 }
 
 coupler-specifications-container {
-  background-color: #e1e5ea; /* Denser background color */
+  background-color: #e1e5ea;
   padding: 12px;
   margin-top: 15px;
   border-radius: 8px;
-  border: 1px solid #b0b3b8; /* Darker border */
+  border: 1px solid #b0b3b8;
 }
 
 .coupler-block, .position-section {
-  background-color: #f8f9fa; /* Lighter color for inner boxes */
+  background-color: #f8f9fa;
   padding: 10px;
   border-radius: 6px;
   border: 1px solid #d1d4d9;
   margin-bottom: 10px;
+  margin-left: 5px;
 }
 
 .reference-icon {
@@ -564,7 +569,7 @@ coupler-specifications-container {
 .lock-icon {
   width: 15px;
   height: 15px;
-  margin-left: 2px;
+  margin-left: -2px;
   cursor: pointer;
   transition: opacity 0.3s ease, transform 0.3s ease;
   opacity: 0.8;
@@ -574,8 +579,12 @@ coupler-specifications-container {
 .lock-icon.locked {
   opacity: 1;
   cursor: pointer;
-  transform: scale(1.5); /* Slightly enlarges the icon when locked */
-  filter: hue-rotate(120deg); /* Adds a color shift to indicate locked state */
+  transform: scale(1.5);
+  filter: hue-rotate(120deg);
+}
+
+.length-section{
+  padding-left: 10px;
 }
 
 .notification-message {
@@ -600,8 +609,8 @@ coupler-specifications-container {
   font-size: 14px;
   color: #626262;
   text-align:left;
-  margin-bottom: 8px;
-  margin-top: 5px;
+  margin-bottom: 12px;
+  margin-top: 8px;
   line-height: 1.4;
   font-weight: normal;
   font-family:Roboto, "Helvetica Neue", sans-serif;
@@ -611,6 +620,7 @@ coupler-specifications-container {
 
   margin-top:-12px !important;
   margin-left: 41px !important;
+  padding-left: 40px !important;
 
 }
 
@@ -638,6 +648,7 @@ coupler-specifications-container {
   font-size: 14px;
   color: #666;
   margin-bottom: 10px;
+  margin-top: 10px;
 }
 
 .position-group {
@@ -740,7 +751,7 @@ span.icons {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 22px;
+  margin-bottom: 25px;
   margin-top: 15px;
 }
 
@@ -749,8 +760,9 @@ span.icons {
   color: #666;
   //width: 20px;
   width:auto;
-  text-align: left;
+  text-align: center;
   margin-right: 2px;
+  margin-top: 3px;
 
 }
 
@@ -783,6 +795,7 @@ span.icons {
   align-items: center;
   gap: 10px;
   margin-top: 15px;
+  margin-bottom: 15px;
 }
 
 .button-group button {
@@ -859,6 +872,8 @@ span.icons {
   border: 1px solid #d1d4d9;
   margin-top:10px;
   margin-bottom: 25px;
+  margin-left: 5px;
+  margin-right: 2px;
 
 }
 
