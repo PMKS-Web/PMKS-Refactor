@@ -10,6 +10,7 @@ import { PositionInteractor } from 'src/app/controllers/position-interactor';
 import { ColorService } from 'src/app/services/color.service';
 import { SVGPathService } from 'src/app/services/svg-path.service';
 import { UnitConversionService } from "src/app/services/unit-conversion.service";
+import {Subscription} from "rxjs";
 
 @Component({
   selector: '[app-position]',
@@ -20,6 +21,8 @@ export class PositionComponent extends AbstractInteractiveComponent {
 
   @Input() position!: Position;
   @Input() isHidden: boolean = false;
+  unitSubscription: Subscription = new Subscription();
+  units: string = "cm";
 
   constructor(
     public override interactionService: InteractionService,
@@ -33,6 +36,11 @@ export class PositionComponent extends AbstractInteractiveComponent {
 
   override registerInteractor(): Interactor {
     return new PositionInteractor(this.position, this.stateService, this.interactionService);
+  }
+
+  override ngOnInit() {
+    this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe((units) => {this.units = units;});
+    super.ngOnInit();
   }
 
   getColor(): string {
@@ -50,6 +58,30 @@ export class PositionComponent extends AbstractInteractiveComponent {
   getCOMY(): number {
     return this.unitConversionService.modelCoordToSVGCoord(this.position.centerOfMass).y;
   }
+
+  //Following two functions are used to set the X and Y coordinates of the lock SVG to be between the center and the rightmost joint
+  getLockPositionX(): number {
+    let x1 = this.position.getJoints()[2].coords.x
+    let x2 = this.position.getJoints()[1].coords.x;
+    let y1 = this.position.getJoints()[2].coords.y
+    let y2 = this.position.getJoints()[1].coords.y;
+    let x = (x1 + x2)/2;
+    let y = (y1 + y2)/2;
+
+    return this.unitConversionService.modelCoordToSVGCoord(new Coord(x,y)).x;
+  }
+
+  getLockPositionY(): number {
+    let x1 = this.position.getJoints()[2].coords.x
+    let x2 = this.position.getJoints()[1].coords.x;
+    let y1 = this.position.getJoints()[2].coords.y
+    let y2 = this.position.getJoints()[1].coords.y;
+    let x = (x1 + x2)/2;
+    let y = (y1 + y2)/2;
+
+    return this.unitConversionService.modelCoordToSVGCoord(new Coord(x,y)).y;
+  }
+
   getStrokeColor(): string {
     if (this.getInteractor().isSelected) {
       return '#FFCA28';
@@ -62,7 +94,7 @@ export class PositionComponent extends AbstractInteractiveComponent {
 
   getLength(): string {
     if (this.isHidden) return "";
-    else return this.position.length.toString();
+    else return this.position.length.toString() + " " + this.units;
   }
 
   getName():string {
