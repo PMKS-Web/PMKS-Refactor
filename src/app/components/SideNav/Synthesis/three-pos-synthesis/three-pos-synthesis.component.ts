@@ -74,6 +74,9 @@ export class ThreePosSynthesis{
   position1: Position | null = null;
   position2: Position | null = null;
   position3: Position | null = null;
+  //Can this be made nicer/cleaner?
+  position2LengthErr: boolean = false;
+  position3LengthErr: boolean = false; //To be used with End Points system, True if position x has a different length than position 1
   fourBarGenerated: boolean = false;
   sixBarGenerated: boolean = false;
   coord1A = new Coord(this.pos1X - this.couplerLength / 2, this.pos1Y);
@@ -287,6 +290,7 @@ getReference(): string{
       this.position2 = positions[positions.length - 1];
       this.position2.name = "Position 2";
       this.setReference(this.reference);
+      if (this.position2.length !== this.position1?.length) { this.position2LengthErr = true; }
     } else if (index === 3) {
       this.pos3Specified = true;
       this.mechanism.addPos(this.coord1C, this.coord2C);
@@ -294,6 +298,7 @@ getReference(): string{
       this.position3 = positions[positions.length - 1];
       this.position3.name = "Position 3";
       this.setReference(this.reference);
+      if (this.position3.length !== this.position1?.length) { this.position3LengthErr = true; }
     }
   }
 
@@ -390,6 +395,7 @@ resetPos(pos: number){
         this.pos2X=-2.5;
         this.pos2Y=0;
         this.twoPointPositions[1] = { x0: -3.5, y0: 0, x1: -1.5, y1: 0, defined: false };
+        this.position2LengthErr = false;
     }
     else {
         this.pos3Angle=0;
@@ -397,6 +403,7 @@ resetPos(pos: number){
         this.pos3X=2.5;
         this.pos3Y=0;
         this.twoPointPositions[2] = { x0: 1.5, y0: 0, x1: 3.5, y1: 0, defined: false };
+        this.position3LengthErr = false;
     }
 }
 
@@ -1415,6 +1422,8 @@ verifyMechanismPath() {
         x2.setCoordinates(new Coord(x, x2.coords.y));
         const centerCoord2 = this.getReferenceJoint(this.position2!);
         midjoint2.setCoordinates(centerCoord2.coords);
+        if (this.position2!.length !== this.position1?.length) { this.position2LengthErr = true }
+        else this.position2LengthErr = false;
         break;
       case 3:
         const x3 = this.position3!.getJoints()[0];
@@ -1422,6 +1431,8 @@ verifyMechanismPath() {
         x3.setCoordinates(new Coord(x, x3.coords.y));
         const centerCoord3 = this.getReferenceJoint(this.position3!);
         midjoint3.setCoordinates(centerCoord3.coords);
+        if (this.position3!.length !== this.position1?.length) { this.position3LengthErr = true }
+        else this.position3LengthErr = false;
         break;
     }
   }
@@ -1441,6 +1452,8 @@ verifyMechanismPath() {
         x2.setCoordinates(new Coord(x, x2.coords.y));
         const centerCoord2 = this.getReferenceJoint(this.position2!);
         midjoint2.setCoordinates(centerCoord2.coords);
+        if (this.position2!.length !== this.position1?.length) { this.position2LengthErr = true }
+        else this.position2LengthErr = false;
         break;
       case 3:
         const x3 = this.position3!.getJoints()[1];
@@ -1448,6 +1461,8 @@ verifyMechanismPath() {
         x3.setCoordinates(new Coord(x, x3.coords.y));
         const centerCoord3 = this.getReferenceJoint(this.position3!);
         midjoint3.setCoordinates(centerCoord3.coords);
+        if (this.position3!.length !== this.position1?.length) { this.position3LengthErr = true }
+        else this.position3LengthErr = false;
         break;
     }
   }
@@ -1467,6 +1482,8 @@ verifyMechanismPath() {
         y2.setCoordinates(new Coord(y2.coords.x, y));
         const centerCoord2 = this.getReferenceJoint(this.position2!);
         midjoint2.setCoordinates(centerCoord2.coords);
+        if (this.position2!.length !== this.position1?.length) { this.position2LengthErr = true }
+        else this.position2LengthErr = false;
         break;
       case 3:
         const y3 = this.position3!.getJoints()[0];
@@ -1474,6 +1491,8 @@ verifyMechanismPath() {
         y3.setCoordinates(new Coord(y3.coords.x, y));
         const centerCoord3 = this.getReferenceJoint(this.position3!);
         midjoint3.setCoordinates(centerCoord3.coords);
+        if (this.position3!.length !== this.position1?.length) { this.position3LengthErr = true }
+        else this.position3LengthErr = false;
         break;
     }
   }
@@ -1493,6 +1512,8 @@ verifyMechanismPath() {
         y2.setCoordinates(new Coord(y2.coords.x, y));
         const centerCoord2 = this.getReferenceJoint(this.position2!);
         midjoint2.setCoordinates(centerCoord2.coords);
+        if (this.position2!.length !== this.position1?.length) { this.position2LengthErr = true }
+        else this.position2LengthErr = false;
         break;
       case 3:
         const y3 = this.position3!.getJoints()[1];
@@ -1500,6 +1521,8 @@ verifyMechanismPath() {
         y3.setCoordinates(new Coord(y3.coords.x, y));
         const centerCoord3 = this.getReferenceJoint(this.position3!);
         midjoint3.setCoordinates(centerCoord3.coords);
+        if (this.position3!.length !== this.position1?.length) { this.position3LengthErr = true }
+        else this.position3LengthErr = false;
         break;
     }
   }
@@ -1552,6 +1575,21 @@ verifyMechanismPath() {
     } else {
       console.warn("Input or Ground Joint not found!");
     }
+  }
+
+  getPositionLengthErr(pos: number): boolean {
+    let retVal: boolean = false;
+    switch (pos) {
+      case 1:
+        retVal = false;
+        break;
+      case 2:
+        retVal = this.position2LengthErr;
+        break;
+      case 3:
+        retVal = this.position3LengthErr;
+    }
+    return retVal;
   }
 
 }

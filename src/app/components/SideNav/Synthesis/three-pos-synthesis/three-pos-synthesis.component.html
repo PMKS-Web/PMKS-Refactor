@@ -227,17 +227,19 @@
 
 
     <!-- Loop for three positions -->
-    <div *ngFor="let index of [0,1,2]" class="position-group">
+    <div *ngFor="let index of [0,1,2]">
+      <div [ngClass]="!getPositionLengthErr(index + 1) ? 'position-group': 'position-group-error'">
       <div class="position-header">
         <span>Position {{ index + 1 }}</span>
-        <span class="icons">
-      <mat-icon id="tooltipTwoPoints" matTooltip="Specify the coordinates for Position {{ index + 1 }}"
-                [matTooltipShowDelay]="1000">help_outline</mat-icon>
+        <span [ngClass]="!getPositionLengthErr(index + 1) ? 'icons' : 'icons-error'">
+      <mat-icon  id="tooltipTwoPoints" matTooltip="Specify the coordinates for Position {{ index + 1 }}. Ensure all values are entered such that the lengths of all Positions are equal."
+                [matTooltipShowDelay]="1000" >help_outline</mat-icon>
       <button class="delete-button" (click)="this.deletePosition(index+1)">
-        <img id="trashTwoPoints" src="assets/icons/trash.svg" alt="Delete Position">
+        <img id="trashTwoPoints" ngSrc="assets/icons/trash.svg" alt="Delete Position" height="18" width="15">
       </button>
     </span>
       </div>
+
 
       <!-- Calculate the starting label number for each position based on index -->
 <!--      <div class="input-row" *ngIf="pos.defined">-->
@@ -324,7 +326,7 @@
         <button id="specifyEndPoints" (click)="this.specifyPositionEndPoints(index+1)">Specify Position</button>
 
       </div>
-
+      </div>
     </div>
 
 

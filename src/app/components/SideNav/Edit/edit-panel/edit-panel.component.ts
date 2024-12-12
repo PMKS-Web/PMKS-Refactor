@@ -29,6 +29,5 @@ export class EditPanelComponent {
             console.log(`selected obj is ${this.selectedObj.type()}`);
             return this.selectedObj.type();
         }
-        
     }
 }
