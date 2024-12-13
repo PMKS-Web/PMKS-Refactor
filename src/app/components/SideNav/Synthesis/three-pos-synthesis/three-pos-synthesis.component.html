@@ -228,11 +228,11 @@
 
     <!-- Loop for three positions -->
     <div *ngFor="let index of [0,1,2]">
-      <div [ngClass]="!getPositionLengthErr(index + 1) ? 'position-group': 'position-group-error'">
+      <div class="position-group">
       <div class="position-header">
         <span>Position {{ index + 1 }}</span>
-        <span [ngClass]="!getPositionLengthErr(index + 1) ? 'icons' : 'icons-error'">
-      <mat-icon  id="tooltipTwoPoints" matTooltip="Specify the coordinates for Position {{ index + 1 }}. Ensure all values are entered such that the lengths of all Positions are equal."
+        <span class="icons">
+      <mat-icon  id="tooltipTwoPoints" matTooltip="Specify the coordinates for Position {{ index + 1 }}. Ensure all values are entered such that the distance between each pair of points is equal."
                 [matTooltipShowDelay]="1000" >help_outline</mat-icon>
       <button class="delete-button" (click)="this.deletePosition(index+1)">
         <img id="trashTwoPoints" ngSrc="assets/icons/trash.svg" alt="Delete Position" height="18" width="15">
@@ -283,7 +283,7 @@
                (blur)="handleBlur(index, 'x0')"
                [placeholder]="twoPointPositions[index].x0 === 0 || twoPointPositions[index].x0 === undefined ? '0' : ''"
                (keyup.enter)="pipeToEndPoint($event, index+1, 'x1')"
-               class="coordinate-input">
+               [ngClass]="!getPositionLengthErrX1(index + 1) ? 'coordinate-input': 'coordinate-input-error'">
 
         <label for="y{{index * 2 + 1}}">Y{{index * 2 + 1}}</label>
 
@@ -294,7 +294,7 @@
                (blur)="handleBlur(index, 'y0')"
                [placeholder]="twoPointPositions[index].y0 === 0 || twoPointPositions[index].y0 === undefined ? '0' : ''"
                (keyup.enter)="pipeToEndPoint($event, index+1, 'y1')"
-               class="coordinate-input">
+               [ngClass]="!getPositionLengthErrY1(index + 1) ? 'coordinate-input': 'coordinate-input-error'">
       </div>
 
       <div class="input-row" *ngIf="this.isPositionDefined(index+1)">
@@ -306,7 +306,7 @@
                (blur)="handleBlur(index, 'x1')"
                [placeholder]="twoPointPositions[index].x1 === 0 || twoPointPositions[index].x1 === undefined ? '0' : ''"
                (keyup.enter)="pipeToEndPoint($event, index+1, 'x2')"
-               class="coordinate-input">
+               [ngClass]="!getPositionLengthErrX2(index + 1) ? 'coordinate-input': 'coordinate-input-error'">
 
         <label for="y{{index * 2 + 2}}">Y{{index * 2 + 2}}</label>
         <input id="y{{index * 2 + 2}}"
@@ -316,7 +316,7 @@
                (blur)="handleBlur(index, 'y1')"
                [placeholder]="twoPointPositions[index].y1 === 0 || twoPointPositions[index].y1 === undefined ? '0' : ''"
                (keyup.enter)="pipeToEndPoint($event, index+1, 'y2')"
-               class="coordinate-input">
+               [ngClass]="!getPositionLengthErrY2(index + 1) ? 'coordinate-input': 'coordinate-input-error'">
       </div>
 
 

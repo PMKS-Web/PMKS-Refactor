@@ -702,13 +702,6 @@ coupler-specifications-container {
   border: 1px solid #ddd;
 }
 
-.position-group-error {
-  background-color: #ffffff;
-  padding: 8px;
-  margin: 0 10px 10px 10px;
-  border-radius: 8px;
-  border: 2px solid red;
-}
 
 .position-header {
   display: flex;
@@ -831,6 +824,13 @@ span.icons {
   width: 40px;
   padding: 4px;
   border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.coordinate-input-error {
+  width: 40px;
+  padding: 4px;
+  border: 2px solid red;
   border-radius: 4px;
 }
 
