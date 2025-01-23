@@ -4,9 +4,11 @@
             [disabled]='invalidMechanism()'
             mat-mini-fab
             matTooltip='Change Animation Speed'
-            matTooltipShowDelay='1000'
+            matTooltipShowDelay='500'
+            (click)="toggleAnimationSpeed()"
     >
-      2x</button>
+        {{animationSpeed}}x
+      </button>
 
     <button class="animation-button" [disabled]='invalidMechanism()' *ngIf='this.getIsPausedAnimating()' mat-mini-fab color='primary'
             (click)="controlAnimation('play')" matTooltip='Play Animation' matTooltipShowDelay='1000'>

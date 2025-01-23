@@ -26,6 +26,7 @@ export class AnimationService {
 
     private animationStates: JointAnimationState[];
     private invaldMechanism: boolean;
+    private speedMultiplier: number = 1;
 
     constructor(private stateService: StateService, private positionSolver: PositionSolverService) {
         this.animationStates = new Array();
@@ -34,6 +35,11 @@ export class AnimationService {
             this.initializeAnimations();
         });
     }
+
+    setSpeedmultiplier(multiplier: number) {
+      this.speedMultiplier = multiplier;
+    }
+
     isInvalid(): boolean {
         return this.invaldMechanism;
     }
@@ -97,7 +103,7 @@ export class AnimationService {
             }
             setTimeout(() => {
                 this.singleMechanismAnimation(state)
-            }, Math.round((1000 * 60) / (state.inputSpeed * 360)));
+            }, Math.round((1000 * 60) / (state.inputSpeed * 360*this.speedMultiplier)));
         }
     }
     reset() {
@@ -127,14 +133,43 @@ export class AnimationService {
         let frame = Math.round(timeInSeconds / (60 / (animationState.inputSpeed * 360)));
         while(frame > animationState.totalFrames){
             frame -= animationState.totalFrames;
-        } 
+        }
         while(frame < 0){
             frame += animationState.totalFrames
         }
         animationState.currentFrameIndex = frame;
     }
-    
+/*
+    getDirectionChanges(state: JointAnimationState): number[]{
+      const changes: number[] = [];
+      const frames = state.animationFrames
 
+      for (let i = 1; i < frames.length - 1; i++){
+        const thisFrame = frames[i];
+        const lastFrame = frames[i-1];
+        const nextFrame = frames[i+1];
+
+        const isDirectionChange = this.detectDirectionChange(lastFrame,thisFrame,nextFrame);
+
+        if (isDirectionChange){
+
+        }
+
+      }
+
+    }
+
+    detectDirectionChange(lastFrame: Coord[],thisFrame: Coord[],nextFrame: Coord[]): boolean{
+      const last = lastFrame[0]
+
+      const xChanges = (last.y - lastFrame.x) * (nextFrame.x - thisFrame.x) < 0;
+      const yChanges = (thisFrame.y - lastFrame.y) * (nextFrame.y - thisFrame.y) < 0;
+
+      return xChanges && yChanges;
+
+  }
+
+*/
 
 
 

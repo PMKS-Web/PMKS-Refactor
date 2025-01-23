@@ -20,10 +20,24 @@ export class AnimationBarComponent {
 
   private isAnimating: boolean = false;
   private isPausedAnimating: boolean = true;
-  constructor(public interactionService: InteractionService, private animationService: AnimationService, private unitConversionService: UnitConversionService, public panZoomService: PanZoomService) {
+  public animationSpeed: number = 1;
 
-  }
+  constructor(
+    public interactionService: InteractionService,
+    private animationService: AnimationService,
+    private unitConversionService: UnitConversionService,
+    public panZoomService: PanZoomService
+  ) {}
+
   cursorPosition: string = '';
+
+  toggleAnimationSpeed(): void{
+    const speedOptions = [0.5,1,2]
+    const index = speedOptions.indexOf(this.animationSpeed);
+    this.animationSpeed = speedOptions[(index+1) % speedOptions.length];
+
+    this.animationService.setSpeedmultiplier(this.animationSpeed);
+  }
 
   @HostListener('document:mousemove', ['$event'])
   onMouseMove(event: MouseEvent) {
