@@ -5,6 +5,8 @@ import { Force } from '../model/force'
 import { CompoundLink } from '../model/compound-link'
 import { BehaviorSubject } from 'rxjs'
 import {Position} from "./position";
+import {Trajectory} from "./trajectory";
+import { PositionSolverService } from 'src/app/services/kinematic-solver.service';
 
 
 export class Mechanism {
@@ -20,15 +22,18 @@ export class Mechanism {
     private _mechanismChange: BehaviorSubject<Mechanism> = new BehaviorSubject<Mechanism>(this);
     public _mechanismChange$ = this._mechanismChange.asObservable();
     private _positions: Map<number, Position> = new Map();
+    private _trajectories: Map<number, Trajectory> = new Map();
     private _positionIDCount: number = 0;
     private _synthesizedMechArr: Link[] = [];
     private _refIdCount: number = -1;
+
 
     constructor() {
         this._joints = new Map();
         this._links = new Map();
         this._forces = new Map();
         this._positions = new Map();
+        this._trajectories = new Map()
         this._compoundLinks = new Map();
         this._idCount = 0;
         this._jointIDCount = 0;
@@ -64,7 +69,7 @@ export class Mechanism {
         if (typeof synthesized !== 'undefined') {
           isSynth = synthesized;
         }
-        let jointA = new Joint(this._jointIDCount, coordOne);
+        let jointA = new Joint(this._jointIDCount, coordOne); console.log(coordOne.x); console.log(coordOne.y);
         this._jointIDCount++;
         let jointB = new Joint(this._jointIDCount, coordTwo);
         this._jointIDCount++;
@@ -74,7 +79,7 @@ export class Mechanism {
         if (linkA.calculateAngle() === null) {
           linkA.angle = 0
         }
-        else linkA.angle = parseFloat(linkA.calculateAngle()!.toFixed(2));
+        else linkA.angle = parseFloat(linkA.calculateAngle()!.toFixed(3));
         this._linkIDCount++;
         this._links.set(linkA.id, linkA);
         if (!isSynth) {
@@ -116,7 +121,43 @@ export class Mechanism {
     //console.log(this);
   }
 
-    //----------------------------JOINT CONTEXT MENU ACTIONS----------------------------
+  populateTrajectories(positionSolver: PositionSolverService): void {
+    const animationFrames = positionSolver.getAnimationFrames();
+
+    if (animationFrames.length === 0) {
+      console.warn("No animation frames available.");
+      return;
+    }
+
+    const correspondingJoints = animationFrames[0].correspondingJoints;
+
+    for (let j = 0; j < correspondingJoints.length; j++) {
+      const jointId = correspondingJoints[j];
+      const joint = this.getJoint(jointId);
+
+      if (joint.isGrounded) {
+        continue;
+      }
+
+      const trajectoryCoords: Coord[] = [];
+
+      for (let i = 0; i < animationFrames[0].positions.length; i++) {
+        const frame = animationFrames[0].positions[i];
+        trajectoryCoords.push(frame[j]);
+      }
+      console.log('trajectoryCoords', trajectoryCoords);
+
+
+      console.log('Trajectory Coords:', trajectoryCoords);
+      console.log('Animation Frames:', animationFrames);
+      console.log(`Populating trajectory for joint ID ${jointId} with coords:`, trajectoryCoords);
+
+      this.setTrajectory(jointId, new Trajectory(trajectoryCoords, jointId));
+    }
+  }
+
+
+  //----------------------------JOINT CONTEXT MENU ACTIONS----------------------------
 
 
     /**
@@ -937,6 +978,11 @@ export class Mechanism {
       return Array.from(this._positions.values());
     }
 
+    public getTrajectories(): Iterable<Trajectory> {
+      console.log('Trajectories:', this._trajectories.values());
+      return this._trajectories.values();
+    }
+
     getJoints(): IterableIterator<Joint>{
         return this._joints.values();
     }
@@ -967,6 +1013,14 @@ export class Mechanism {
   //----------------------------SET FUNCTIONS----------------------------
   set_jointIDCount (count : number){
       this._jointIDCount = count;
+  }
+  setTrajectory(jointId: number, trajectory: Trajectory): void {
+    this._trajectories.set(jointId, trajectory);
+  }
+
+  //----------------------------CLEAR FUNCTIONS----------------------------
+  clearTrajectories(): void {
+    this._trajectories.clear();
   }
 
  //----------------------------GET FUNCTIONS FOR KINEMATICS----------------------------

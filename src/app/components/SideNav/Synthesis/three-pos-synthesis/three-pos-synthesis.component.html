@@ -189,6 +189,11 @@
                      Evaluate Positions
                    </button>
                  </div>
+                 <div>
+                   <button id="inputSwap" (click)="swapInputAndGround()">
+                     Swap Input & Ground
+                   </button>
+                 </div>
                </div>
 
 
@@ -222,17 +227,19 @@
 
 
     <!-- Loop for three positions -->
-    <div *ngFor="let index of [0,1,2]" class="position-group">
+    <div *ngFor="let index of [0,1,2]">
+      <div class="position-group">
       <div class="position-header">
         <span>Position {{ index + 1 }}</span>
         <span class="icons">
-      <mat-icon id="tooltipTwoPoints" matTooltip="Specify the coordinates for Position {{ index + 1 }}"
-                [matTooltipShowDelay]="1000">help_outline</mat-icon>
+      <mat-icon  id="tooltipTwoPoints" matTooltip="Specify the coordinates for Position {{ index + 1 }}. Ensure all values are entered such that the distance between each pair of points is equal."
+                [matTooltipShowDelay]="1000" >help_outline</mat-icon>
       <button class="delete-button" (click)="this.deletePosition(index+1)">
-        <img id="trashTwoPoints" src="assets/icons/trash.svg" alt="Delete Position">
+        <img id="trashTwoPoints" ngSrc="assets/icons/trash.svg" alt="Delete Position" height="18" width="15">
       </button>
     </span>
       </div>
+
 
       <!-- Calculate the starting label number for each position based on index -->
 <!--      <div class="input-row" *ngIf="pos.defined">-->
@@ -271,45 +278,49 @@
 
         <input id="x{{index * 2 + 1}}"
                type="number"
+               step="0.001"
                [(ngModel)]="twoPointPositions[index].x0"
                (focus)="handleFocus(index, 'x0')"
                (blur)="handleBlur(index, 'x0')"
                [placeholder]="twoPointPositions[index].x0 === 0 || twoPointPositions[index].x0 === undefined ? '0' : ''"
-               (keyup.enter)="pipeToEndPoint($event, index+1, 'x1')"
-               class="coordinate-input">
+               (keydown.enter)="pipeToEndPoint($event, index+1, 'x1')"
+               [ngClass]="!getPositionLengthErrX1(index + 1) ? 'coordinate-input': 'coordinate-input-error'">
 
         <label for="y{{index * 2 + 1}}">Y{{index * 2 + 1}}</label>
 
         <input id="y{{index * 2 + 1}}"
                type="number"
+               step="0.001"
                [(ngModel)]="twoPointPositions[index].y0"
                (focus)="handleFocus(index, 'y0')"
                (blur)="handleBlur(index, 'y0')"
                [placeholder]="twoPointPositions[index].y0 === 0 || twoPointPositions[index].y0 === undefined ? '0' : ''"
                (keyup.enter)="pipeToEndPoint($event, index+1, 'y1')"
-               class="coordinate-input">
+               [ngClass]="!getPositionLengthErrY1(index + 1) ? 'coordinate-input': 'coordinate-input-error'">
       </div>
 
       <div class="input-row" *ngIf="this.isPositionDefined(index+1)">
         <label for="x{{index * 2 + 2}}">X{{index * 2 + 2}}</label>
         <input id="x{{index * 2 + 2}}"
                type="number"
+               step="0.001"
                [(ngModel)]="twoPointPositions[index].x1"
                (focus)="handleFocus(index, 'x1')"
                (blur)="handleBlur(index, 'x1')"
                [placeholder]="twoPointPositions[index].x1 === 0 || twoPointPositions[index].x1 === undefined ? '0' : ''"
                (keyup.enter)="pipeToEndPoint($event, index+1, 'x2')"
-               class="coordinate-input">
+               [ngClass]="!getPositionLengthErrX2(index + 1) ? 'coordinate-input': 'coordinate-input-error'">
 
         <label for="y{{index * 2 + 2}}">Y{{index * 2 + 2}}</label>
         <input id="y{{index * 2 + 2}}"
                type="number"
+               step="0.001"
                [(ngModel)]="twoPointPositions[index].y1"
                (focus)="handleFocus(index, 'y1')"
                (blur)="handleBlur(index, 'y1')"
                [placeholder]="twoPointPositions[index].y1 === 0 || twoPointPositions[index].y1 === undefined ? '0' : ''"
                (keyup.enter)="pipeToEndPoint($event, index+1, 'y2')"
-               class="coordinate-input">
+               [ngClass]="!getPositionLengthErrY2(index + 1) ? 'coordinate-input': 'coordinate-input-error'">
       </div>
 
 
@@ -319,7 +330,7 @@
         <button id="specifyEndPoints" (click)="this.specifyPositionEndPoints(index+1)">Specify Position</button>
 
       </div>
-
+      </div>
     </div>
 
 

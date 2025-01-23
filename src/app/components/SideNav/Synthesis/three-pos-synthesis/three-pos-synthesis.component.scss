@@ -211,6 +211,28 @@ hr.solid2 {
   border: none;
 }
 
+#inputSwap{
+  margin:0 auto;
+  display:inherit;
+  background-color: white;
+  width: 60%;
+  height: 40px;
+  border-radius: 20px;
+  border: 1px solid black;
+  font-weight: bold;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  margin-top: 3px;
+  margin-bottom: 10px;
+  background-color: #e8eaf6;
+  color: #3F51B5;
+  border: none;
+}
+
+#inputSwap:hover {
+  color: #e8eaf6;
+  background-color: #3F51B5;
+}
+
 #generateFourBar{
   margin:0 auto;
   display:inherit;
@@ -680,6 +702,7 @@ coupler-specifications-container {
   border: 1px solid #ddd;
 }
 
+
 .position-header {
   display: flex;
   align-items: center;
@@ -717,6 +740,32 @@ coupler-specifications-container {
   margin: 0;
 }
 
+.icons-error {
+  position: absolute;
+  top: 0;
+  left: 40%;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.icons-error mat-icon, .icons-error img {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: red;
+}
+
+.icons-error mat-icon, .icons-error img {
+  padding: 0;
+  margin: 0;
+  color: red;
+}
+
+.icons-error mat-icon {
+  color: red;
+}
+// for some reason the icons are moving around
 
 span.icons {
   display: flex;
@@ -728,7 +777,6 @@ span.icons {
 
 #tooltipTwoPoints {
   font-size: 16px;
-  color: #666;
   cursor: pointer;
   margin-top: 5px;
 }
@@ -739,7 +787,6 @@ span.icons {
   cursor: pointer;
   width: 18px;
   height: 18px;
-
 }
 
 .delete-button {
@@ -777,6 +824,13 @@ span.icons {
   width: 40px;
   padding: 4px;
   border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.coordinate-input-error {
+  width: 40px;
+  padding: 4px;
+  border: 2px solid red;
   border-radius: 4px;
 }
 

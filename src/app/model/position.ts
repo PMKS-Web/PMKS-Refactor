@@ -1,6 +1,6 @@
-import {Coord} from '../model/coord';
-import {Joint} from '../model/joint';
-import {Force} from '../model/force';
+import {Coord} from './coord';
+import {Joint} from './joint';
+import {Force} from './force';
 
 export interface RigidBody {
   getJoints(): Joint[];
@@ -49,6 +49,7 @@ export class Position implements RigidBody {
     } else {
       throw new Error("Invalid Constructor Parameters");
     }
+    this.setJointNames();
 
     this._centerOfMass = this.calculateCenterOfMass();
     this._name = this.generateName();
@@ -94,7 +95,7 @@ export class Position implements RigidBody {
   get length(): number {
     let l = this.calculateLength();
     if (l) {
-      return parseFloat(l.toFixed(2));
+      return parseFloat(l.toFixed(3));
     }
     else throw new Error('Length is null');
   }
@@ -177,6 +178,12 @@ export class Position implements RigidBody {
       throw new Error("Position now only contains 1 Joint");
     }
     this._name = this.generateName();
+  }
+
+  setJointNames(): void {
+    const nameNum = this.id + 1;
+    this.getJoints()[0].name = nameNum + "A";
+    this.getJoints()[1].name = nameNum + "B";
   }
 
   addForce(newForce: Force) {

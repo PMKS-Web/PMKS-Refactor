@@ -22,6 +22,27 @@ export class SVGPathService {
     return this.calculateConvexPath(hullCoords,radius);
   }
 
+  getTrajectoryDrawnPath(allCoords: Coord[], radius: number): string {
+    if (allCoords.length === 0) {
+      return '';
+    }
+
+    //check if coordinates are collinear. If they are, use the two returned coords(the end points) to draw a line
+    const collinearCoords: Coord[] | undefined = this.findCollinearCoords(allCoords);
+    if (collinearCoords !== undefined) {
+
+      return this.calculateTwoPointPath(collinearCoords[0], collinearCoords[1], radius);
+    }
+
+    let pathData = `M ${allCoords[0].x},${allCoords[0].y} `;
+    for (let i = 1; i < allCoords.length; i++) {
+      const currentCoord = allCoords[i];
+      pathData += `L ${currentCoord.x},${currentCoord.y} `;
+    }
+
+    return pathData.trim();
+  }
+
   getSinglePosDrawnPath(allCoords: Coord[], radius: number): string {
 
     //check if coordinates are collinear. If they are, use the two returned coords(the end points) to draw a line
@@ -98,7 +119,6 @@ export class SVGPathService {
     return crossProduct > 0; // if cross product is positive, the coords are counter-clockwise
   }
 
-
 calculateTwoPointPath(coord1: Coord, coord2: Coord, r: number): string {
   // Calculate perpendicular direction vectors for the line
   const dirFirstToSecond = this.perpendicularDirection(coord1, coord2);
@@ -112,10 +132,12 @@ calculateTwoPointPath(coord1: Coord, coord2: Coord, r: number): string {
   pathData += 'Z'; // Close the path
   return pathData;
 }
+
 //performs a XOR on the direction of the path between two coordinates
  arcDirection(coord1: Coord, coord2: Coord): number{
 	return (coord2.x-coord1.x < 0) !== (coord2.y-coord1.y < 0) ? 0 : 1;
  }
+
 // Function to calculate the correct perpendicular direction vector between two points
 perpendicularDirection(c1: Coord, c2: Coord): Coord {
   const dir: Coord = this.direction(c1,c2);
@@ -125,6 +147,7 @@ perpendicularDirection(c1: Coord, c2: Coord): Coord {
   let pointAtRadiusPerpToDir = new Coord(dir.y,-dir.x)
   return pointAtRadiusPerpToDir;
 }
+
 calculateConvexPath(hullPoints: Coord[], r: number): string {
     if (hullPoints.length < 3) {
       throw new Error('At least three points are required to create a path with rounded corners.');
@@ -149,6 +172,7 @@ calculateConvexPath(hullPoints: Coord[], r: number): string {
     pathData += ' Z';
     return pathData;
   }
+
   // Function to calculate the direction vector between two points
   direction(from: Coord, to: Coord) {
     const len = Math.sqrt((to.x - from.x) ** 2 + (to.y - from.y) ** 2);
@@ -159,6 +183,20 @@ calculateConvexPath(hullPoints: Coord[], r: number): string {
     return ``;
   }
 
+  calculateLengthSVGPath(coord1: Coord, coord2: Coord): string {
+    // Calculate perpendicular direction vectors for the line
+    //const dirFirstToSecond = this.perpendicularDirection(coord1, coord2);
+    //const dirSecondToFirst = this.perpendicularDirection(coord2, coord1);
+    // Create the rounded line path
+    let pathData = `M ${coord1.x},${coord1.y - 100} `; // Move to the first point
+    pathData += `V ${coord1.y - 50} `;
+    pathData += `M ${coord1.x},${coord1.y - 75} `;
+    pathData += `L ${coord2.x},${coord2.y - 75} `;
+    pathData += `M ${coord2.x},${coord2.y - 100} `;
+    pathData += `V ${coord2.y - 50} `;
+    //Need to generalize
+    return pathData;
+  }
 
 
 }

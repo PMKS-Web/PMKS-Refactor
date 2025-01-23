@@ -70,6 +70,8 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatSliderModule} from "@angular/material/slider";
 
 import { PositionComponent } from './components/Grid/position/position.component';
+import {TrajectoryComponent} from './components/Grid/trajectory/trajectory.component';
+import {NgOptimizedImage} from "@angular/common";
 
 @NgModule({
   declarations: [
@@ -124,28 +126,30 @@ import { PositionComponent } from './components/Grid/position/position.component
     SavePanelComponent,
     SharePanelComponent,
     PositionComponent,
+    TrajectoryComponent,
   ],
-  imports: [
-    BrowserModule,
-    MatMenuModule,
-    BrowserAnimationsModule,
-    MatToolbarModule,
-    MatButtonModule,
-    MatIconModule,
-    MatSidenavModule,
-    MatButtonToggleModule,
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatTooltipModule,
-    MatSlideToggleModule,
-    MatInputModule,
-    FormsModule,
-    NgChartsModule,
-    MatListModule,
-    MatExpansionModule,
-    MatCheckboxModule,
-    MatSliderModule,
-  ],
+    imports: [
+        BrowserModule,
+        MatMenuModule,
+        BrowserAnimationsModule,
+        MatToolbarModule,
+        MatButtonModule,
+        MatIconModule,
+        MatSidenavModule,
+        MatButtonToggleModule,
+        ReactiveFormsModule,
+        MatFormFieldModule,
+        MatTooltipModule,
+        MatSlideToggleModule,
+        MatInputModule,
+        FormsModule,
+        NgChartsModule,
+        MatListModule,
+        MatExpansionModule,
+        MatCheckboxModule,
+        MatSliderModule,
+        NgOptimizedImage,
+    ],
   providers: [],
   exports: [
     PanelSectionCollapsibleComponent,
