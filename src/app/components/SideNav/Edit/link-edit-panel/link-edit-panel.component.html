@@ -69,10 +69,10 @@
           <div id="container">
             <div *ngFor='let joint of getLinkComponents(); let i = index;'>
               <dual-input-block
-                [input1Value]="this.roundToTwo(joint.coords.x)"
-                [input2Value]="this.roundToTwo(joint.coords.y)"
-                (input1Change)="joint.coords.x=($event)"
-                (input2Change)="joint.coords.y=($event)"
+                [input1Value]="this.roundToThree(joint.coords.x)"
+                [input2Value]="this.roundToThree(joint.coords.y)"
+                (input1Change)="joint.coords.x=(this.roundToThree($event))"
+                (input2Change)="joint.coords.y=(this.roundToThree($event))"
                 label1="X" label2="Y"
                 unit1={{units}} unit2={{units}}
                 tooltip="Change joint positions">

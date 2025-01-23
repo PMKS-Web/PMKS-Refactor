@@ -1,26 +1,15 @@
-import {
-  Component,
-  Input,
-  OnInit,
-  OnChanges,
-  Output,
-  EventEmitter,
-  HostListener,
-} from '@angular/core';
-import { LinkInteractor } from 'src/app/controllers/link-interactor';
-import { Link } from 'src/app/model/link';
-import { Mechanism } from 'src/app/model/mechanism';
-import { InteractionService } from 'src/app/services/interaction.service';
-import { StateService } from 'src/app/services/state.service';
-import { Joint } from 'src/app/model/joint';
-import { Coord } from 'src/app/model/coord';
-import { ChangeDetectorRef } from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, HostListener, Input, Output,} from '@angular/core';
+import {LinkInteractor} from 'src/app/controllers/link-interactor';
+import {Link} from 'src/app/model/link';
+import {Mechanism} from 'src/app/model/mechanism';
+import {InteractionService} from 'src/app/services/interaction.service';
+import {StateService} from 'src/app/services/state.service';
+import {Joint} from 'src/app/model/joint';
+import {Coord} from 'src/app/model/coord';
 import {PositionSolverService} from "../../../../services/kinematic-solver.service";
-import { DoCheck } from '@angular/core';
 import {JointInteractor} from "../../../../controllers/joint-interactor";
 import {Position} from "../../../../model/position";
 import {Subscription} from "rxjs";
-
 
 
 interface CoordinatePosition {
@@ -799,7 +788,6 @@ setPosXCoord(x: number, posNum: number) {
   }
 
   else if (posNum === 3) {
-      this.pos3X = x;
     const backJoint = this.position3!.getJoints()[0];
     const frontJoint = this.position3!.getJoints()[1];
     const midJoint = this.position3!.getJoints()[2];
@@ -850,7 +838,6 @@ setPosXCoord(x: number, posNum: number) {
 setPosYCoord(y: number, posNum: number){
 
   if(posNum === 1){
-    this.pos1Y = y;
     const backJoint = this.position1!.getJoints()[0];
     const frontJoint = this.position1!.getJoints()[1];
     const midJoint = this.position1!.getJoints()[2];
@@ -944,7 +931,6 @@ setPosYCoord(y: number, posNum: number){
   }
 
   else if (posNum === 3) {
-    this.pos3Y = y;
     const backJoint = this.position3!.getJoints()[0];
     const frontJoint = this.position3!.getJoints()[1];
     const midJoint = this.position3!.getJoints()[2];
@@ -1399,19 +1385,18 @@ verifyMechanismPath() {
     let val = parseFloat((e.target as HTMLInputElement).value);
     switch (endPoint) {
       case "x1":
-        this.setPosX1CoordEndPoints(parseFloat(val.toFixed(2)), posNum);
+        this.setPosX1CoordEndPoints(parseFloat(val.toFixed(3)), posNum);
         break;
       case "y1":
-        this.setPosY1CoordEndPoints(parseFloat(val.toFixed(2)), posNum);
+        this.setPosY1CoordEndPoints(parseFloat(val.toFixed(3)), posNum);
         break;
       case "x2":
-        this.setPosX2CoordEndPoints(parseFloat(val.toFixed(2)), posNum);
+        this.setPosX2CoordEndPoints(parseFloat(val.toFixed(3)), posNum);
         break;
       case "y2":
-        this.setPosY2CoordEndPoints(parseFloat(val.toFixed(2)), posNum);
+        this.setPosY2CoordEndPoints(parseFloat(val.toFixed(3)), posNum);
         break;
     }
-
   }
 
   setPosX1CoordEndPoints(x: number, posNum: number) {

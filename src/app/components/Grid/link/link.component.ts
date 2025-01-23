@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
 import { Link } from 'src/app/model/link';
 import { Joint } from 'src/app/model/joint';
 import { Coord } from 'src/app/model/coord';
@@ -16,18 +16,19 @@ import {Subscription} from "rxjs";
 @Component({
   selector: '[app-link]',
   templateUrl: './link.component.html',
-  styleUrls: ['./link.component.css']
+  styleUrls: ['./link.component.css'],
 })
 export class LinkComponent extends AbstractInteractiveComponent {
 
   @Input() link!: Link;
   unitSubscription: Subscription = new Subscription();
   units: string = "cm";
+  angle: string = "0";
   constructor(public override interactionService: InteractionService,
 				private stateService: StateService,
 				private colorService: ColorService,
 				private svgPathService: SVGPathService,
-        private unitConversionService: UnitConversionService) {
+        private unitConversionService: UnitConversionService, private cdr: ChangeDetectorRef) {
     super(interactionService);
   }
 
@@ -38,6 +39,11 @@ export class LinkComponent extends AbstractInteractiveComponent {
   override ngOnInit() {
     this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe((units) => {this.units = units;});
     super.ngOnInit();
+  }
+
+  ngAfterContentChecked(): void {
+    this.angle = this.link.angle.toString();
+    this.cdr.detectChanges();
   }
 
   getColor():string{
@@ -103,6 +109,10 @@ export class LinkComponent extends AbstractInteractiveComponent {
 
   getLength(): string {
     return this.link.length.toString() + " " + this.units;
+  }
+
+  getAngle(): string {
+    return this.link.angle.toString();
   }
 
   getName():string {
