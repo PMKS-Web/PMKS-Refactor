@@ -69,7 +69,7 @@ export class Mechanism {
         if (typeof synthesized !== 'undefined') {
           isSynth = synthesized;
         }
-        let jointA = new Joint(this._jointIDCount, coordOne);
+        let jointA = new Joint(this._jointIDCount, coordOne); console.log(coordOne.x); console.log(coordOne.y);
         this._jointIDCount++;
         let jointB = new Joint(this._jointIDCount, coordTwo);
         this._jointIDCount++;
@@ -79,7 +79,7 @@ export class Mechanism {
         if (linkA.calculateAngle() === null) {
           linkA.angle = 0
         }
-        else linkA.angle = parseFloat(linkA.calculateAngle()!.toFixed(2));
+        else linkA.angle = parseFloat(linkA.calculateAngle()!.toFixed(3));
         this._linkIDCount++;
         this._links.set(linkA.id, linkA);
         if (!isSynth) {

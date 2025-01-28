@@ -72,7 +72,7 @@ export class LinkEditPanelComponent{
   getLinkLength(): number {
     const length = this.getSelectedObject().calculateLength();
     if (length !== null) {
-      const x = length.toFixed(2);
+      const x = length.toFixed(3);
       return parseFloat(x);
     }
     return 0; // or handle null/undefined case as per your application logic
@@ -84,7 +84,7 @@ export class LinkEditPanelComponent{
     console.log(`Angle in degrees from calculateAngle: ${angle}`);
     if (angle !== null) {
       // Round to the nearest hundredth
-      const x = angle.toFixed(2);
+      const x = angle.toFixed(3);
       return parseFloat(x);
     }
     return 0; // Handle null/undefined case as per your application logic
@@ -160,9 +160,9 @@ export class LinkEditPanelComponent{
         }
       }
 
-    //helper function to quickly round to 2 decimals :)
-    roundToTwo(round:number): number{
-        return Math.round(round * 100) /100;
+    //helper function to quickly round to 3 decimals :)
+    roundToThree(round:number): number{
+        return parseFloat(round.toFixed(3));
     }
 
     getColors(): string[]{

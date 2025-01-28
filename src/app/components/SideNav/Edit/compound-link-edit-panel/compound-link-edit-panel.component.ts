@@ -140,6 +140,10 @@ export class CompoundLinkEditPanelComponent {
     }
   }
 
+  roundToThree(round:number): number{
+    return parseFloat(round.toFixed(3));
+  }
+
   roundToFour(round: number): number {
     return round.toFixed(4) as unknown as number;
   }

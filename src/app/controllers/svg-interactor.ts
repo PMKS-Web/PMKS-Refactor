@@ -36,7 +36,7 @@ export class SvgInteractor extends Interactor {
 
     public override specifyContextMenu(): ContextMenuOption[] {
         const mechanism: Mechanism = this.stateService.getMechanism();
-        let modelPosAtRightClick = this.getMousePos().model;
+        let modelPosAtRightClick = this.interactionService.getMousePos().model;
         let availableContext: ContextMenuOption[] = [];
         if (this.activePanel === "Edit") {
           availableContext.push({

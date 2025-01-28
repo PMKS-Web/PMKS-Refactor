@@ -95,7 +95,7 @@ export class Position implements RigidBody {
   get length(): number {
     let l = this.calculateLength();
     if (l) {
-      return parseFloat(l.toFixed(2));
+      return parseFloat(l.toFixed(3));
     }
     else throw new Error('Length is null');
   }
