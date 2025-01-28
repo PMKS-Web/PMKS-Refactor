@@ -21,6 +21,7 @@ export class AnimationBarComponent {
   private isAnimating: boolean = false;
   private isPausedAnimating: boolean = true;
   public animationSpeed: number = 1;
+  public timelineMarkers: { position: number; type: 'clockwise' | 'counterclockwise'}[]=[];
 
   constructor(
     public interactionService: InteractionService,
@@ -110,6 +111,30 @@ export class AnimationBarComponent {
         break;
     }
     return index;
+  }
+
+  updateTimelineMarkers(): void {
+    const mechanismIndex = this.getMechanismIndex();
+    if (mechanismIndex === -1) return;
+
+    const mechanismState = this.animationService.getAnimationState(mechanismIndex);
+    if (!mechanismState) return;
+
+    const changes = this.animationService.getDirectionChanges(mechanismState)
+
+
+    const totalFrames = this.animationService.getAnimationState(mechanismIndex)?.totalFrames ?? 1;
+    this.timelineMarkers = [];
+
+    if (changes.clockwise !== undefined) {
+      const position = (changes.clockwise/totalFrames) * 100;
+      this.timelineMarkers.push({position, type: 'clockwise'})
+    }
+
+    if (changes.counterClockwise !== undefined) {
+      const position = (changes.counterClockwise/totalFrames) * 100;
+      this.timelineMarkers.push({position, type: 'counterclockwise'})
+    }
   }
 
 

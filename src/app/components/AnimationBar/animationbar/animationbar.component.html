@@ -38,13 +38,26 @@
       <span id='secLabel'>sec</span>
     </div>
 
-    <mat-slider
-      min='0'
-      max='5'
-    >
+
+    <mat-slider min='0' max='5'>
       <input id='slider' matSliderThumb />
     </mat-slider>
+
+    <div class = "timeline-marker-container">
+      <div
+        *ngFor = "let marker of timelineMarkers"
+        class = "timeline-marker"
+        [ngClass] = "marker.type"
+        [style.left.%] = "marker.position">
+
+        <mat-icon *ngIf = "marker.type === 'clockwise'">rotate_right</mat-icon>
+        <mat-icon *ngIf = "marker.type === 'counterclockwise'">rotate_left</mat-icon>
+      </div>
+
+    </div>
+
   </div>
+
   <div id='viewButtons'>
     <button
       matTooltip='Show Center of Mass'
