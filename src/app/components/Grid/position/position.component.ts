@@ -153,7 +153,7 @@ export class PositionComponent extends AbstractInteractiveComponent {
       allCoords.push(coord);
     }
 
-    return this.svgPathService.calculateLengthSVGPath(allCoords[0], allCoords[1]);
+    return this.svgPathService.calculateLengthSVGPath(allCoords[0], allCoords[1], this.position.angle);
   }
 
 }
