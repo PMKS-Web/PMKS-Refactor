@@ -1519,7 +1519,7 @@ verifyMechanismPath() {
         const midjoint2 = this.position2!.getJoints()[2];
         y2.setCoordinates(new Coord(y2.coords.x, y));
         const centerCoord2 = this.getReferenceJoint(this.position2!);
-        midjoint2.setCoordinates(centerCoord2.coords);
+        midjoint2.setCoordinates(centerCoord2.coords); //work
         if (this.position2!.length !== this.position1?.length) { this.position2LengthErr = {x1: false, y1: false, x2: false, y2: true}; }
         else {this.position2LengthErr = {x1: false, y1: false, x2: false, y2: false}; }
         break;
