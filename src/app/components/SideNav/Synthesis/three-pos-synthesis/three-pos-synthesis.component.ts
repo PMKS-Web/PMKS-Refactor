@@ -330,8 +330,8 @@ getReference(): string{
   }
 
   updatePositionCoords(posNum: number, newCoord: Coord) {
-    const roundedX = parseFloat(newCoord.x.toFixed(2));
-    const roundedY = parseFloat(newCoord.y.toFixed(2));
+    const roundedX = parseFloat(newCoord.x.toFixed(3));
+    const roundedY = parseFloat(newCoord.y.toFixed(3));
 
     if (posNum === 1) {
       this.pos1X = roundedX;
@@ -361,7 +361,8 @@ getReference(): string{
     if (normalizedAngle < 0) {
       normalizedAngle += 360;
     }
-    const roundedAngle = Math.round(normalizedAngle);
+
+    const roundedAngle = parseFloat(normalizedAngle.toFixed(3));
 
     if (posNum === 1) {
       this.pos1Angle = roundedAngle;
