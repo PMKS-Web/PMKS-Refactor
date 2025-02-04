@@ -2,7 +2,7 @@ import { Coord } from './coord';
 
 export class Trajectory {
   constructor(
-    public coords: Coord[],
+    private _coords: Coord[],
     public jointId: number
   ) {}
 
@@ -10,7 +10,7 @@ export class Trajectory {
    * Clears all trajectory coordinates.
    */
   clear() {
-    this.coords = [];
+    this._coords = [];
   }
 
   /**
@@ -23,5 +23,10 @@ export class Trajectory {
       return '';
     }
     return svgPathService.getSingleLinkDrawnPath(this.coords, 2); // Adjust radius as needed
+  }
+
+  //Getters
+  get coords(): Coord[] {
+    return this._coords;
   }
 }

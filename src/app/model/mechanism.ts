@@ -983,6 +983,10 @@ export class Mechanism {
       return this._trajectories.values();
     }
 
+    getArrayOfTrajectories(): Array<Trajectory> {
+      return Array.from(this._trajectories.values());
+    }
+
     getJoints(): IterableIterator<Joint>{
         return this._joints.values();
     }
@@ -1007,8 +1011,14 @@ export class Mechanism {
     getCompoundLinks(): IterableIterator<CompoundLink>{
         return this._compoundLinks.values();
     }
+    getArrayOfCompoundLinks(): Array<CompoundLink>{
+        return Array.from(this._compoundLinks.values());
+    }
     getForces(): IterableIterator<Force>{
         return this._forces.values();
+    }
+    getArrayOfForces(): Array<Force>{
+      return Array.from(this._forces.values());
     }
   //----------------------------SET FUNCTIONS----------------------------
   set_jointIDCount (count : number){

@@ -9,7 +9,7 @@ export class UrlGenerationService {
   }
 
   /**
-   *
+   * Main call Function, todo will generate the full URL
    */
   generateUrl(): string {
     const encoder = new Encoder();

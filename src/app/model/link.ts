@@ -190,7 +190,7 @@ export class Link implements RigidBody{
         }
     }
 
-    //I don't think this works
+    //I don't think this works TODO
     calculateCenterOfMass(): Coord{
         let totalX = 0;
         let totalY = 0;
