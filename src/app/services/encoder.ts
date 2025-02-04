@@ -113,7 +113,7 @@ export class Encoder {
     if (value === null || value === undefined) return '';
     const str = value.toString();
     if (str.includes(',') || str.includes('\n') || str.includes('"')) {
-      return `"${str.replace(/"/g, '""')}"`;
+      return `"${str.replace(/"/g, '""')}"`; //todo redo maybe? confusing
     }
     return str;
   }
@@ -141,8 +141,8 @@ export class Encoder {
         mass: l.mass,
         color: l.color,
         centerOfMass: l.centerOfMass,
-        joints: Array.from(l.joints.values()).map((j: Joint)=> j.id ), //l.joints, //todo CANNOT STORE JOINTS LIKE THIS, GET ID
-        forces: l.forces, //todo same with above
+        joints: Array.from(l.joints.values()).map((j: Joint)=> j.id),
+        forces: Array.from(l.forces.values()).map((f: Force)=> f.id), 
         locked: l.locked,
         length: l.length,
         angle: l.angle
@@ -153,7 +153,7 @@ export class Encoder {
         name: cl.name,
         mass: cl.mass,
         centerOfMass: cl.centerOfMass,
-        links: cl.links, //todo for IDs
+        links: Array.from(cl.links.values()).map((l: Link) => l.id),
         lock: cl.lock
       })),
 
@@ -182,8 +182,8 @@ export class Encoder {
         mass: p.mass,
         color: p.color,
         centerOfMass: { x: p.centerOfMass.x, y: p.centerOfMass.y },
-        joints: p.joints, //todo IDS
-        forces: p.forces, //todo ids
+        joints: Array.from(p.joints.values()).map((j: Joint) => j.id),
+        forces: Array.from(p.forces.values()).map((f: Force) => f.id),
         locked: p.locked,
         refPoint: p.refPoint,
         length: p.length,
