@@ -83,18 +83,6 @@ export class LinkComponent extends AbstractInteractiveComponent {
     return this.unitConversionService.modelCoordToSVGCoord(new Coord(x,y)).y;
   }
 
-  getLowestY(): number {
-    let joints = this.link.getJoints();
-    let y;
-    //need to expand into loop to search all possible joints when moving to compound links
-    if (joints[0].coords.y < joints[1].coords.y) {
-      y = joints[0].coords.y;
-    }
-    else y = joints[1].coords.y;
-
-    return this.unitConversionService.modelCoordToSVGCoord(new Coord(this.getCOMX(),y)).y;
-  }
-
   getStrokeColor(): string{
     if (this.getInteractor().isSelected) {
       return '#FFCA28'
@@ -144,5 +132,30 @@ export class LinkComponent extends AbstractInteractiveComponent {
     }
 
     return this.svgPathService.calculateLengthSVGPath(allCoords[0], allCoords[1], this.link.angle);
+  }
+
+  getMaxY(): number {
+    const joints = this.link.getJoints();
+    let maxHeight = Number.MIN_SAFE_INTEGER;
+
+    for (let i = 0; i < joints.length; i++){
+      if (joints[i].coords.y > maxHeight) {
+        maxHeight = joints[i].coords.y;
+      }
+    }
+
+    return this.unitConversionService.modelCoordToSVGCoord(new Coord(this.getCOMX(), maxHeight)).y;
+  }
+
+  getLowestY(): number {
+    let joints = this.link.getJoints();
+    let y;
+    //need to expand into loop to search all possible joints when moving to compound links
+    if (joints[0].coords.y < joints[1].coords.y) {
+      y = joints[0].coords.y;
+    }
+    else y = joints[1].coords.y;
+
+    return this.unitConversionService.modelCoordToSVGCoord(new Coord(this.getCOMX(),y)).y;
   }
 }

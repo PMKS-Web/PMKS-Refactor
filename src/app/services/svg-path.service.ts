@@ -184,17 +184,57 @@ calculateConvexPath(hullPoints: Coord[], r: number): string {
   }
 
   calculateLengthSVGPath(coord1: Coord, coord2: Coord, angle: number): string {
-    // Calculate perpendicular direction vectors for the line
-    //const dirFirstToSecond = this.perpendicularDirection(coord1, coord2);
-    //const dirSecondToFirst = this.perpendicularDirection(coord2, coord1);
-    // Create the rounded line path
-    let pathData = `M ${coord1.x-angle},${coord1.y + angle - 100} `; // Move to the first point
-    pathData += `L ${coord1.x},${coord1.y} `;
-    pathData += `M ${(coord1.x + coord1.x-angle)/2},${(coord1.y + angle - 100 + coord1.y)/2} `;
-    pathData += `L ${(coord2.x + coord2.x-angle)/2},${(coord2.y + angle - 100 + coord2.y)/2} `;
-    pathData += `M ${coord2.x - angle},${coord2.y + angle - 100} `;
-    pathData += `L ${coord2.x},${coord2.y} `;
-    //Need to generalize
+    let pathData = "";
+    if (angle === 90){
+      pathData += `M ${coord1.x - 100}, ${coord1.y} `;
+      pathData += `L ${coord1.x - 30}, ${coord1.y} `;
+      pathData += `M ${coord1.x - 65}, ${coord1.y} `;
+      pathData += `L ${coord2.x - 65}, ${coord2.y} `;
+      pathData += `M ${coord2.x - 100}, ${coord2.y} `
+      pathData += `L ${coord2.x - 30}, ${coord2.y} `;
+    }
+    else if (angle < 90 && angle >= 0){
+      pathData += `M ${coord1.x-angle},${coord1.y + angle - 100} `; // Move to the first point
+      pathData += `L ${coord1.x},${coord1.y} `;
+      pathData += `M ${(coord1.x + coord1.x-angle)/2},${(coord1.y + angle - 100 + coord1.y)/2} `;
+      pathData += `L ${(coord2.x + coord2.x-angle)/2},${(coord2.y + angle - 100 + coord2.y)/2} `;
+      pathData += `M ${coord2.x - angle},${coord2.y + angle - 100} `;
+      pathData += `L ${coord2.x},${coord2.y} `;
+    }
+    else if (angle > 90 && angle <= 180){
+      pathData += `M ${coord2.x + 180%angle},${coord2.y + 180%angle - 100} `; // Move to the first point
+      pathData += `L ${coord2.x},${coord2.y} `;
+      pathData += `M ${(coord2.x + coord2.x+180%angle)/2},${(coord2.y +180%angle - 100 + coord2.y)/2} `;
+      pathData += `L ${(coord1.x + coord1.x+180%angle)/2},${(coord1.y + 180%angle - 100 + coord1.y)/2} `;
+      pathData += `M ${coord1.x + 180%angle},${coord1.y + 180%angle - 100} `;
+      pathData += `L ${coord1.x},${coord1.y} `;
+    }
+    else if (angle > -180 && angle < -90){
+      pathData += `M ${coord2.x - 180%Math.abs(angle)},${coord2.y + 180%Math.abs(angle) - 100} `; // Move to the first point
+      pathData += `L ${coord2.x},${coord2.y} `;
+      pathData += `M ${(coord2.x + coord2.x-180%Math.abs(angle))/2},${(coord2.y +180%Math.abs(angle) - 100 + coord2.y)/2} `;
+      pathData += `L ${(coord1.x + coord1.x-180%Math.abs(angle))/2},${(coord1.y + 180%Math.abs(angle) - 100 + coord1.y)/2} `;
+      pathData += `M ${coord1.x - 180%Math.abs(angle)},${coord1.y + 180%Math.abs(angle) - 100} `;
+      pathData += `L ${coord1.x},${coord1.y} `;
+    }
+    else if (angle === -90){
+      pathData += `M ${coord1.x + 100}, ${coord1.y} `;
+      pathData += `L ${coord1.x + 30}, ${coord1.y} `;
+      pathData += `M ${coord1.x + 65}, ${coord1.y} `;
+      pathData += `L ${coord2.x + 65}, ${coord2.y} `;
+      pathData += `M ${coord2.x + 100}, ${coord2.y} `
+      pathData += `L ${coord2.x + 30}, ${coord2.y} `;
+    }
+    else if (angle > -90 && angle < 0){
+      pathData += `M ${coord1.x-angle},${coord1.y + Math.abs(angle) - 100} `; // Move to the first point
+      pathData += `L ${coord1.x},${coord1.y} `;
+      pathData += `M ${(coord1.x + coord1.x-angle)/2},${(coord1.y + Math.abs(angle) - 100 + coord1.y)/2} `;
+      pathData += `L ${(coord2.x + coord2.x-angle)/2},${(coord2.y + Math.abs(angle) - 100 + coord2.y)/2} `;
+      pathData += `M ${coord2.x - angle},${coord2.y + Math.abs(angle) - 100} `;
+      pathData += `L ${coord2.x},${coord2.y} `;
+    }
+
+    //Issues: perpendicular lines at the ends of the length grow in size as angle decreases
     return pathData;
   }
 
