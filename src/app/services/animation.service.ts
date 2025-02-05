@@ -28,6 +28,7 @@ export class AnimationService {
     private animationStates: JointAnimationState[];
     private invaldMechanism: boolean;
     private animationProgressSource = new BehaviorSubject<number>(0);
+  private speedMultiplier: number = 1;
     animationProgress$ = this.animationProgressSource.asObservable();
 
     constructor(private stateService: StateService, private positionSolver: PositionSolverService) {
@@ -37,9 +38,17 @@ export class AnimationService {
             this.initializeAnimations();
         });
     }
-    isInvalid(): boolean {
-        return this.invaldMechanism;
-    }
+
+  getAnimationState(index: number): JointAnimationState | undefined {{
+    return this.animationStates[index];
+  }}
+
+  setSpeedmultiplier(multiplier: number) {
+    this.speedMultiplier = multiplier;
+  }
+
+  isInvalid(): boolean {
+        return this.invaldMechanism;}
 
     initializeAnimations() {
         this.animationStates = new Array();
@@ -105,7 +114,7 @@ export class AnimationService {
 
             setTimeout(() => {
                 this.singleMechanismAnimation(state)
-            }, Math.round((1000 * 60) / (state.inputSpeed * 360)));
+            }, Math.round((1000 * 60) / (state.inputSpeed * 360*this.speedMultiplier)));
         }
     }
     reset() {
@@ -135,7 +144,7 @@ export class AnimationService {
         let frame = Math.round(timeInSeconds / (60 / (animationState.inputSpeed * 360)));
         while(frame > animationState.totalFrames){
             frame -= animationState.totalFrames;
-        } 
+        }
         while(frame < 0){
             frame += animationState.totalFrames
         }
@@ -162,4 +171,52 @@ export class AnimationService {
 
         this.updateProgress(progress);
     }
+
+  getDirectionChanges(state: JointAnimationState | undefined): { clockwise?: number, counterClockwise?: number }  {
+    if (!state) return {};
+    let clockwise: number | undefined = undefined;
+    let counterClockwise: number | undefined = undefined;
+    const frames = state.animationFrames;
+
+    for (let i = 1; i < frames.length - 1; i++){
+      const lastFrame = frames[i-1][0];
+      const thisFrame = frames[i][0];
+      const nextFrame = frames[i+1][0];
+
+      const isDirectionChange = this.detectDirectionChange(lastFrame,thisFrame,nextFrame);
+
+      if (isDirectionChange){
+        const rotation = this.getRotationDirection(lastFrame, thisFrame, nextFrame);
+
+        if (rotation === 'clockwise'){
+          clockwise = (i);
+        }
+        else {
+          counterClockwise = (i);
+        }
+
+      }
+
+    }
+    return {clockwise, counterClockwise};
+
+  }
+
+  detectDirectionChange(last: Coord, current: Coord, next: Coord): boolean{
+
+
+    const xChanges = (current.x - last.x) * (next.x - current.x) < 0;
+    const yChanges = (current.y - last.y) * (next.y - current.y) < 0;
+
+    return xChanges && yChanges;
+
+  }
+
+  getRotationDirection(last: Coord, current: Coord, next: Coord): 'clockwise' | 'counterclockwise' {
+
+    const v1 = current.subtract(last);
+    const v2 = next.subtract(current);
+    const cross = v1.x * v2.x - v1.y * v2.y;
+    return cross > 0 ? 'counterclockwise' : "clockwise"
+  }
 }

@@ -4,9 +4,12 @@
             [disabled]='invalidMechanism()'
             mat-mini-fab
             matTooltip='Change Animation Speed'
-            matTooltipShowDelay='1000'
+            matTooltipShowDelay='500'
+            (click)="toggleAnimationSpeed()"
+
     >
-      2x</button>
+        {{animationSpeed}}x
+      </button>
 
     <button class="animation-button" [disabled]='invalidMechanism()' *ngIf='this.getIsPausedAnimating()' mat-mini-fab color='primary'
             (click)="controlAnimation('play')" matTooltip='Play Animation' matTooltipShowDelay='1000'>
@@ -36,15 +39,26 @@
       <span id='secLabel'>sec</span>
     </div>
 
-    <mat-slider>
-      <input matSliderThumb
-             [value]="sliderValue"
-             [disabled]="!getIsAnimating()"
-             (valueChange)="onSliderChange($event)"
-             min="0"
-             max="100"
-             step="0.1">
+    <mat-slider
+      min='0'
+      max='100'
+      step="1"
+      [(ngModel)]="sliderValue">
+      <input id='slider' matSliderThumb (input)="onSliderChange($event)"/>
     </mat-slider>
+
+    <div class = "timeline-marker-container">
+      <div
+        *ngFor = "let marker of timelineMarkers"
+        class = "timeline-marker"
+        [ngClass] = "marker.type"
+        [style.left.%] = "marker.position">
+
+        <mat-icon *ngIf = "marker.type === 'clockwise'">rotate_right</mat-icon>
+        <mat-icon *ngIf = "marker.type === 'counterclockwise'">rotate_left</mat-icon>
+      </div>
+
+    </div>
   </div>
   <div id='viewButtons'>
     <button
