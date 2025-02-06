@@ -39,12 +39,14 @@
       <span id='secLabel'>sec</span>
     </div>
 
-    <mat-slider
-      min='0'
-      max='100'
-      step="1"
-      [(ngModel)]="sliderValue">
-      <input id='slider' matSliderThumb (input)="onSliderChange($event)"/>
+    <mat-slider>
+      <input matSliderThumb
+             [value]="sliderValue"
+             [disabled]="!getIsAnimating()"
+             (valueChange)="onSliderChange($event)"
+             min="0"
+             max="100"
+             step="0.1">
     </mat-slider>
 
     <div class = "timeline-marker-container">

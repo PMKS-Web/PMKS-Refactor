@@ -170,6 +170,8 @@ export class AnimationService {
         }
 
         this.updateProgress(progress);
+
+        this.stateService.getAnimationBarComponent()?.updateTimelineMarkers()
     }
 
   getDirectionChanges(state: JointAnimationState | undefined): { clockwise?: number, counterClockwise?: number }  {
