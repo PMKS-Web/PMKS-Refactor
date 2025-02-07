@@ -1705,7 +1705,6 @@ defaultToZero(index: number, coordType: 'x0' | 'y0' | 'x1' | 'y1'): void {
     }
   }
 
-
   updateEndPointCoords(positionIndex: number, coordType: 'x0' | 'y0' | 'x1' | 'y1', value: number): void {
     // Validate position index
     if (positionIndex < 1 || positionIndex > 3) {

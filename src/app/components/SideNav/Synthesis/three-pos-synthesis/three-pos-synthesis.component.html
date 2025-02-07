@@ -218,133 +218,75 @@
 
 
 
-  <!------------------------------ New Panel Design for End Points  ------------------------------------>
+    <!------------------------------ New Panel Design for End Points  ------------------------------------>
 
-  <div class="scroll-container" >
-  <div *ngIf="selectedOption === 'two-points'">
+    <div class="scroll-container" >
+      <div *ngIf="selectedOption === 'two-points'">
 
-    <p class="panel-description">Automatically create a four-bar linkage based on the X and Y coordinate values for positions.</p>
+        <p class="panel-description">Automatically create a four-bar linkage based on the X and Y coordinate values for positions.</p>
 
 
-    <!-- Loop for three positions -->
-    <div *ngFor="let index of [0,1,2]">
-      <div class="position-group">
-      <div class="position-header">
-        <span>Position {{ index + 1 }}</span>
-        <span class="icons">
-      <mat-icon  id="tooltipTwoPoints" matTooltip="Specify the coordinates for Position {{ index + 1 }}. Ensure all values are entered such that the distance between each pair of points is equal."
-                [matTooltipShowDelay]="1000" >help_outline</mat-icon>
-      <button class="delete-button" (click)="this.deletePosition(index+1)">
-        <img id="trashTwoPoints" ngSrc="assets/icons/trash.svg" alt="Delete Position" height="18" width="15">
+        <!-- Loop for three positions -->
+        <div *ngFor="let index of [0,1,2]" class="position-group">
+          <div class="position-header">
+            <span>Position {{ index + 1 }}</span>
+            <span class="icons">
+      <mat-icon id="tooltipTwoPoints" matTooltip="Specify the coordinates for Position {{ index + 1 }}" [matTooltipShowDelay]="1000">help_outline</mat-icon>
+      <button class="delete-button" (click)="deletePosition(index + 1)">
+        <img id="trashTwoPoints" src="assets/icons/trash.svg" alt="Delete Position">
       </button>
     </span>
-      </div>
+          </div>
 
+          <!-- allows the user to enter coordinates for the end points -->
+          <div class='endPointData' *ngIf='this.isPositionDefined(index + 1)'>
 
-      <!-- Calculate the starting label number for each position based on index -->
-<!--      <div class="input-row" *ngIf="pos.defined">-->
-<!--        <label for="x{{index * 2 + 1}}">X{{index * 2 + 1}}</label>-->
+            <dual-input-block
+              [input1Value]="getEndPointCoords(index + 1, 'x0')"
+              [input2Value]="getEndPointCoords(index + 1, 'y0')"
+              (input1Change)="updateEndPointCoords(index + 1, 'x0', $event)"
+              (input2Change)="updateEndPointCoords(index + 1, 'y0', $event)"
+              tooltip="Change the x0 and y0 values of the first end point of the coupler position {{index + 1}}"
+              label1="X0"
+              label2="Y0"
+              unit1={{units}}
+              unit2={{units}}
+              [showIcon]="false">
+            </dual-input-block>
 
-<!--        <input id="x{{index * 2 + 1}}"-->
-<!--               type="number"-->
-<!--               [(ngModel)]="pos.x0"-->
-<!--               [placeholder]="placeholderFlags[index].x0 ? 'X' + (index * 2 + 1) : ''"-->
-<!--               class="coordinate-input"-->
-<!--               (focus)="clearPlaceholder(index, 'x0')"-->
-<!--               (blur)="restorePlaceholder(index, 'x0')"-->
-<!--               >-->
+            <dual-input-block
+              [input1Value]="getEndPointCoords(index + 1, 'x1')"
+              [input2Value]="getEndPointCoords(index + 1, 'y1')"
+              (input1Change)="updateEndPointCoords(index + 1, 'x1', $event)"
+              (input2Change)="updateEndPointCoords(index + 1, 'y1', $event)"
+              tooltip="Change the x1 and y1 values of the second end point of the coupler position {{index + 1}}"
+              label1="X1"
+              label2="Y1"
+              unit1={{units}}
+              unit2={{units}}
+              [showIcon]="false">
+            </dual-input-block>
 
-<!--        <label for="y{{index * 2 + 1}}">Y{{index * 2 + 1}}</label>-->
-<!--        <input id="y{{index * 2 + 1}}"-->
-<!--               type="number"-->
-<!--               [(ngModel)]="pos.y0"-->
-<!--               [placeholder]="placeholderFlags[index].y0 ? 'Y' + (index * 2 + 1) : ''"-->
-<!--               class="coordinate-input"-->
-<!--               (focus)="clearPlaceholder(index, 'y0')"-->
-<!--               (blur)="restorePlaceholder(index, 'y0')"-->
-<!--        >-->
-<!--      </div>-->
+          </div>
 
-<!--      <div class="input-row" *ngIf="pos.defined">-->
-<!--        <label for="x{{index * 2 + 2}}">X{{index * 2 + 2}}</label>-->
-<!--        <input id="x{{index * 2 + 2}}" type="number" [(ngModel)]="pos.x1"  placeholder="0" class="coordinate-input">-->
-
-<!--        <label for="y{{index * 2 + 2}}">Y{{index * 2 + 2}}</label>-->
-<!--        <input id="y{{index * 2 + 2}}" type="number" [(ngModel)]="pos.y1"  placeholder="0" class="coordinate-input">-->
-<!--      </div>-->
-
-      <div class="input-row" *ngIf="this.isPositionDefined(index+1)">
-        <label for="x{{index * 2 + 1}}">X{{index * 2 + 1}}</label>
-
-        <input id="x{{index * 2 + 1}}"
-               type="number"
-               step="0.001"
-               [(ngModel)]="twoPointPositions[index].x0"
-               (focus)="handleFocus(index, 'x0')"
-               (blur)="handleBlur(index, 'x0')"
-               [placeholder]="twoPointPositions[index].x0 === 0 || twoPointPositions[index].x0 === undefined ? '0' : ''"
-               (keydown.enter)="pipeToEndPoint($event, index+1, 'x1')"
-               [ngClass]="!getPositionLengthErrX1(index + 1) ? 'coordinate-input': 'coordinate-input-error'">
-
-        <label for="y{{index * 2 + 1}}">Y{{index * 2 + 1}}</label>
-
-        <input id="y{{index * 2 + 1}}"
-               type="number"
-               step="0.001"
-               [(ngModel)]="twoPointPositions[index].y0"
-               (focus)="handleFocus(index, 'y0')"
-               (blur)="handleBlur(index, 'y0')"
-               [placeholder]="twoPointPositions[index].y0 === 0 || twoPointPositions[index].y0 === undefined ? '0' : ''"
-               (keyup.enter)="pipeToEndPoint($event, index+1, 'y1')"
-               [ngClass]="!getPositionLengthErrY1(index + 1) ? 'coordinate-input': 'coordinate-input-error'">
-      </div>
-
-      <div class="input-row" *ngIf="this.isPositionDefined(index+1)">
-        <label for="x{{index * 2 + 2}}">X{{index * 2 + 2}}</label>
-        <input id="x{{index * 2 + 2}}"
-               type="number"
-               step="0.001"
-               [(ngModel)]="twoPointPositions[index].x1"
-               (focus)="handleFocus(index, 'x1')"
-               (blur)="handleBlur(index, 'x1')"
-               [placeholder]="twoPointPositions[index].x1 === 0 || twoPointPositions[index].x1 === undefined ? '0' : ''"
-               (keyup.enter)="pipeToEndPoint($event, index+1, 'x2')"
-               [ngClass]="!getPositionLengthErrX2(index + 1) ? 'coordinate-input': 'coordinate-input-error'">
-
-        <label for="y{{index * 2 + 2}}">Y{{index * 2 + 2}}</label>
-        <input id="y{{index * 2 + 2}}"
-               type="number"
-               step="0.001"
-               [(ngModel)]="twoPointPositions[index].y1"
-               (focus)="handleFocus(index, 'y1')"
-               (blur)="handleBlur(index, 'y1')"
-               [placeholder]="twoPointPositions[index].y1 === 0 || twoPointPositions[index].y1 === undefined ? '0' : ''"
-               (keyup.enter)="pipeToEndPoint($event, index+1, 'y2')"
-               [ngClass]="!getPositionLengthErrY2(index + 1) ? 'coordinate-input': 'coordinate-input-error'">
-      </div>
+          <!-- If position has not yet been created and it's the first undefined position, show "specify position" button -->
+          <div class="positionCreateEndPoints" *ngIf="getFirstUndefinedPosition() === index + 1">
+            <button id="specifyEndPoints" (click)="this.specifyPositionEndPoints(index + 1)">Specify Position</button>
+          </div>
+        </div>
 
 
 
-      <!--If positions has not yet been created and its the first position, show specify position button  -->
-      <div class="positionCreateEndPoints" *ngIf="getFirstUndefinedPosition() === index+1">
-        <button id="specifyEndPoints" (click)="this.specifyPositionEndPoints(index+1)">Specify Position</button>
+        <!-- Action Buttons -->
+        <div class="button-group">
 
-      </div>
+          <button  (click)="generateFourBar()">Generate Four-bar</button>
+          <!--      <button  (click)="generateSixBarFromTwoPoints()">Generate Six-bar</button>-->
+          <!-- evaluate positions button -->
+          <button  (click)="removeAllPositions()">Remove All Positions</button>
+        </div>
       </div>
     </div>
-
-
-
-    <!-- Action Buttons -->
-    <div class="button-group">
-
-      <button  (click)="generateFourBar()">Generate Four-bar</button>
-<!--      <button  (click)="generateSixBarFromTwoPoints()">Generate Six-bar</button>-->
-      <!-- evaluate positions button -->
-      <button  (click)="removeAllPositions()">Remove All Positions</button>
-    </div>
   </div>
-  </div>
-</div>
 </div>
 
