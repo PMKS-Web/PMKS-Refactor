@@ -1569,6 +1569,56 @@ defaultToZero(index: number, coordType: 'x0' | 'y0' | 'x1' | 'y1'): void {
     }
 }
 
+  swapInputAndGround() {
+    const mechanism: Mechanism = this.stateService.getMechanism();
+    const joints = mechanism.getJoints();
+
+    let inputJoint: Joint | undefined;
+    let groundJoint: Joint | undefined;
+    let otherGroundJoint: Joint | undefined;
+
+    // Identify the input joint and the two ground joints
+    for (const joint of joints) {
+      if (joint.isInput) {
+        inputJoint = joint;
+      }
+      if (joint.isGrounded) {
+        if (!groundJoint) {
+          groundJoint = joint; // First ground joint
+        } else {
+          otherGroundJoint = joint; // Second ground joint
+        }
+      }
+    }
+
+    if (inputJoint && groundJoint && otherGroundJoint) {
+      console.log("Before Swap:");
+      console.log("Input Joint:", inputJoint);
+      console.log("Current Ground Joint:", groundJoint);
+      console.log("Other Ground Joint:", otherGroundJoint);
+
+      // Remove input from the current input joint
+      inputJoint.removeInput();
+      console.log("After removeInput, Input Joint:", inputJoint); // Debugging log
+
+      // Check which ground joint currently has the input
+      if (inputJoint === groundJoint) {
+        // If the input joint was the current ground joint, add input to the other ground joint
+        otherGroundJoint.addInput(); // Set the other ground joint as input
+      } else {
+        // If the input joint was not the current ground joint, add input to the current ground joint
+        groundJoint.addInput(); // Set the current ground joint as input
+      }
+
+      console.log("After Swap:");
+      console.log("Input Joint:", inputJoint);
+      console.log("Current Ground Joint:", groundJoint);
+      console.log("Other Ground Joint:", otherGroundJoint);
+    } else {
+      console.warn("Input or Ground Joint not found!");
+    }
+  }
+
 
   updateEndPointCoords(positionIndex: number, coordType: 'x0' | 'y0' | 'x1' | 'y1', value: number): void {
     // Validate position index
