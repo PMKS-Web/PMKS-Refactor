@@ -1,12 +1,30 @@
-import {ChangeDetectorRef, Component, EventEmitter, HostListener, Input, Output,} from '@angular/core';
-import {LinkInteractor} from 'src/app/controllers/link-interactor';
-import {Link} from 'src/app/model/link';
-import {Mechanism} from 'src/app/model/mechanism';
-import {InteractionService} from 'src/app/services/interaction.service';
-import {StateService} from 'src/app/services/state.service';
-import {Joint} from 'src/app/model/joint';
-import {Coord} from 'src/app/model/coord';
+import {
+  Component,
+  Input,
+  OnInit,
+  OnChanges,
+  Output,
+  EventEmitter,
+  numberAttribute,
+  HostListener,
+  input
+} from '@angular/core';
+import { Interactor } from 'src/app/controllers/interactor';
+import { LinkInteractor } from 'src/app/controllers/link-interactor';
+import { Link } from 'src/app/model/link';
+import { Mechanism } from 'src/app/model/mechanism';
+import { InteractionService } from 'src/app/services/interaction.service';
+import { StateService } from 'src/app/services/state.service';
+import { Joint } from 'src/app/model/joint';
+import { ColorService } from 'src/app/services/color.service';
+import { FormControl, FormGroup } from "@angular/forms";
+import { LinkComponent } from 'src/app/components/Grid/link/link.component';
+import { Coord } from 'src/app/model/coord';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { ChangeDetectorRef } from '@angular/core';
 import {PositionSolverService} from "../../../../services/kinematic-solver.service";
+import { DoCheck } from '@angular/core';
 import {JointInteractor} from "../../../../controllers/joint-interactor";
 import {Position} from "../../../../model/position";
 import {Subscription} from "rxjs";
@@ -187,7 +205,36 @@ export class ThreePosSynthesis{
       const angle = this.calculateAngle(this.position3.getJoints()[0], this.position3.getJoints()[1]);
       this.updatePositionAngle(3, angle);
     }
-  }
+
+    // Dynamically update "End Points" panel
+    if (this.position1 && this.pos1Specified) {
+        this.updateEndPointPanel(1, this.position1);
+    }
+    if (this.position2 && this.pos2Specified) {
+        this.updateEndPointPanel(2, this.position2);
+    }
+    if (this.position3 && this.pos3Specified) {
+        this.updateEndPointPanel(3, this.position3);
+    }
+}
+
+updateEndPointPanel(positionIndex: number, position: Position): void {
+  const index = positionIndex - 1; // Adjust for zero-based indexing
+
+  const backJoint = position.getJoints()[0];
+  const frontJoint = position.getJoints()[1];
+
+  // Update `twoPointPositions` with the current joint coordinates rounded to hundredths
+  this.twoPointPositions[index].x0 = parseFloat(backJoint.coords.x.toFixed(2));
+  this.twoPointPositions[index].y0 = parseFloat(backJoint.coords.y.toFixed(2));
+  this.twoPointPositions[index].x1 = parseFloat(frontJoint.coords.x.toFixed(2));
+  this.twoPointPositions[index].y1 = parseFloat(frontJoint.coords.y.toFixed(2));
+
+  // Ensure Angular change detection picks up the updates
+  this.cdr.detectChanges();
+}
+
+
 
   setReference(r: string) {
       this.reference = r;
@@ -788,6 +835,7 @@ setPosXCoord(x: number, posNum: number) {
   }
 
   else if (posNum === 3) {
+      this.pos3X = x;
     const backJoint = this.position3!.getJoints()[0];
     const frontJoint = this.position3!.getJoints()[1];
     const midJoint = this.position3!.getJoints()[2];
@@ -838,6 +886,7 @@ setPosXCoord(x: number, posNum: number) {
 setPosYCoord(y: number, posNum: number){
 
   if(posNum === 1){
+    this.pos1Y = y;
     const backJoint = this.position1!.getJoints()[0];
     const frontJoint = this.position1!.getJoints()[1];
     const midJoint = this.position1!.getJoints()[2];
@@ -931,6 +980,7 @@ setPosYCoord(y: number, posNum: number){
   }
 
   else if (posNum === 3) {
+    this.pos3Y = y;
     const backJoint = this.position3!.getJoints()[0];
     const frontJoint = this.position3!.getJoints()[1];
     const midJoint = this.position3!.getJoints()[2];
@@ -1313,7 +1363,6 @@ verifyMechanismPath() {
     this.recalcNeeded = false;
   }
 
-
   calculateDistance(coord1: Coord, coord2: Coord): number {
     const dx = coord1.x - coord2.x;
     const dy = coord1.y - coord2.y;
@@ -1343,6 +1392,18 @@ verifyMechanismPath() {
     this.cdr.detectChanges();
   }
 
+  unlockPositions() {
+    this.positionLocks.forEach(positionLock => {
+      positionLock.isLocked = false;
+    });
+    console.log(this.positionLocks);
+  }
+
+
+  getFirstUndefinedPositionEndPoints() :number {
+      return this.twoPointPositions.findIndex(position => !position.defined )
+      }
+
   specifyPositionEndPoints(index: number){
     console.log(index);
     if (index >= 0) {
@@ -1359,6 +1420,38 @@ verifyMechanismPath() {
       this.placeholderFlags[index].y1 = false;
     }
   }
+
+  deletePositionTwoPoints(index:number){
+    console.log("Delete Positions");
+    if (index >= 0 && index < this.twoPointPositions.length) {
+      this.twoPointPositions[index] = { x0: 0, y0: 0, x1: 0, y1: 0, defined: false };
+    }
+  }
+
+  removeAllPositionsTwoPoints(): void {
+    this.twoPointPositions.forEach(pos => {
+      pos.defined = false;
+      pos.x0 = 0;
+      pos.y0 = 0;
+      pos.x1 = 0;
+      pos.y1 = 0;
+    });
+    console.log("All positions removed");
+  }
+
+  // onPositionChange(): void {
+  //   // Recalculate the positions based on the updated user input
+  //   this.positionSolverService.solvePositions();
+  //
+  //   // Update the display on the grid
+  //   const positions = this.positionSolverService.getAnimationPositions();
+  //   positions.forEach((position) => {
+  //     // Call your method to update the position on the grid
+  //     this.interactionService.startDraggingObject(new Link(position)); // Adjust this part as necessary
+  //   });
+  // }
+
+
 
 // Handles focus event to hide placeholder
   handleFocus(index: number, field: 'x0' | 'y0' | 'x1' | 'y1'): void {
@@ -1381,6 +1474,32 @@ verifyMechanismPath() {
   }
   }
 
+  handleInput(event: Event, index: number, coordType: 'x0' | 'y0' | 'x1' | 'y1'): void {
+    const inputElement = event.target as HTMLInputElement;
+
+    // Allow temporary empty or negative values
+    const value = inputElement.value;
+
+    if (value === '' || value === '-') {
+        // Allow empty or negative sign temporarily
+        this.twoPointPositions[index][coordType] = NaN; // Use NaN for invalid number state
+    } else {
+        // Parse and store valid numeric values
+        const parsedValue = parseFloat(value);
+        this.twoPointPositions[index][coordType] = isNaN(parsedValue) ? 0 : parsedValue;
+    }
+}
+
+defaultToZero(index: number, coordType: 'x0' | 'y0' | 'x1' | 'y1'): void {
+    const value = this.twoPointPositions[index][coordType];
+
+    // Check for NaN (temporary invalid state) and reset to 0
+    if (isNaN(value)) {
+        this.twoPointPositions[index][coordType] = 0;
+    }
+}
+
+
   pipeToEndPoint(e: Event, posNum: number, endPoint: string) {
     let val = parseFloat((e.target as HTMLInputElement).value);
     switch (endPoint) {
@@ -1397,6 +1516,7 @@ verifyMechanismPath() {
         this.setPosY2CoordEndPoints(parseFloat(val.toFixed(3)), posNum);
         break;
     }
+
   }
 
   setPosX1CoordEndPoints(x: number, posNum: number) {
@@ -1583,6 +1703,76 @@ verifyMechanismPath() {
     } else {
       console.warn("Input or Ground Joint not found!");
     }
+  }
+
+
+  updateEndPointCoords(positionIndex: number, coordType: 'x0' | 'y0' | 'x1' | 'y1', value: number): void {
+    // Validate position index
+    if (positionIndex < 1 || positionIndex > 3) {
+      console.error("Invalid position index. It must be 1, 2, or 3.");
+      return;
+    }
+
+    const index = positionIndex - 1; // Convert 1-based index to 0-based
+    this.twoPointPositions[index][coordType] = value;
+
+    // Get the corresponding position object (e.g., position1, position2, position3)
+    let position: Position | null = null;
+    switch (positionIndex) {
+      case 1:
+        position = this.position1;
+        break;
+      case 2:
+        position = this.position2;
+        break;
+      case 3:
+        position = this.position3;
+        break;
+    }
+
+    if (position) {
+      const jointIndex = coordType === 'x0' || coordType === 'y0' ? 0 : 1; // Map coordType to joint index
+      const joint = position.getJoints()[jointIndex];
+
+      // Update the x or y coordinate of the joint
+      if (coordType === 'x0' || coordType === 'x1') {
+        joint.setCoordinates(new Coord(value, joint.coords.y));
+      } else {
+        joint.setCoordinates(new Coord(joint.coords.x, value));
+      }
+
+      // Update the center joint coordinates
+      const centerCoord = this.getReferenceJoint(position);
+      position.getJoints()[2].setCoordinates(centerCoord.coords);
+    }
+
+    // Trigger Angular change detection to reflect updates in the UI
+    this.cdr.detectChanges();
+  }
+
+getEndPointCoords(positionIndex: number, coordType: 'x0' | 'y0' | 'x1' | 'y1'): number {
+    // Validate position index
+    if (positionIndex < 1 || positionIndex > 3) {
+        console.error("Invalid position index. It must be 1, 2, or 3.");
+        return 0; // Default value in case of invalid index
+    }
+
+    const index = positionIndex - 1; // Convert 1-based index to 0-based
+    return this.twoPointPositions[index][coordType];
+}
+
+
+  generateFourBarFromTwoPoints(): void {
+    // Logic to generate a Four-Bar mechanism based on two points
+    console.log(`Generating Four-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
+    console.log('Current Values of Two Point Positions:', this.twoPointPositions);
+
+  }
+
+  generateSixBarFromTwoPoints(): void {
+    // Logic to generate a Four-Bar mechanism based on two points
+    console.log(`Generating Six-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
+
   }
 
   getPositionLengthErrX1(pos: number): boolean {
