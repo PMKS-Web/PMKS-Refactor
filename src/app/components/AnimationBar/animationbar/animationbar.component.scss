@@ -224,31 +224,41 @@
         margin-left: 15px;
         width: 30vw;
       }
-      timeline-marker{
-        position: absolute;
+
+      timeline-marker-container {
+
+        position: relative !important;;
+        width: 100%;
+        height: 20px;
+        background: gray;
+        overflow: visible;
+      }
+
+      timeline-marker {
+        position: absolute ;
         top: 0;
-        width: 24px;
-        height: 24px;
+        width: 10px;
+        height: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
         border-radius: 50%;
         background-color: var(--primary-color, #ffcc00);
         transform: translateX(-50%);
-        pointer-events: none;
+
       }
 
       timeline-marker.clockwise {
-        background-color: #00ccff;
+        background-color: blue;
       }
 
       timeline-marker.counterclockwise{
-        background-color: #ff3333;
+        background-color: red;
       }
 
       timeline-marker mat-icon{
-        font-size: 18px;
-        color: #fff;
+        font-size: 16px;
+        color: white;
       }
     }
   }

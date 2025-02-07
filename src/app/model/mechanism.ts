@@ -979,7 +979,7 @@ export class Mechanism {
     }
 
     public getTrajectories(): Iterable<Trajectory> {
-      console.log('Trajectories:', this._trajectories.values());
+      //console.log('Trajectories:', this._trajectories.values());
       return this._trajectories.values();
     }
 

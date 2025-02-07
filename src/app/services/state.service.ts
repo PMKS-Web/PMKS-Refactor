@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Mechanism } from '../model/mechanism';
 import {BehaviorSubject} from "rxjs";
+import {AnimationBarComponent} from "../components/AnimationBar/animationbar/animationbar.component";
 
 /*
 Stores the global state of the application. This includes the model, global settings, and Pan/Zoom State. This is a singleton service.
@@ -20,6 +21,9 @@ export class StateService {
     private globalAngles = new BehaviorSubject("Degree (º)");
     private globalAnglesSuffix = new BehaviorSubject("º");
     private globalActivePanel = new BehaviorSubject("Edit");
+
+    private animationbarComponent!: AnimationBarComponent;
+
     globalUnitsCurrent = this.globalUnits.asObservable();
     globalUSuffixCurrent = this.globalUnitsSuffix.asObservable();
     globalAnglesCurrent = this.globalAngles.asObservable();
@@ -31,6 +35,14 @@ export class StateService {
 
         this.mechanism = new Mechanism();
 
+    }
+
+    public setAnimationBarComponent(component: AnimationBarComponent): void {
+      this.animationbarComponent = component;
+    }
+
+    public getAnimationBarComponent(): AnimationBarComponent {
+      return this.animationbarComponent;
     }
 
 

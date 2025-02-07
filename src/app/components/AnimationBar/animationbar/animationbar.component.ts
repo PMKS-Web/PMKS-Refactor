@@ -1,4 +1,4 @@
-import {Component, HostListener, Input} from '@angular/core'
+import {Component, HostListener, Input, OnInit} from '@angular/core'
 import {CompoundLinkInteractor} from 'src/app/controllers/compound-link-interactor';
 import {JointInteractor} from 'src/app/controllers/joint-interactor';
 import {LinkInteractor} from 'src/app/controllers/link-interactor';
@@ -20,20 +20,36 @@ import {StateService} from "src/app/services/state.service";
   templateUrl: './animationbar.component.html',
   styleUrls: [ './animationbar.component.scss'],
 })
-export class AnimationBarComponent {
+export class AnimationBarComponent implements OnInit{
+
+
+  constructor(
+    public interactionService: InteractionService,
+    private animationService: AnimationService,
+    private positionSolver: PositionSolverService,
+    private stateService: StateService
+  ) {
+    this.animationService.animationProgress$.subscribe(progress => {
+
+      this.sliderValue = progress * 100;
+    });
+  }
+
+  ngOnInit() {
+    this.stateService.setAnimationBarComponent(this);
+
+  }
+
+
   @Input() mechanism!: Mechanism;
 
   private isAnimating: boolean = false;
   private isPausedAnimating: boolean = true;
   public animationSpeed: number = 1;
-  public timelineMarkers: { position: number; type: 'clockwise' | 'counterclockwise'}[]=[];
+  timelineMarkers: { position: number; type: "clockwise" | "counterclockwise"; coords?: Coord }[] = [];
   sliderValue: number = 0;
 
-  constructor(public interactionService: InteractionService, private animationService: AnimationService,private positionSolver: PositionSolverService, private stateService: StateService) {
-    this.animationService.animationProgress$.subscribe(progress => {
-      this.sliderValue = progress * 100;
-    });
-  }
+
 
   //BOTTOM BAR MOVED TO svg.component FOR CURSOR COORDINATE REASONS
 
@@ -53,6 +69,10 @@ export class AnimationBarComponent {
         this.isAnimating = true;
         this.isPausedAnimating = false;
         this.stateService.getMechanism().populateTrajectories(this.positionSolver);
+
+        setTimeout(() => {
+          this.updateTimelineMarkers();
+        }, 100);
         //display the trajectories
         break;
       case 'stop':
@@ -117,26 +137,53 @@ export class AnimationBarComponent {
 
   updateTimelineMarkers(): void {
     const mechanismIndex = this.getMechanismIndex();
-    if (mechanismIndex === -1) return;
+    if (mechanismIndex === -1) {
+      console.log("No valid mechanism index found, exiting...");
+      return;
+    }
 
     const mechanismState = this.animationService.getAnimationState(mechanismIndex);
-    if (!mechanismState) return;
+    if (!mechanismState) {
+      console.log("No mechanism state found, exiting...");
+      return;
+    }
 
-    const changes = this.animationService.getDirectionChanges(mechanismState)
+    const changes = this.animationService.getDirectionChanges(mechanismState);
 
-
-    const totalFrames = this.animationService.getAnimationState(mechanismIndex)?.totalFrames ?? 1;
+    const totalFrames = mechanismState.totalFrames ?? 1;
+    console.log(`Total Frames in Animation: ${totalFrames}`);
     this.timelineMarkers = [];
 
     if (changes.clockwise !== undefined) {
-      const position = (changes.clockwise/totalFrames) * 100;
-      this.timelineMarkers.push({position, type: 'clockwise'})
+      const frameIndex = changes.clockwise.frame;
+      const position = (frameIndex / totalFrames) * 100;
+      console.log(`Clockwise at Frame ${changes.clockwise}: Position on Bar = ${position}%`);
+
+      this.timelineMarkers.push({
+        position,
+        type: 'clockwise',
+        coords: changes.clockwise.position  // Store exact coordinate
+      });
     }
 
     if (changes.counterClockwise !== undefined) {
-      const position = (changes.counterClockwise/totalFrames) * 100;
-      this.timelineMarkers.push({position, type: 'counterclockwise'})
+      const frameIndex = changes.counterClockwise.frame;
+      const position = (frameIndex / totalFrames) * 100;
+      console.log(`CounterClockwise at Frame ${changes.counterClockwise}: Position on Bar = ${position}%`);
+
+      this.timelineMarkers.push({
+        position,
+        type: 'counterclockwise',
+        coords: changes.counterClockwise.position  // Store exact coordinate
+      });
     }
+
+    console.log("Final timelineMarkers array:", this.timelineMarkers);
+  }
+
+  logMarker(marker: any) {
+    console.log("Rendering Marker:", marker);
+    return true;
   }
 
 
