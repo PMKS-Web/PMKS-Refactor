@@ -1507,55 +1507,106 @@ defaultToZero(index: number, coordType: 'x0' | 'y0' | 'x1' | 'y1'): void {
   }
 
   setPosX1CoordEndPoints(x: number, posNum: number) {
-    const position = this.getPositionByNumber(posNum);
-    if (!position) return;
-
-    const backJoint = position.getJoints()[0];
-    const midJoint = position.getJoints()[2];
-    backJoint.setCoordinates(new Coord(x, backJoint.coords.y));
-    const centerCoord = this.getReferenceJoint(position);
-    midJoint.setCoordinates(centerCoord.coords);
+    switch (posNum){
+      case 1:
+        const x1 = this.position1!.getJoints()[0];
+        const midjoint1 = this.position1!.getJoints()[2];
+        x1.setCoordinates(new Coord(x, x1.coords.y));
+        const centerCoord1 = this.getReferenceJoint(this.position1!);
+        midjoint1.setCoordinates(centerCoord1.coords);
+        break;
+      case 2:
+        const x2 = this.position2!.getJoints()[0];
+        const midjoint2 = this.position2!.getJoints()[2];
+        x2.setCoordinates(new Coord(x, x2.coords.y));
+        const centerCoord2 = this.getReferenceJoint(this.position2!);
+        midjoint2.setCoordinates(centerCoord2.coords);
+        break;
+      case 3:
+        const x3 = this.position3!.getJoints()[0];
+        const midjoint3 = this.position3!.getJoints()[2];
+        x3.setCoordinates(new Coord(x, x3.coords.y));
+        const centerCoord3 = this.getReferenceJoint(this.position3!);
+        midjoint3.setCoordinates(centerCoord3.coords);
+        break;
+    }
   }
 
   setPosX2CoordEndPoints(x: number, posNum: number) {
-    const position = this.getPositionByNumber(posNum);
-    if (!position) return;
-
-    const frontJoint = position.getJoints()[1];
-    const midJoint = position.getJoints()[2];
-    frontJoint.setCoordinates(new Coord(x, frontJoint.coords.y));
-    const centerCoord = this.getReferenceJoint(position);
-    midJoint.setCoordinates(centerCoord.coords);
+    switch (posNum){
+      case 1:
+        const x1 = this.position1!.getJoints()[1];
+        const midjoint1 = this.position1!.getJoints()[2];
+        x1.setCoordinates(new Coord(x, x1.coords.y));
+        const centerCoord1 = this.getReferenceJoint(this.position1!);
+        midjoint1.setCoordinates(centerCoord1.coords);
+        break;
+      case 2:
+        const x2 = this.position2!.getJoints()[1];
+        const midjoint2 = this.position2!.getJoints()[2];
+        x2.setCoordinates(new Coord(x, x2.coords.y));
+        const centerCoord2 = this.getReferenceJoint(this.position2!);
+        midjoint2.setCoordinates(centerCoord2.coords);
+        break;
+      case 3:
+        const x3 = this.position3!.getJoints()[1];
+        const midjoint3 = this.position3!.getJoints()[2];
+        x3.setCoordinates(new Coord(x, x3.coords.y));
+        const centerCoord3 = this.getReferenceJoint(this.position3!);
+        midjoint3.setCoordinates(centerCoord3.coords);
+        break;
+    }
   }
 
   setPosY1CoordEndPoints(y: number, posNum: number) {
-    const position = this.getPositionByNumber(posNum);
-    if (!position) return;
-
-    const backJoint = position.getJoints()[0];
-    const midJoint = position.getJoints()[2];
-    backJoint.setCoordinates(new Coord(backJoint.coords.x, y));
-    const centerCoord = this.getReferenceJoint(position);
-    midJoint.setCoordinates(centerCoord.coords);
+    switch (posNum){
+      case 1:
+        const y1 = this.position1!.getJoints()[0];
+        const midjoint1 = this.position1!.getJoints()[2];
+        y1.setCoordinates(new Coord(y1.coords.x, y));
+        const centerCoord1 = this.getReferenceJoint(this.position1!);
+        midjoint1.setCoordinates(centerCoord1.coords);
+        break;
+      case 2:
+        const y2 = this.position2!.getJoints()[0];
+        const midjoint2 = this.position2!.getJoints()[2];
+        y2.setCoordinates(new Coord(y2.coords.x, y));
+        const centerCoord2 = this.getReferenceJoint(this.position2!);
+        midjoint2.setCoordinates(centerCoord2.coords);
+        break;
+      case 3:
+        const y3 = this.position3!.getJoints()[0];
+        const midjoint3 = this.position3!.getJoints()[2];
+        y3.setCoordinates(new Coord(y3.coords.x, y));
+        const centerCoord3 = this.getReferenceJoint(this.position3!);
+        midjoint3.setCoordinates(centerCoord3.coords);
+        break;
+    }
   }
 
   setPosY2CoordEndPoints(y: number, posNum: number) {
-    const position = this.getPositionByNumber(posNum);
-    if (!position) return;
-
-    const frontJoint = position.getJoints()[1];
-    const midJoint = position.getJoints()[2];
-    frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y));
-    const centerCoord = this.getReferenceJoint(position);
-    midJoint.setCoordinates(centerCoord.coords);
-  }
-
-  private getPositionByNumber(posNum: number): Position | null {
-    switch (posNum) {
-      case 1: return this.position1;
-      case 2: return this.position2;
-      case 3: return this.position3;
-      default: return null;
+    switch (posNum){
+      case 1:
+        const y1 = this.position1!.getJoints()[1];
+        const midjoint1 = this.position1!.getJoints()[2];
+        y1.setCoordinates(new Coord(y1.coords.x, y));
+        const centerCoord1 = this.getReferenceJoint(this.position1!);
+        midjoint1.setCoordinates(centerCoord1.coords);
+        break;
+      case 2:
+        const y2 = this.position2!.getJoints()[1];
+        const midjoint2 = this.position2!.getJoints()[2];
+        y2.setCoordinates(new Coord(y2.coords.x, y));
+        const centerCoord2 = this.getReferenceJoint(this.position2!);
+        midjoint2.setCoordinates(centerCoord2.coords);
+        break;
+      case 3:
+        const y3 = this.position3!.getJoints()[1];
+        const midjoint3 = this.position3!.getJoints()[2];
+        y3.setCoordinates(new Coord(y3.coords.x, y));
+        const centerCoord3 = this.getReferenceJoint(this.position3!);
+        midjoint3.setCoordinates(centerCoord3.coords);
+        break;
     }
   }
 
@@ -1573,46 +1624,40 @@ defaultToZero(index: number, coordType: 'x0' | 'y0' | 'x1' | 'y1'): void {
   updateEndPointCoords(positionIndex: number, coordType: 'x0' | 'y0' | 'x1' | 'y1', value: number): void {
     // Validate position index
     if (positionIndex < 1 || positionIndex > 3) {
-      console.error("Invalid position index. It must be 1, 2, or 3.");
-      return;
+        console.error("Invalid position index. It must be 1, 2, or 3.");
+        return;
     }
 
     const index = positionIndex - 1; // Convert 1-based index to 0-based
     this.twoPointPositions[index][coordType] = value;
-
     // Get the corresponding position object (e.g., position1, position2, position3)
-    let position: Position | null = null;
+    let position: any;
     switch (positionIndex) {
-      case 1:
-        position = this.position1;
-        break;
-      case 2:
-        position = this.position2;
-        break;
-      case 3:
-        position = this.position3;
-        break;
+        case 1:
+            position = this.position1;
+            break;
+        case 2:
+            position = this.position2;
+            break;
+        case 3:
+            position = this.position3;
+            break;
     }
-
     if (position) {
-      const jointIndex = coordType === 'x0' || coordType === 'y0' ? 0 : 1; // Map coordType to joint index
-      const joint = position.getJoints()[jointIndex];
+        const jointIndex = coordType === 'x0' || coordType === 'y0' ? 0 : 1; // Map coordType to joint index
+        const joint = position.getJoints()[jointIndex];
 
-      // Update the x or y coordinate of the joint
-      if (coordType === 'x0' || coordType === 'x1') {
-        joint.setCoordinates(new Coord(value, joint.coords.y));
-      } else {
-        joint.setCoordinates(new Coord(joint.coords.x, value));
-      }
-
-      // Update the center joint coordinates
-      const centerCoord = this.getReferenceJoint(position);
-      position.getJoints()[2].setCoordinates(centerCoord.coords);
+        // Update the x or y coordinate of the joint
+        if (coordType === 'x0' || coordType === 'x1') {
+            joint.setCoordinates(new Coord(value, joint.coords.y));
+        } else {
+            joint.setCoordinates(new Coord(joint.coords.x, value));
+        }
     }
 
     // Trigger Angular change detection to reflect updates in the UI
     this.cdr.detectChanges();
-  }
+}
 
 getEndPointCoords(positionIndex: number, coordType: 'x0' | 'y0' | 'x1' | 'y1'): number {
     // Validate position index
