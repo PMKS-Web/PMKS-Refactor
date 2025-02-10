@@ -3,7 +3,7 @@ import { Coord } from './coord';
 export class Trajectory {
   constructor(
     private _coords: Coord[],
-    public jointId: number
+    public _jointId: number
   ) {}
 
   /**
@@ -28,5 +28,8 @@ export class Trajectory {
   //Getters
   get coords(): Coord[] {
     return this._coords;
+  }
+  get id(): number {
+    return this._jointId;
   }
 }
