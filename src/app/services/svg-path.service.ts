@@ -238,5 +238,16 @@ calculateConvexPath(hullPoints: Coord[], r: number): string {
     return pathData;
   }
 
+  calculateAngleSVGPath(coord1: Coord, coord2: Coord, angle: number): string {
+    let pathData = "";
+
+    pathData += `M ${coord1.x}, ${coord1.y} `; //Move to first coord
+    pathData += `H ${coord1.x + 25} `; //Draw horizontal 25 units right
+    pathData += `Q ${coord1.x} ${coord1.y}, ${25*Math.cos(angle)} ${25*Math.sin(angle)} `; //Draw quadratic curve from end of horizontal to point between Coord1 and Coord2
+    pathData += `M ${coord1.x}, ${coord1.y} `; //Reset to origin
+    pathData += `L ${coord2.x}, ${coord2.y}` //Draw line from Coord1 to Coord2
+
+    return pathData;
+  }
 
 }

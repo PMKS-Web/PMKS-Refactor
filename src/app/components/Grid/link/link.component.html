@@ -6,11 +6,13 @@
   @if(isHovered() || isSelected()) {
     <path [attr.d]="getLengthSVG()" stroke="black" stroke-width="7"></path>
     <text class="link-name" [attr.x]="getCOMX()" [attr.y]="getMaxY() - 65" alignment-baseline="middle" text-anchor="middle">{{getLength()}}</text>
+    <path [attr.d]="getAngleSVG()" stroke="black" stroke-width="5"></path>
+    @if(getAngle() >= 90){<text class="link-name" [attr.x]="this.link.getJoints()[0].coords.x + 25" [attr.y]="this.link.getJoints()[0].coords.y - 25" alignment-baseline="middle" text-anchor="middle">{{getAngle()}}</text>}
+    @else {<text class="link-name" [attr.x]="" [attr.y]="" alignment-baseline="middle" text-anchor="middle">{{getAngle()}}</text>}
   <!-- Link Name -->
   <text class="link-name" [attr.x]="getCOMX()" [attr.y]="getLowestY()" alignment-baseline="middle"
     text-anchor="middle">
       <tspan [attr.x]="getCOMX()" dy="1.5em">{{this.link.name}}</tspan>
-      <tspan [attr.x]="getCOMX()" dy="1.5em">Angle: {{angle}}</tspan>
   </text>
   }
 

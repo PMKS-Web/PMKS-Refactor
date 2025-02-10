@@ -134,6 +134,19 @@ export class LinkComponent extends AbstractInteractiveComponent {
     return this.svgPathService.calculateLengthSVGPath(allCoords[0], allCoords[1], this.link.angle);
   }
 
+  getAngleSVG(): string{
+    const joints = this.link.getJoints();
+    const allCoords: Coord[] = [];
+
+    for (let i = 0; i < joints.length; i++) {
+      let coord: Coord = joints[i]._coords;
+      coord = this.unitConversionService.modelCoordToSVGCoord(coord);
+      allCoords.push(coord);
+    }
+
+    return this.svgPathService.calculateAngleSVGPath(allCoords[0], allCoords[1], this.link.angle);
+  }
+
   getMaxY(): number {
     const joints = this.link.getJoints();
     let maxHeight = Number.MIN_SAFE_INTEGER;
