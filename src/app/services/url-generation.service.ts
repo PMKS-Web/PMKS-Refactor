@@ -1,7 +1,7 @@
 
 import { EncoderService } from './encoder.service';
 import { Mechanism } from '../model/mechanism';
-import {MechanismService} from "./mechanism.service";
+//import {MechanismService} from "./mechanism.service";
 
 export class UrlGenerationService {
 

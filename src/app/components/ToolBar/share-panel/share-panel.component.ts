@@ -2,7 +2,7 @@ import {Component, inject, OnInit} from '@angular/core';
 // @ts-ignore
 //import { Analytics, logEvent } from '@angular/fire/analytics';
 import { UrlGenerationService } from 'src/app/services/url-generation.service';
-import { MechanismService} from "../../../services/mechanism.service";
+//import { MechanismService} from "../../../services/mechanism.service";
 
 @Component({
   selector: 'app-share-panel',
