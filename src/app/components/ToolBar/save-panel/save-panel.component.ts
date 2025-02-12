@@ -1,7 +1,9 @@
 import { Component, inject, OnInit } from '@angular/core';
 //import { Analytics, logEvent } from '@angular/fire/analytics';
 import { UrlGenerationService } from 'src/app/services/url-generation.service';
-import {EncoderService} from "../../../services/encoder.service";
+import { StateService } from "../../../services/state.service";
+import { EncoderService } from "../../../services/encoder.service";
+
 //import { MechanismService} from "../../../services/mechanism.service";
 
 @Component({
@@ -17,7 +19,7 @@ export class SavePanelComponent implements OnInit{
 
   constructor(
     private UrlGenerationService: UrlGenerationService,
-
+    private stateService: StateService,
   ) {
     SavePanelComponent.instance = this;
   }
@@ -25,8 +27,8 @@ export class SavePanelComponent implements OnInit{
     this.download()
   }
   download() {
-    //let mech = new MechanismService(PARAMS).mechanisms[0] TODO
-    //const csv = EncoderService.exportMechanismDataToCSV(mechanism) todo get mechanism connected
+    let encoderService = new EncoderService(this.stateService);
+    let csv:string = encoderService.exportMechanismDataToCSV();
 
   }
 }

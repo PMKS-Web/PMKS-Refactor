@@ -1,23 +1,25 @@
 
 import { EncoderService } from './encoder.service';
-import { Mechanism } from '../model/mechanism';
-//import {MechanismService} from "./mechanism.service";
+import { StateService } from './state.service';
 
 export class UrlGenerationService {
 
-  constructor(private mechanism: Mechanism) {
+  constructor(private stateService: StateService) {
     //conatins mechanism implicitly ^^^
   }
 
   /**
-   * Main call Function, todo will generate the full URL
+   * Will dynamically generate and return a string URL
+   * based on the mechanism from current state service data
+   *   -- uses current URL for copying, ie "http://localhost:4200/"
+   * @returns string
    */
   get generateUrl(): string {
-    //const encoder = new EncoderService();
-    const mechURL: string = EncoderService.encodeForURL(this.mechanism);
+    const encoder = new EncoderService(this.stateService);
+    const encodedMechanism: string = encoder.encodeForURL();
     let currentUrl: string = window.location.href;
     if (!currentUrl.endsWith("/")) { currentUrl += "/"; }
-    return currentUrl + mechURL;
+    return currentUrl + encodedMechanism;
   }
 
   /**

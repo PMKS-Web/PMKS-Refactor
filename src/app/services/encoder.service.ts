@@ -6,8 +6,18 @@ import { CompoundLink } from "../model/compound-link";
 import { Trajectory } from "../model/trajectory";
 import { Force } from "../model/force";
 import { Position } from "../model/position";
+import { StateService } from "./state.service";
 
 export class EncoderService {
+
+
+  constructor(private stateService: StateService) {
+    //this._mechanism = this.stateService.getMechanism();
+  }
+
+  get mechanism() {
+    return this.stateService.getMechanism();
+  }
   /**
    * Encodes the mechanism into a one-line, URL-friendly string.
    * This method:
@@ -15,11 +25,13 @@ export class EncoderService {
    * - Uses a custom replacer to convert numbers to hexadecimal strings and booleans to "1"/"0".
    * - Produces a JSON string that is then URL-encoded.
    */
-  static encodeForURL(mechanism: Mechanism): string {
+  public encodeForURL(): string {
     try {
-      const compactData = this.compactMechanismData(mechanism);
+      const compactData = this.compactMechanismData(this.mechanism);
       const jsonData = JSON.stringify(compactData, this.compressionReplacer);
-      return encodeURIComponent(jsonData);
+      let compressedjsonData = jsonData.replaceAll('","',"~").replaceAll(',',"_").replaceAll("Reference Point", "RP").replaceAll('"]_["',"--")
+      console.log(compressedjsonData);
+      return encodeURIComponent(compressedjsonData);
     } catch (error) {
       console.error("Error encoding mechanism data:", error);
       return "";
@@ -30,8 +42,8 @@ export class EncoderService {
    * Exports the mechanism data as a CSV string.
    * The data is produced in a compact form (arrays in a fixed order) and then converted to CSV.
    */
-  public static exportMechanismDataToCSV(mechanism: Mechanism): string {
-    const data = this.compactMechanismData(mechanism);
+  public exportMechanismDataToCSV(): string {
+    const data = this.compactMechanismData(this.mechanism);
     let csvOutput = "";
     // For each section (joints, links, etc.) use its short key.
     for (const section of Object.keys(data)) {
@@ -65,7 +77,7 @@ export class EncoderService {
    * For fields that are arrays (like joints on a link) the array of IDs is joined by a "|" delimiter.
    * If `refPoint` is an object (with x and y) it is also compacted into a string.
    */
-  private static compactMechanismData(mechanism: Mechanism): any {
+  private compactMechanismData(mechanism: Mechanism): any {
     return {
       j: mechanism.getArrayOfJoints().map((j: Joint) => [
         j.id,
@@ -142,7 +154,7 @@ export class EncoderService {
    *
    * Note: On decoding, you'll need to reverse these transformations.
    */
-  private static compressionReplacer(key: string, value: any): any {
+  private compressionReplacer(key: string, value: any): any {
     if (typeof value === "number") {
       return value.toString(16);
     }
@@ -156,7 +168,7 @@ export class EncoderService {
    * If the field contains a comma, newline, or quotes, the field is wrapped in quotes
    * and inner quotes are doubled. Prevents issues with CSV format.
    */
-  private static csvEscape(value: any): string {
+  private csvEscape(value: any): string {
     if (value === null || value === undefined) return '';
     const str = value.toString();
     if (str.includes(',') || str.includes('\n') || str.includes('"')) {
@@ -164,4 +176,5 @@ export class EncoderService {
     }
     return str;
   }
+
 }
