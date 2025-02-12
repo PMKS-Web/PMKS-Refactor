@@ -156,7 +156,7 @@ export class AnimationBarComponent implements OnInit{
 
     if (changes.clockwise !== undefined) {
       const frameIndex = changes.clockwise.frame;
-      const position = (frameIndex / totalFrames) * 100;
+      const position = Math.min(Math.max((frameIndex / totalFrames) * 100, 0), 100);
       console.log(`Clockwise at Frame ${changes.clockwise}: Position on Bar = ${position}%`);
 
       this.timelineMarkers.push({
@@ -168,7 +168,7 @@ export class AnimationBarComponent implements OnInit{
 
     if (changes.counterClockwise !== undefined) {
       const frameIndex = changes.counterClockwise.frame;
-      const position = (frameIndex / totalFrames) * 100;
+      const position = Math.min(Math.max((frameIndex / totalFrames) * 100, 0), 100);
       console.log(`CounterClockwise at Frame ${changes.counterClockwise}: Position on Bar = ${position}%`);
 
       this.timelineMarkers.push({

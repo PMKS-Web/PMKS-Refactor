@@ -1,3 +1,4 @@
+
 //@use 'sass:map';
 //@use '@angular/material' as mat;
 //
@@ -163,9 +164,7 @@
       padding: 10px 20px;
       display: flex;
       gap: 5px;
-      align-items: center;
       justify-content: center;
-      // width: 400px;
       border-radius: var(--border-radius);
       //Set the elevation of the animation bar to 2.
       @include mat.elevation(2);
@@ -222,45 +221,19 @@
 
       mat-slider {
         margin-left: 15px;
-        width: 30vw;
-      }
-
-      timeline-marker-container {
-
-        position: relative !important;;
-        width: 100%;
-        height: 20px;
-        background: gray;
-        overflow: visible;
-      }
-
-      timeline-marker {
-        position: absolute ;
-        top: 0;
-        width: 10px;
-        height: 10px;
+        position: relative;
         display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        background-color: var(--primary-color, #ffcc00);
-        transform: translateX(-50%);
-
-      }
-
-      timeline-marker.clockwise {
-        background-color: blue;
-      }
-
-      timeline-marker.counterclockwise{
-        background-color: red;
-      }
-
-      timeline-marker mat-icon{
-        font-size: 16px;
-        color: white;
       }
     }
+
+    .timeline-marker-container {
+      display: block;
+      position: relative;
+      width: 112px;
+      height: 50px;
+    }
+
+
   }
 }
 
