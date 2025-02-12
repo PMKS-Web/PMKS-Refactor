@@ -240,13 +240,16 @@ calculateConvexPath(hullPoints: Coord[], r: number): string {
 
   calculateAngleSVGPath(coord1: Coord, coord2: Coord, angle: number): string {
     let pathData = "";
+    let d = Math.sqrt((coord2.x - coord1.x) * (coord2.x - coord1.x) + (coord2.y-coord1.y) * (coord2.y-coord1.y));
+    let r = 150 / d;
+    console.log(r);
 
     pathData += `M ${coord1.x}, ${coord1.y} `; //Move to first coord
-    pathData += `H ${coord1.x + 25} `; //Draw horizontal 25 units right
-    pathData += `Q ${coord1.x} ${coord1.y}, ${25*Math.cos(angle)} ${25*Math.sin(angle)} `; //Draw quadratic curve from end of horizontal to point between Coord1 and Coord2
+    pathData += `H ${coord1.x + 150} `; //Draw horizontal 25 units right
+    pathData += `Q ${coord1.x + 170} ${(1-r)*coord1.y + r * coord2.y + 15}, ${(1-r)*coord1.x + r * coord2.x} ${(1-r)*coord1.y + r * coord2.y} `; //Draw quadratic curve from end of horizontal to point between Coord1 and Coord2
     pathData += `M ${coord1.x}, ${coord1.y} `; //Reset to origin
-    pathData += `L ${coord2.x}, ${coord2.y}` //Draw line from Coord1 to Coord2
-
+    pathData += `L ${coord2.x}, ${coord2.y}`; //Draw line from Coord1 to Coord2
+    // Q ${(1-r)*coord1.x + r * coord2.x + 150} ${(1-r)*coord1.y + r * coord2.y - 150} for obtuse??
     return pathData;
   }
 
