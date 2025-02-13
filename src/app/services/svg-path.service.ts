@@ -246,14 +246,14 @@ calculateConvexPath(hullPoints: Coord[], r: number): string {
     if (angle < 180) {
       pathData += `M ${coord1.x}, ${coord1.y} `; //Move to first coord
       pathData += `H ${coord1.x + 150} `; //Draw horizontal 25 units right
-      pathData += `M ${coord1.x}, ${coord1.y} `; //Move to first coord
+      //pathData += `M ${coord1.x}, ${coord1.y} `; //Move to first coord
       pathData += `A ${150} ${150} 0 0 0 ${(1-r)*coord1.x + r * coord2.x} ${(1-r)*coord1.y + r * coord2.y}`; //Move to first coord
       pathData += `L ${coord1.x}, ${coord1.y} `;
     }
     else if (angle >= 180){
       pathData += `M ${coord1.x}, ${coord1.y} `; //Move to first coord
       pathData += `H ${coord1.x + 150} `; //Draw horizontal 25 units right
-      pathData += `M ${coord1.x}, ${coord1.y} `; //Move to first coord
+      //pathData += `M ${coord1.x}, ${coord1.y} `; //Move to first coord
       pathData += `A ${150} ${150} 0 1 0 ${(1-r)*coord1.x + r * coord2.x} ${(1-r)*coord1.y + r * coord2.y}`; //Move to first coord
       pathData += `L ${coord1.x}, ${coord1.y} `;
     }

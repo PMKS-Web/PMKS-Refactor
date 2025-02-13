@@ -22,7 +22,9 @@ export class LinkComponent extends AbstractInteractiveComponent {
 
   @Input() link!: Link;
   unitSubscription: Subscription = new Subscription();
+  angleSubscription: Subscription = new Subscription();
   units: string = "cm";
+  unitsAngle: string = "º";
   angle: string = "0";
   constructor(public override interactionService: InteractionService,
 				private stateService: StateService,
@@ -38,6 +40,7 @@ export class LinkComponent extends AbstractInteractiveComponent {
 
   override ngOnInit() {
     this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe((units) => {this.units = units;});
+    this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe((angles) => {this.unitsAngle = angles;});
     super.ngOnInit();
   }
 
@@ -58,6 +61,32 @@ export class LinkComponent extends AbstractInteractiveComponent {
   }
   getCOMY(): number {
     return this.unitConversionService.modelCoordToSVGCoord(this.link.centerOfMass).y;
+  }
+
+  getAngleTextPosX(): number {
+    let x = 0;
+    let joints: IterableIterator<Joint> = this.link.joints.values();
+    let allCoords: Coord[] = [];
+    for(let joint of joints){
+      let coord: Coord = joint._coords;
+      coord = this.unitConversionService.modelCoordToSVGCoord(coord);
+      allCoords.push(coord);
+    } //optimize by just getting first coord
+    x = allCoords[0].x + 225;
+    return x;
+  }
+
+  getAngleTextPosY(): number {
+    let y = 0;
+    let joints: IterableIterator<Joint> = this.link.joints.values();
+    let allCoords: Coord[] = [];
+    for(let joint of joints){
+      let coord: Coord = joint._coords;
+      coord = this.unitConversionService.modelCoordToSVGCoord(coord);
+      allCoords.push(coord);
+    } //optimize by just getting first coord
+    y = allCoords[0].y - 50;
+    return y;
   }
 
   //Following two functions are used to set the X and Y coordinates of the lock SVG to be between the center and the rightmost joint
