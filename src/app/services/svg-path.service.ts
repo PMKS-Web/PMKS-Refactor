@@ -202,19 +202,19 @@ calculateConvexPath(hullPoints: Coord[], r: number): string {
       pathData += `L ${coord2.x},${coord2.y} `;
     }
     else if (angle > 90 && angle <= 180){
-      pathData += `M ${coord2.x + 180%angle},${coord2.y + 180%angle - 100} `; // Move to the first point
+      pathData += `M ${coord2.x - 180%angle},${coord2.y - 180%angle + 100} `; // Move to the first point
       pathData += `L ${coord2.x},${coord2.y} `;
-      pathData += `M ${(coord2.x + coord2.x+180%angle)/2},${(coord2.y +180%angle - 100 + coord2.y)/2} `;
-      pathData += `L ${(coord1.x + coord1.x+180%angle)/2},${(coord1.y + 180%angle - 100 + coord1.y)/2} `;
-      pathData += `M ${coord1.x + 180%angle},${coord1.y + 180%angle - 100} `;
+      pathData += `M ${(coord2.x + coord2.x-180%angle)/2},${(coord2.y + coord2.y - 180%angle + 100)/2} `;
+      pathData += `L ${(coord1.x + coord1.x-180%angle)/2},${(coord1.y + coord1.y - 180%angle + 100)/2} `;
+      pathData += `M ${coord1.x - 180%angle},${coord1.y - 180%angle + 100} `;
       pathData += `L ${coord1.x},${coord1.y} `;
     }
     else if (angle > -180 && angle < -90){
-      pathData += `M ${coord2.x - 180%Math.abs(angle)},${coord2.y + 180%Math.abs(angle) - 100} `; // Move to the first point
+      pathData += `M ${coord2.x + 180%Math.abs(angle)},${coord2.y - 180%Math.abs(angle) + 100} `; // Move to the first point
       pathData += `L ${coord2.x},${coord2.y} `;
-      pathData += `M ${(coord2.x + coord2.x-180%Math.abs(angle))/2},${(coord2.y +180%Math.abs(angle) - 100 + coord2.y)/2} `;
-      pathData += `L ${(coord1.x + coord1.x-180%Math.abs(angle))/2},${(coord1.y + 180%Math.abs(angle) - 100 + coord1.y)/2} `;
-      pathData += `M ${coord1.x - 180%Math.abs(angle)},${coord1.y + 180%Math.abs(angle) - 100} `;
+      pathData += `M ${(coord2.x + coord2.x+180%Math.abs(angle))/2},${(coord2.y - 180%Math.abs(angle) + 100 + coord2.y)/2} `;
+      pathData += `L ${(coord1.x + coord1.x+180%Math.abs(angle))/2},${(coord1.y - 180%Math.abs(angle) + 100 + coord1.y)/2} `;
+      pathData += `M ${coord1.x + 180%Math.abs(angle)},${coord1.y - 180%Math.abs(angle) + 100} `;
       pathData += `L ${coord1.x},${coord1.y} `;
     }
     else if (angle === -90){
