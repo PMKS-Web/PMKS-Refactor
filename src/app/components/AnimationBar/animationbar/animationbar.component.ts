@@ -71,7 +71,7 @@ export class AnimationBarComponent implements OnInit{
         this.stateService.getMechanism().populateTrajectories(this.positionSolver);
 
         setTimeout(() => {
-          this.updateTimelineMarkers();
+
         }, 100);
         //display the trajectories
         break;
@@ -181,10 +181,6 @@ export class AnimationBarComponent implements OnInit{
     console.log("Final timelineMarkers array:", this.timelineMarkers);
   }
 
-  logMarker(marker: any) {
-    console.log("Rendering Marker:", marker);
-    return true;
-  }
 
 
 

@@ -80,7 +80,6 @@ export class AnimationService {
             })
         }
         this.invaldMechanism = this.animationStates.length == 0;
-        console.log("Animations initialized, updating timeline markers...");
         this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
     }
     animateMechanisms(playPause: boolean) {
@@ -178,39 +177,31 @@ export class AnimationService {
 
     }
 
-  getDirectionChanges(state: JointAnimationState | undefined): { clockwise?: { frame: number, position: Coord }, counterClockwise?: { frame: number, position: Coord } }  {
+  getDirectionChanges(state: JointAnimationState | undefined): { clockwise?: { frame: number, position: Coord }, counterClockwise?: { frame: number, position: Coord } } {
     if (!state) return {};
     let clockwise: { frame: number, position: Coord } | undefined = undefined;
     let counterClockwise: { frame: number, position: Coord } | undefined = undefined;
     const trajectory: Coord[] = state.animationFrames.map(frame => frame[2]);
-
-    console.log(trajectory)
 
     for (let i = 1; i < trajectory.length - 1; i++) {
       const lastFrame = trajectory[i - 1];
       const thisFrame = trajectory[i];
       const nextFrame = trajectory[i + 1];
 
-
-
       const isDirectionChange = this.detectDirectionChange(lastFrame, thisFrame, nextFrame);
 
-
       if (isDirectionChange) {
-        const rotation = this.getRotationDirection(lastFrame, thisFrame, nextFrame);
         console.log(`Direction Change at Frame ${i}: Position:`, thisFrame);
-        if (rotation === 'clockwise') {
+        if (!clockwise) {
           clockwise = { frame: i, position: thisFrame };
-        } else {
+        } else if (!counterClockwise) {
           counterClockwise = { frame: i, position: thisFrame };
         }
       }
     }
     if (clockwise === undefined && counterClockwise === undefined) {
-      console.log("No direction changes detected");
       return {};
     }
-
     return { clockwise, counterClockwise };
   }
 
@@ -223,15 +214,7 @@ export class AnimationService {
     const xChanges = (xVelocityBefore * xVelocityAfter) < 0;
     const yChanges = (yVelocityBefore * yVelocityAfter) < 0;
 
-
-    const directionChange = xChanges && yChanges;
-    return directionChange;
-
+    return xChanges && yChanges;
   }
 
-  getRotationDirection(last: Coord, current: Coord, next: Coord): 'clockwise' | 'counterclockwise' {
-    const v1 = current.subtract(last);
-    const v2 = next.subtract(current);
-    return v1.x * v2.y - v1.y * v2.x > 0 ? 'counterclockwise' : 'clockwise';
-  }
 }
