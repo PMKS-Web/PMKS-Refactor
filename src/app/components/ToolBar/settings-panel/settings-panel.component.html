@@ -8,6 +8,16 @@
   <!-- BASIC SETTING DROPDOWN -->
   <collapsible-subsection [expanded]='true' titleLabel='Basic Settings' [expanded]="sectionExpanded['LBasic']"
                           (opened)="sectionExpanded['LBasic'] = true" (closed)="sectionExpanded['LBasic'] = false">
+
+
+    <div class="toggle-container" style="margin-top:10px;">
+      <button (click)="toggleStartDirection()">
+        {{ animationService.startDirectionCounterclockwise ? 'Start Direction Clockwise' : 'Start Direction Counterclockwise' }}
+      </button>
+    </div>
+
+
+
     <div id="units" >
       <p class="units">Global Units <mat-icon matTooltip="Blah blah blah" [matTooltipShowDelay]='1000' class='tooltip'
       >help_outline

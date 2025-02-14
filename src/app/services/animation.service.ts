@@ -20,11 +20,14 @@ export interface JointAnimationState {
 }
 
 
+
 @Injectable({
     providedIn: 'root'
 })
 export class AnimationService {
 
+
+    public startDirectionCounterclockwise: boolean = true;
     private animationStates: JointAnimationState[];
     private invaldMechanism: boolean;
     private animationProgressSource = new BehaviorSubject<number>(0);
@@ -189,18 +192,21 @@ export class AnimationService {
       const nextFrame = trajectory[i + 1];
 
       const isDirectionChange = this.detectDirectionChange(lastFrame, thisFrame, nextFrame);
-
       if (isDirectionChange) {
-        console.log(`Direction Change at Frame ${i}: Position:`, thisFrame);
-        if (!clockwise) {
-          clockwise = { frame: i, position: thisFrame };
-        } else if (!counterClockwise) {
-          counterClockwise = { frame: i, position: thisFrame };
+        if (this.startDirectionCounterclockwise) {
+          if (!clockwise) {
+            clockwise = { frame: i, position: thisFrame };
+          } else if (!counterClockwise) {
+            counterClockwise = { frame: i, position: thisFrame };
+          }
+        } else {
+          if (!counterClockwise) {
+            counterClockwise = { frame: i, position: thisFrame };
+          } else if (!clockwise) {
+            clockwise = { frame: i, position: thisFrame };
+          }
         }
       }
-    }
-    if (clockwise === undefined && counterClockwise === undefined) {
-      return {};
     }
     return { clockwise, counterClockwise };
   }
@@ -210,11 +216,8 @@ export class AnimationService {
     const xVelocityAfter = next.x - current.x;
     const yVelocityBefore = current.y - last.y;
     const yVelocityAfter = next.y - current.y;
-
-    const xChanges = (xVelocityBefore * xVelocityAfter) < 0;
-    const yChanges = (yVelocityBefore * yVelocityAfter) < 0;
-
-    return xChanges && yChanges;
+    return (xVelocityBefore * xVelocityAfter < 0) && (yVelocityBefore * yVelocityAfter < 0);
   }
+
 
 }

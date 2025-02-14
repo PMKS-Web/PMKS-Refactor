@@ -54,7 +54,9 @@
           *ngFor = "let marker of timelineMarkers"
           class = "timeline-marker"
           [ngClass] = "marker.type"
-          [style.transform]="'translateX(' + marker.position + '%)'">
+          [style.transform]="'translateX(calc(' + marker.position + '% - 10px))'"
+
+        >
 
           <mat-icon *ngIf = "marker.type === 'clockwise'">rotate_right</mat-icon>
           <mat-icon *ngIf = "marker.type === 'counterclockwise'">rotate_left</mat-icon>
