@@ -63,6 +63,7 @@ export class LinkComponent extends AbstractInteractiveComponent {
     return this.unitConversionService.modelCoordToSVGCoord(this.link.centerOfMass).y;
   }
 
+  //find way to position text so that it's next to the middle of the arc?
   getAngleTextPosX(): number {
     let x = 0;
     let joints: IterableIterator<Joint> = this.link.joints.values();
@@ -72,7 +73,7 @@ export class LinkComponent extends AbstractInteractiveComponent {
       coord = this.unitConversionService.modelCoordToSVGCoord(coord);
       allCoords.push(coord);
     } //optimize by just getting first coord
-    x = allCoords[0].x + 225;
+    x = allCoords[0].x + 275;
     return x;
   }
 
@@ -85,7 +86,7 @@ export class LinkComponent extends AbstractInteractiveComponent {
       coord = this.unitConversionService.modelCoordToSVGCoord(coord);
       allCoords.push(coord);
     } //optimize by just getting first coord
-    y = allCoords[0].y - 50;
+    y = allCoords[0].y;
     return y;
   }
 
