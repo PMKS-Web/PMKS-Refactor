@@ -47,11 +47,13 @@ export class SettingsPanelComponent{
   }
 
 
-  toggleStartDirection() {
-
-    this.animationService.startDirectionCounterclockwise =
-      !this.animationService.startDirectionCounterclockwise;
+  public onDirectionChanged(selection: string): void {
+    this.animationService.animateMechanisms(false);
+    this.animationService.reset();
+    this.animationService.startDirectionCounterclockwise = (selection === 'Counterclockwise');
+    this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
   }
+
 
   changeUnits(newUnits: string){
     console.log(newUnits);
