@@ -97,31 +97,50 @@ export class AnimationService {
             }
         }
     }
-    singleMechanismAnimation(state: JointAnimationState) {
-        if (state.isPaused) {
-            return;
+  singleMechanismAnimation(state: JointAnimationState) {
+    if (state.isPaused) {
+      return;
+    } else {
+      // Move the frame index forward or backward
+      if (this.startDirectionCounterclockwise) {
+        if (state.currentFrameIndex === state.totalFrames - 1) {
+          state.currentFrameIndex = 0;
         } else {
-            if (state.currentFrameIndex == state.totalFrames - 1) {
-                state.currentFrameIndex = 0;
-            } else {
-                state.currentFrameIndex++;
-            }
-
-            const progress = state.currentFrameIndex / (state.totalFrames - 1);
-            this.updateProgress(progress);
-
-            for (let jointIndex = 0; jointIndex < state.jointIDs.length; jointIndex++) {
-                this.stateService.getMechanism()
-                    .getJoint(state.jointIDs[jointIndex])
-                    .setCoordinates(state.animationFrames[state.currentFrameIndex][jointIndex]);
-            }
-
-            setTimeout(() => {
-                this.singleMechanismAnimation(state)
-            }, Math.round((1000 * 60) / (state.inputSpeed * 360*this.speedMultiplier)));
+          state.currentFrameIndex++;
         }
+      } else {
+        if (state.currentFrameIndex === 0) {
+          state.currentFrameIndex = state.totalFrames - 1;
+        } else {
+          state.currentFrameIndex--;
+        }
+      }
+
+      // Calculate raw progress from 0..1
+      const rawProgress = state.currentFrameIndex / (state.totalFrames - 1);
+
+      // If clockwise, invert so bar goes 0..1 left to right
+      const displayProgress = this.startDirectionCounterclockwise
+        ? rawProgress
+        : (1 - rawProgress);
+
+      // Send that to the timeline
+      this.updateProgress(displayProgress);
+
+      // Update each joint's position for this frame
+      for (let jointIndex = 0; jointIndex < state.jointIDs.length; jointIndex++) {
+        this.stateService.getMechanism()
+          .getJoint(state.jointIDs[jointIndex])
+          .setCoordinates(state.animationFrames[state.currentFrameIndex][jointIndex]);
+      }
+
+      setTimeout(() => {
+        this.singleMechanismAnimation(state);
+      }, Math.round((1000 * 60) / (state.inputSpeed * 360 * this.speedMultiplier)));
     }
-    reset() {
+  }
+
+  reset() {
         for (let state of this.animationStates) {
             for (let jointIndex = 0; jointIndex < state.jointIDs.length; jointIndex++) {
                 this.stateService.getMechanism().getJoint(state.jointIDs[jointIndex]).setCoordinates(state.startingPositions[jointIndex]);

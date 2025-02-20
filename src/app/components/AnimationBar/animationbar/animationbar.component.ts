@@ -154,27 +154,43 @@ export class AnimationBarComponent implements OnInit{
     console.log(`Total Frames in Animation: ${totalFrames}`);
     this.timelineMarkers = [];
 
+    const ccw = this.animationService.startDirectionCounterclockwise;
+
+    // 1) Handle the "clockwise" change
     if (changes.clockwise !== undefined) {
       const frameIndex = changes.clockwise.frame;
-      const position = Math.min(Math.max((frameIndex / totalFrames) * 100, 0), 100);
-      console.log(`Clockwise at Frame ${changes.clockwise}: Position on Bar = ${position}%`);
+
+      const rawFraction = frameIndex / (totalFrames - 1);
+      const finalFraction = ccw ? rawFraction : (1 - rawFraction);
+      const position = Math.min(Math.max(finalFraction * 100, 0), 100);
+
+      const markerType = ccw ? 'clockwise' : 'counterclockwise';
+
+      console.log(`Clockwise at Frame ${frameIndex}: Position on Bar = ${position}%`);
 
       this.timelineMarkers.push({
         position,
-        type: 'clockwise',
-        coords: changes.clockwise.position  // Store exact coordinate
+        type: markerType,
+        coords: changes.clockwise.position
       });
     }
 
+    // 2) Handle the "counterClockwise" change
     if (changes.counterClockwise !== undefined) {
       const frameIndex = changes.counterClockwise.frame;
-      const position = Math.min(Math.max((frameIndex / totalFrames) * 100, 0), 100);
-      console.log(`CounterClockwise at Frame ${changes.counterClockwise}: Position on Bar = ${position}%`);
+
+      const rawFraction = frameIndex / (totalFrames - 1);
+      const finalFraction = ccw ? rawFraction : (1 - rawFraction);
+      const position = Math.min(Math.max(finalFraction * 100, 0), 100);
+
+      const markerType = ccw ? 'counterclockwise' : 'clockwise';
+
+      console.log(`CounterClockwise at Frame ${frameIndex}: Position on Bar = ${position}%`);
 
       this.timelineMarkers.push({
         position,
-        type: 'counterclockwise',
-        coords: changes.counterClockwise.position  // Store exact coordinate
+        type: markerType,
+        coords: changes.counterClockwise.position
       });
     }
 
@@ -182,6 +198,5 @@ export class AnimationBarComponent implements OnInit{
   }
 
 
-
-
 }
+
