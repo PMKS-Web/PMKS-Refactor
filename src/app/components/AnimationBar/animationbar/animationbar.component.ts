@@ -22,7 +22,6 @@ import {StateService} from "src/app/services/state.service";
 })
 export class AnimationBarComponent implements OnInit{
 
-
   constructor(
     public interactionService: InteractionService,
     private animationService: AnimationService,
@@ -47,7 +46,6 @@ export class AnimationBarComponent implements OnInit{
   private isPausedAnimating: boolean = true;
   public animationSpeed: number = 1;
   timelineMarkers: { position: number; type: "clockwise" | "counterclockwise"; coords?: Coord }[] = [];
-  sliderValue: number = 0;
 
 
 
@@ -123,9 +121,21 @@ export class AnimationBarComponent implements OnInit{
 
   onSliderChange(value: number) {
     if (this.isAnimating && this.isPausedAnimating) {
+      const progressFraction = value / 100;
       this.animationService.setAnimationProgress(value / 100);
     }
   }
+
+  public sliderValue = 0;
+
+  onSliderInput(event: any): void {
+    const inputElement = event.target as HTMLInputElement;
+    const numericValue = parseFloat(inputElement.value);
+    const fraction = numericValue / 100;
+
+    this.animationService.setAnimationProgress(fraction);
+  }
+
 
   toggleAnimationSpeed(): void{
     const speedOptions = [0.5,1,2]
