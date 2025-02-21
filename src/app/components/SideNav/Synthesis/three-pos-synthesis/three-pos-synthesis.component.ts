@@ -685,6 +685,12 @@ setCouplerLength(x: number){
 
       this.couplerLength = x;
       if (this.reference === "Center") {
+        this.coord1A = new Coord(this.pos1X - this.couplerLength / 2, this.pos1Y);
+        this.coord2A = new Coord(this.pos1X + this.couplerLength / 2, this.pos1Y);
+        this.coord1B = new Coord(this.pos2X - this.couplerLength / 2, this.pos2Y);
+        this.coord2B = new Coord(this.pos2X + this.couplerLength / 2, this.pos2Y);
+        this.coord1C = new Coord(this.pos3X - this.couplerLength / 2, this.pos3Y);
+        this.coord2C = new Coord(this.pos3X + this.couplerLength / 2, this.pos3Y);
         if (this.position1) {
           const angle = this.pos1Angle;
           const halfLength = x/2;
@@ -716,6 +722,13 @@ setCouplerLength(x: number){
           this.setPositionAngle(angle, 3); //Give position its original angle back
         }
       } else if (this.reference === "Back") {
+        this.coord1A = new Coord(0, this.pos1Y);
+        this.coord2A = new Coord(this.couplerLength, this.pos1Y);
+        this.coord1B = new Coord(this.pos2X, this.pos2Y);
+        this.coord2B = new Coord(this.pos2X + this.couplerLength, this.pos2Y);
+        this.coord1C = new Coord(this.pos3X, this.pos3Y);
+        this.coord2C = new Coord(this.pos3X + this.couplerLength, this.pos3Y);
+
         if (this.position1) {
           this.position1.setLength(this.couplerLength, this.position1.getJoints()[0]);
         }
@@ -726,6 +739,13 @@ setCouplerLength(x: number){
           this.position3.setLength(this.couplerLength, this.position3.getJoints()[0]);
         }
       } else {
+        this.coord1A = new Coord(-this.couplerLength, this.pos1Y);
+        this.coord2A = new Coord(0, this.pos1Y);
+        this.coord1B = new Coord(this.pos2X - this.couplerLength, this.pos2Y);
+        this.coord2B = new Coord(this.pos2X, this.pos2Y);
+        this.coord1C = new Coord(this.pos3X - this.couplerLength, this.pos3Y);
+        this.coord2C = new Coord(this.pos3X, this.pos3Y);
+
         if (this.position1) {
           this.position1.setLength(this.couplerLength, this.position1.getJoints()[1]);
         }
