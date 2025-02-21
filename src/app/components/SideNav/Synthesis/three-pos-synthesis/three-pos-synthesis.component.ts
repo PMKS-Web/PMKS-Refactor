@@ -506,6 +506,7 @@ isSixBarGenerated(): boolean {
       this.setPositionsColorToDefault();
       this.mechanism.clearTrajectories();
       this.fourBarGenerated = false;
+      this.sixBarGenerated = false;
       this.synthedMech = [];
       this.Generated.emit(false);
     }
