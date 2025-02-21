@@ -608,6 +608,7 @@ isSixBarGenerated(): boolean {
       this.setPositionsColorToDefault();
       this.mechanism.clearTrajectories();
       console.log("Six-bar has been cleared");
+      this.fourBarGenerated = false;
       this.cdr.detectChanges();
       return;
     }
@@ -1219,14 +1220,8 @@ getFirstUndefinedPosition(): number{
 }
 
   deletePosition(index: number) {
-    // Remove all links if the four-bar has been generated
-    if (this.fourBarGenerated) {
-      if (window.confirm("This action will delete the entire mechanism and all other coupler positions. Are you sure?")){
-        this.removeAllPositions();
-      }
-    }
 
-    else if (index === 1) {
+    if (index === 1) {
       this.pos1Specified = false;
       this.mechanism.removePosition(this.position1!.id);
       this.resetPos(1);
@@ -1250,7 +1245,7 @@ allPositionsDefined(): boolean {
 
   removeAllPositions() {
     // Remove all links regardless of whether the four-bar has been generated
-    if (this.panel === "Synthesis"){
+    /*if (this.panel === "Synthesis"){
       let listOfLinks = this.synthedMech;
       console.log(listOfLinks);
       while (this.synthedMech.length > 0) {
@@ -1261,25 +1256,19 @@ allPositionsDefined(): boolean {
         console.log("LIST OF LINKS AFTER DELETION:");
         console.log(this.mechanism.getArrayOfLinks());
       }
-    }
+    }*/
 
-    this.pos1Specified = false;
-    this.mechanism.removePosition(this.position1!.id);
-    this.resetPos(1);
-    this.pos2Specified = false;
-    this.mechanism.removePosition(this.position2!.id);
-    this.resetPos(2);
-    this.pos3Specified = false;
-    this.mechanism.removePosition(this.position3!.id);
-    this.resetPos(3);
-    this.mechanism.clearTrajectories();
+    this.deletePosition(1);
+    this.deletePosition(2);
+    this.deletePosition(3);
 
     // Reset flags
-    this.fourBarGenerated = false;
+    /*this.fourBarGenerated = false;
     this.synthedMech = [];
     this.sixBarGenerated = false;
-    this.Generated.emit(false);
+    this.Generated.emit(false);*/
   }
+
   findIntersectionPoint(pose1_coord1: Coord, pose2_coord1: Coord, pose3_coord1: Coord) {
     //slope of Line 1
     let slope1 = 1 / ((pose2_coord1.y - pose1_coord1.y) / (pose2_coord1.x - pose1_coord1.x));

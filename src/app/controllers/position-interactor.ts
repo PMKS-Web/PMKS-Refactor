@@ -59,7 +59,7 @@ export class PositionInteractor extends Interactor {
     const mechanism: Mechanism = this.stateService.getMechanism();
     let modelPosAtRightClick = this.getMousePos().model;
 
-    availableContext.push(
+    /*availableContext.push(
       {
         icon: this.position.locked ? "assets/contextMenuIcons/unlock.svg" : "assets/contextMenuIcons/lock.svg",
         label: this.position.locked ? "Unlock Position" : "Lock Position",
@@ -72,7 +72,7 @@ export class PositionInteractor extends Interactor {
         action: () => { mechanism.removePosition(this.position.id) }, // Assuming removePosition exists
         disabled: false
       }
-    );
+    );*/
 
     return availableContext;
   }
