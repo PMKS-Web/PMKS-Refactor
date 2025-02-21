@@ -149,10 +149,8 @@
  </div>
 <!--    <hr class="solid2">-->
              <!-- If all positions are defined you can then generate a four bar or delete all positions-->
-                 <div *ngIf='!this.allPositionsDefined()' class="definedButtons">
-
+                 <div *ngIf='!this.allPositionsDefined() && !isFourBarGenerated()' class="definedButtons">
                    <button id="generateFourBarGrey">Generate Four-Bar</button>
-                   <button id="removeAllGrey" >Remove All Positions</button>
                  </div>
 
              <!--    <div *ngIf='this.allPositionsDefined()' class="definedButtons">-->
@@ -163,10 +161,8 @@
 <!--        {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}-->
 <!--      </button>-->
 
-             <div *ngIf="this.allPositionsDefined()" class="definedButtons">
-
                <!-- Place Generate Four-Bar first -->
-               <button *ngIf="!isSixBarGenerated()" id="generateFourBar" (click)="generateFourBar()">
+               <button *ngIf="(!isSixBarGenerated() && this.allPositionsDefined()) || isFourBarGenerated()" id="generateFourBar" (click)="generateFourBar()">
                  {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
                </button>
                <button id="removeAll" (click)="removeAllPositions()">Remove All Positions</button>
@@ -195,9 +191,6 @@
                    </button>
                  </div>
                </div>
-
-
-             </div>
            </div>
   </div>
 
