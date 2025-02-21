@@ -273,11 +273,28 @@
         <!-- Action Buttons -->
         <div class="button-group">
 
-          <button  (click)="generateFourBar()">Generate Four-bar</button>
+          <button (click)="generateFourBar()">{{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}</button>
           <!--      <button  (click)="generateSixBarFromTwoPoints()">Generate Six-bar</button>-->
 
           <!-- evaluate positions button -->
-          <button  (click)="removeAllPositions()">Remove All Positions</button>
+          <button (click)="removeAllPositions()">Remove All Positions</button>
+        </div>
+        <!-- Generate Six-Bar Button -->
+        <div *ngIf="isFourBarGenerated()" class="button-group">
+          <button (click)="generateSixBar()">
+            {{ sixBarGenerated ? 'Clear Six-Bar' : 'Generate Six-Bar' }}
+          </button>
+        </div>
+
+        <div *ngIf="isFourBarGenerated()" class="button-group">
+
+          <button (click)="verifyMechanismPath()">
+            Evaluate Positions
+          </button>
+
+          <button (click)="swapInputAndGround()">
+            Swap Input & Ground
+          </button>
         </div>
       </div>
     </div>
