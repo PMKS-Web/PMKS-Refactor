@@ -5,6 +5,7 @@ import { CompoundLink } from "../model/compound-link";
 import { Trajectory } from "../model/trajectory";
 import { Force } from "../model/force";
 import { Position } from "../model/position";
+import {StateService} from "./state.service";
 
 /**
  * DecoderService is the reverse of the EncoderService.
@@ -32,28 +33,30 @@ import { Position } from "../model/position";
  *    [id, name, mass, color, centerOfMassX, centerOfMassY, joints (joined by "|"), forces (joined by "|"), locked, refPoint, length, angle]
  *
  * Note that numbers were converted to hexadecimal strings and booleans to "1" or "0"
- * during encoding.
+ * during encoding, along with other compression steps
  */
 export class DecoderService {
+
+  constructor() {
+  }
   /**
    * Decodes an encoded URL string, reconstructs the mechanism data, and passes
    * it to the state service for rebuilding the mechanism.
    *
    * @param encoded The URL-encoded string from the EncoderService.
-   * @param stateService An instance of your state service that has a method (e.g., rebuildMechanism)
-   *                     to accept the reconstructed mechanism.
+   *
+   * @param stateService
    */
-  static decode(encoded: string, stateService: { rebuildMechanism: (data: any) => void }): void {
+  static decodeFromURL(encoded: string, stateService: StateService): any {
     try {
-      // Step 1. URL-decode and parse the JSON.
       const decodedJson = decodeURIComponent(encoded);
-      const compactData = JSON.parse(decodedJson);
-
-      // Step 2. Expand the compact data into full objects.
+      let decompressedJSON = decodedJson.replaceAll('--', '"]_["').replaceAll('RP', 'Reference Point').replaceAll('_', ',').replaceAll('~', '","');
+      const compactData = JSON.parse(decompressedJSON);
+      // Expand the compact data into full objects.
       const fullData = this.expandMechanismData(compactData);
 
       // Step 3. Pass the reconstructed mechanism data to the state service.
-      stateService.rebuildMechanism(fullData);
+      stateService.reconstructFromUrl(fullData);
     } catch (error) {
       console.error("Error decoding mechanism data:", error);
     }

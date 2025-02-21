@@ -43,6 +43,7 @@ export class Mechanism {
 
     }
 
+
     notifyChange(): void{
         console.log("updated Mechanism to");
         console.log(Array.from(this._joints.values()));
@@ -1064,6 +1065,95 @@ export class Mechanism {
 
     }
 
+  /**
+   * Reconstructor Methods
+   */
+
+  // Adds a configured joint to the mechanism.
+  public _addJoint(joint: Joint): void {
+    this._joints.set(joint.id, joint);
+  }
+//todo
+  // Similarly for Link
+  public _addLink(id: number, rawData: any): void {
+    const link = new Link();
+    if (rawData.name) {
+      link.setName(rawData.name);
+    }
+    if (typeof rawData.length === 'number') {
+      link.setLength(rawData.length);
+    }
+    if (typeof rawData.color === 'string') {
+      link.setColor(rawData.color);
+    }
+    if (typeof rawData.mass === 'number') {
+      link.setMass(rawData.mass);
+    }
+    this.links.set(id, link);
+  }
+
+  public _addCompoundLink(id: number, rawData: any): void {
+    const compound = new CompoundLink();
+    if (rawData.name) {
+      compound.setName(rawData.name);
+    }
+    if (Array.isArray(rawData.subLinkIds)) {
+      compound.setSubLinkIds(rawData.subLinkIds);
+    }
+    this.compoundLinks.set(id, compound);
+  }
+
+  public _addForce(id: number, rawData: any): void {
+    const force = new Force();
+    if (rawData.name) {
+      force.setName(rawData.name);
+    }
+    if (typeof rawData.magnitude === 'number') {
+      force.setMagnitude(rawData.magnitude);
+    }
+    if (typeof rawData.direction === 'number') {
+      force.setDirection(rawData.direction);
+    }
+    if (typeof rawData.isGravity === 'boolean') {
+      force.setIsGravity(rawData.isGravity);
+    }
+    this.forces.set(id, force);
+  }
+
+  public _addPosition(id: number, rawData: any): void {
+    const position = new Position();
+    if (rawData.name) {
+      position.setName(rawData.name);
+    }
+    if (typeof rawData.x === 'number') {
+      position.setX(rawData.x);
+    }
+    if (typeof rawData.y === 'number') {
+      position.setY(rawData.y);
+    }
+    if (typeof rawData.angle === 'number') {
+      position.setAngle(rawData.angle);
+    }
+    if (typeof rawData.locked === 'boolean') {
+      position.setLocked(rawData.locked);
+    }
+    this.positions.set(id, position);
+  }
+
+  public _addTrajectory(id: number, rawData: any): void {
+    const trajectory = new Trajectory();
+    if (rawData.name) {
+      trajectory.setName(rawData.name);
+    }
+    if (Array.isArray(rawData.points)) {
+      // Expect each point to have x, y
+      trajectory.setPoints(rawData.points);
+    }
+    if (typeof rawData.color === 'string') {
+      trajectory.setColor(rawData.color);
+    }
+    this.trajectories.set(id, trajectory);
+  }
 
 
 
