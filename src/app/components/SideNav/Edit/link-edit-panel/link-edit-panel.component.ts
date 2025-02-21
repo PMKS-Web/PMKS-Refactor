@@ -80,9 +80,12 @@ export class LinkEditPanelComponent{
 
   //I think this is getting called continuously, should probably find a way to amend that
   getLinkAngle(): number {
-    const angle = this.getSelectedObject().calculateAngle();
+    let angle = this.getSelectedObject().calculateAngle();
     console.log(`Angle in degrees from calculateAngle: ${angle}`);
     if (angle !== null) {
+      if (angle < 0) {
+        angle += 360;
+      }
       // Round to the nearest hundredth
       const x = angle.toFixed(3);
       return parseFloat(x);

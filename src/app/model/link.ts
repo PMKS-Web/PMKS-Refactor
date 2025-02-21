@@ -113,7 +113,7 @@ export class Link implements RigidBody{
     }
 
     get angle(): number {
-      return this._angle;
+      return (this._angle + 360) % 360;
     }
 
     //setters
@@ -131,7 +131,7 @@ export class Link implements RigidBody{
     }
 
     set angle(value: number) {
-      this._angle = value;
+      this._angle = (value % 360 + 360) % 360;
     }
 
     addTracer(newJoint: Joint){

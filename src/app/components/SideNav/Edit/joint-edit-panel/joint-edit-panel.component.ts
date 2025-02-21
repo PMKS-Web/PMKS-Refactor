@@ -178,10 +178,8 @@ export class jointEditPanelComponent {
     const angleInRadians = Math.atan2(yDiff, xDiff);
     let angleInDegrees = angleInRadians * (180 / Math.PI);
 
-    // Normalize the angle to be within [-180, 180] degrees
-    if (angleInDegrees > 180) {
-      angleInDegrees -= 360;
-    } else if (angleInDegrees < -180) {
+// Normalize the angle to be within [0, 360] degrees
+    if (angleInDegrees < 0) {
       angleInDegrees += 360;
     }
 
