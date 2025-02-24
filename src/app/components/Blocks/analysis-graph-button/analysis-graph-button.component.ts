@@ -17,7 +17,7 @@ export class AnalysisGraphButtonComponent {
     if (this.btn1Action) {
       this.btn1Action();
       if(this.graphText == 'Show Graph'){
-        this.graphText = 'Hide Graph'
+        this.graphText = 'Close Graph'
       }
       else{
         this.graphText = 'Show Graph'
@@ -28,7 +28,6 @@ export class AnalysisGraphButtonComponent {
   setAction(action: () => void): void {
     this.btn1Action = action;
   }
-
 
 
   constructor() {}

@@ -34,6 +34,7 @@ export class JointAnalysisPanelComponent {
 
   currentGraphType: GraphType | null = null;
   graphTypes = GraphType; // Make the enum accessible in the template
+  isGraphOpen: boolean = false;  // NEW VARIABLE to track button text state
 
 
   graphExpanded: { [key: string]: boolean } = {
@@ -55,8 +56,17 @@ export class JointAnalysisPanelComponent {
     //this.getGraphData();
   }
 
-  closeAnalysisGraph() {this.currentGraphType = null;}
+  closeAnalysisGraph() {
+    this.currentGraphType = null;
+  }
 
+  toggleGraph(graphType: GraphType) {
+    if (this.currentGraphType === graphType) {
+      this.closeAnalysisGraph(); // If the graph is open, close it
+    } else {
+      this.openAnalysisGraph(graphType); // If it's closed, open it
+    }
+  }
 
   getGraphTypes(){
     // @ts-ignore

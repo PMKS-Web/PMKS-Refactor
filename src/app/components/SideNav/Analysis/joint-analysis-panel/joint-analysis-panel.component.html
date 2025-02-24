@@ -15,10 +15,32 @@
                           (opened)="graphExpanded['dataSummary'] = true"
                           (closed)="graphExpanded['dataSummary'] = false">
     <div class="flex-container">
+      <div>
       <title-block>Data Summary</title-block>
-      <p class="subtitle">Name of Joint: {{ getJointName() }} </p>
-      <p class="subtitle">X Coordinate of Joint: {{ this.getJointXCoord() }} </p>
-      <p class="subtitle">Y Coordinate of Joint: {{ this.getJointYCoord() }} </p>
+
+        <!--      <p class="subtitle">Name of Joint: {{ getJointName() }} </p>-->
+        <!--      <p class="subtitle">X Coordinate of Joint: {{ this.getJointXCoord() }} </p>-->
+        <!--      <p class="subtitle">Y Coordinate of Joint: {{ this.getJointYCoord() }} </p>-->
+        <analysis-graph-button [dynamicText]="'Position:'"
+                               [graphText]="graphExpanded['positionOfJoint'] ? 'Close Graph' : 'Show Graph'"
+                               [btn1Action]="toggleGraph.bind(this, GraphType.JointPosition)"></analysis-graph-button>
+
+
+      <p >X:{{getJointXCoord()}}, Y: {{getJointYCoord()}}</p>
+      <ng-container *ngIf="currentGraphType !== null">
+<!--        <div class="overlay">-->
+          <div class="modal" (keyup.escape)="closeAnalysisGraph()">
+            {{ getGraphTypeName(currentGraphType) }}
+            <app-analysis-graph-block class="large-graph"
+                                      [inputXData]="getGraphData().xData"
+                                      [inputYData]="getGraphData().yData"
+                                      [inputLabels]="getGraphData().timeLabels">
+            </app-analysis-graph-block>
+          </div>
+<!--        </div>-->
+      </ng-container>
+      </div>
+
       <title-block> Connected Joints </title-block>
       <div *ngFor='let joint of getConnectedJoints(); let i = index;'>
         <ng-container *ngIf="getCurrentJoint().name !== joint.name">
@@ -32,30 +54,21 @@
 
   <!-- EVERY GRAPH OPEN BUTTON -->
   <div>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.JointPosition) + ' Graph'" graphText= 'Show Graph'
-                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointPosition)"></analysis-graph-button>
-    <p>Position X:{{getJointXCoord()}}, Y: {{getJointYCoord()}}</p>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.JointVelocity) + ' Graph'" graphText= 'Show Graph'
-                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointVelocity)"></analysis-graph-button>
-    <p style="margin-left: 20px;">V<sub>x</sub>: N/A,  V<sub>y</sub>: N/A</p>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.JointAcceleration) + ' Graph'" graphText= 'Show Graph'
-                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointAcceleration)"></analysis-graph-button>
-    <p style="margin-left: 20px;">A<sub>x</sub>: N/A,  A<sub>y</sub>: N/A</p>
+<!--    <analysis-graph-button [dynamicText]="''" graphText= 'Show Graph'-->
+<!--                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointPosition)"></analysis-graph-button>-->
+<!--    <p >Position X:{{getJointXCoord()}}, Y: {{getJointYCoord()}}</p>-->
+<!--    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.JointPosition) + ' Graph'" graphText= 'Show Graph'-->
+<!--                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointPosition)"></analysis-graph-button>-->
+<!--    <p>Position X:{{getJointXCoord()}}, Y: {{getJointYCoord()}}</p>-->
+<!--    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.JointVelocity) + ' Graph'" graphText= 'Show Graph'-->
+<!--                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointVelocity)"></analysis-graph-button>-->
+<!--    <p style="margin-left: 20px;">V<sub>x</sub>: N/A,  V<sub>y</sub>: N/A</p>-->
+<!--    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.JointAcceleration) + ' Graph'" graphText= 'Show Graph'-->
+<!--                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointAcceleration)"></analysis-graph-button>-->
+<!--    <p style="margin-left: 20px;">A<sub>x</sub>: N/A,  A<sub>y</sub>: N/A</p>-->
   </div>
 
   <!-- DYNAMICALLY HANDLE OPENING GRAPHS -->
-  <ng-container *ngIf="currentGraphType !== null">
-    <div class="overlay">
-      <div class="modal" (keyup.escape)="closeAnalysisGraph()">
-        <button class="close-button" (click)="closeAnalysisGraph()">X</button>
-        {{ getGraphTypeName(currentGraphType) }}
-        <app-analysis-graph-block class="large-graph"
-                                  [inputXData]="getGraphData().xData"
-                                  [inputYData]="getGraphData().yData"
-                                  [inputLabels]="getGraphData().timeLabels">
-        </app-analysis-graph-block>
-      </div>
-    </div>
-  </ng-container>
+
 
 </div>
