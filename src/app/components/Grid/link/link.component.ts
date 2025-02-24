@@ -65,29 +65,34 @@ export class LinkComponent extends AbstractInteractiveComponent {
 
   //find way to position text so that it's next to the middle of the arc?
   getAngleTextPosX(): number {
-    let x = 0;
     let joints: IterableIterator<Joint> = this.link.joints.values();
     let allCoords: Coord[] = [];
     for(let joint of joints){
       let coord: Coord = joint._coords;
       coord = this.unitConversionService.modelCoordToSVGCoord(coord);
       allCoords.push(coord);
-    } //optimize by just getting first coord
-    x = allCoords[0].x + 275;
-    return x;
+    }
+
+    let x = this.link.getJoints()[0].coords.x + 1 * Math.cos(this.link.angle/2);
+    let y = this.link.getJoints()[0].coords.y + 1 * Math.sin(this.link.angle/2);
+
+    return this.unitConversionService.modelCoordToSVGCoord(new Coord(x,y)).x;
   }
 
   getAngleTextPosY(): number {
-    let y = 0;
     let joints: IterableIterator<Joint> = this.link.joints.values();
     let allCoords: Coord[] = [];
     for(let joint of joints){
       let coord: Coord = joint._coords;
       coord = this.unitConversionService.modelCoordToSVGCoord(coord);
       allCoords.push(coord);
-    } //optimize by just getting first coord
-    y = allCoords[0].y;
-    return y;
+    }
+
+    let x = this.link.getJoints()[0].coords.x + 1 * Math.cos(this.link.angle/2);
+    console.log(x);
+    let y = this.link.getJoints()[0].coords.y + 1 * Math.sin(this.link.angle/2);
+    console.log(y);
+    return this.unitConversionService.modelCoordToSVGCoord(new Coord(x,y)).y;
   }
 
   //Following two functions are used to set the X and Y coordinates of the lock SVG to be between the center and the rightmost joint
