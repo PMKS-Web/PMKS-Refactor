@@ -14,6 +14,8 @@ import {Coord} from "../../../model/coord";
 import {PanZoomService} from "../../../services/pan-zoom.service";
 import {Mechanism} from "../../../model/mechanism";
 import {StateService} from "src/app/services/state.service";
+import { FormControl } from '@angular/forms';
+
 
 @Component({
   selector: 'app-animation-bar',
@@ -22,6 +24,9 @@ import {StateService} from "src/app/services/state.service";
 })
 export class AnimationBarComponent implements OnInit{
 
+  public sliderControl = new FormControl(0);
+
+
   constructor(
     public interactionService: InteractionService,
     private animationService: AnimationService,
@@ -29,8 +34,9 @@ export class AnimationBarComponent implements OnInit{
     private stateService: StateService
   ) {
     this.animationService.animationProgress$.subscribe(progress => {
-
+      console.log("Animation progress from service:", progress);
       this.sliderValue = progress * 100;
+      console.log("Slider value updated to:", this.sliderValue);
     });
   }
 
@@ -129,11 +135,8 @@ export class AnimationBarComponent implements OnInit{
   public sliderValue = 0;
 
   onSliderInput(event: any): void {
-    const inputElement = event.target as HTMLInputElement;
-    const numericValue = parseFloat(inputElement.value);
-    const fraction = numericValue / 100;
-
-    this.animationService.setAnimationProgress(fraction);
+    const newValue = this.sliderControl.value;
+    console.log("Slider value:", newValue);
   }
 
 
@@ -148,20 +151,17 @@ export class AnimationBarComponent implements OnInit{
   updateTimelineMarkers(): void {
     const mechanismIndex = this.getMechanismIndex();
     if (mechanismIndex === -1) {
-      console.log("No valid mechanism index found, exiting...");
-      return;
+       return;
     }
 
     const mechanismState = this.animationService.getAnimationState(mechanismIndex);
     if (!mechanismState) {
-      console.log("No mechanism state found, exiting...");
       return;
     }
 
     const changes = this.animationService.getDirectionChanges(mechanismState);
 
     const totalFrames = mechanismState.totalFrames ?? 1;
-    console.log(`Total Frames in Animation: ${totalFrames}`);
     this.timelineMarkers = [];
 
     const ccw = this.animationService.startDirectionCounterclockwise;
@@ -176,7 +176,6 @@ export class AnimationBarComponent implements OnInit{
 
       const markerType = ccw ? 'clockwise' : 'counterclockwise';
 
-      console.log(`Clockwise at Frame ${frameIndex}: Position on Bar = ${position}%`);
 
       this.timelineMarkers.push({
         position,
@@ -195,7 +194,6 @@ export class AnimationBarComponent implements OnInit{
 
       const markerType = ccw ? 'counterclockwise' : 'clockwise';
 
-      console.log(`CounterClockwise at Frame ${frameIndex}: Position on Bar = ${position}%`);
 
       this.timelineMarkers.push({
         position,

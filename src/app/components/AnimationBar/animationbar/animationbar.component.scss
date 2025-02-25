@@ -136,7 +136,6 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    pointer-events: none;
 
     #viewButtons {
       pointer-events: auto;
@@ -159,7 +158,6 @@
 
     #animationBar {
       height: 48px;
-      pointer-events: auto;
       margin: 5px 0;
       padding: 10px 20px;
       display: flex;
@@ -209,7 +207,6 @@
         padding: 5px;
         //When the input is focused
         &:focus {
-          margin-bottom: 0;
           background-color: mat.m2-get-color-from-palette($primary-palette, 100);
           //add a bottom border
           border-bottom: 2px solid mat.m2-get-color-from-palette($primary-palette, 500);
@@ -219,20 +216,32 @@
         }
       }
 
-      mat-slider {
-        margin-left: 15px;
+      .slider-wrapper {
         position: relative;
-        display: flex;
-        color: blue;
+        width: 300px;
+        height: 48px;
+      }
+
+      mat-slider {
+        width: 100%;
+        height: 100%;
+
       }
     }
 
     .timeline-marker-container {
-      color: black;
-      display: block;
-      position: relative;
-      width: 112px;
-      height: 50px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .timeline-marker {
+      position: absolute;
+      transform: translateX(-10px);
+      pointer-events: none;
     }
 
 
