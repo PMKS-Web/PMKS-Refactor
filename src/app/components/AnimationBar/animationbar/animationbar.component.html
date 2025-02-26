@@ -40,15 +40,17 @@
     </div>
 
     <div class="slider-wrapper">
-      <mat-slider
-        [min]="0"
-        [max]="100"
-        [step]="1"
-        [formControl]="sliderControl"
-        (input)="onSliderInput($event)"
-      ></mat-slider>
+      <mat-slider>
+        <input matSliderThumb
+               [value]="sliderValue"
+               [disabled]="!getIsAnimating()"
+               (valueChange)="onSliderChange($event)"
+               min="0"
+               max="100"
+               step="0.1">
+      </mat-slider>
 
-      <!--<div class="timeline-marker-container">
+      <div class="timeline-marker-container">
         <div
           *ngFor="let marker of timelineMarkers"
           class="timeline-marker"
@@ -60,7 +62,7 @@
         </div>
       </div>
 
-      -->
+
     </div>
 
 
