@@ -34,10 +34,9 @@ export class AnimationBarComponent implements OnInit{
     private stateService: StateService
   ) {
     this.animationService.animationProgress$.subscribe(progress => {
-      console.log("Animation progress from service:", progress);
-      this.sliderValue = progress * 100;
-      console.log("Slider value updated to:", this.sliderValue);
-    });
+      if (!this.isDragging) {
+        this.sliderValue = progress * 100;
+      }});
   }
 
   ngOnInit() {
@@ -133,11 +132,24 @@ export class AnimationBarComponent implements OnInit{
   }
 
   public sliderValue = 0;
+  public isDragging = false;
 
   onSliderInput(event: any): void {
-    const newValue = this.sliderControl.value;
-    console.log("Slider value:", newValue);
+    const inputElement = event.target as HTMLInputElement;
+    const numericValue = parseFloat(inputElement.value);
+    this.sliderValue = numericValue;
+    const fraction = numericValue / 100;
+    this.animationService.setAnimationProgress(fraction);
   }
+
+  onSliderDragStart(): void {
+    this.isDragging = true;
+  }
+
+  onSliderDragEnd(): void {
+    this.isDragging = false;
+  }
+
 
 
   toggleAnimationSpeed(): void{

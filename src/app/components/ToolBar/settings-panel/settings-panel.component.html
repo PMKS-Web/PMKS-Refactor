@@ -14,7 +14,7 @@
       (opened)="sectionExpanded['LBasic'] = true"
       (closed)="sectionExpanded['LBasic'] = false"
     >
-      <!-- Start Direction label + help icon -->
+
       <div class="toggle-container">
     <span class="label" style="margin-left: 10px;">
       Start Direction
@@ -31,13 +31,14 @@
       </div>
 
       <!-- Radio-Block for Start Direction -->
-      <radio-block
-        id="startDirection"
-        [options]="['Clockwise', 'Counterclockwise']"
-        [initialSelection]="animationService.startDirectionCounterclockwise ? 'Counterclockwise' : 'Clockwise'"
-        (selectionChanged)="onDirectionChanged($event)"
-      >
-      </radio-block>
+      <div class="radio-group-wrapper">
+        <radio-block
+          id="startDirection"
+          [options]="['Clockwise', 'Counterclockwise']"
+          [initialSelection]="animationService.startDirectionCounterclockwise ? 'Counterclockwise' : 'Clockwise'"
+          (selectionChanged)="onDirectionChanged($event)">
+        </radio-block>
+      </div>
 
       <!-- Units -->
       <div id="units">
