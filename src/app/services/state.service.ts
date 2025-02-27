@@ -57,11 +57,11 @@ export class StateService {
    * @param rawData
    */
   public reconstructFromUrl(rawData:
-                            { decodedJoints: Joint[],
+                            { decodedJoints:any[],
                               decodedLinks:any[],
                               decodedCompoundLinks:any[],
-                              decodedTrajectories:Trajectory[],
-                              decodedForces:Force[],
+                              decodedTrajectories:any[],
+                              decodedForces:any[],
                               decodedPositions:any[] } ) : void {
     // A fresh Mechanism
     //this.mechanism = new Mechanism();
@@ -79,17 +79,17 @@ export class StateService {
     if (rawData.decodedJoints) {
       console.log("BEFORE JOINTADDS",this.mechanism.getArrayOfJoints())
       for (const joint of rawData.decodedJoints) {
-        let newJoint = new Joint(joint.id, joint.coords.x, joint.coords.y);
+        let newJoint = new Joint(joint.id, Number(joint.x), Number(joint.y));
         newJoint.name = joint.name;
-        newJoint.type = joint.type;
-        newJoint.angle = Number(joint.angle);
-        if(joint.isGrounded){ newJoint.addGround();}
-        if(joint.isInput) { newJoint.addInput();}
+        newJoint.type = Number(joint.type);
+        newJoint.angle = (joint.angle);
+        if(Boolean(joint.isGrounded==1)){ newJoint.addGround();}
         newJoint.speed = Number(joint.inputSpeed);
-        if (joint.isWelded) {newJoint.addWeld();}
-        newJoint.locked = joint.locked;
-        newJoint.hidden = joint.isHidden;
-        newJoint.reference = joint.isReference;
+        if (Boolean(joint.isWelded)) {newJoint.addWeld();}
+        newJoint.locked = Boolean(joint.locked);
+        newJoint.hidden = Boolean(joint.isHidden);
+        newJoint.reference = Boolean(joint.isReference);
+        if(Boolean(joint.isInput)) { newJoint.addInput();}
 
         this.mechanism._addJoint(newJoint);
       }
@@ -113,8 +113,8 @@ export class StateService {
         //link.forces.split("|").forEach((element:number)=> newLink._forces.set()); todo
         newLink.name = link.name;
         newLink.mass = link.mass;
-        newLink.angle = Number(link.angle);
-        newLink.locked = link.locked;
+        newLink.angle = link.angle;
+        newLink.locked = Boolean(link.locked);
         newLink.color = link.color;
 
         this.mechanism._addLink(newLink);
@@ -129,7 +129,7 @@ export class StateService {
         let newCompoundLink = new CompoundLink(compoundlink.id, linksArray);
         newCompoundLink.name = compoundlink.name;
         newCompoundLink.mass = compoundlink.mass;
-        newCompoundLink.lock = compoundlink.lock;
+        newCompoundLink.lock = Boolean(compoundlink.lock);
         newCompoundLink.color = compoundlink.color;
 
         this.mechanism._addCompoundLink(newCompoundLink);
@@ -148,7 +148,7 @@ export class StateService {
         newPosition.name = position.name;
         newPosition.mass = position.mass;
         newPosition.angle = Number(position.angle);
-        newPosition.locked = position.locked;
+        newPosition.locked = Boolean(position.locked);
         newPosition.setColor(position.color);//
         newPosition.setReference(position.refPoint);
 

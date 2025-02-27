@@ -157,7 +157,13 @@ export class EncoderService {
    */
   private compressionReplacer(key: string, value: any): any {
     if (typeof value === "number") {
-      return value.toString(16);
+      if (Number.isInteger(value)) {
+        return value.toString(16);
+      } else {
+        // Keep floating‐point numbers in normal decimal string form:
+        return value;//.toString();
+        // or simply `return value;` if you don’t even want to stringify floats.
+      }
     }
     if (typeof value === "boolean") {
       return value ? "1" : "0";
