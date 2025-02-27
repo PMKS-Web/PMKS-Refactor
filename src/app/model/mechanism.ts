@@ -40,7 +40,7 @@ export class Mechanism {
         this._linkIDCount = 0;
         this._forceIDCount = 0;
         this._compoundLinkIDCount = 0;
-
+        console.log("Mechanism Constructor");
     }
 
 
@@ -956,7 +956,11 @@ export class Mechanism {
 
     //----------------------------GET FUNCTIONS----------------------------
     getJoint(id: number): Joint {
-        return this._joints.get(id)!;
+        return <Joint>this._joints.get(id) || this._joints.get(id);
+    }
+
+    getLink(id: number): Link {
+      return <Link>this._links.get(id);
     }
 
     get_jointIDCount(): number {
@@ -980,7 +984,7 @@ export class Mechanism {
     }
 
     public getTrajectories(): Iterable<Trajectory> {
-      console.log('Trajectories:', this._trajectories.values());
+      //console.log('Trajectories:', this._trajectories.values());
       return this._trajectories.values();
     }
 
@@ -1067,93 +1071,38 @@ export class Mechanism {
 
   /**
    * Reconstructor Methods
+   *  Adds configured objects to the mechanism.
    */
 
-  // Adds a configured joint to the mechanism.
   public _addJoint(joint: Joint): void {
     this._joints.set(joint.id, joint);
-  }
-//todo
-  // Similarly for Link
-  public _addLink(id: number, rawData: any): void {
-    const link = new Link();
-    if (rawData.name) {
-      link.setName(rawData.name);
-    }
-    if (typeof rawData.length === 'number') {
-      link.setLength(rawData.length);
-    }
-    if (typeof rawData.color === 'string') {
-      link.setColor(rawData.color);
-    }
-    if (typeof rawData.mass === 'number') {
-      link.setMass(rawData.mass);
-    }
-    this.links.set(id, link);
+    this._jointIDCount++;
   }
 
-  public _addCompoundLink(id: number, rawData: any): void {
-    const compound = new CompoundLink();
-    if (rawData.name) {
-      compound.setName(rawData.name);
-    }
-    if (Array.isArray(rawData.subLinkIds)) {
-      compound.setSubLinkIds(rawData.subLinkIds);
-    }
-    this.compoundLinks.set(id, compound);
+  public _addLink(link: Link): void {
+    this._links.set(link.id, link);
+    this._linkIDCount++;
   }
 
-  public _addForce(id: number, rawData: any): void {
-    const force = new Force();
-    if (rawData.name) {
-      force.setName(rawData.name);
-    }
-    if (typeof rawData.magnitude === 'number') {
-      force.setMagnitude(rawData.magnitude);
-    }
-    if (typeof rawData.direction === 'number') {
-      force.setDirection(rawData.direction);
-    }
-    if (typeof rawData.isGravity === 'boolean') {
-      force.setIsGravity(rawData.isGravity);
-    }
-    this.forces.set(id, force);
+  public _addCompoundLink(compoundLink: CompoundLink): void {
+    this._compoundLinks.set(compoundLink.id, compoundLink);
+    this._compoundLinkIDCount++;
   }
 
-  public _addPosition(id: number, rawData: any): void {
-    const position = new Position();
-    if (rawData.name) {
-      position.setName(rawData.name);
-    }
-    if (typeof rawData.x === 'number') {
-      position.setX(rawData.x);
-    }
-    if (typeof rawData.y === 'number') {
-      position.setY(rawData.y);
-    }
-    if (typeof rawData.angle === 'number') {
-      position.setAngle(rawData.angle);
-    }
-    if (typeof rawData.locked === 'boolean') {
-      position.setLocked(rawData.locked);
-    }
-    this.positions.set(id, position);
+  public _addForce(force: Force): void {
+    this._forces.set(force.id, force);
+    this._forceIDCount++;
   }
 
-  public _addTrajectory(id: number, rawData: any): void {
-    const trajectory = new Trajectory();
-    if (rawData.name) {
-      trajectory.setName(rawData.name);
-    }
-    if (Array.isArray(rawData.points)) {
-      // Expect each point to have x, y
-      trajectory.setPoints(rawData.points);
-    }
-    if (typeof rawData.color === 'string') {
-      trajectory.setColor(rawData.color);
-    }
-    this.trajectories.set(id, trajectory);
+  public _addPosition(position: Position): void {
+    this._positions.set(position.id, position);
+    this._positionIDCount++;
   }
+
+  public _addTrajectory(trajectory: Trajectory): void {
+    this._trajectories.set(trajectory.id, trajectory);
+  }
+
 
 
 

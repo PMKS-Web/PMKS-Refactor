@@ -13,7 +13,7 @@ export class Link implements RigidBody{
     private _mass: number;
     private _centerOfMass: Coord;
     _joints: Map<number, Joint>;
-    private _forces: Map<number, Force>;
+    _forces: Map<number, Force>;
     private _color: string = "";
     private _isLocked: boolean;
     private _angle: number;
@@ -37,17 +37,16 @@ export class Link implements RigidBody{
 
     constructor(id: number, jointA: Joint, jointB: Joint);
     constructor(id: number, joints: Joint[]);
-    constructor(id: number, jointAORJoints: Joint | Joint[], jointB?: Joint){
-        this._id = id;
+    constructor(id: number, jointAORJoints: Joint | Joint[], jointB?: Joint) {
+      this._id = id;
 
-        this._mass = 0;
-        this._forces = new Map();
-        this._joints = new Map();
-        this._color = this.linkColorOptions[id % this.linkColorOptions.length];
-        this._isLocked = false;
-        this._angle = 0;
-
-        if(Array.isArray(jointAORJoints)){
+      this._mass = 0;
+      this._forces = new Map();
+      this._joints = new Map();
+      this._color = this.linkColorOptions[id % this.linkColorOptions.length];
+      this._isLocked = false;
+      this._angle = 0;
+      if(Array.isArray(jointAORJoints)){
             jointAORJoints.forEach(joint => {
                 this._joints.set(joint.id, joint);
             });
@@ -128,6 +127,9 @@ export class Link implements RigidBody{
     set locked(value: boolean) {
         this._isLocked = value;
         this.updateLocks(value);
+    }
+    set color(color: string) {
+      this._color = color;
     }
 
     set angle(value: number) {

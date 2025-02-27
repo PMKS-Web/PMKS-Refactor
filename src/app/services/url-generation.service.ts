@@ -1,12 +1,15 @@
 
 import { EncoderService } from './encoder.service';
 import { StateService } from './state.service';
+import {DecoderService} from "./decoder.service";
 
 export class UrlGenerationService {
 
   constructor(private stateService: StateService) {
-    //conatins mechanism implicitly ^^^
-  }
+
+      //conatins mechanism implicitly ^^^
+    }
+
 
   /**
    * Will dynamically generate and return a string URL

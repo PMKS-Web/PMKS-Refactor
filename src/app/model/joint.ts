@@ -101,6 +101,10 @@ export class Joint {
         this._name = newName;
     }
 
+    set type(newType: number){
+      this._type = newType;
+    }
+
     set angle(newAngle: number){
         this._angle = newAngle % 360;
     }

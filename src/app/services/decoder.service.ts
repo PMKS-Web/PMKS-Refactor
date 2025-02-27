@@ -50,9 +50,12 @@ export class DecoderService {
   static decodeFromURL(encoded: string, stateService: StateService): any {
     try {
       const decodedJson = decodeURIComponent(encoded);
+      console.log(decodedJson);
       let decompressedJSON = decodedJson.replaceAll('--', '"]_["').replaceAll('RP', 'Reference Point').replaceAll('_', ',').replaceAll('~', '","');
+      console.log(decompressedJSON);
       const compactData = JSON.parse(decompressedJSON);
       // Expand the compact data into full objects.
+      console.log(compactData);
       const fullData = this.expandMechanismData(compactData);
 
       // Step 3. Pass the reconstructed mechanism data to the state service.
@@ -66,22 +69,15 @@ export class DecoderService {
    * Expands the compact mechanism data back into full objects.
    * Converts hex strings to numbers and "1"/"0" strings to booleans.
    */
-  private static expandMechanismData(compactData: any): {
-    joints: Joint[],
-    links: Link[],
-    compoundLinks: CompoundLink[],
-    trajectories: Trajectory[],
-    forces: Force[],
-    positions: Position[]
-  } {
-    const joints = (compactData.j || []).map((row: any[]) => ({
-      id: row[0],
+  private static expandMechanismData(compactData: any): any {
+    const decodedJoints: Joint[] = (compactData.j || []).map((row: any[]) => ({
+      id: this.convertNumber(row[0]),
       name: row[1],
       coords: {
         x: this.convertNumber(row[2]),
         y: this.convertNumber(row[3])
       },
-      type: row[4],
+      type: this.convertNumber(row[4]),
       angle: this.convertNumber(row[5]),
       isGrounded: this.convertBoolean(row[6]),
       inputSpeed: this.convertNumber(row[7]),
@@ -91,8 +87,8 @@ export class DecoderService {
       isReference: this.convertBoolean(row[11])
     }));
 
-    const links = (compactData.l || []).map((row: any[]) => ({
-      id: row[0],
+    const decodedLinks = (compactData.l || []).map((row: any[]) => ({
+      id: this.convertNumber(row[0]),
       name: row[1],
       mass: this.convertNumber(row[2]),
       color: row[3],
@@ -100,15 +96,15 @@ export class DecoderService {
         x: this.convertNumber(row[4]),
         y: this.convertNumber(row[5])
       },
-      joints: row[6] ? row[6].split("|") : [],
-      forces: row[7] ? row[7].split("|") : [],
+      joints: (row[6] as string).split("|"),
+      forces: (row[7] as string).split("|"),
       locked: this.convertBoolean(row[8]),
       length: this.convertNumber(row[9]),
       angle: this.convertNumber(row[10])
     }));
 
-    const compoundLinks = (compactData.c || []).map((row: any[]) => ({
-      id: row[0],
+    const decodedCompoundLinks = (compactData.c || []).map((row: any[]) => ({
+      id: this.convertNumber(row[0]),
       name: row[1],
       mass: this.convertNumber(row[2]),
       centerOfMass: {
@@ -119,16 +115,16 @@ export class DecoderService {
       lock: this.convertBoolean(row[6])
     }));
 
-    const trajectories = (compactData.t || []).map((row: any[]) => ({
-      id: row[0],
+    const decodedTrajectories: Trajectory[] = (compactData.t || []).map((row: any[]) => ({
+      id: this.convertNumber(row[0]),
       coords: [{
         x: this.convertNumber(row[1]),
         y: this.convertNumber(row[2])
       }]
     }));
 
-    const forces = (compactData.f || []).map((row: any[]) => ({
-      id: row[0],
+    const decodedForces: Force[] = (compactData.f || []).map((row: any[]) => ({
+      id: this.convertNumber(row[0]),
       name: row[1],
       start: {
         x: this.convertNumber(row[2]),
@@ -143,7 +139,7 @@ export class DecoderService {
       frameOfReference: row[8]
     }));
 
-    const positions = (compactData.p || []).map((row: any[]) => ({
+    const decodedPositions = (compactData.p || []).map((row: any[]) => ({
       id: row[0],
       name: row[1],
       mass: this.convertNumber(row[2]),
@@ -163,7 +159,7 @@ export class DecoderService {
       angle: this.convertNumber(row[11])
     }));
 
-    return { joints, links, compoundLinks, trajectories, forces, positions };
+    return { decodedJoints, decodedLinks, decodedCompoundLinks, decodedTrajectories, decodedForces, decodedPositions };
   }
 
   /**

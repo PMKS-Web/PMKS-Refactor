@@ -21,6 +21,7 @@ export class SavePanelComponent implements OnInit{
     private UrlGenerationService: UrlGenerationService,
     private stateService: StateService,
   ) {
+    console.log("SavePanelComponent initialized");
     SavePanelComponent.instance = this;
   }
   ngOnInit(){

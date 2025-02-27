@@ -28,6 +28,7 @@ export class EncoderService {
   public encodeForURL(): string {
     try {
       const compactData = this.compactMechanismData(this.mechanism);
+      console.log(compactData);
       const jsonData = JSON.stringify(compactData, this.compressionReplacer);
       let compressedjsonData = jsonData.replaceAll('","',"~").replaceAll(',',"_").replaceAll("Reference Point", "RP").replaceAll('"]_["',"--")
       console.log(compressedjsonData);

@@ -2,6 +2,14 @@ import { Injectable } from '@angular/core';
 import { Mechanism } from '../model/mechanism';
 import {BehaviorSubject} from "rxjs";
 import {DecoderService} from "./decoder.service";
+import {Joint} from "../model/joint";
+import {Link} from "../model/link";
+import {CompoundLink} from "../model/compound-link";
+import {Trajectory} from "../model/trajectory";
+import {Force} from "../model/force";
+import {Position} from "../model/position";
+import {Coord} from "../model/coord";
+import {join} from "@angular/compiler-cli";
 
 /*
 Stores the global state of the application. This includes the model, global settings, and Pan/Zoom State. This is a singleton service.
@@ -14,7 +22,7 @@ Handles syncing client with server state, and undo/redo.
 })
 export class StateService {
 
-    private mechanism: Mechanism;
+    private mechanism: Mechanism;// = new Mechanism();
     //Need to use BehaviorSubjects when moving data between unrelated components
     private globalUnits = new BehaviorSubject("Metric (cm)");
     private globalUnitsSuffix = new BehaviorSubject("cm")
@@ -29,65 +37,148 @@ export class StateService {
 
     constructor() {
         console.log("StateService constructor");
-        let url = window.location.href;
-        //if loading from URL
-        if (url.includes("?data=")) {
-          const encodedData = url.split("?data=")[1];
-          this.mechanism = this.reconstructFromUrl(DecoderService.decodeFromURL(encodedData,this));
-          //reset url to normal
-          window.location.href = url.split("?data=")[0];
-        } else {
-          this.mechanism = new Mechanism();
-        }
-    }
+        this.mechanism = new Mechanism();
+     }
+
 
   /**
    * Returns a mechanism that is correctly configured,
    *  given a structured data array from the decoder service
+   *  Structure:
+   *  {  joints: Joint[],
+   *     links: Link[],
+   *     compoundLinks: CompoundLink[],
+   *     trajectories: Trajectory[],
+   *     forces: Force[],
+   *     positions: Position[]  }
+   *
+   *        *note that recursive objects (like a link containing a joint),
+   *        are stored as an array of number ID's separated by '|'
    * @param rawData
    */
-  public reconstructFromUrl(rawData: any):Mechanism { //url: string, paramName: string = 'data'): void {
-    // Build a fresh Mechanism
-    const newMechanism = new Mechanism();
+  public reconstructFromUrl(rawData:
+                            { decodedJoints: Joint[],
+                              decodedLinks:any[],
+                              decodedCompoundLinks:any[],
+                              decodedTrajectories:Trajectory[],
+                              decodedForces:Force[],
+                              decodedPositions:any[] } ) : void {
+    // A fresh Mechanism
+    //this.mechanism = new Mechanism();
 
-    if (rawData.joints) {
-      for (const joint of rawData.joints) {
-        newMechanism._addJoint(joint);
+    console.log(rawData);
+
+    console.log(rawData.decodedJoints);
+    console.log(rawData.decodedLinks);
+    console.log(rawData.decodedCompoundLinks);
+    console.log(rawData.decodedTrajectories);
+    console.log(rawData.decodedForces);
+    console.log(rawData.decodedPositions);
+
+    //Joints
+    if (rawData.decodedJoints) {
+      console.log("BEFORE JOINTADDS",this.mechanism.getArrayOfJoints())
+      for (const joint of rawData.decodedJoints) {
+        let newJoint = new Joint(joint.id, joint.coords.x, joint.coords.y);
+        newJoint.name = joint.name;
+        newJoint.type = joint.type;
+        newJoint.angle = Number(joint.angle);
+        if(joint.isGrounded){ newJoint.addGround();}
+        if(joint.isInput) { newJoint.addInput();}
+        newJoint.speed = Number(joint.inputSpeed);
+        if (joint.isWelded) {newJoint.addWeld();}
+        newJoint.locked = joint.locked;
+        newJoint.hidden = joint.isHidden;
+        newJoint.reference = joint.isReference;
+
+        this.mechanism._addJoint(newJoint);
+      }
+      console.log("AFTER JOINTADDS", this.mechanism.getArrayOfJoints())
+    }
+
+    //Links TODO FORCES IMPLEMENTATION
+    if (rawData.decodedLinks) {
+      for (const link of rawData.decodedLinks) {
+        console.log(link.joints);
+
+        let jointsArray: Joint[] = link.joints.map((element: string):Joint => {return this.mechanism.getJoint(Number(element))});
+        console.log(link.joints);
+        for (const x of jointsArray) {
+          console.log(x.id);
+        }
+        //if (!link.id) {
+          console.log(link, link.id);
+        //}
+        let newLink = new Link(link.id, jointsArray);
+        //link.forces.split("|").forEach((element:number)=> newLink._forces.set()); todo
+        newLink.name = link.name;
+        newLink.mass = link.mass;
+        newLink.angle = Number(link.angle);
+        newLink.locked = link.locked;
+        newLink.color = link.color;
+
+        this.mechanism._addLink(newLink);
       }
     }
-      //todo
-    if (rawData.links) {
-      for (const [idStr, linkData] of Object.entries(rawData.links)) {
-        newMechanism.addLink(Number(idStr), linkData);
+
+
+    //Compound Links
+    if (rawData.decodedCompoundLinks) {
+      for (const compoundlink of rawData.decodedCompoundLinks) {
+        let linksArray: Link[] = compoundlink.links.map((element: string):Link => {return this.mechanism.getLink(Number(element))});
+        let newCompoundLink = new CompoundLink(compoundlink.id, linksArray);
+        newCompoundLink.name = compoundlink.name;
+        newCompoundLink.mass = compoundlink.mass;
+        newCompoundLink.lock = compoundlink.lock;
+        newCompoundLink.color = compoundlink.color;
+
+        this.mechanism._addCompoundLink(newCompoundLink);
       }
     }
 
-    if (rawData.compoundLinks) {
-      for (const [idStr, compoundLinkData] of Object.entries(rawData.compoundLinks)) {
-        newMechanism.addCompoundLink(Number(idStr), compoundLinkData);
+    //Positions
+    //Links TODO FORCES IMPLEMENTATION
+    if (rawData.decodedPositions) {
+      for (const position of rawData.decodedPositions) {
+
+        let jointsArray: Joint[] = position.joints.map((element: string):Joint => {return this.mechanism.getJoint(Number(element))});
+
+        let newPosition = new Position(position.id, jointsArray);
+        //link.forces.split("|").forEach((element:number)=> newLink._forces.set()); todo
+        newPosition.name = position.name;
+        newPosition.mass = position.mass;
+        newPosition.angle = Number(position.angle);
+        newPosition.locked = position.locked;
+        newPosition.setColor(position.color);//
+        newPosition.setReference(position.refPoint);
+
+        this.mechanism._addPosition(newPosition);
       }
     }
 
-    if (rawData.forces) {
-      for (const [idStr, forceData] of Object.entries(rawData.forces)) {
-        newMechanism.addForce(Number(idStr), forceData);
+    //Forces
+    if (rawData.decodedForces) {
+      for (const force of rawData.decodedForces) {
+        let startCoord = new Coord(force.start.x,force.start.y);
+        let endCoord = new Coord(force.end.x, force.end.y);
+        let newForce = new Force(force.id, startCoord, endCoord);
+        newForce.name = force.name;
+        newForce.magnitude = force.magnitude;
+        newForce.angle = force.angle;
+        newForce.frameOfReference = force.frameOfReference;
+
+        this.mechanism._addForce(newForce);
       }
     }
 
-    if (rawData.positions) {
-      for (const [idStr, positionData] of Object.entries(rawData.positions)) {
-        newMechanism.addPosition(Number(idStr), positionData);
+    //Trajectories
+    if (rawData.decodedTrajectories) {
+      for (const trajectory of rawData.decodedTrajectories) {
+        let newTrajectory = new Trajectory(trajectory.coords, trajectory.id);
+
+        this.mechanism._addTrajectory(newTrajectory);
       }
     }
-
-    if (rawData.trajectories) {
-      for (const [idStr, trajectoryData] of Object.entries(rawData.trajectories)) {
-        newMechanism.addTrajectory(Number(idStr), trajectoryData);
-      }
-    }
-
-    // 4) Store the newly constructed mechanism
-    return newMechanism;
   }
 
     //todo also load globalUnits, globalUnitsSuffix, globalAngles, globalAnglesSuffix, and globalActivePanel
@@ -107,6 +198,9 @@ export class StateService {
 
     public getMechanism(): Mechanism {
         return this.mechanism;
+    }
+    public setMechanism(mechanism: Mechanism) {
+        this.mechanism = mechanism;
     }
     public getMechanismObservable(){
         return this.mechanism._mechanismChange$;
