@@ -2,12 +2,11 @@ import {Component, inject, OnInit} from '@angular/core';
 // @ts-ignore
 //import { Analytics, logEvent } from '@angular/fire/analytics';
 import { UrlGenerationService } from 'src/app/services/url-generation.service';
-//import { MechanismService} from "../../../services/mechanism.service";
 
 @Component({
   selector: 'app-share-panel',
   templateUrl: './share-panel.component.html',
-  styleUrls: ['./share-panel.component.css']
+  styleUrl: './share-panel.component.css'
 })
 export class SharePanelComponent implements OnInit{
   //private analytics: Analytics = inject(Analytics);
@@ -19,8 +18,26 @@ export class SharePanelComponent implements OnInit{
   }
 
   ngOnInit(){
-    //let mech = new MechanismService(PARAMS).mechanisms[0] TODO
-    //let nugs = new UrlGenerationService(mech)
-    //nugs.copyURL()
+    //this.copyURL()
+  }
+
+  copyURL() {
+    // logEvent(this.analytics, 'copyURL');
+    //
+    // let url = this.urlGenerationService.generateFullUrl();
+    //
+    // // fake a text area to exec copy
+    // const toolman = document.createElement('textarea');
+    // document.body.appendChild(toolman);
+    // toolman.value = url;
+    // toolman.textContent = url;
+    // toolman.select();
+    // document.execCommand('copy'); //update the command
+    // document.body.removeChild(toolman);
+
+    // NewGridComponent.sendNotification(
+    //   'Mechanism URL copied. If you make additional changes, copy the URL again.'
+    // );
+
   }
 }

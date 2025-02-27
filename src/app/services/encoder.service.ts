@@ -88,6 +88,7 @@ export class EncoderService {
         j.type,
         j.angle,
         j.isGrounded,
+        j.isInput,
         j.inputSpeed,
         j.isWelded,
         j.locked,
