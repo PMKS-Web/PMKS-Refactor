@@ -83,13 +83,15 @@ export class StateService {
         newJoint.name = joint.name;
         newJoint.type = Number(joint.type);
         newJoint.angle = (joint.angle);
-        if(Boolean(joint.isGrounded==1)){ newJoint.addGround();}
-        newJoint.speed = Number(joint.inputSpeed);
+        if (Boolean(joint.isGrounded)){ newJoint.addGround();}
         if (Boolean(joint.isWelded)) {newJoint.addWeld();}
         newJoint.locked = Boolean(joint.locked);
         newJoint.hidden = Boolean(joint.isHidden);
         newJoint.reference = Boolean(joint.isReference);
         if(Boolean(joint.isInput)) { newJoint.addInput();}
+
+        newJoint.speed = Number(joint.inputSpeed);
+
 
         this.mechanism._addJoint(newJoint);
       }
@@ -101,7 +103,7 @@ export class StateService {
       for (const link of rawData.decodedLinks) {
         console.log(link.joints);
 
-        let jointsArray: Joint[] = link.joints.map((element: string):Joint => {return this.mechanism.getJoint(Number(element))});
+        let jointsArray: Joint[] = link.joints.split("|").map((element: string):Joint => {return this.mechanism.getJoint(Number(element))});
         console.log(link.joints);
         for (const x of jointsArray) {
           console.log(x.id);
@@ -125,7 +127,7 @@ export class StateService {
     //Compound Links
     if (rawData.decodedCompoundLinks) {
       for (const compoundlink of rawData.decodedCompoundLinks) {
-        let linksArray: Link[] = compoundlink.links.map((element: string):Link => {return this.mechanism.getLink(Number(element))});
+        let linksArray: Link[] = compoundlink.links.split("|").map((element: string):Link => {return this.mechanism.getLink(Number(element))});
         let newCompoundLink = new CompoundLink(compoundlink.id, linksArray);
         newCompoundLink.name = compoundlink.name;
         newCompoundLink.mass = compoundlink.mass;
@@ -140,9 +142,7 @@ export class StateService {
     //Links TODO FORCES IMPLEMENTATION
     if (rawData.decodedPositions) {
       for (const position of rawData.decodedPositions) {
-
-        let jointsArray: Joint[] = position.joints.map((element: string):Joint => {return this.mechanism.getJoint(Number(element))});
-
+        let jointsArray: Joint[] = position.joints.split("|").map((element: string):Joint => {return this.mechanism.getJoint(Number(element))});
         let newPosition = new Position(position.id, jointsArray);
         //link.forces.split("|").forEach((element:number)=> newLink._forces.set()); todo
         newPosition.name = position.name;

@@ -13,14 +13,12 @@ export class SharePanelComponent implements OnInit{
 
   static instance: SharePanelComponent;
 
-  constructor(
-    private urlGenerationService: UrlGenerationService,
-  ) {
+  constructor() {
     SharePanelComponent.instance = this;
   }
 
   ngOnInit(){
-    this.copyURL()
+    //this.copyURL()
   }
 
   copyURL() {

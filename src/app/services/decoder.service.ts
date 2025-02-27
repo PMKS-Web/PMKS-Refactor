@@ -78,11 +78,12 @@ export class DecoderService {
       type: this.convertNumber(row[4]),
       angle: this.convertNumber(row[5]),
       isGrounded: this.convertBoolean(row[6]),
-      inputSpeed: this.convertNumber(row[7]),
-      isWelded: this.convertBoolean(row[8]),
-      locked: this.convertBoolean(row[9]),
-      isHidden: this.convertBoolean(row[10]),
-      isReference: this.convertBoolean(row[11])
+      isInput: this.convertBoolean(row[7]),
+      inputSpeed: row[8],
+      isWelded: this.convertBoolean(row[9]),
+      locked: this.convertBoolean(row[10]),
+      isHidden: this.convertBoolean(row[11]),
+      isReference: this.convertBoolean(row[12])
     }));
 
     const decodedLinks: any[] = (compactData.l || []).map((row: any[]) => ({
@@ -92,8 +93,8 @@ export class DecoderService {
       color: row[3],
       x: this.convertNumber(row[4]),
       y: this.convertNumber(row[5]),
-      joints: (row[6] as string).split("|"),
-      forces: (row[7] as string).split("|"),
+      joints: (row[6] as string),
+      forces: (row[7] as string),
       locked: this.convertBoolean(row[8]),
       length: this.convertNumber(row[9]),
       angle: this.convertNumber(row[10])
@@ -105,7 +106,7 @@ export class DecoderService {
       mass: this.convertNumber(row[2]),
       x: this.convertNumber(row[3]),
       y: this.convertNumber(row[4]),
-      links: row[5] ? row[5].split("|") : [],
+      links: row[5],
       lock: this.convertBoolean(row[6])
     }));
 
@@ -134,8 +135,8 @@ export class DecoderService {
       color: row[3],
       x: this.convertNumber(row[4]),
       y: this.convertNumber(row[5]),
-      joints: row[6] ? row[6].split("|") : [],
-      forces: row[7] ? row[7].split("|") : [],
+      joints: row[6],
+      forces: row[7],
       locked: this.convertBoolean(row[8]),
       refPoint: row[9],
       length: this.convertNumber(row[10]),
