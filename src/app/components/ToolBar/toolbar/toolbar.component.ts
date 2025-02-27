@@ -1,6 +1,6 @@
 import { Component} from '@angular/core'
-
-
+import { StateService } from "../../../services/state.service";
+import { UrlGenerationService } from "../../../services/url-generation.service";
 
 @Component({
     selector: 'app-toolbar',
@@ -9,6 +9,9 @@ import { Component} from '@angular/core'
 })
 export class ToolbarComponent {
 
+  constructor(private stateService: StateService) {
+
+  }
 
 selectedPanel: string = '';
 
@@ -25,5 +28,9 @@ setCurrentTab(clickedPanel: string){
 getSelected(): string {
     return this.selectedPanel;
 }
-
+  handleShare(tab:string) {
+    this.setCurrentTab("Share");
+    let urlService = new UrlGenerationService(this.stateService);
+    urlService.copyURL();
+  }
 }
