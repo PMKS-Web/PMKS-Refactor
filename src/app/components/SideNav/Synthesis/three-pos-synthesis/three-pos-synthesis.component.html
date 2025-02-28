@@ -61,7 +61,7 @@
 
                       <single-input-block
                             class="right-aligned"
-                            [input1Value]="2" style="margin-top:-12px !important;margin-left: 41px;"
+                            [input1Value]="2"
                             (input1Change)="setCouplerLength($event)"
                             unit1={{units}}
                             [showIcon]="false">
@@ -149,10 +149,8 @@
  </div>
 <!--    <hr class="solid2">-->
              <!-- If all positions are defined you can then generate a four bar or delete all positions-->
-                 <div *ngIf='!this.allPositionsDefined()' class="definedButtons">
-
+                 <div *ngIf='!this.allPositionsDefined() && !isFourBarGenerated()' class="definedButtons">
                    <button id="generateFourBarGrey">Generate Four-Bar</button>
-                   <button id="removeAllGrey" >Remove All Positions</button>
                  </div>
 
              <!--    <div *ngIf='this.allPositionsDefined()' class="definedButtons">-->
@@ -163,10 +161,8 @@
 <!--        {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}-->
 <!--      </button>-->
 
-             <div *ngIf="this.allPositionsDefined()" class="definedButtons">
-
                <!-- Place Generate Four-Bar first -->
-               <button *ngIf="!isSixBarGenerated()" id="generateFourBar" (click)="generateFourBar()">
+               <button *ngIf="(!isSixBarGenerated() && this.allPositionsDefined()) || isFourBarGenerated()" id="generateFourBar" (click)="generateFourBar()">
                  {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
                </button>
                <button id="removeAll" (click)="removeAllPositions()">Remove All Positions</button>
@@ -189,10 +185,12 @@
                      Evaluate Positions
                    </button>
                  </div>
+                 <div>
+                   <button id="inputSwap" (click)="swapInputAndGround()">
+                     Swap Input & Ground
+                   </button>
+                 </div>
                </div>
-
-
-             </div>
            </div>
   </div>
 
@@ -213,75 +211,93 @@
 
 
 
-  <!------------------------------ New Panel Design for End Points  ------------------------------------>
+    <!------------------------------ New Panel Design for End Points  ------------------------------------>
 
-  <div class="scroll-container" >
-  <div *ngIf="selectedOption === 'two-points'">
+    <div class="scroll-container" >
+      <div *ngIf="selectedOption === 'two-points'">
 
-    <p class="panel-description">Automatically create a four-bar linkage based on the X and Y coordinate values for positions.</p>
+        <p class="panel-description">Automatically create a four-bar linkage based on the X and Y coordinate values for positions.</p>
 
 
-    <!-- Loop for three positions -->
-    <div *ngFor="let index of [0,1,2]" class="position-group">
-      <div class="position-header">
-        <span>Position {{ index + 1 }}</span>
-        <span class="icons">
+        <!-- Loop for three positions -->
+        <div *ngFor="let index of [0,1,2]" class="position-group">
+          <div class="position-header">
+            <span>Position {{ index + 1 }}</span>
+            <span class="icons">
       <mat-icon id="tooltipTwoPoints" matTooltip="Specify the coordinates for Position {{ index + 1 }}" [matTooltipShowDelay]="1000">help_outline</mat-icon>
       <button class="delete-button" (click)="deletePosition(index + 1)">
         <img id="trashTwoPoints" src="assets/icons/trash.svg" alt="Delete Position">
       </button>
     </span>
-      </div>
+          </div>
 
-      <!-- allows the user to enter coordinates for the end points -->
-      <div class='endPointData' *ngIf='this.isPositionDefined(index + 1)'>
+          <!-- allows the user to enter coordinates for the end points -->
+          <div class='endPointData' *ngIf='this.isPositionDefined(index + 1)'>
 
-        <dual-input-block
-          [input1Value]="getEndPointCoords(index + 1, 'x0')"
-          [input2Value]="getEndPointCoords(index + 1, 'y0')"
-          (input1Change)="updateEndPointCoords(index + 1, 'x0', $event)"
-          (input2Change)="updateEndPointCoords(index + 1, 'y0', $event)"
-          tooltip="Change the x0 and y0 values of the first end point of the coupler position {{index + 1}}"
-          label1="X0"
-          label2="Y0"
-          unit1={{units}}
-          unit2={{units}}
-          [showIcon]="false">
-        </dual-input-block>
+            <dual-input-block
+              [input1Value]="getEndPointCoords(index + 1, 'x0')"
+              [input2Value]="getEndPointCoords(index + 1, 'y0')"
+              (input1Change)="updateEndPointCoords(index + 1, 'x0', $event)"
+              (input2Change)="updateEndPointCoords(index + 1, 'y0', $event)"
+              tooltip="Change the x0 and y0 values of the first end point of the coupler position {{index + 1}}"
+              label1="X0"
+              label2="Y0"
+              unit1={{units}}
+              unit2={{units}}
+              [showIcon]="false">
+            </dual-input-block>
 
-        <dual-input-block
-          [input1Value]="getEndPointCoords(index + 1, 'x1')"
-          [input2Value]="getEndPointCoords(index + 1, 'y1')"
-          (input1Change)="updateEndPointCoords(index + 1, 'x1', $event)"
-          (input2Change)="updateEndPointCoords(index + 1, 'y1', $event)"
-          tooltip="Change the x1 and y1 values of the second end point of the coupler position {{index + 1}}"
-          label1="X1"
-          label2="Y1"
-          unit1={{units}}
-          unit2={{units}}
-          [showIcon]="false">
-        </dual-input-block>
+            <dual-input-block
+              [input1Value]="getEndPointCoords(index + 1, 'x1')"
+              [input2Value]="getEndPointCoords(index + 1, 'y1')"
+              (input1Change)="updateEndPointCoords(index + 1, 'x1', $event)"
+              (input2Change)="updateEndPointCoords(index + 1, 'y1', $event)"
+              tooltip="Change the x1 and y1 values of the second end point of the coupler position {{index + 1}}"
+              label1="X1"
+              label2="Y1"
+              unit1={{units}}
+              unit2={{units}}
+              [showIcon]="false">
+            </dual-input-block>
 
-      </div>
+          </div>
 
-      <!-- If position has not yet been created and it's the first undefined position, show "specify position" button -->
-      <div class="positionCreateEndPoints" *ngIf="getFirstUndefinedPosition() === index + 1">
-        <button id="specifyEndPoints" (click)="this.specifyPositionEndPoints(index + 1)">Specify Position</button>
+          <!-- If position has not yet been created and it's the first undefined position, show "specify position" button -->
+          <div class="positionCreateEndPoints" *ngIf="getFirstUndefinedPosition() === index + 1">
+            <button id="specifyEndPoints" (click)="this.specifyPositionEndPoints(index + 1)">Specify Position</button>
+          </div>
+        </div>
+
+
+
+        <!-- Action Buttons -->
+        <div class="button-group">
+
+          <button (click)="generateFourBar()">{{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}</button>
+          <!--      <button  (click)="generateSixBarFromTwoPoints()">Generate Six-bar</button>-->
+
+          <!-- evaluate positions button -->
+          <button (click)="removeAllPositions()">Remove All Positions</button>
+        </div>
+        <!-- Generate Six-Bar Button -->
+        <div *ngIf="isFourBarGenerated()" class="button-group">
+          <button (click)="generateSixBar()">
+            {{ sixBarGenerated ? 'Clear Six-Bar' : 'Generate Six-Bar' }}
+          </button>
+        </div>
+
+        <div *ngIf="isFourBarGenerated()" class="button-group">
+
+          <button (click)="verifyMechanismPath()">
+            Evaluate Positions
+          </button>
+
+          <button (click)="swapInputAndGround()">
+            Swap Input & Ground
+          </button>
+        </div>
       </div>
     </div>
-
-
-
-    <!-- Action Buttons -->
-    <div class="button-group">
-
-      <button  (click)="generateFourBar()">Generate Four-bar</button>
-<!--      <button  (click)="generateSixBarFromTwoPoints()">Generate Six-bar</button>-->
-      <!-- evaluate positions button -->
-      <button  (click)="removeAllPositions()">Remove All Positions</button>
-    </div>
   </div>
-  </div>
-</div>
 </div>
 

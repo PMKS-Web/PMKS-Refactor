@@ -106,13 +106,13 @@ export class Link implements RigidBody{
     get length(): number {
       let l = this.calculateLength();
       if (l) {
-        return parseFloat(l.toFixed(2));
+        return parseFloat(l.toFixed(3));
       }
       else throw new Error('Length is null');
     }
 
     get angle(): number {
-      return this._angle;
+      return (this._angle + 360) % 360;
     }
 
     //setters
@@ -133,7 +133,7 @@ export class Link implements RigidBody{
     }
 
     set angle(value: number) {
-      this._angle = value;
+      this._angle = (value % 360 + 360) % 360;
     }
 
     addTracer(newJoint: Joint){
@@ -276,7 +276,7 @@ export class Link implements RigidBody{
                 angleInDegrees += 360;
             }
 
-            this._angle = parseFloat(angleInDegrees.toFixed(2));
+            this._angle = parseFloat(angleInDegrees.toFixed(3));
             return angleInDegrees;
         } else {
             // Handle the case where one or both joints are not found
@@ -378,7 +378,7 @@ export class Link implements RigidBody{
           angleDifference += 360;
         }
 
-        this._angle = parseFloat(angleDifference.toFixed(2));
+        this._angle = parseFloat(angleDifference.toFixed(3));
 
         // Calculate the new coordinates of jointTwo
         const newX = jointOne.coords.x + currentDistance * Math.cos(currentAngleInRadians + angleInRadians);

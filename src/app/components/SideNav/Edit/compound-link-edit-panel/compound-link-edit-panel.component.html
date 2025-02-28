@@ -99,8 +99,8 @@
               <div *ngFor='let joint of getLinkComponents(link); let i = index;'>
                 <dual-input-block
                   [disabled]=true
-                  [input1Value]="this.roundToFour(joint.coords.x)"
-                  [input2Value]="this.roundToFour(joint.coords.y)"
+                  [input1Value]="this.roundToThree(joint.coords.x)"
+                  [input2Value]="this.roundToThree(joint.coords.y)"
                   (input1Change)="joint.coords.x=($event)"
                   (input2Change)="joint.coords.y=($event)"
                   label1= "X"

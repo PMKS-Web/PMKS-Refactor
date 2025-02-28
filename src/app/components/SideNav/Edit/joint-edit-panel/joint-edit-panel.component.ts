@@ -73,21 +73,20 @@ export class jointEditPanelComponent {
   // the mechanism's built in setXCoord function, we are able to update with no
   // errors
   getJointXCoord(): number {
-    return Math.round(this.getCurrentJoint().coords.x * 100) / 100;
+    return this.getCurrentJoint().coords.x.toFixed(3) as unknown as number;
   }
 
   getJointYCoord(): number {
-    return Math.round(this.getCurrentJoint().coords.y * 100) / 100;
+    return this.getCurrentJoint().coords.y.toFixed(3) as unknown as number;
   }
-
 
   setJointXCoord(xCoordInput: number): void {
     console.log(`Setting Joint ${this.getCurrentJoint().id}, X coord as ${xCoordInput}`);
-    this.getMechanism().setXCoord(this.getCurrentJoint().id, xCoordInput);
+    this.getMechanism().setXCoord(this.getCurrentJoint().id, parseFloat(xCoordInput.toFixed(3)));
   }
   setJointYCoord(yCoordInput: number): void {
-    console.log(`Setting Joint ${this.getCurrentJoint().id}, X coord as ${yCoordInput}`);
-    this.getMechanism().setYCoord(this.getCurrentJoint().id, yCoordInput as number);
+    console.log(`Setting Joint ${this.getCurrentJoint().id}, Y coord as ${yCoordInput}`);
+    this.getMechanism().setYCoord(this.getCurrentJoint().id, parseFloat(yCoordInput.toFixed(3)));
   }
 
 
@@ -168,7 +167,7 @@ export class jointEditPanelComponent {
     let yDiff = otherJoint.coords.y - currentJoint.coords.y;
 
     let hypotenuse = Math.sqrt((xDiff * xDiff) + (yDiff * yDiff));
-    return Math.round(hypotenuse * 100) / 100;
+    return parseFloat(hypotenuse.toFixed(3));
   }
 
   getJointAngle(otherJoint: Joint): number {
@@ -179,14 +178,12 @@ export class jointEditPanelComponent {
     const angleInRadians = Math.atan2(yDiff, xDiff);
     let angleInDegrees = angleInRadians * (180 / Math.PI);
 
-    // Normalize the angle to be within [-180, 180] degrees
-    if (angleInDegrees > 180) {
-      angleInDegrees -= 360;
-    } else if (angleInDegrees < -180) {
+// Normalize the angle to be within [0, 360] degrees
+    if (angleInDegrees < 0) {
       angleInDegrees += 360;
     }
 
-    return Math.round(angleInDegrees * 100) / 100;
+    return parseFloat(angleInDegrees.toFixed(3));
   }
 
   // handleToggleGroundChanged is used by the edit panel implementation of a toggle block

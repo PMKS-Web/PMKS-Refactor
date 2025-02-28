@@ -175,7 +175,9 @@ export class InteractionService {
     // if mouse is down, then drag the selected objects
     public _onMouseMove(object: Interactor, event: MouseEvent): void {
         //update the mouse position within the SVG
-        let screenPos: Coord = new Coord(event.offsetX, event.offsetY);
+        let screenX = parseFloat(event.pageX.toFixed(3));
+        let screenY = parseFloat(event.pageY.toFixed(3));
+        let screenPos: Coord = new Coord(screenX, screenY);
         let currentZoomPan: ZoomPan = this.panZoomService.getZoomPan();
         this.mousePos = {
             screen : screenPos,

@@ -11,7 +11,7 @@
     <div class="input-section1">
       <img *ngIf="iconLabel1!==undefined" src="{{iconLabel1}}" style="height: 14px; vertical-align: middle;">
       <label for="input1"> {{label1}}</label>
-      <input style="padding-right:15px; margin-top: -8px;" type="number" id="input1" [(ngModel)]="input1Value"
+      <input style="padding-right:15px; margin-top: -8px;" step="any" type="number" id="input1" [(ngModel)]="input1Value"
              (keyup.enter)="onEnterKeyInput1()" (blur)="onBlurInput1()"/>
       <span class="unit" style="margin-left:-30px; padding-left: 10px">{{unit1}}</span>
     </div>
@@ -19,7 +19,7 @@
     <div class="input-section2">
       <img *ngIf="iconLabel2!==undefined" src="{{iconLabel2}}" style="height:14px; vertical-align: middle;">
       <label for="input2">{{label2}}</label>
-      <input style="padding-right:15px;" type="number" id="input2" [(ngModel)]="input2Value"
+      <input style="padding-right:15px;" step="any" type="number" id="input2" [(ngModel)]="input2Value"
              (keyup.enter)="onEnterKeyInput2()" (blur)="onBlurInput1()"/>
       <span class="unit" style="margin-left:-30px;">{{unit2}}</span>
     </div>

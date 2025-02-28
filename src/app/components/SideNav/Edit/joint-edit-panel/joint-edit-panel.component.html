@@ -54,8 +54,8 @@
               <div *ngFor='let joint of getConnectedJoints(); let i = index;'>
                 <ng-container *ngIf="getCurrentJoint().name !== joint.name">
                   <dual-input-block
-                    [input1Value]="getJointDistance(joint).toFixed(4)"
-                    [input2Value]="getJointAngle(joint).toFixed(4)"
+                    [input1Value]="getJointDistance(joint)"
+                    [input2Value]="getJointAngle(joint)"
                     (input1Change)="changeJointDistance(joint.id, $event)"
                     (input2Change)="changeJointAngle(joint.id, $event)"
                     [disabled] = "joint.locked"

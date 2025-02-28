@@ -29,8 +29,8 @@ constructor() {
         viewBoxHeight: window.innerHeight*2,
         windowWidth: window.innerWidth,
         windowHeight: window.innerHeight,
-        currentZoom: 2,
-        zoomScale: 1.02
+        currentZoom: 2.00,
+        zoomScale: 1.020
     }
 
 }
@@ -45,7 +45,7 @@ public _onMouseScrollWheel(event: WheelEvent){
     let oldViewBoxHeight: number = this.zoomPan.viewBoxHeight;
 
     if(zoomDirection > 0){
-    
+
         this.zoomPan.currentZoom *= this.zoomPan.zoomScale;
         this.zoomPan.viewBoxWidth = this.zoomPan.windowWidth * this.zoomPan.currentZoom;
         this.zoomPan.viewBoxHeight = this.zoomPan.windowHeight * this.zoomPan.currentZoom;

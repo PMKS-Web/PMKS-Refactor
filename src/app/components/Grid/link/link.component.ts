@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
 import { Link } from 'src/app/model/link';
 import { Joint } from 'src/app/model/joint';
 import { Coord } from 'src/app/model/coord';
@@ -16,18 +16,21 @@ import {Subscription} from "rxjs";
 @Component({
   selector: '[app-link]',
   templateUrl: './link.component.html',
-  styleUrls: ['./link.component.css']
+  styleUrls: ['./link.component.css'],
 })
 export class LinkComponent extends AbstractInteractiveComponent {
 
   @Input() link!: Link;
   unitSubscription: Subscription = new Subscription();
+  angleSubscription: Subscription = new Subscription();
   units: string = "cm";
+  unitsAngle: string = "º";
+  angle: string = "0";
   constructor(public override interactionService: InteractionService,
 				private stateService: StateService,
 				private colorService: ColorService,
 				private svgPathService: SVGPathService,
-        private unitConversionService: UnitConversionService) {
+        private unitConversionService: UnitConversionService, private cdr: ChangeDetectorRef) {
     super(interactionService);
   }
 
@@ -37,7 +40,13 @@ export class LinkComponent extends AbstractInteractiveComponent {
 
   override ngOnInit() {
     this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe((units) => {this.units = units;});
+    this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe((angles) => {this.unitsAngle = angles;});
     super.ngOnInit();
+  }
+
+  ngAfterContentChecked(): void {
+    this.angle = this.link.angle.toFixed(3);
+    this.cdr.detectChanges();
   }
 
   getColor():string{
@@ -52,6 +61,72 @@ export class LinkComponent extends AbstractInteractiveComponent {
   }
   getCOMY(): number {
     return this.unitConversionService.modelCoordToSVGCoord(this.link.centerOfMass).y;
+  }
+
+  getMaxY(): number {
+    const joints = this.link.getJoints();
+    let maxHeight = Number.MIN_SAFE_INTEGER;
+
+    for (let i = 0; i < joints.length; i++){
+      if (joints[i].coords.y > maxHeight) {
+        maxHeight = joints[i].coords.y;
+      }
+    }
+
+    return this.unitConversionService.modelCoordToSVGCoord(new Coord(this.getCOMX(), maxHeight)).y;
+  }
+
+  getBCoord(): Coord {
+    let b = this.unitConversionService.modelCoordToSVGCoord(this.link.getJoints()[1].coords);
+    if ((this.link.angle > 0 && this.link.angle < 90) || this.link.angle > 270) {
+      b.x = b.x + 150;
+    }
+    else if (this.link.angle > 90 && this.link.angle < 270) {
+      b.x = b.x - 150;
+    }
+    return b;
+  }
+
+  getLowestY(): number {
+    let joints = this.link.getJoints();
+    let y;
+    //need to expand into loop to search all possible joints when moving to compound links
+    if (joints[0].coords.y < joints[1].coords.y) {
+      y = joints[0].coords.y;
+    }
+    else y = joints[1].coords.y;
+
+    return this.unitConversionService.modelCoordToSVGCoord(new Coord(this.getCOMX(),y)).y;
+  }
+
+  //find way to position text so that it's next to the middle of the arc?
+  getAngleTextPosX(): number {
+    let joints: IterableIterator<Joint> = this.link.joints.values();
+    let allCoords: Coord[] = [];
+    for(let joint of joints){
+      let coord: Coord = joint._coords;
+      coord = this.unitConversionService.modelCoordToSVGCoord(coord);
+      allCoords.push(coord);
+    }
+    let ang = (this.link.angle/2) * (Math.PI/180);
+
+    let x = allCoords[0].x + 200 * Math.cos(ang);
+
+    return new Coord(x,0).x;
+  }
+
+  getAngleTextPosY(): number {
+    let joints: IterableIterator<Joint> = this.link.joints.values();
+    let allCoords: Coord[] = [];
+    for(let joint of joints){
+      let coord: Coord = joint._coords;
+      coord = this.unitConversionService.modelCoordToSVGCoord(coord);
+      allCoords.push(coord);
+    }
+    let ang = (this.link.angle/2) * (Math.PI/180);
+
+    let y = allCoords[0].y - 175 * Math.sin(ang);
+    return new Coord(0,y).y;
   }
 
   //Following two functions are used to set the X and Y coordinates of the lock SVG to be between the center and the rightmost joint
@@ -77,18 +152,6 @@ export class LinkComponent extends AbstractInteractiveComponent {
     return this.unitConversionService.modelCoordToSVGCoord(new Coord(x,y)).y;
   }
 
-  getLowestY(): number {
-    let joints = this.link.getJoints();
-    let y;
-    //need to expand into loop to search all possible joints when moving to compound links
-    if (joints[0].coords.y < joints[1].coords.y) {
-      y = joints[0].coords.y;
-    }
-    else y = joints[1].coords.y;
-
-    return this.unitConversionService.modelCoordToSVGCoord(new Coord(this.getCOMX(),y)).y;
-  }
-
   getStrokeColor(): string{
     if (this.getInteractor().isSelected) {
       return '#FFCA28'
@@ -103,6 +166,10 @@ export class LinkComponent extends AbstractInteractiveComponent {
 
   getLength(): string {
     return this.link.length.toString() + " " + this.units;
+  }
+
+  getAngle(): string {
+    return this.link.angle.toString();
   }
 
   getName():string {
@@ -133,6 +200,19 @@ export class LinkComponent extends AbstractInteractiveComponent {
       allCoords.push(coord);
     }
 
-    return this.svgPathService.calculateLengthSVGPath(allCoords[0], allCoords[1]);
+    return this.svgPathService.calculateLengthSVGPath(allCoords[0], allCoords[1], this.link.angle);
+  }
+
+  getAngleSVG(): string{
+    const joints = this.link.getJoints();
+    const allCoords: Coord[] = [];
+
+    for (let i = 0; i < joints.length; i++) {
+      let coord: Coord = joints[i]._coords;
+      coord = this.unitConversionService.modelCoordToSVGCoord(coord);
+      allCoords.push(coord);
+    }
+
+    return this.svgPathService.calculateAngleSVGPath(allCoords[0], allCoords[1], this.link.angle);
   }
 }

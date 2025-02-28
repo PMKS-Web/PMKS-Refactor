@@ -22,7 +22,9 @@ export class PositionComponent extends AbstractInteractiveComponent {
   @Input() position!: Position;
   @Input() isHidden: boolean = false;
   unitSubscription: Subscription = new Subscription();
+  angleSubscription: Subscription = new Subscription();
   units: string = "cm";
+  unitsAngle: string = "º";
 
   constructor(
     public override interactionService: InteractionService,
@@ -40,6 +42,7 @@ export class PositionComponent extends AbstractInteractiveComponent {
 
   override ngOnInit() {
     this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe((units) => {this.units = units;});
+    this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe((angles) => {this.unitsAngle = angles;});
     super.ngOnInit();
   }
 
@@ -57,6 +60,32 @@ export class PositionComponent extends AbstractInteractiveComponent {
 
   getCOMY(): number {
     return this.unitConversionService.modelCoordToSVGCoord(this.position.centerOfMass).y;
+  }
+
+  getAngleTextPosX(): number {
+    let x = 0;
+    let joints: IterableIterator<Joint> = this.position.joints.values();
+    let allCoords: Coord[] = [];
+    for(let joint of joints){
+      let coord: Coord = joint._coords;
+      coord = this.unitConversionService.modelCoordToSVGCoord(coord);
+      allCoords.push(coord);
+    } //optimize by just getting first coord
+    x = allCoords[0].x + 225;
+    return x;
+  }
+
+  getAngleTextPosY(): number {
+    let y = 0;
+    let joints: IterableIterator<Joint> = this.position.joints.values();
+    let allCoords: Coord[] = [];
+    for(let joint of joints){
+      let coord: Coord = joint._coords;
+      coord = this.unitConversionService.modelCoordToSVGCoord(coord);
+      allCoords.push(coord);
+    } //optimize by just getting first coord
+    y = allCoords[0].y - 50;
+    return y;
   }
 
   //Following two functions are used to set the X and Y coordinates of the lock SVG to be between the center and the rightmost joint
@@ -82,17 +111,6 @@ export class PositionComponent extends AbstractInteractiveComponent {
     return this.unitConversionService.modelCoordToSVGCoord(new Coord(x,y)).y;
   }
 
-  getLowestY(): number {
-    let joints = this.position.getJoints();
-    let y;
-    if (joints[0].coords.y < joints[1].coords.y) {
-      y = joints[0].coords.y;
-    }
-    else y = joints[1].coords.y;
-
-    return this.unitConversionService.modelCoordToSVGCoord(new Coord(this.getCOMX(),y)).y;
-  }
-
   getStrokeColor(): string {
     if (this.getInteractor().isSelected) {
       return '#FFCA28';
@@ -106,6 +124,10 @@ export class PositionComponent extends AbstractInteractiveComponent {
   getLength(): string {
     if (this.isHidden) return "";
     else return this.position.length.toString() + " " + this.units;
+  }
+
+  getAngle(): string {
+    return this.position.angle.toString();
   }
 
   getName():string {
@@ -153,7 +175,45 @@ export class PositionComponent extends AbstractInteractiveComponent {
       allCoords.push(coord);
     }
 
-    return this.svgPathService.calculateLengthSVGPath(allCoords[0], allCoords[1]);
+    return this.svgPathService.calculateLengthSVGPath(allCoords[0], allCoords[1], this.position.angle);
+  }
+
+  getAngleSVG(): string{
+    const joints = this.position.getJoints();
+    const allCoords: Coord[] = [];
+
+    for (let i = 0; i < joints.length; i++) {
+      let coord: Coord = joints[i]._coords;
+      coord = this.unitConversionService.modelCoordToSVGCoord(coord);
+      allCoords.push(coord);
+    }
+
+    return this.svgPathService.calculateAngleSVGPath(allCoords[0], allCoords[1], this.position.angle);
+  }
+
+  getMaxY(): number {
+    const joints = this.position.getJoints();
+    let maxHeight = Number.MIN_SAFE_INTEGER;
+
+    for (let i = 0; i < joints.length; i++){
+      if (joints[i].coords.y > maxHeight) {
+        maxHeight = joints[i].coords.y;
+      }
+    }
+
+    return this.unitConversionService.modelCoordToSVGCoord(new Coord(this.getCOMX(), maxHeight)).y;
+  }
+
+  getLowestY(): number {
+    let joints = this.position.getJoints();
+    let y;
+    //need to expand into loop to search all possible joints when moving to compound links
+    if (joints[0].coords.y < joints[1].coords.y) {
+      y = joints[0].coords.y;
+    }
+    else y = joints[1].coords.y;
+
+    return this.unitConversionService.modelCoordToSVGCoord(new Coord(this.getCOMX(),y)).y;
   }
 
 }

@@ -95,13 +95,13 @@ export class Position implements RigidBody {
   get length(): number {
     let l = this.calculateLength();
     if (l) {
-      return parseFloat(l.toFixed(2));
+      return parseFloat(l.toFixed(3));
     }
     else throw new Error('Length is null');
   }
 
   get angle(): number {
-    return this._angle;
+    return (this._angle + 360) % 360;
   }
 
   // Setters
@@ -118,8 +118,8 @@ export class Position implements RigidBody {
     this.updateLocks(value);
   }
 
-  set angle(value) {
-    this._angle = value;
+  set angle(value: number) {
+    this._angle = (value % 360 + 360) % 360;
   }
   addTracer(newJoint: Joint) {
     this._joints.set(newJoint.id, newJoint);
