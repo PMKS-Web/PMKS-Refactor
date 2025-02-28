@@ -124,13 +124,6 @@ export class AnimationBarComponent implements OnInit{
     return index;
   }
 
-  onSliderChange(value: number) {
-    if (this.isAnimating && this.isPausedAnimating) {
-      const progressFraction = value / 100;
-      this.animationService.setAnimationProgress(value / 100);
-    }
-  }
-
   public sliderValue = 0;
   public isDragging = false;
 
