@@ -40,8 +40,9 @@ export class Mechanism {
         this._linkIDCount = 0;
         this._forceIDCount = 0;
         this._compoundLinkIDCount = 0;
-
+        console.log("Mechanism Constructor");
     }
+
 
     notifyChange(): void{
         console.log("updated Mechanism to");
@@ -955,7 +956,11 @@ export class Mechanism {
 
     //----------------------------GET FUNCTIONS----------------------------
     getJoint(id: number): Joint {
-        return this._joints.get(id)!;
+        return <Joint>this._joints.get(id) || this._joints.get(id);
+    }
+
+    getLink(id: number): Link {
+      return <Link>this._links.get(id);
     }
 
     get_jointIDCount(): number {
@@ -979,8 +984,12 @@ export class Mechanism {
     }
 
     public getTrajectories(): Iterable<Trajectory> {
-      console.log('Trajectories:', this._trajectories.values());
+      //console.log('Trajectories:', this._trajectories.values());
       return this._trajectories.values();
+    }
+
+    getArrayOfTrajectories(): Array<Trajectory> {
+      return Array.from(this._trajectories.values());
     }
 
     getJoints(): IterableIterator<Joint>{
@@ -1007,8 +1016,14 @@ export class Mechanism {
     getCompoundLinks(): IterableIterator<CompoundLink>{
         return this._compoundLinks.values();
     }
+    getArrayOfCompoundLinks(): Array<CompoundLink>{
+        return Array.from(this._compoundLinks.values());
+    }
     getForces(): IterableIterator<Force>{
         return this._forces.values();
+    }
+    getArrayOfForces(): Array<Force>{
+      return Array.from(this._forces.values());
     }
   //----------------------------SET FUNCTIONS----------------------------
   set_jointIDCount (count : number){
@@ -1053,6 +1068,40 @@ export class Mechanism {
         })
 
     }
+
+  /**
+   * Reconstructor Methods
+   *  Adds configured objects to the mechanism.
+   */
+
+  public _addJoint(joint: Joint): void {
+    this._joints.set(joint.id, joint);
+    this._jointIDCount++;
+  }
+
+  public _addLink(link: Link): void {
+    this._links.set(link.id, link);
+    this._linkIDCount++;
+  }
+
+  public _addCompoundLink(compoundLink: CompoundLink): void {
+    this._compoundLinks.set(compoundLink.id, compoundLink);
+    this._compoundLinkIDCount++;
+  }
+
+  public _addForce(force: Force): void {
+    this._forces.set(force.id, force);
+    this._forceIDCount++;
+  }
+
+  public _addPosition(position: Position): void {
+    this._positions.set(position.id, position);
+    this._positionIDCount++;
+  }
+
+  public _addTrajectory(trajectory: Trajectory): void {
+    this._trajectories.set(trajectory.id, trajectory);
+  }
 
 
 
