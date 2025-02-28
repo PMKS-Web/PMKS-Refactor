@@ -45,7 +45,7 @@ export class LinkComponent extends AbstractInteractiveComponent {
   }
 
   ngAfterContentChecked(): void {
-    this.angle = this.link.angle.toString();
+    this.angle = this.link.angle.toFixed(3);
     this.cdr.detectChanges();
   }
 
