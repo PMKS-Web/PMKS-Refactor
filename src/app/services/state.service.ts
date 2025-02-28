@@ -89,9 +89,7 @@ export class StateService {
         newJoint.hidden = Boolean(joint.isHidden);
         newJoint.reference = Boolean(joint.isReference);
         if(Boolean(joint.isInput)) { newJoint.addInput();}
-
         newJoint.speed = Number(joint.inputSpeed);
-
 
         this.mechanism._addJoint(newJoint);
       }
@@ -142,7 +140,9 @@ export class StateService {
     //Links TODO FORCES IMPLEMENTATION
     if (rawData.decodedPositions) {
       for (const position of rawData.decodedPositions) {
+
         let jointsArray: Joint[] = position.joints.split("|").map((element: string):Joint => {return this.mechanism.getJoint(Number(element))});
+
         let newPosition = new Position(position.id, jointsArray);
         //link.forces.split("|").forEach((element:number)=> newLink._forces.set()); todo
         newPosition.name = position.name;

@@ -25,7 +25,7 @@ export class SavePanelComponent implements OnInit{
     SavePanelComponent.instance = this;
   }
   ngOnInit(){
-    //this.download()
+    this.download()
   }
   download() {
     let encoderService = new EncoderService(this.stateService);
