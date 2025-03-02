@@ -79,7 +79,7 @@ export class DecoderService {
       angle: this.convertNumber(row[5]),
       isGrounded: this.convertBoolean(row[6]),
       isInput: this.convertBoolean(row[7]),
-      inputSpeed: row[8],
+      inputSpeed: this.convertNumber(row[8]),
       isWelded: this.convertBoolean(row[9]),
       locked: this.convertBoolean(row[10]),
       isHidden: this.convertBoolean(row[11]),
@@ -151,13 +151,17 @@ export class DecoderService {
    * If the value is not a string, it falls back to a number conversion.
    */
   private static convertNumber(value: any): number {
+    return parseInt(value, 16)
+    /*
     if (typeof value === 'string') {
       if (!Number.isInteger(parseFloat(value))) {
-        return Number(value);
+        return Number(parseFloat(value));
       }
       return parseInt(value, 16);
     }
-    return Number(value);
+    return Number(parseFloat(value));
+    */
+
   }
 
   /**
@@ -165,7 +169,7 @@ export class DecoderService {
    */
   private static convertBoolean(value: any): boolean {
     if (typeof value === 'string') {
-      return value === "1";
+      return value === "y";
     }
     return Boolean(value);
   }
