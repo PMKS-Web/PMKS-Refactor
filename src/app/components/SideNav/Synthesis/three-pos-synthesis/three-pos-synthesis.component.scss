@@ -77,10 +77,10 @@
 .icon {
   width: 15px;
   height: 15px;
-  margin-right: 6px;
-  margin-left: 6px;
-  margin-top: 1px;
-  margin-bottom: -2px;
+  margin-right: 0px;
+  margin-left: 0px;
+  margin-top: 0px;
+  margin-bottom: 0px;
 }
 
 .label {
@@ -108,12 +108,8 @@ hr.solid2 {
 }
 
 .right-aligned {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin-right: -35px;
-  margin-top: 10px;
-  gap: 2px;
+  margin-left: auto;
+  margin-top: 0px;
 }
 
 .right-aligned span {
@@ -375,16 +371,16 @@ hr.solid2 {
 #lengthTooltip {
   color: #3f51b5;
   font-size: 16px;
-  padding-top: 2px;
+  padding-top: 0px;
   //display: flex;
   //margin-left: -49px;
   //margin-top: 6px;
   //margin-bottom: -5px;
-  display: inline-flex;
-  margin-left: -52px !important;
+  display: flex;
+  margin-left: 0px !important;
   margin-top: 0;
   margin-bottom: 0;
-  align-items: center;
+  height: 15px;
 }
 
 #fixedReferenceTooltip {
@@ -601,12 +597,13 @@ coupler-specifications-container {
 }
 .input-container {
   display: flex;
+  justify-content: flex-start;
   align-items: center;
   padding-top: 2px;
   padding-right: 5px !important;
   padding-bottom: 0;
   margin-top: -15px;
-  gap: 2px;
+  gap: 0px;
 
 }
 
@@ -618,7 +615,7 @@ coupler-specifications-container {
 .lock-icon {
   width: 15px;
   height: 15px;
-  margin-left: 10px;
+  margin-left: 0px;
   cursor: pointer;
   transition: opacity 0.3s ease, transform 0.3s ease;
   opacity: 0.8;
@@ -659,13 +656,6 @@ coupler-specifications-container {
   line-height: 1.4;
   font-weight: normal;
   font-family:Roboto, "Helvetica Neue", sans-serif;
-}
-
-.right-aligned {
-
-  margin-top:-12px !important;
-  margin-left: 41px !important;
-
 }
 
 //.lock-icon {
