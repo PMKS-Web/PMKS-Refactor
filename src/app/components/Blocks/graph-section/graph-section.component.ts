@@ -139,4 +139,34 @@ export class GraphSectionComponent implements AfterViewInit, OnInit {
     }
   }
 
+
+  //Download a csv file
+  downloadCSV() {
+    let csvContent = "data:text/csv;charset=utf-8,";
+
+    // Add header row
+    csvContent += "Time,X Data,Y Data\n";
+
+    // Ensure data is available
+    if (this.inputLabels && this.inputXData && this.inputYData) {
+      for (let i = 0; i < this.inputLabels.length; i++) {
+        let time = this.inputLabels[i] || "";
+        let xData = this.inputXData[0]?.data[i] ?? "";
+        let yData = this.inputYData[0]?.data[i] ?? "";
+
+        csvContent += `${time},${xData},${yData}\n`;
+      }
+    }
+
+    // Create a downloadable link
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "graph_data.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+
 }

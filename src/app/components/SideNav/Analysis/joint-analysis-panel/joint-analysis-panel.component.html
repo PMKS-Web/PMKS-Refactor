@@ -32,7 +32,6 @@
 
         <ng-container *ngIf="currentGraphType === GraphType.JointPosition">
           <div class="modal" (keyup.escape)="closeAnalysisGraph()">
-            {{ getGraphTypeName(GraphType.JointPosition) }}
             <app-analysis-graph-block class="large-graph"
                                       [inputXData]="getGraphData().xData"
                                       [inputYData]="getGraphData().yData"
@@ -50,7 +49,6 @@
 
         <ng-container *ngIf="currentGraphType === GraphType.JointVelocity">
           <div class="modal" (keyup.escape)="closeAnalysisGraph()">
-            {{ getGraphTypeName(GraphType.JointVelocity) }}
             <app-analysis-graph-block class="large-graph"
                                       [inputXData]="getGraphData().xData"
                                       [inputYData]="getGraphData().yData"
@@ -67,12 +65,13 @@
         <p style="margin-left: 20px;">A<sub>x</sub>: N/A,  A<sub>y</sub>: N/A</p>
         <ng-container *ngIf="currentGraphType === GraphType.JointAcceleration">
           <div class="modal" (keyup.escape)="closeAnalysisGraph()">
-            {{ getGraphTypeName(GraphType.JointAcceleration) }}
             <app-analysis-graph-block class="large-graph"
                                       [inputXData]="getGraphData().xData"
                                       [inputYData]="getGraphData().yData"
                                       [inputLabels]="getGraphData().timeLabels">
             </app-analysis-graph-block>
+
+
           </div>
         </ng-container>
 
