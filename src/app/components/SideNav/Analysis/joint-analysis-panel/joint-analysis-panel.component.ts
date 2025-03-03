@@ -34,7 +34,6 @@ export class JointAnalysisPanelComponent {
 
   currentGraphType: GraphType | null = null;
   graphTypes = GraphType; // Make the enum accessible in the template
-  isGraphOpen: boolean = false;  // NEW VARIABLE to track button text state
 
 
   graphExpanded: { [key: string]: boolean } = {

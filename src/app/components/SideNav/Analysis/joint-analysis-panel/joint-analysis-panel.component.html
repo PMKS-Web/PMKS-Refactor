@@ -16,29 +16,68 @@
                           (closed)="graphExpanded['dataSummary'] = false">
     <div class="flex-container">
       <div>
-      <title-block>Data Summary</title-block>
+        <title-block>Data Summary</title-block>
 
         <!--      <p class="subtitle">Name of Joint: {{ getJointName() }} </p>-->
         <!--      <p class="subtitle">X Coordinate of Joint: {{ this.getJointXCoord() }} </p>-->
         <!--      <p class="subtitle">Y Coordinate of Joint: {{ this.getJointYCoord() }} </p>-->
+
+        <!--Position: -->
         <analysis-graph-button [dynamicText]="'Position:'"
-                               [graphText]="graphExpanded['positionOfJoint'] ? 'Close Graph' : 'Show Graph'"
-                               [btn1Action]="toggleGraph.bind(this, GraphType.JointPosition)"></analysis-graph-button>
+                             [graphText]="graphExpanded['positionOfJoint'] ? 'Close Graph' : 'Show Graph'"
+                             [btn1Action]="toggleGraph.bind(this, GraphType.JointPosition)"></analysis-graph-button>
 
 
-      <p >X:{{getJointXCoord()}}, Y: {{getJointYCoord()}}</p>
-      <ng-container *ngIf="currentGraphType !== null">
-<!--        <div class="overlay">-->
+        <p >X:{{getJointXCoord()}}, Y: {{getJointYCoord()}}</p>
+
+        <ng-container *ngIf="currentGraphType === GraphType.JointPosition">
           <div class="modal" (keyup.escape)="closeAnalysisGraph()">
-            {{ getGraphTypeName(currentGraphType) }}
+            {{ getGraphTypeName(GraphType.JointPosition) }}
             <app-analysis-graph-block class="large-graph"
                                       [inputXData]="getGraphData().xData"
                                       [inputYData]="getGraphData().yData"
                                       [inputLabels]="getGraphData().timeLabels">
             </app-analysis-graph-block>
           </div>
-<!--        </div>-->
-      </ng-container>
+        </ng-container>
+
+        <!--Velocity: -->
+        <analysis-graph-button [dynamicText]="'Velocity:'"
+                               [graphText]="graphExpanded['velocityOfJoint'] ? 'Close Graph' : 'Show Graph'"
+                               [btn1Action]="toggleGraph.bind(this, GraphType.JointVelocity)"></analysis-graph-button>
+
+              <p style="margin-left: 20px;">V<sub>x</sub>: N/A,  V<sub>y</sub>: N/A</p>
+
+        <ng-container *ngIf="currentGraphType === GraphType.JointVelocity">
+          <div class="modal" (keyup.escape)="closeAnalysisGraph()">
+            {{ getGraphTypeName(GraphType.JointVelocity) }}
+            <app-analysis-graph-block class="large-graph"
+                                      [inputXData]="getGraphData().xData"
+                                      [inputYData]="getGraphData().yData"
+                                      [inputLabels]="getGraphData().timeLabels">
+            </app-analysis-graph-block>
+          </div>
+        </ng-container>
+
+        <!--Acceleration: -->
+        <analysis-graph-button [dynamicText]="'Acceleration:'"
+                               [graphText]="graphExpanded['accelerationOfJoint'] ? 'Close Graph' : 'Show Graph'"
+                               [btn1Action]="toggleGraph.bind(this, GraphType.JointAcceleration)"></analysis-graph-button>
+
+        <p style="margin-left: 20px;">A<sub>x</sub>: N/A,  A<sub>y</sub>: N/A</p>
+        <ng-container *ngIf="currentGraphType === GraphType.JointAcceleration">
+          <div class="modal" (keyup.escape)="closeAnalysisGraph()">
+            {{ getGraphTypeName(GraphType.JointAcceleration) }}
+            <app-analysis-graph-block class="large-graph"
+                                      [inputXData]="getGraphData().xData"
+                                      [inputYData]="getGraphData().yData"
+                                      [inputLabels]="getGraphData().timeLabels">
+            </app-analysis-graph-block>
+          </div>
+        </ng-container>
+
+
+
       </div>
 
       <title-block> Connected Joints </title-block>
@@ -69,6 +108,16 @@
   </div>
 
   <!-- DYNAMICALLY HANDLE OPENING GRAPHS -->
+  <!--        <ng-container *ngIf="currentGraphType !== null">-->
+  <!--          <div class="modal" (keyup.escape)="closeAnalysisGraph()">-->
+  <!--            {{ getGraphTypeName(currentgraphname) }}-->
+  <!--            <app-analysis-graph-block class="large-graph"-->
+  <!--                                      [inputXData]="getGraphData().xData"-->
+  <!--                                      [inputYData]="getGraphData().yData"-->
+  <!--                                      [inputLabels]="getGraphData().timeLabels">-->
+  <!--            </app-analysis-graph-block>-->
+  <!--          </div>-->
+  <!--        </ng-container>-->
 
 
 </div>
