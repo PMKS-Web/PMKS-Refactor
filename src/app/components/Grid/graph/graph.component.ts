@@ -42,7 +42,7 @@ export class GraphComponent {
       //window.location.href = url.split("?data=")[0];
       //document.getElementById("").innerHTML = response.html;
       //document.title = response.pageTitle;
-      history.pushState({}, "", "");
+      history.pushState({}, "", url.split("?data=")[0]);
       //window.history.pushState({"html":response.html,"pageTitle":response.pageTitle},"", "");
 
       //window.history.pushState(“string”, “Title”, “/new-url”);
