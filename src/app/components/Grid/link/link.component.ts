@@ -110,7 +110,7 @@ export class LinkComponent extends AbstractInteractiveComponent {
     }
     let ang = (this.link.angle/2) * (Math.PI/180);
 
-    let x = allCoords[0].x + 200 * Math.cos(ang);
+    let x = allCoords[0].x + 250 * Math.cos(ang);
 
     return new Coord(x,0).x;
   }

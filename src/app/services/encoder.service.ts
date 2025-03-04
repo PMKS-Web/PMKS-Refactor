@@ -10,7 +10,6 @@ import { StateService } from "./state.service";
 
 export class EncoderService {
 
-
   constructor(private stateService: StateService) {
     //this._mechanism = this.stateService.getMechanism();
   }
@@ -150,27 +149,30 @@ export class EncoderService {
     };
   }
 
+
+
+
   /**
    * A custom replacer for JSON.stringify that converts numbers to hexadecimal strings
-   * and booleans to "1" or "0" for additional compression.
+   * and booleans to y/n
    *
    * Note: On decoding, you'll need to reverse these transformations.
    */
   private compressionReplacer(key: string, value: any): any {
-    if (typeof value === "number") {
-      if (Number.isInteger(value)) {
-        return value.toString(16);
-      } else {
-        // Keep floating‐point numbers in normal decimal string form:
-        return value;//.toString();
-        // or simply `return value;` if you don’t even want to stringify floats.
-      }
-    }
     if (typeof value === "boolean") {
-      return value ? "1" : "0";
+      return value ? "y" : "n"
     }
-    return value;
-  }
+    if (Number.isInteger(Number(value))) {
+      return value.toString(16);
+    }
+    if ((Number(value))% 1 !== 0) {
+      return value;
+    }
+      //console.log("im a string: ", value)
+      return value.toString();
+    }
+
+
 
   /**
    * If the field contains a comma, newline, or quotes, the field is wrapped in quotes

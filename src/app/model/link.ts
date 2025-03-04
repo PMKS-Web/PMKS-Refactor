@@ -112,7 +112,8 @@ export class Link implements RigidBody{
     }
 
     get angle(): number {
-      return (this._angle + 360) % 360;
+      let posangle = (this._angle + 360) % 360;
+      return parseFloat(posangle.toFixed(3));
     }
 
     //setters
