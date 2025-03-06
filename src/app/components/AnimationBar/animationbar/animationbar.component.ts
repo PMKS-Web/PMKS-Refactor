@@ -1,4 +1,4 @@
-import {Component, HostListener, Input} from '@angular/core'
+import {Component, HostListener, Input, OnInit} from '@angular/core'
 import {CompoundLinkInteractor} from 'src/app/controllers/compound-link-interactor';
 import {JointInteractor} from 'src/app/controllers/joint-interactor';
 import {LinkInteractor} from 'src/app/controllers/link-interactor';
@@ -14,24 +14,45 @@ import {Coord} from "../../../model/coord";
 import {PanZoomService} from "../../../services/pan-zoom.service";
 import {Mechanism} from "../../../model/mechanism";
 import {StateService} from "src/app/services/state.service";
+import { FormControl } from '@angular/forms';
+
 
 @Component({
   selector: 'app-animation-bar',
   templateUrl: './animationbar.component.html',
   styleUrls: [ './animationbar.component.scss'],
 })
-export class AnimationBarComponent {
+export class AnimationBarComponent implements OnInit{
+
+  public sliderControl = new FormControl(0);
+
+
+  constructor(
+    public interactionService: InteractionService,
+    private animationService: AnimationService,
+    private positionSolver: PositionSolverService,
+    private stateService: StateService
+  ) {
+    this.animationService.animationProgress$.subscribe(progress => {
+      if (!this.isDragging) {
+        this.sliderValue = progress * 100;
+      }});
+  }
+
+  ngOnInit() {
+    this.stateService.setAnimationBarComponent(this);
+
+  }
+
+
   @Input() mechanism!: Mechanism;
 
   private isAnimating: boolean = false;
   private isPausedAnimating: boolean = true;
-  sliderValue: number = 0;
+  public animationSpeed: number = 1;
+  timelineMarkers: { position: number; type: "clockwise" | "counterclockwise"; coords?: Coord }[] = [];
 
-  constructor(public interactionService: InteractionService, private animationService: AnimationService,private positionSolver: PositionSolverService, private stateService: StateService) {
-    this.animationService.animationProgress$.subscribe(progress => {
-      this.sliderValue = progress * 100;
-    });
-  }
+
 
   //BOTTOM BAR MOVED TO svg.component FOR CURSOR COORDINATE REASONS
 
@@ -51,6 +72,10 @@ export class AnimationBarComponent {
         this.isAnimating = true;
         this.isPausedAnimating = false;
         this.stateService.getMechanism().populateTrajectories(this.positionSolver);
+
+        setTimeout(() => {
+
+        }, 100);
         //display the trajectories
         break;
       case 'stop':
@@ -99,10 +124,92 @@ export class AnimationBarComponent {
     return index;
   }
 
-  onSliderChange(value: number) {
-    if (this.isAnimating && this.isPausedAnimating) {
-      this.animationService.setAnimationProgress(value / 100);
-    }
+  public sliderValue = 0;
+  public isDragging = false;
+
+  onSliderInput(event: any): void {
+    const inputElement = event.target as HTMLInputElement;
+    const numericValue = parseFloat(inputElement.value);
+    this.sliderValue = numericValue;
+    const fraction = numericValue / 100;
+    this.animationService.setAnimationProgress(fraction);
   }
 
+  onSliderDragStart(): void {
+    this.isDragging = true;
+  }
+
+  onSliderDragEnd(): void {
+    this.isDragging = false;
+  }
+
+
+
+  toggleAnimationSpeed(): void{
+    const speedOptions = [0.5,1,2]
+    const index = speedOptions.indexOf(this.animationSpeed);
+    this.animationSpeed = speedOptions[(index+1) % speedOptions.length];
+
+    this.animationService.setSpeedmultiplier(this.animationSpeed);
+  }
+
+  updateTimelineMarkers(): void {
+    const mechanismIndex = this.getMechanismIndex();
+    if (mechanismIndex === -1) {
+       return;
+    }
+
+    const mechanismState = this.animationService.getAnimationState(mechanismIndex);
+    if (!mechanismState) {
+      return;
+    }
+
+    const changes = this.animationService.getDirectionChanges(mechanismState);
+
+    const totalFrames = mechanismState.totalFrames ?? 1;
+    this.timelineMarkers = [];
+
+    const ccw = this.animationService.startDirectionCounterclockwise;
+
+    // 1) Handle the "clockwise" change
+    if (changes.clockwise !== undefined) {
+      const frameIndex = changes.clockwise.frame;
+
+      const rawFraction = frameIndex / (totalFrames - 1);
+      const finalFraction = ccw ? rawFraction : (1 - rawFraction);
+      const position = Math.min(Math.max(finalFraction * 100, 0), 100);
+
+      const markerType = ccw ? 'clockwise' : 'counterclockwise';
+
+
+      this.timelineMarkers.push({
+        position,
+        type: markerType,
+        coords: changes.clockwise.position
+      });
+    }
+
+    // 2) Handle the "counterClockwise" change
+    if (changes.counterClockwise !== undefined) {
+      const frameIndex = changes.counterClockwise.frame;
+
+      const rawFraction = frameIndex / (totalFrames - 1);
+      const finalFraction = ccw ? rawFraction : (1 - rawFraction);
+      const position = Math.min(Math.max(finalFraction * 100, 0), 100);
+
+      const markerType = ccw ? 'counterclockwise' : 'clockwise';
+
+
+      this.timelineMarkers.push({
+        position,
+        type: markerType,
+        coords: changes.counterClockwise.position
+      });
+    }
+
+    console.log("Final timelineMarkers array:", this.timelineMarkers);
+  }
+
+
 }
+

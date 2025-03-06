@@ -20,14 +20,18 @@ export interface JointAnimationState {
 }
 
 
+
 @Injectable({
     providedIn: 'root'
 })
 export class AnimationService {
 
+
+    public startDirectionCounterclockwise: boolean = true;
     private animationStates: JointAnimationState[];
     private invaldMechanism: boolean;
     private animationProgressSource = new BehaviorSubject<number>(0);
+    private speedMultiplier: number = 1;
     animationProgress$ = this.animationProgressSource.asObservable();
 
     constructor(private stateService: StateService, private positionSolver: PositionSolverService) {
@@ -37,9 +41,17 @@ export class AnimationService {
             this.initializeAnimations();
         });
     }
-    isInvalid(): boolean {
-        return this.invaldMechanism;
-    }
+
+  getAnimationState(index: number): JointAnimationState | undefined {{
+    return this.animationStates[index];
+  }}
+
+  setSpeedmultiplier(multiplier: number) {
+    this.speedMultiplier = multiplier;
+  }
+
+  isInvalid(): boolean {
+        return this.invaldMechanism;}
 
     initializeAnimations() {
         this.animationStates = new Array();
@@ -70,7 +82,8 @@ export class AnimationService {
                 inputSpeed: inputSpeed
             })
         }
-        this.invaldMechanism = this.animationStates.length == 0 ? true : false;
+        this.invaldMechanism = this.animationStates.length == 0;
+        this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
     }
     animateMechanisms(playPause: boolean) {
         if (playPause == false) {
@@ -84,31 +97,50 @@ export class AnimationService {
             }
         }
     }
-    singleMechanismAnimation(state: JointAnimationState) {
-        if (state.isPaused) {
-            return;
+  singleMechanismAnimation(state: JointAnimationState) {
+    if (state.isPaused) {
+      return;
+    } else {
+      // Move the frame index forward or backward
+      if (this.startDirectionCounterclockwise) {
+        if (state.currentFrameIndex === state.totalFrames - 1) {
+          state.currentFrameIndex = 0;
         } else {
-            if (state.currentFrameIndex == state.totalFrames - 1) {
-                state.currentFrameIndex = 0;
-            } else {
-                state.currentFrameIndex++;
-            }
-
-            const progress = state.currentFrameIndex / (state.totalFrames - 1);
-            this.updateProgress(progress);
-
-            for (let jointIndex = 0; jointIndex < state.jointIDs.length; jointIndex++) {
-                this.stateService.getMechanism()
-                    .getJoint(state.jointIDs[jointIndex])
-                    .setCoordinates(state.animationFrames[state.currentFrameIndex][jointIndex]);
-            }
-
-            setTimeout(() => {
-                this.singleMechanismAnimation(state)
-            }, Math.round((1000 * 60) / (state.inputSpeed * 360)));
+          state.currentFrameIndex++;
         }
+      } else {
+        if (state.currentFrameIndex === 0) {
+          state.currentFrameIndex = state.totalFrames - 1;
+        } else {
+          state.currentFrameIndex--;
+        }
+      }
+
+      // Calculate raw progress from 0..1
+      const rawProgress = state.currentFrameIndex / (state.totalFrames - 1);
+
+      // If clockwise, invert so bar goes 0..1 left to right
+      const displayProgress = this.startDirectionCounterclockwise
+        ? rawProgress
+        : (1 - rawProgress);
+
+      // Send that to the timeline
+      this.updateProgress(displayProgress);
+
+      // Update each joint's position for this frame
+      for (let jointIndex = 0; jointIndex < state.jointIDs.length; jointIndex++) {
+        this.stateService.getMechanism()
+          .getJoint(state.jointIDs[jointIndex])
+          .setCoordinates(state.animationFrames[state.currentFrameIndex][jointIndex]);
+      }
+
+      setTimeout(() => {
+        this.singleMechanismAnimation(state);
+      }, Math.round((1000 * 60) / (state.inputSpeed * 360 * this.speedMultiplier)));
     }
-    reset() {
+  }
+
+  reset() {
         for (let state of this.animationStates) {
             for (let jointIndex = 0; jointIndex < state.jointIDs.length; jointIndex++) {
                 this.stateService.getMechanism().getJoint(state.jointIDs[jointIndex]).setCoordinates(state.startingPositions[jointIndex]);
@@ -135,7 +167,7 @@ export class AnimationService {
         let frame = Math.round(timeInSeconds / (60 / (animationState.inputSpeed * 360)));
         while(frame > animationState.totalFrames){
             frame -= animationState.totalFrames;
-        } 
+        }
         while(frame < 0){
             frame += animationState.totalFrames
         }
@@ -156,10 +188,55 @@ export class AnimationService {
             for (let jointIndex = 0; jointIndex < state.jointIDs.length; jointIndex++) {
                 const joint = this.stateService.getMechanism().getJoint(state.jointIDs[jointIndex]);
                 const newPosition = state.animationFrames[frameIndex][jointIndex];
+
+              console.log(`Frame ${frameIndex}: Joint ${jointIndex} moving to `, newPosition);
+
                 joint.setCoordinates(newPosition);
             }
         }
 
         this.updateProgress(progress);
+
     }
+
+  getDirectionChanges(state: JointAnimationState | undefined): { clockwise?: { frame: number, position: Coord }, counterClockwise?: { frame: number, position: Coord } } {
+    if (!state) return {};
+    let clockwise: { frame: number, position: Coord } | undefined = undefined;
+    let counterClockwise: { frame: number, position: Coord } | undefined = undefined;
+    const trajectory: Coord[] = state.animationFrames.map(frame => frame[2]);
+
+    for (let i = 1; i < trajectory.length - 1; i++) {
+      const lastFrame = trajectory[i - 1];
+      const thisFrame = trajectory[i];
+      const nextFrame = trajectory[i + 1];
+
+      const isDirectionChange = this.detectDirectionChange(lastFrame, thisFrame, nextFrame);
+      if (isDirectionChange) {
+        if (this.startDirectionCounterclockwise) {
+          if (!clockwise) {
+            clockwise = { frame: i, position: thisFrame };
+          } else if (!counterClockwise) {
+            counterClockwise = { frame: i, position: thisFrame };
+          }
+        } else {
+          if (!counterClockwise) {
+            counterClockwise = { frame: i, position: thisFrame };
+          } else if (!clockwise) {
+            clockwise = { frame: i, position: thisFrame };
+          }
+        }
+      }
+    }
+    return { clockwise, counterClockwise };
+  }
+
+  detectDirectionChange(last: Coord, current: Coord, next: Coord): boolean {
+    const xVelocityBefore = current.x - last.x;
+    const xVelocityAfter = next.x - current.x;
+    const yVelocityBefore = current.y - last.y;
+    const yVelocityAfter = next.y - current.y;
+    return (xVelocityBefore * xVelocityAfter < 0) && (yVelocityBefore * yVelocityAfter < 0);
+  }
+
+
 }
