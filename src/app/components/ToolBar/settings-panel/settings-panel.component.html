@@ -15,37 +15,33 @@
       (closed)="sectionExpanded['LBasic'] = false"
     >
 
-      <div class="toggle-container">
-    <span class="label" style="margin-left: 10px;">
-      Start Direction
-      <mat-icon
-        matTooltip="Toggles the start direction between clockwise and counterclockwise"
-        style="color: #3f51b5; font-size: 18px; vertical-align: middle; padding-top: 2.5px"
-        [matTooltipShowDelay]="1000"
-        class="label-help"
-        [ngClass]="iconClass"
-      >
-        help_outline
-      </mat-icon>
-    </span>
-      </div>
-
-      <!-- Radio-Block for Start Direction -->
-      <div class="radio-group-wrapper">
+      <!-- INPUT DIRECTION (row) -->
+      <div class="option-row">
+        <p class="label-with-icon">
+          Input Direction
+          <mat-icon
+            matTooltip="Toggles the input direction between clockwise and counterclockwise"
+            [matTooltipShowDelay]="1000"
+            class="tooltip"
+            [ngClass]="iconClass"
+          >
+            help_outline
+          </mat-icon>
+        </p>
         <radio-block
-          id="startDirection"
+          id="inputDirection"
           [options]="['Clockwise', 'Counterclockwise']"
           [initialSelection]="animationService.startDirectionCounterclockwise ? 'Counterclockwise' : 'Clockwise'"
-          (selectionChanged)="onDirectionChanged($event)">
-        </radio-block>
+          (selectionChanged)="onDirectionChanged($event)"
+        ></radio-block>
       </div>
 
-      <!-- Units -->
-      <div id="units">
-        <p class="units">
+      <!-- GLOBAL UNITS (row) -->
+      <div class="option-row">
+        <p class="label-with-icon">
           Global Units
           <mat-icon
-            matTooltip="Blah blah blah"
+            matTooltip="Choose your preferred length units"
             [matTooltipShowDelay]="1000"
             class="tooltip"
           >
@@ -57,13 +53,15 @@
           [options]="['English (in)', 'Metric (cm)', 'SI (m)']"
           [initialSelection]="units"
           (selectionChanged)="changeUnits($event)"
-        >
-        </radio-block>
+        ></radio-block>
+      </div>
 
-        <p class="units">
+      <!-- ANGLE UNITS (row) -->
+      <div class="option-row">
+        <p class="label-with-icon">
           Angle Units
           <mat-icon
-            matTooltip="Blah blah blah"
+            matTooltip="Choose your preferred angle units"
             [matTooltipShowDelay]="1000"
             class="tooltip"
           >
@@ -75,10 +73,10 @@
           [options]="['Degree (º)', 'Radian (rad)']"
           [initialSelection]="angles"
           (selectionChanged)="changeAngle($event)"
-        >
-        </radio-block>
+        ></radio-block>
       </div>
     </collapsible-subsection>
+
 
     <!-- VISUAL DROPDOWN -->
     <collapsible-subsection

@@ -59,8 +59,22 @@
           [ngClass]="marker.type"
           [style.left.%]="marker.position"
         >
-          <mat-icon *ngIf="marker.type === 'clockwise'">rotate_right</mat-icon>
-          <mat-icon *ngIf="marker.type === 'counterclockwise'">rotate_left</mat-icon>
+          <!-- Use the rotateRight.svg for clockwise markers -->
+          <ng-container *ngIf="marker.type === 'clockwise'">
+            <img
+              src="assets/icons/rotateRight.svg"
+              alt="Clockwise Marker"
+              class="marker-svg"
+              width="40" height="40" />
+          </ng-container>
+          <!-- Use the rotateLeft.svg for counterclockwise markers -->
+          <ng-container *ngIf="marker.type === 'counterclockwise'">
+            <img
+              src="assets/icons/rotateLeft.svg"
+              alt="Counterclockwise Marker"
+              class="marker-svg"
+              width="40" height="40" />
+          </ng-container>
         </div>
       </div>
 
