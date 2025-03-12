@@ -6,7 +6,7 @@ import { CompoundLink } from '../model/compound-link'
 import { BehaviorSubject } from 'rxjs'
 import {Position} from "./position";
 import {Trajectory} from "./trajectory";
-import { PositionSolverService } from 'src/app/services/kinematic-solver.service';
+import { PositionSolverService} from 'src/app/services/kinematic-solver.service';
 
 
 export class Mechanism {
@@ -152,7 +152,8 @@ export class Mechanism {
       console.log('Trajectory Coords:', trajectoryCoords);
       console.log('Animation Frames:', animationFrames);
       console.log(`Populating trajectory for joint ID ${jointId} with coords:`, trajectoryCoords);
-
+      console.log("LOOPS!:");
+      positionSolver.printAllLoops();
       this.setTrajectory(jointId, new Trajectory(trajectoryCoords, jointId));
     }
   }
@@ -960,7 +961,7 @@ export class Mechanism {
     }
 
     getLink(id: number): Link {
-      return <Link>this._links.get(id);
+      return this._links.get(id)!;
     }
 
     get_jointIDCount(): number {

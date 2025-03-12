@@ -5,6 +5,9 @@ import { Link, RigidBody } from '../model/link';
 import { Coord } from '../model/coord';
 import {join} from "@angular/compiler-cli";
 import { BehaviorSubject } from 'rxjs';
+import {Mechanism} from "../model/mechanism";
+import * as math from 'mathjs';
+import {Matrix, inv, multiply, lusolve, number} from 'mathjs';
 
 
 export enum SolveType {
@@ -45,7 +48,18 @@ export class PositionSolverService {
     private animationsChange: BehaviorSubject<AnimationPositions[]> = new BehaviorSubject<AnimationPositions[]>(this.animationPositions);
     public animationsChange$ = this.animationsChange.asObservable();
 
-    constructor(private stateService: StateService) {
+    static A_matrix_AngVel: Array<Array<number>> = [];
+    static B_matrix_AngVel: Array<Array<number>> = [];
+    static A_matrix_AngAcc: Array<Array<number>> = [];
+    static B_matrix_AngAcc: Array<Array<number>> = [];
+    static LinVelJointEq = new Map<string, [string, string]>();
+    static LinVelLinkEq = new Map<string, [string, string]>();
+    static LinAccJointEq = new Map<string, [string, string]>();
+    static LinAccLinkEq = new Map<string, [string, string]>();
+    static requiredLoops: string[];
+
+
+  constructor(private stateService: StateService) {
         console.log("kinematics constructor");
         this.solvePositions();
         this.stateService.getMechanismObservable().subscribe(updatedMechanism => {
@@ -557,7 +571,344 @@ export class PositionSolverService {
     return this.animationPositions.flatMap(entry => entry.positions);
   }
 
+  private adjacencyList: Map<number, number[]> = new Map();
+  private visited: Set<string> = new Set();
+  private linkToJoints: Map<number, number[]> = new Map();
+  private loops: number[][] = [];
+
+  private buildGraph(): void {
+    console.log("Graph is being built...");
+    const links = this.stateService.getMechanism().getArrayOfLinks();
+
+    links.forEach((link) => {
+      const jointIds = Array.from(link.joints.values()).map((joint) => joint.id);
+      this.linkToJoints.set(link.id, jointIds);
+    });
+
+    links.forEach((link) => {//adjecency list
+      const jointIds = this.linkToJoints.get(link.id)!;
+      const neighborLinks = new Set<number>();
+
+      links.forEach((otherLink) => {//joint joining link
+        if (otherLink.id !== link.id) {
+          const otherJointIds = this.linkToJoints.get(otherLink.id)!;
+          if (otherJointIds.some((jointId) => jointIds.includes(jointId))) {
+            neighborLinks.add(otherLink.id);
+          }
+        }
+      });
+
+      this.adjacencyList.set(link.id, Array.from(neighborLinks));
+    });
+
+    console.log("linkToJoints:", this.linkToJoints);
+    console.log("Adjacency List:", this.adjacencyList);
+  }
+
+  private findLoops(): void {
+    console.log("Loops are being searched for...");
+
+    const links = this.stateService.getMechanism().getArrayOfLinks();
+
+    const inputLink = links.find((link) => Array.from(link.joints.values()).some((joint) => joint.isInput));
+    console.log("input link" + inputLink);
+
+    if (!inputLink) {
+      console.error("Input link not found!");
+      return;
+    }
+
+    console.log("Starting DFS from input link:", inputLink.id);
+    this.dfs(inputLink.id, inputLink.id, [], new Set<number>());
+  }
+
+  private dfs(startId: number, currentId: number, path: number[], visitedLinks: Set<number>): void {
+    console.log(`DFS called with startId=${startId}, currentId=${currentId}, path=${path}`);
+    console.log(`visitedLinks: ${Array.from(visitedLinks).join(',')}`);
+
+    if (visitedLinks.has(currentId)) return;
+
+    const newVisited = new Set([...visitedLinks, currentId]);
+    const newPath = [...path, currentId];
+
+    const currentLink = this.stateService.getMechanism().getLink(currentId);
+    const isGrounded = Array.from(currentLink.joints.values()).some((j) => j.isGrounded);
+
+    if (isGrounded && newPath.length >= 3 && currentId !== startId) {
+      const loopKey = this.getLoopKey(newPath);
+
+      if (!this.visited.has(loopKey)) {
+        this.visited.add(loopKey);
+        console.log("Loop found (Link IDs):", newPath);
+        console.log(
+          "Loop found (Link Objects):",
+          newPath.map((id) => this.stateService.getMechanism().getLink(id))
+        );
+
+        this.loops.push(newPath);
+      }
+    }
+
+    const neighbors = this.adjacencyList.get(currentId) || [];
+    console.log(`Neighbors of ${currentId}: ${neighbors}`);
+
+    for (const neighbor of neighbors) {
+      this.dfs(startId, neighbor, newPath, new Set(newVisited));//clone
+    }
+  }
+
+  private getLoopKey(loop: number[]): string {
+    return loop.slice().sort((a, b) => a - b).join("-");
+  }
+
+  public printAllLoops(): void {
+    const knownVelocities = new Map<string, number>();
+    const knownAccelerations = new Map<string, number>();
+
+    this.adjacencyList.clear();
+    this.visited.clear();
+    this.linkToJoints.clear();
+    this.loops = [];
+    this.buildGraph();
+    this.findLoops();
+
+
+    // this.analyzeLoops();
+    const inputLinkId = this.findInputLink();
+    const initialVelocity = 10 * (2 * Math.PI) / 60; //10 RPM to rad/s (1.047 rad/s)
+    if (inputLinkId !== null) {
+      console.log(`Initial velocity for input link${inputLinkId}: ${initialVelocity} rad/s`);
+      knownVelocities.set(inputLinkId.toString(), initialVelocity);
+      console.log("Known velocities map:", knownVelocities);
+      knownAccelerations.set(inputLinkId.toString(), 0); // Motor acceleration is constant
+      this.processLoops(this.loops, knownVelocities, knownAccelerations, inputLinkId,initialVelocity);
+    }
+  }
+
+
+  private processLoops(loops: any[], knownVelocities: Map<string, number>, knownAccelerations: Map<string, number>, inputLinkId: number, inputLinkVelocity: number) {
+    console.log('Loops to process:', loops);
+
+    loops.sort((loopA, loopB) => loopA.length - loopB.length); //sort smallest loop to largest
+    console.log('Sorted loops:', loops);
+
+    for (const loop of loops) {
+      console.log(`Processing loop with links: ${loop}`);
+
+      const links = loop.map((id: number) => this.stateService.getMechanism().getLink(id));
+
+      const [A, B] = this.constructVelocityMatrix(links, knownVelocities);
+
+      console.log(`Matrix A (for velocities):`, A);
+      console.log(`Matrix B (for velocities):`, B);
+
+      const velocities = this.solveVelocity(A, B);
+      if (velocities) {
+        console.log(`Velocities for loop (ID's: ${loop.join(", ")}): ${velocities}`);
+
+        this.updateVelocities(links, velocities, knownVelocities, inputLinkId, inputLinkVelocity);//update know list after each loop solved
+      }
+
+      // const [A_acc, B_acc] = this.constructAccelerationMatrix(links, knownVelocities, knownAccelerations);
+      // const accelerations = this.solveAcceleration(A_acc, B_acc);
+      // if (accelerations) {
+      //   console.log(`Accelerations for loop (ID's: ${loop.join(", ")}): ${accelerations}`);
+      //
+      //   this.updateAccelerations(links, accelerations, knownAccelerations);
+      // }
+    }
+  }
+
+
+
+  private findInputLink(): number | null {
+    const links = this.stateService.getMechanism().getArrayOfLinks();
+
+    for (const link of links) {
+      const isInputLink = Array.from(link.joints.values()).some((joint) => joint.isInput);
+      if (isInputLink) {
+        return link.id;
+      }
+    }
+
+    return null;
+  }
+
+  private solveVelocity(A: number[][], B: number[]): number[] | null {
+    const rows = A.length;
+    const cols = A[0].length;
+
+    if (rows !== cols) {
+      console.warn("Matrix A is not square, using pseudo-inverse for least squares solution.");
+      //lest square method
+      try {
+        const A_math = math.matrix(A);//math.js representation
+        const B_math = math.matrix(B);
+        const A_pseudo_inv = math.pinv(A_math);//pseudo-inverse of A
+
+        const result = math.multiply(A_pseudo_inv, B_math); //X = A^+ * B
+
+        return result.toArray() as number[];
+      } catch (error) {
+        console.error("Error solving velocity system using pseudo-inverse:", error);
+        return null;
+      }
+    }
+
+    try {
+      const A_inv = math.inv(A);
+      const X = math.multiply(A_inv, B);
+      return X;
+    } catch (error) {
+      console.error("Error solving velocity system:", error);
+      return null;
+    }
+  }
+
+  private solveAcceleration(A: number[][], B: number[]): number[] | null {
+    const detA = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+    if (Math.abs(detA) < 1e-10) {
+      console.error("Singular matrix detected in acceleration calculations.");
+      return null;
+    }
+    return multiply(inv(A), B) as number[];
+  }
+
+
+  private constructVelocityMatrix(linkInLoop: any[], knownVelocities: Map<string, number>): [number[][], number[]] {
+    const A: number[][] = [];
+    const B: number[] = [];
+
+    const uniqueJoints = new Map<number, { x: number; y: number }>();
+    const orderedJointIds: number[] = [];
+    let inputJointId: number | null = null;
+
+    linkInLoop.forEach(link => {
+      const joints = link.getJoints() as Joint[];
+      joints.forEach(joint => {
+        if (!uniqueJoints.has(joint.id)) {
+          uniqueJoints.set(joint.id, { x: joint._coords.x, y: joint._coords.y });
+          orderedJointIds.push(joint.id);
+
+          if (joint.isInput) {
+            inputJointId = joint.id;
+          }
+        }
+      });
+    });
+
+    if (inputJointId !== null) {//ordered
+      const index = orderedJointIds.indexOf(inputJointId);
+      if (index > 0) {
+        orderedJointIds.splice(index, 1);
+        orderedJointIds.unshift(inputJointId);
+      }
+    }
+
+    const jointCoords = orderedJointIds.map(id => uniqueJoints.get(id)!);
+    console.log("Ordered Joints (Velocities):", jointCoords);
+
+    if (jointCoords.length >= 4) {
+      const A_coords = jointCoords[0];
+      const B_coords = jointCoords[1];
+      const C_coords = jointCoords[2];
+      const D_coords = jointCoords[3];
+
+      A.push([
+        -(C_coords.y - B_coords.y) -(D_coords.y - C_coords.y),
+        (C_coords.x - B_coords.x) - (D_coords.x - C_coords.x)
+      ]);
+
+      B.push(
+        (B_coords.y - A_coords.y),
+        -(B_coords.x - A_coords.x)
+      );
+    }
+
+    return [A, B];
+  }
+  // private constructVelocityMatrix(loop: any[], knownVelocities: Map<string, number>): [number[][], number[]] {
+  //   const A: number[][] = [];
+  //   const B: number[] = [];
+  //
+  //   for (const link of loop) {
+  //     const linkData = this.getLinkData(link);
+  //     const { length, angle } = linkData;
+  //
+  //     //components
+  //     const vx = -length * Math.sin(angle);
+  //     const vy = length * Math.cos(angle);
+  //
+  //     A.push([vx, vy]);
+  //
+  //     const velocity = knownVelocities.get(link.id.toString()) || 0;//if we have known velocities we use them
+  //     B.push(velocity);
+  //     console.log(`Link ID: ${link.id}, vx: ${vx}, vy: ${vy}, velocity: ${velocity}`);
+  //   }
+  //
+  //   return [A, B];
+  // }
+
+  private updateVelocities(links: any[], velocities: number[], knownVelocities: Map<string, number>, inputLinkId: number, inputLinkVelocity: number) {
+
+    if (!knownVelocities.has(inputLinkId.toString())) {//input should be first
+      knownVelocities.set(inputLinkId.toString(), inputLinkVelocity);
+    }
+
+    const inputLinkIndex = links.findIndex(link => link._id === inputLinkId);//know from what index to start
+
+    links.forEach((link: any, index: number) => {
+      if (link._id !== inputLinkId) {
+        const adjustedIndex = (index > inputLinkIndex) ? index - 1 : index;
+
+        if (!knownVelocities.has(link._id.toString())) {//only if we dont have it already
+          knownVelocities.set(link._id.toString(), velocities[adjustedIndex]);
+        }
+      }
+    });
+    console.log("Updated known velocities:", knownVelocities);
+  }
+
+  private constructAccelerationMatrix(loop: any[], knownVelocities: Map<string, number>, knownAccelerations: Map<string, number>): [number[][], number[]] {
+    const A_acc: number[][] = [];
+    const B_acc: number[] = [];
+
+    for (const link of loop) {
+      const linkData = this.getLinkData(link);
+      const { length, angle } = linkData;
+
+      const ax = length * Math.cos(angle);
+      const ay = length * Math.sin(angle);
+
+      A_acc.push([ax, ay]);
+
+      const acceleration = knownAccelerations.get(link) || 0;// known if not 0
+      B_acc.push(acceleration);
+    }
+
+    return [A_acc, B_acc];
+  }
+
+  private updateAccelerations(loop: any[], accelerations: number[], knownAccelerations: Map<string, number>) {
+    loop.forEach((link, index) => {
+      knownAccelerations.set(link, accelerations[index]);
+    });
+  }
+
+  private getLinkData(link: Link): { length: number; angle: number } {
+    const joints = Array.from(link._joints.values());
+
+    if (joints.length < 2) {
+      throw new Error(`Link ${link.id} has less than two joints.`);
+    }
+
+    const dx = joints[1]._coords.x - joints[0]._coords.x;
+    const dy = joints[1]._coords.y - joints[0]._coords.y;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const angle =link.angle;
+    console.log("link"+link.id+"length"+ length+"Angle"+angle);
+
+    return { length, angle };
+  }
+
 }
-
-
-
