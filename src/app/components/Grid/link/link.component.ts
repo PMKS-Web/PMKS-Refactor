@@ -78,10 +78,10 @@ export class LinkComponent extends AbstractInteractiveComponent {
 
   getBCoord(): Coord {
     let b = this.unitConversionService.modelCoordToSVGCoord(this.link.getJoints()[1].coords);
-    if ((this.link.angle > 0 && this.link.angle < 90) || this.link.angle > 270) {
+    if ((this.link.angle >= 0 && this.link.angle < 90) || this.link.angle > 270) {
       b.x = b.x + 150;
     }
-    else if (this.link.angle > 90 && this.link.angle < 270) {
+    else if (this.link.angle >= 90 && this.link.angle < 270) {
       b.x = b.x - 150;
     }
     return b;
