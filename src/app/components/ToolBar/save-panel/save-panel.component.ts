@@ -28,8 +28,6 @@ export class SavePanelComponent implements OnInit{
     this.download()
   }
   download() {
-    let encoderService = new EncoderService(this.stateService);
-    let csv:string = encoderService.exportMechanismDataToCSV();
 
   }
 }
