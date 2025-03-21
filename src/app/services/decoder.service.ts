@@ -6,6 +6,7 @@ import { Trajectory } from "../model/trajectory";
 import { Force } from "../model/force";
 import { Position } from "../model/position";
 import {StateService} from "./state.service";
+import LZString from "lz-string";
 
 /**
  * DecoderService is the reverse of the EncoderService.
@@ -49,7 +50,7 @@ export class DecoderService {
    */
   static decodeFromURL(encoded: string, stateService: StateService): any {
     try {
-      const decodedJson = decodeURIComponent(encoded);
+      const decodedJson = LZString.decompressFromEncodedURIComponent(encoded);
       console.log(decodedJson);
       let decompressedJSON = decodedJson.replaceAll('--', '"]_["').replaceAll('RP', 'Reference Point').replaceAll('_', ',').replaceAll('~', '","');
       console.log(decompressedJSON);

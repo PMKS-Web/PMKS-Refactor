@@ -7,6 +7,7 @@ import { Trajectory } from "../model/trajectory";
 import { Force } from "../model/force";
 import { Position } from "../model/position";
 import { StateService } from "./state.service";
+import LZString from 'lz-string';
 
 export class EncoderService {
 
@@ -29,9 +30,13 @@ export class EncoderService {
       const compactData = this.compactMechanismData(this.mechanism);
       console.log(compactData);
       const jsonData = JSON.stringify(compactData, this.compressionReplacer);
-      let compressedjsonData = jsonData.replaceAll('","',"~").replaceAll(',',"_").replaceAll("Reference Point", "RP").replaceAll('"]_["',"--")
+      let compressedjsonData = jsonData
+        .replaceAll('","',"~")
+        .replaceAll(',',"_")
+        .replaceAll("Reference Point", "RP")
+        .replaceAll('"]_["',"--");
       console.log(compressedjsonData);
-      return encodeURIComponent(compressedjsonData);
+      return LZString.compressToEncodedURIComponent(compressedjsonData);
     } catch (error) {
       console.error("Error encoding mechanism data:", error);
       return "";
