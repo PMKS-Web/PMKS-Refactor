@@ -56,7 +56,7 @@ export class StateService {
    *        are stored as an array of number ID's separated by '|'
    * @param rawData
    */
-  public reconstructFromUrl(rawData:
+  public reconstructMechanism(rawData:
                             { decodedJoints:any[],
                               decodedLinks:any[],
                               decodedCompoundLinks:any[],
@@ -180,6 +180,7 @@ export class StateService {
       }
     }
   }
+
 
     //todo also load globalUnits, globalUnitsSuffix, globalAngles, globalAnglesSuffix, and globalActivePanel
     public changeActivePanel(panel: string): void {
