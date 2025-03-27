@@ -448,4 +448,21 @@ export class Link implements RigidBody{
         this._color=this.linkColorOptions[index];
         console.log(this._color);
     }
+
+    clone(): Link {
+      const newJoints: Joint[] = [];
+      this._joints.forEach(joint => {
+        newJoints.push(joint.clone());
+      });
+      const newLink = new Link(this._id, newJoints);
+      newLink.name = this._name;
+      newLink.mass = this._mass;
+      newLink.angle = this._angle;
+      newLink.locked = this._isLocked;
+      newLink.color = this._color;
+      this._forces.forEach((force, id) => {
+        newLink._forces.set(id, force.clone());
+      });
+      return newLink;
+    }
 }

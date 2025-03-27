@@ -1103,6 +1103,37 @@ export class Mechanism {
     this._trajectories.set(trajectory.id, trajectory);
   }
 
+  clone(): Mechanism {
+    const newMech = new Mechanism();
+    this._joints.forEach((joint, id) => {
+      newMech._joints.set(id, joint.clone());
+    });
+    this._links.forEach((link, id) => {
+      newMech._links.set(id, link.clone());
+    });
+    this._forces.forEach((force, id) => {
+      newMech._forces.set(id, force.clone());
+    });
+    this._compoundLinks.forEach((compLink, id) => {
+      newMech._compoundLinks.set(id, compLink.clone());
+    });
+    this._positions.forEach((pos, id) => {
+      newMech._positions.set(id, pos.clone());
+    });
+    this._trajectories.forEach((traj, id) => {
+      newMech._trajectories.set(id, traj.clone());
+    });
+    newMech._idCount = this._idCount;
+    newMech._jointIDCount = this._jointIDCount;
+    newMech._linkIDCount = this._linkIDCount;
+    newMech._forceIDCount = this._forceIDCount;
+    newMech._compoundLinkIDCount = this._compoundLinkIDCount;
+    newMech._positionIDCount = this._positionIDCount;
+    newMech._refIdCount = this._refIdCount;
+    return newMech;
+  }
+
+
 
 
 

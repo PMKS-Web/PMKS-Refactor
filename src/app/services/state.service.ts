@@ -32,8 +32,12 @@ export class StateService {
     private globalActivePanel = new BehaviorSubject("Edit");
 
     private animationbarComponent!: AnimationBarComponent;
+    private undoStack: Mechanism[] = [];
+    private redoStack: Mechanism[] = [];
 
-    globalUnitsCurrent = this.globalUnits.asObservable();
+    private maxUndoSize = 2;
+
+  globalUnitsCurrent = this.globalUnits.asObservable();
     globalUSuffixCurrent = this.globalUnitsSuffix.asObservable();
     globalAnglesCurrent = this.globalAngles.asObservable();
     globalASuffixCurrent = this.globalAnglesSuffix.asObservable();
@@ -217,4 +221,67 @@ export class StateService {
     public getMechanismObservable(){
         return this.mechanism._mechanismChange$;
     }
+
+  public pushUndoState(): void {
+    const snapshot = this.mechanism.clone();
+    this.undoStack.push(snapshot);
+    if (this.undoStack.length > this.maxUndoSize) {
+      this.undoStack.shift();
+    }
+    this.redoStack = [];
+  }
+
+  public addLink(coordOne: Coord, coordTwo: Coord, synthesized?: boolean): void {
+    this.pushUndoState();
+    this.mechanism.addLink(coordOne, coordTwo, synthesized);
+    this.mechanism.notifyChange();
+  }
+
+  public addPos(coordOne: Coord, coordTwo: Coord): void {
+    this.pushUndoState();
+    this.mechanism.addPos(coordOne, coordTwo);
+    this.mechanism.notifyChange();
+  }
+
+  public setJointCoord(jointID: number, newCoord: Coord): void {
+    this.pushUndoState();
+    this.mechanism.setJointCoord(jointID, newCoord);
+    this.mechanism.notifyChange();
+  }
+
+  public removeLink(linkID: number): void {
+    this.pushUndoState();
+    this.mechanism.removeLink(linkID);
+    this.mechanism.notifyChange();
+  }
+
+
+  public undo(): void {
+      if (this.undoStack.length === 0) {
+        console.log("No undo state available");
+        return;
+      }
+      const currentSnapshot = this.mechanism.clone();
+      this.redoStack.push(currentSnapshot);
+      const previousState = this.undoStack.pop();
+      if (previousState) {
+        this.setMechanism(previousState);
+        this.mechanism.notifyChange();
+      }
+    }
+
+    public redo(): void {
+      if (this.redoStack.length === 0) {
+        console.log("No redo state available");
+        return;
+      }
+      const currentSnapshot = this.mechanism.clone();
+      this.undoStack.push(currentSnapshot);
+      const nextState = this.redoStack.pop();
+      if (nextState) {
+        this.setMechanism(nextState);
+        this.mechanism.notifyChange();
+      }
+    }
+
 }

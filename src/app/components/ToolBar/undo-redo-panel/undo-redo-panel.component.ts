@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-
+import { StateService } from 'src/app/services/state.service';
 @Component({
   selector: 'app-undo-redo-panel',
   templateUrl: './undo-redo-panel.component.html',
@@ -7,11 +7,13 @@ import { Component } from '@angular/core';
 })
 export class UndoRedoPanelComponent {
 
+  constructor(private stateService: StateService) {}
+
   onUndo() {
-    console.log('Undo clicked');
+    this.stateService.undo();
   }
 
   onRedo() {
-    console.log('Redo clicked');
+    this.stateService.redo();
   }
 }

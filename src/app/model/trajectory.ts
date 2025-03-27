@@ -32,4 +32,9 @@ export class Trajectory {
   get id(): number {
     return this._jointId;
   }
+
+  clone(): Trajectory {
+    const newCoords = this._coords.map(coord => coord.clone());
+    return new Trajectory(newCoords, this._jointId);
+  }
 }

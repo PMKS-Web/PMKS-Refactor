@@ -26,6 +26,7 @@ export class LinkInteractor extends Interactor {
         super(true, true);
 
         this.onDragStart$.subscribe((event) => {
+            this.stateService.pushUndoState();
             this.link.joints.forEach((joint: Joint,id: number) =>{
                 this.jointsStartPosModel.set(id, joint._coords);
             })

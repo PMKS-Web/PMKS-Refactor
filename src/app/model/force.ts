@@ -119,4 +119,13 @@ export class Force {
         this._end = newEndCoord;
     }
 
+    clone(): Force {
+      const newForce = new Force(this._id, this._start.clone(), this._end.clone());
+      newForce.name = this._name;
+      newForce.magnitude = this._magnitude;
+      newForce.angle = this._angle;
+      newForce.frameOfReference = this._frameOfReference;
+      return newForce;
+    }
+
 }

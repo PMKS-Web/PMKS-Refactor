@@ -26,7 +26,8 @@ export class JointInteractor extends Interactor {
 
         this.onDragStart$.subscribe((event) => {
             if ((!this.joint.locked || this.activePanel === "Edit") && this._isDraggable) {
-                this.jointStart = this.joint._coords;
+              this.stateService.pushUndoState();
+              this.jointStart = this.joint._coords;
             }
         });
 
