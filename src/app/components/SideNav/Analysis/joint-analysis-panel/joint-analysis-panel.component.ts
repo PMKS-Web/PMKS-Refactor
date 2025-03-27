@@ -40,8 +40,8 @@ export class JointAnalysisPanelComponent {
     dataSummary: true,
     graphicalAnalysis: false,
     positionOfJoint: false,
-      velocityOfJoint: false,
-      accelerationOfJoint: false
+    velocityOfJoint: false,
+    accelerationOfJoint: false
   };
 
   constructor(private stateService: StateService, private interactorService: InteractionService,
@@ -52,10 +52,12 @@ export class JointAnalysisPanelComponent {
   // helper function to open a graph using the graph-button block
   openAnalysisGraph(graphType: GraphType): void {
     this.currentGraphType = graphType;
+    // this.graphExpanded[graphType] = true;
     //this.getGraphData();
   }
 
   closeAnalysisGraph() {
+    // this.graphExpanded[graphType] = true;
     this.currentGraphType = null;
   }
 
