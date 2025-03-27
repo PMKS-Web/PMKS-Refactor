@@ -24,8 +24,8 @@
 
         <!--Position: -->
         <analysis-graph-button [dynamicText]="'Position:'"
-                             [graphText]="graphExpanded['positionOfJoint'] ? 'Close Graph' : 'Show Graph'"
-                             [btn1Action]="toggleGraph.bind(this, GraphType.JointPosition)"></analysis-graph-button>
+                               [btn1Action]="toggleGraph.bind(this, GraphType.JointPosition)"
+                               [graphText]="currentGraphType === GraphType.JointPosition ? 'Close Graph' : 'Show Graph'"></analysis-graph-button>
 
 
         <p style="margin-left: 10px; margin-top: 1px;">X:{{getJointXCoord()}}, Y: {{getJointYCoord()}}</p>
@@ -42,8 +42,8 @@
 
         <!--Velocity: -->
         <analysis-graph-button [dynamicText]="'Velocity:'"
-                               [graphText]="graphExpanded['velocityOfJoint'] ? 'Close Graph' : 'Show Graph'"
-                               [btn1Action]="toggleGraph.bind(this, GraphType.JointVelocity)"></analysis-graph-button>
+                               [btn1Action]="toggleGraph.bind(this, GraphType.JointVelocity)"
+                               [graphText]="currentGraphType === GraphType.JointVelocity ? 'Close Graph' : 'Show Graph'"></analysis-graph-button>
 
         <p style="margin-left: 10px; margin-top: 1px;">V<sub>x</sub>: N/A,  V<sub>y</sub>: N/A</p>
 
@@ -59,10 +59,11 @@
 
         <!--Acceleration: -->
         <analysis-graph-button [dynamicText]="'Acceleration:'"
-                               [graphText]="graphExpanded['accelerationOfJoint'] ? 'Close Graph' : 'Show Graph'"
-                               [btn1Action]="toggleGraph.bind(this, GraphType.JointAcceleration)"></analysis-graph-button>
+                               [btn1Action]="toggleGraph.bind(this, GraphType.JointAcceleration)"
+                               [graphText]= "currentGraphType === GraphType.JointAcceleration ? 'Close Graph' : 'Show Graph'"></analysis-graph-button>
 
         <p style="margin-left: 10px; margin-top: 1px;">A<sub>x</sub>: N/A,  A<sub>y</sub>: N/A</p>
+
         <ng-container *ngIf="currentGraphType === GraphType.JointAcceleration">
           <div class="modal" (keyup.escape)="closeAnalysisGraph()">
             <app-analysis-graph-block class="large-graph"

@@ -67,6 +67,8 @@ export class JointAnalysisPanelComponent {
     }
   }
 
+
+
   getGraphTypes(){
     // @ts-ignore
     return Object.keys(this.graphTypes).filter(key => !isNaN(Number(this.graphTypes[key]))).map(key => Number(this.graphTypes[key])) as GraphType[];
