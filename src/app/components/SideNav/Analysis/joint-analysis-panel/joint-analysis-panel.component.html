@@ -28,7 +28,7 @@
                              [btn1Action]="toggleGraph.bind(this, GraphType.JointPosition)"></analysis-graph-button>
 
 
-        <p style="margin-left: 20px;">X:{{getJointXCoord()}}, Y: {{getJointYCoord()}}</p>
+        <p style="margin-left: 10px; margin-top: 1px;">X:{{getJointXCoord()}}, Y: {{getJointYCoord()}}</p>
 
         <ng-container *ngIf="currentGraphType === GraphType.JointPosition">
           <div class="modal" (keyup.escape)="closeAnalysisGraph()">
@@ -45,7 +45,7 @@
                                [graphText]="graphExpanded['velocityOfJoint'] ? 'Close Graph' : 'Show Graph'"
                                [btn1Action]="toggleGraph.bind(this, GraphType.JointVelocity)"></analysis-graph-button>
 
-        <p style="margin-left: 20px;">V<sub>x</sub>: N/A,  V<sub>y</sub>: N/A</p>
+        <p style="margin-left: 10px; margin-top: 1px;">V<sub>x</sub>: N/A,  V<sub>y</sub>: N/A</p>
 
         <ng-container *ngIf="currentGraphType === GraphType.JointVelocity">
           <div class="modal" (keyup.escape)="closeAnalysisGraph()">
@@ -62,7 +62,7 @@
                                [graphText]="graphExpanded['accelerationOfJoint'] ? 'Close Graph' : 'Show Graph'"
                                [btn1Action]="toggleGraph.bind(this, GraphType.JointAcceleration)"></analysis-graph-button>
 
-        <p style="margin-left: 20px;">A<sub>x</sub>: N/A,  A<sub>y</sub>: N/A</p>
+        <p style="margin-left: 10px; margin-top: 1px;">A<sub>x</sub>: N/A,  A<sub>y</sub>: N/A</p>
         <ng-container *ngIf="currentGraphType === GraphType.JointAcceleration">
           <div class="modal" (keyup.escape)="closeAnalysisGraph()">
             <app-analysis-graph-block class="large-graph"

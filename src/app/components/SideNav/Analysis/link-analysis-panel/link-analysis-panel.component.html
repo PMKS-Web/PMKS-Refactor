@@ -40,10 +40,9 @@
                              graphText= 'Show Graph'
                              [btn1Action]="toggleGraph.bind(this, GraphType.referenceJointAngle)"></analysis-graph-button>
 
-      <p style="margin-left: 20px;">θ: {{getCurrentLink().angle}} rad</p>
+      <p style="margin-left: 10px; margin-top: 1px;">θ: {{getCurrentLink().angle}} rad</p>
 
       <ng-container *ngIf="currentGraphType === GraphType.referenceJointAngle">
-        <div class="overlay">
           <div class="modal" (keyup.escape)="closeAnalysisGraph()">
             <app-analysis-graph-block class="large-graph"
                                       [inputXData]="getGraphData().xData"
@@ -52,7 +51,6 @@
                                       [yAxisLabel]="getGraphTypeName(currentGraphType)">
             </app-analysis-graph-block>
           </div>
-        </div>
       </ng-container>
 
       <!--   Angular Velocity   -->
@@ -60,10 +58,9 @@
                              graphText= 'Show Graph'
                              [btn1Action]="toggleGraph.bind(this, GraphType.referenceJointAngularVelocity)"></analysis-graph-button>
 
-      <p style="margin-left: 20px;">ω: N/A rad/s</p>
+      <p style="margin-left: 10px; margin-top: 1px;">ω: N/A rad/s</p>
 
       <ng-container *ngIf="currentGraphType === GraphType.referenceJointAngularVelocity">
-        <div class="overlay">
           <div class="modal" (keyup.escape)="closeAnalysisGraph()">
             <app-analysis-graph-block class="large-graph"
                                       [inputXData]="getGraphData().xData"
@@ -72,16 +69,14 @@
                                       [yAxisLabel]="getGraphTypeName(currentGraphType)">
             </app-analysis-graph-block>
           </div>
-        </div>
       </ng-container>
 
       <!--   Angular Acceleration   -->
       <analysis-graph-button [dynamicText]="'Angular Acceleration:'"
                              graphText= 'Show Graph'
                              [btn1Action]="toggleGraph.bind(this, GraphType.referenceJointAngularAcceleration)"></analysis-graph-button>
-      <p style="margin-left: 20px;">ω: N/A rad/s<sup>2</sup></p>
+      <p style="margin-left: 10px; margin-top: 1px;">ω: N/A rad/s<sup>2</sup></p>
       <ng-container *ngIf="currentGraphType === GraphType.referenceJointAngularAcceleration">
-        <div class="overlay">
           <div class="modal" (keyup.escape)="closeAnalysisGraph()">
             <app-analysis-graph-block class="large-graph"
                                       [inputXData]="getGraphData().xData"
@@ -90,7 +85,6 @@
                                       [yAxisLabel]="getGraphTypeName(currentGraphType)">
             </app-analysis-graph-block>
           </div>
-        </div>
       </ng-container>
 
       <!--   Center of Mass Position   -->
@@ -98,10 +92,9 @@
                              graphText= 'Show Graph'
                              [btn1Action]="toggleGraph.bind(this, GraphType.CoMPosition)"></analysis-graph-button>
 
-      <p style="margin-left: 20px;">X:{{getCOMXCoord()}}, Y: {{getCOMYCoord()}}</p>
+      <p style="margin-left: 10px; margin-top: 1px;">X:{{getCOMXCoord()}}, Y: {{getCOMYCoord()}}</p>
 
       <ng-container *ngIf="currentGraphType === GraphType.CoMPosition">
-        <div class="overlay">
           <div class="modal" (keyup.escape)="closeAnalysisGraph()">
             <app-analysis-graph-block class="large-graph"
                                       [inputXData]="getGraphData().xData"
@@ -110,7 +103,6 @@
                                       [yAxisLabel]="getGraphTypeName(currentGraphType)">
             </app-analysis-graph-block>
           </div>
-        </div>
       </ng-container>
 
       <!--   Center of Mass Velocity   -->
@@ -118,10 +110,9 @@
                              graphText= 'Show Graph'
                              [btn1Action]="toggleGraph.bind(this, GraphType.CoMVelocity)"></analysis-graph-button>
 
-      <p style="margin-left: 20px;">V<sub>x</sub>: N/A cm/s, Y<sub>x</sub>: N/A cm/s</p>
+      <p style="margin-left: 10px; margin-top: 1px;">V<sub>x</sub>: N/A cm/s, Y<sub>x</sub>: N/A cm/s</p>
 
       <ng-container *ngIf="currentGraphType === GraphType.CoMVelocity">
-        <div class="overlay">
           <div class="modal" (keyup.escape)="closeAnalysisGraph()">
             <app-analysis-graph-block class="large-graph"
                                       [inputXData]="getGraphData().xData"
@@ -130,7 +121,6 @@
                                       [yAxisLabel]="getGraphTypeName(currentGraphType)">
             </app-analysis-graph-block>
           </div>
-        </div>
       </ng-container>
 
       <!--   Center of Mass Acceleration   -->
@@ -138,10 +128,9 @@
                              graphText= 'Show Graph'
                              [btn1Action]="toggleGraph.bind(this, GraphType.CoMAcceleration)"></analysis-graph-button>
 
-      <p style="margin-left: 20px;">V<sub>x</sub>: N/A cm/s<sup>2</sup>, Y<sub>x</sub>: N/A cm/s<sup>2</sup></p>
+      <p style="margin-left: 10px; margin-top: 1px;">V<sub>x</sub>: N/A cm/s<sup>2</sup>, Y<sub>x</sub>: N/A cm/s<sup>2</sup></p>
 
       <ng-container *ngIf="currentGraphType === GraphType.CoMAcceleration">
-        <div class="overlay">
           <div class="modal" (keyup.escape)="closeAnalysisGraph()">
             <app-analysis-graph-block class="large-graph"
                                       [inputXData]="getGraphData().xData"
@@ -150,7 +139,6 @@
                                       [yAxisLabel]="getGraphTypeName(currentGraphType)">
             </app-analysis-graph-block>
           </div>
-        </div>
       </ng-container>
 
 
