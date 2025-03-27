@@ -45,7 +45,7 @@ export class LinkComponent extends AbstractInteractiveComponent {
   }
 
   ngAfterContentChecked(): void {
-    this.angle = this.link.angle.toString();
+    this.angle = this.link.angle.toFixed(3);
     this.cdr.detectChanges();
   }
 
@@ -63,30 +63,70 @@ export class LinkComponent extends AbstractInteractiveComponent {
     return this.unitConversionService.modelCoordToSVGCoord(this.link.centerOfMass).y;
   }
 
+  getMaxY(): number {
+    const joints = this.link.getJoints();
+    let maxHeight = Number.MIN_SAFE_INTEGER;
+
+    for (let i = 0; i < joints.length; i++){
+      if (joints[i].coords.y > maxHeight) {
+        maxHeight = joints[i].coords.y;
+      }
+    }
+
+    return this.unitConversionService.modelCoordToSVGCoord(new Coord(this.getCOMX(), maxHeight)).y;
+  }
+
+  getBCoord(): Coord {
+    let b = this.unitConversionService.modelCoordToSVGCoord(this.link.getJoints()[1].coords);
+    if ((this.link.angle >= 0 && this.link.angle < 90) || this.link.angle > 270) {
+      b.x = b.x + 150;
+    }
+    else if (this.link.angle >= 90 && this.link.angle < 270) {
+      b.x = b.x - 150;
+    }
+    return b;
+  }
+
+  getLowestY(): number {
+    let joints = this.link.getJoints();
+    let y;
+    //need to expand into loop to search all possible joints when moving to compound links
+    if (joints[0].coords.y < joints[1].coords.y) {
+      y = joints[0].coords.y;
+    }
+    else y = joints[1].coords.y;
+
+    return this.unitConversionService.modelCoordToSVGCoord(new Coord(this.getCOMX(),y)).y;
+  }
+
+  //find way to position text so that it's next to the middle of the arc?
   getAngleTextPosX(): number {
-    let x = 0;
     let joints: IterableIterator<Joint> = this.link.joints.values();
     let allCoords: Coord[] = [];
     for(let joint of joints){
       let coord: Coord = joint._coords;
       coord = this.unitConversionService.modelCoordToSVGCoord(coord);
       allCoords.push(coord);
-    } //optimize by just getting first coord
-    x = allCoords[0].x + 225;
-    return x;
+    }
+    let ang = (this.link.angle/2) * (Math.PI/180);
+
+    let x = allCoords[0].x + 250 * Math.cos(ang);
+
+    return new Coord(x,0).x;
   }
 
   getAngleTextPosY(): number {
-    let y = 0;
     let joints: IterableIterator<Joint> = this.link.joints.values();
     let allCoords: Coord[] = [];
     for(let joint of joints){
       let coord: Coord = joint._coords;
       coord = this.unitConversionService.modelCoordToSVGCoord(coord);
       allCoords.push(coord);
-    } //optimize by just getting first coord
-    y = allCoords[0].y - 50;
-    return y;
+    }
+    let ang = (this.link.angle/2) * (Math.PI/180);
+
+    let y = allCoords[0].y - 175 * Math.sin(ang);
+    return new Coord(0,y).y;
   }
 
   //Following two functions are used to set the X and Y coordinates of the lock SVG to be between the center and the rightmost joint
@@ -174,30 +214,5 @@ export class LinkComponent extends AbstractInteractiveComponent {
     }
 
     return this.svgPathService.calculateAngleSVGPath(allCoords[0], allCoords[1], this.link.angle);
-  }
-
-  getMaxY(): number {
-    const joints = this.link.getJoints();
-    let maxHeight = Number.MIN_SAFE_INTEGER;
-
-    for (let i = 0; i < joints.length; i++){
-      if (joints[i].coords.y > maxHeight) {
-        maxHeight = joints[i].coords.y;
-      }
-    }
-
-    return this.unitConversionService.modelCoordToSVGCoord(new Coord(this.getCOMX(), maxHeight)).y;
-  }
-
-  getLowestY(): number {
-    let joints = this.link.getJoints();
-    let y;
-    //need to expand into loop to search all possible joints when moving to compound links
-    if (joints[0].coords.y < joints[1].coords.y) {
-      y = joints[0].coords.y;
-    }
-    else y = joints[1].coords.y;
-
-    return this.unitConversionService.modelCoordToSVGCoord(new Coord(this.getCOMX(),y)).y;
   }
 }

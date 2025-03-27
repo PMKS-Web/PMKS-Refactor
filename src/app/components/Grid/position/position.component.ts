@@ -62,30 +62,44 @@ export class PositionComponent extends AbstractInteractiveComponent {
     return this.unitConversionService.modelCoordToSVGCoord(this.position.centerOfMass).y;
   }
 
+  getBCoord(): Coord {
+    let b = this.unitConversionService.modelCoordToSVGCoord(this.position.getJoints()[1].coords);
+    if ((this.position.angle >= 0 && this.position.angle < 90) || this.position.angle > 270) {
+      b.x = b.x + 150;
+    }
+    else if (this.position.angle >= 90 && this.position.angle < 270) {
+      b.x = b.x - 150;
+    }
+    return b;
+  }
+
   getAngleTextPosX(): number {
-    let x = 0;
     let joints: IterableIterator<Joint> = this.position.joints.values();
     let allCoords: Coord[] = [];
     for(let joint of joints){
       let coord: Coord = joint._coords;
       coord = this.unitConversionService.modelCoordToSVGCoord(coord);
       allCoords.push(coord);
-    } //optimize by just getting first coord
-    x = allCoords[0].x + 225;
-    return x;
+    }
+    let ang = (this.position.angle/2) * (Math.PI/180);
+
+    let x = allCoords[0].x + 250 * Math.cos(ang);
+
+    return new Coord(x,0).x;
   }
 
   getAngleTextPosY(): number {
-    let y = 0;
     let joints: IterableIterator<Joint> = this.position.joints.values();
     let allCoords: Coord[] = [];
     for(let joint of joints){
       let coord: Coord = joint._coords;
       coord = this.unitConversionService.modelCoordToSVGCoord(coord);
       allCoords.push(coord);
-    } //optimize by just getting first coord
-    y = allCoords[0].y - 50;
-    return y;
+    }
+    let ang = (this.position.angle/2) * (Math.PI/180);
+
+    let y = allCoords[0].y - 175 * Math.sin(ang);
+    return new Coord(0,y).y;
   }
 
   //Following two functions are used to set the X and Y coordinates of the lock SVG to be between the center and the rightmost joint

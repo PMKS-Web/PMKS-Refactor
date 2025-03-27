@@ -4,6 +4,7 @@ import { JointInteractor } from 'src/app/controllers/joint-interactor';
 import { ToolbarComponent } from 'src/app/components/ToolBar/toolbar/toolbar.component';
 import {StateService} from "../../../services/state.service";
 import {Subscription} from "rxjs";
+import { AnimationService } from 'src/app/services/animation.service';
 
 interface panel{
   gridenabled:boolean;
@@ -34,7 +35,7 @@ export class SettingsPanelComponent{
 
   @Input() iconClass: string = ''; // Add this line
 
-  constructor(private interactionService: InteractionService, public toolbarComponent: ToolbarComponent, private stateService: StateService) {
+  constructor(private interactionService: InteractionService, public toolbarComponent: ToolbarComponent, private stateService: StateService, public animationService: AnimationService) {
 
   }
   @Output() valueChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -44,6 +45,15 @@ export class SettingsPanelComponent{
     this.unitSubscription = this.stateService.globalUnitsCurrent.subscribe((units) => {this.units = units;});
     this.angleSubscription = this.stateService.globalAnglesCurrent.subscribe((angles) => {this.angles = angles;});
   }
+
+
+  public onDirectionChanged(selection: string): void {
+    this.animationService.animateMechanisms(false);
+    this.animationService.reset();
+    this.animationService.startDirectionCounterclockwise = (selection === 'Counterclockwise');
+    this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
+  }
+
 
   changeUnits(newUnits: string){
     console.log(newUnits);
@@ -98,6 +108,7 @@ export class SettingsPanelComponent{
     this.angleSubscription.unsubscribe();
   }
 
+  protected readonly AnimationService = AnimationService;
 }
 function setItem<T>(key: string, value: T): void {
   localStorage.setItem(key, JSON.stringify(value));

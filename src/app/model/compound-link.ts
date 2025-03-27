@@ -78,6 +78,9 @@ export class CompoundLink implements RigidBody{
     get lock(): boolean {
       return this._isLocked;
     }
+    get color(): string {
+      return this._color;
+    }
     //setters
     set name(value: string) {
         this._name = value;
@@ -86,6 +89,9 @@ export class CompoundLink implements RigidBody{
     set mass(value: number) {
         this._mass = value;
     }
+  set color(color: string){
+      this._color = color;
+  }
   set lock(value: boolean) {
       this._isLocked = value;
       this.updateSublinkLocks(value);

@@ -101,7 +101,8 @@ export class Position implements RigidBody {
   }
 
   get angle(): number {
-    return this._angle;
+    let posangle = (this._angle + 360) % 360;
+    return parseFloat(posangle.toFixed(3));
   }
 
   // Setters
@@ -118,8 +119,8 @@ export class Position implements RigidBody {
     this.updateLocks(value);
   }
 
-  set angle(value) {
-    this._angle = value;
+  set angle(value: number) {
+    this._angle = (value % 360 + 360) % 360;
   }
   addTracer(newJoint: Joint) {
     this._joints.set(newJoint.id, newJoint);

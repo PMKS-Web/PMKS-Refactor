@@ -58,7 +58,7 @@ export class jointEditPanelComponent {
     // check the lock- disable dragging if the joint is locked, enable it if not
     if (currentJointInteractor) {
       if ((currentJointInteractor as JointInteractor).getJoint().locked) {
-        console.log("Cannot drag current selected joint!")
+        //console.log("Cannot drag current selected joint!")
         currentJointInteractor.draggable = false;
       }
       else { currentJointInteractor.draggable = true; }
@@ -178,10 +178,8 @@ export class jointEditPanelComponent {
     const angleInRadians = Math.atan2(yDiff, xDiff);
     let angleInDegrees = angleInRadians * (180 / Math.PI);
 
-    // Normalize the angle to be within [-180, 180] degrees
-    if (angleInDegrees > 180) {
-      angleInDegrees -= 360;
-    } else if (angleInDegrees < -180) {
+// Normalize the angle to be within [0, 360] degrees
+    if (angleInDegrees < 0) {
       angleInDegrees += 360;
     }
 

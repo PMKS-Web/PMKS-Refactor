@@ -13,6 +13,7 @@ import { InteractionService } from 'src/app/services/interaction.service';
 import { StateService } from 'src/app/services/state.service';
 import { UnitConversionService } from 'src/app/services/unit-conversion.service';
 import {Subscription} from "rxjs";
+import {DecoderService} from "../../../services/decoder.service";
 
 @Component({
   selector: '[app-graph]',
@@ -29,6 +30,24 @@ export class GraphComponent {
   constructor(private stateService: StateService, private interactorService: InteractionService,
               private unitConverter: UnitConversionService) {
     console.log("GraphComponent.constructor");
+    let url = window.location.href;
+    //if loading from URL
+    if (url.includes("?data=")) {
+      console.log("Loading Data from URL.")
+      const encodedData = url.split("?data=")[1];
+      console.log(encodedData);
+      DecoderService.decodeFromURL(encodedData, stateService)
+      //stateService.setMechanism(stateService.reconstructFromUrl())
+      //OOD Refreshes the browser reset url to normal
+      //window.location.href = url.split("?data=")[0];
+      //document.getElementById("").innerHTML = response.html;
+      //document.title = response.pageTitle;
+      history.pushState({}, "", url.split("?data=")[0]);
+      //window.history.pushState({"html":response.html,"pageTitle":response.pageTitle},"", "");
+
+      //window.history.pushState(“string”, “Title”, “/new-url”);
+
+    }
   }
 
   ngOnInit() {

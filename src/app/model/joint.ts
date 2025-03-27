@@ -101,6 +101,10 @@ export class Joint {
         this._name = newName;
     }
 
+    set type(newType: number){
+      this._type = newType;
+    }
+
     set angle(newAngle: number){
         this._angle = newAngle % 360;
     }
@@ -131,10 +135,12 @@ export class Joint {
         this._isGrounded = false;
     }
     addInput(){
+      //console.log("input being called");
         if(this._isGrounded == false && this._type == JointType.Revolute){
             throw new Error("Input Joints must be Grounded or Prismatic");
 
         } else{
+            //console.log(`adding input to joint ${this.id}`);
             this._isInput = true;
         }
     }

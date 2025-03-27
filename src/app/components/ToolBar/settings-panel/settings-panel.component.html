@@ -1,67 +1,144 @@
-<div class="remover" *ngIf="open" (click)="closePanel($event)"><div  class="settings">
-  <panel-section-collapsible>
-    <title-block description='' class="settingsHeader">
-      <h3 >Settings</h3>
-    </title-block>
-  </panel-section-collapsible>
+<div class="remover" *ngIf="open" (click)="closePanel($event)">
+  <div class="settings">
+    <panel-section-collapsible>
+      <title-block description="" class="settingsHeader">
+        <h3>Settings</h3>
+      </title-block>
+    </panel-section-collapsible>
 
-  <!-- BASIC SETTING DROPDOWN -->
-  <collapsible-subsection [expanded]='true' titleLabel='Basic Settings' [expanded]="sectionExpanded['LBasic']"
-                          (opened)="sectionExpanded['LBasic'] = true" (closed)="sectionExpanded['LBasic'] = false">
-    <div id="units" >
-      <p class="units">Global Units <mat-icon matTooltip="Blah blah blah" [matTooltipShowDelay]='1000' class='tooltip'
-      >help_outline
-      </mat-icon></p>
-      <radio-block id="globalUnits"
-                   [options]="['English (in)', 'Metric (cm)', 'SI (m)']"
-                   [initialSelection]="units"
-                   (selectionChanged)="changeUnits($event)"
-      >
-      </radio-block>
-      <p class="units">Angle Units <mat-icon matTooltip="Blah blah blah" [matTooltipShowDelay]='1000' class='tooltip'
-      >help_outline
-      </mat-icon></p>
-      <radio-block id="angleUnits"
-                   [options]="['Degree (º)', 'Radian (rad)']"
-                   [initialSelection]="angles"
-                   (selectionChanged)="changeAngle($event)"
-      >
-      </radio-block>
-    </div>
-  </collapsible-subsection>
+    <!-- BASIC SETTING DROPDOWN -->
+    <collapsible-subsection
+      [expanded]="true"
+      titleLabel="Basic Settings"
+      [expanded]="sectionExpanded['LBasic']"
+      (opened)="sectionExpanded['LBasic'] = true"
+      (closed)="sectionExpanded['LBasic'] = false"
+    >
 
-  <!-- VISUAL DROPDOWN -->
-  <collapsible-subsection [expanded]='true' titleLabel='Visual Settings' [expanded]="sectionExpanded['LVisual']"
-                          (opened)="sectionExpanded['LVisual'] = true" (closed)="sectionExpanded['LVisual'] = false">
-    <div id="grid">
-      <div class="toggle-container">
-  <span class="label" style="margin-left: 10px;">
-    Grid
-    <mat-icon matTooltip='This toggle will enable or disable gridlines' style="color: #3f51b5; font-size: 18px; vertical-align: middle; padding-top: 2.5px" [matTooltipShowDelay]='1000' class='label-help' [ngClass]="iconClass">help_outline
-    </mat-icon>
-  </span>
-        <div class="switch-container">
-          <label class="switch" (click)="toggle()">
-            <input type="checkbox" [(ngModel)]="gridEnabled" (change)="toggle()">
-            <span class="slider"></span>
-          </label>
+      <!-- INPUT DIRECTION (row) -->
+      <div class="option-row">
+        <p class="label-with-icon">
+          Input Direction
+          <mat-icon
+            matTooltip="Toggles the input direction between clockwise and counterclockwise"
+            [matTooltipShowDelay]="1000"
+            class="tooltip"
+            [ngClass]="iconClass"
+          >
+            help_outline
+          </mat-icon>
+        </p>
+        <radio-block
+          id="inputDirection"
+          [options]="['Clockwise', 'Counterclockwise']"
+          [initialSelection]="animationService.startDirectionCounterclockwise ? 'Counterclockwise' : 'Clockwise'"
+          (selectionChanged)="onDirectionChanged($event)"
+        ></radio-block>
+      </div>
+
+      <!-- GLOBAL UNITS (row) -->
+      <div class="option-row">
+        <p class="label-with-icon">
+          Global Units
+          <mat-icon
+            matTooltip="Choose your preferred length units"
+            [matTooltipShowDelay]="1000"
+            class="tooltip"
+          >
+            help_outline
+          </mat-icon>
+        </p>
+        <radio-block
+          id="globalUnits"
+          [options]="['English (in)', 'Metric (cm)', 'SI (m)']"
+          [initialSelection]="units"
+          (selectionChanged)="changeUnits($event)"
+        ></radio-block>
+      </div>
+
+      <!-- ANGLE UNITS (row) -->
+      <div class="option-row">
+        <p class="label-with-icon">
+          Angle Units
+          <mat-icon
+            matTooltip="Choose your preferred angle units"
+            [matTooltipShowDelay]="1000"
+            class="tooltip"
+          >
+            help_outline
+          </mat-icon>
+        </p>
+        <radio-block
+          id="angleUnits"
+          [options]="['Degree (º)', 'Radian (rad)']"
+          [initialSelection]="angles"
+          (selectionChanged)="changeAngle($event)"
+        ></radio-block>
+      </div>
+    </collapsible-subsection>
+
+
+    <!-- VISUAL DROPDOWN -->
+    <collapsible-subsection
+      [expanded]="true"
+      titleLabel="Visual Settings"
+      [expanded]="sectionExpanded['LVisual']"
+      (opened)="sectionExpanded['LVisual'] = true"
+      (closed)="sectionExpanded['LVisual'] = false"
+    >
+      <div id="grid">
+        <div class="toggle-container">
+          <span class="label" style="margin-left: 10px;">
+            Grid
+            <mat-icon
+              matTooltip="This toggle will enable or disable gridlines"
+              style="color: #3f51b5; font-size: 18px; vertical-align: middle; padding-top: 2.5px"
+              [matTooltipShowDelay]="1000"
+              class="label-help"
+              [ngClass]="iconClass"
+            >
+              help_outline
+            </mat-icon>
+          </span>
+          <div class="switch-container">
+            <label class="switch" (click)="toggle()">
+              <input
+                type="checkbox"
+                [(ngModel)]="gridEnabled"
+                (change)="toggle()"
+              />
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="toggle-container" *ngIf="getGridEnabled()">
+          <span class="label" style="margin-left: 10px;">
+            Minor Grid
+            <mat-icon
+              matTooltip="This toggle will enable or disable minor gridlines"
+              style="color: #3f51b5; font-size: 18px; vertical-align: middle; padding-top: 2.5px"
+              [matTooltipShowDelay]="1000"
+              class="label-help"
+              [ngClass]="iconClass"
+            >
+              help_outline
+            </mat-icon>
+          </span>
+          <div class="switch-container">
+            <label class="switch" (click)="toggle()">
+              <input
+                type="checkbox"
+                [(ngModel)]="minorGridEnabled"
+                (change)="toggle()"
+              />
+              <span class="slider"></span>
+            </label>
+          </div>
         </div>
       </div>
-      <div class="toggle-container" *ngIf="getGridEnabled()">
-  <span class="label" style="margin-left: 10px;">
-    Minor Grid
-    <mat-icon matTooltip='This toggle will enable or disable minor grdilines' style="color: #3f51b5; font-size: 18px; vertical-align: middle; padding-top: 2.5px" [matTooltipShowDelay]='1000' class='label-help' [ngClass]="iconClass">help_outline
-    </mat-icon>
-  </span>
-        <div class="switch-container">
-          <label class="switch" (click)="toggle()">
-            <input type="checkbox" [(ngModel)]="minorGridEnabled" (change)="toggle()">
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
-    </div>
-  </collapsible-subsection>
-  <p id="version">PMKS+ Refactor Version 1</p>
-</div>
+    </collapsible-subsection>
+
+    <p id="version">PMKS+ Refactor Version 1</p>
+  </div>
 </div>

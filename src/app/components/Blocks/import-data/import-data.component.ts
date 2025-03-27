@@ -5,7 +5,7 @@ import {PositionSolverService} from "../../../services/kinematic-solver.service"
 import {AnalysisSolveService} from "../../../services/analysis-solver.service";
 import {Coord} from "../../../model/coord";
 import { AnimationPositions } from '../../../services/kinematic-solver.service';
-import Papa from 'papaparse';
+//import Papa from 'papaparse';
 import {join} from "@angular/compiler-cli";
 import {StateService} from "../../../services/state.service";
 
@@ -35,12 +35,14 @@ export class ImportDataComponent {
     const reader = new FileReader();
     reader.onload = () => {
       const csvData = reader.result as string;
-      this.processCSVData(csvData);
+      //this.processCSVData(csvData);
     };
     reader.readAsText(file);
   }
 
+  /*
   processCSVData(csvData: string) {
+
     // Parse CSV data using Papaparse or any other CSV parsing library
     const parsedData = Papa.parse(csvData, { header: true });
 
@@ -57,7 +59,7 @@ export class ImportDataComponent {
 
 
   }
-
+*/
   importData() {
     // Trigger file input click programmatically
     const fileInput = document.createElement('input');

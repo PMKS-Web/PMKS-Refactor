@@ -506,6 +506,7 @@ isSixBarGenerated(): boolean {
       this.setPositionsColorToDefault();
       this.mechanism.clearTrajectories();
       this.fourBarGenerated = false;
+      this.sixBarGenerated = false;
       this.synthedMech = [];
       this.Generated.emit(false);
     }
@@ -608,6 +609,7 @@ isSixBarGenerated(): boolean {
       this.setPositionsColorToDefault();
       this.mechanism.clearTrajectories();
       console.log("Six-bar has been cleared");
+      this.fourBarGenerated = false;
       this.cdr.detectChanges();
       return;
     }
@@ -683,6 +685,12 @@ setCouplerLength(x: number){
 
       this.couplerLength = x;
       if (this.reference === "Center") {
+        this.coord1A = new Coord(this.pos1X - this.couplerLength / 2, this.pos1Y);
+        this.coord2A = new Coord(this.pos1X + this.couplerLength / 2, this.pos1Y);
+        this.coord1B = new Coord(this.pos2X - this.couplerLength / 2, this.pos2Y);
+        this.coord2B = new Coord(this.pos2X + this.couplerLength / 2, this.pos2Y);
+        this.coord1C = new Coord(this.pos3X - this.couplerLength / 2, this.pos3Y);
+        this.coord2C = new Coord(this.pos3X + this.couplerLength / 2, this.pos3Y);
         if (this.position1) {
           const angle = this.pos1Angle;
           const halfLength = x/2;
@@ -714,6 +722,13 @@ setCouplerLength(x: number){
           this.setPositionAngle(angle, 3); //Give position its original angle back
         }
       } else if (this.reference === "Back") {
+        this.coord1A = new Coord(0, this.pos1Y);
+        this.coord2A = new Coord(this.couplerLength, this.pos1Y);
+        this.coord1B = new Coord(this.pos2X, this.pos2Y);
+        this.coord2B = new Coord(this.pos2X + this.couplerLength, this.pos2Y);
+        this.coord1C = new Coord(this.pos3X, this.pos3Y);
+        this.coord2C = new Coord(this.pos3X + this.couplerLength, this.pos3Y);
+
         if (this.position1) {
           this.position1.setLength(this.couplerLength, this.position1.getJoints()[0]);
         }
@@ -724,6 +739,13 @@ setCouplerLength(x: number){
           this.position3.setLength(this.couplerLength, this.position3.getJoints()[0]);
         }
       } else {
+        this.coord1A = new Coord(-this.couplerLength, this.pos1Y);
+        this.coord2A = new Coord(0, this.pos1Y);
+        this.coord1B = new Coord(this.pos2X - this.couplerLength, this.pos2Y);
+        this.coord2B = new Coord(this.pos2X, this.pos2Y);
+        this.coord1C = new Coord(this.pos3X - this.couplerLength, this.pos3Y);
+        this.coord2C = new Coord(this.pos3X, this.pos3Y);
+
         if (this.position1) {
           this.position1.setLength(this.couplerLength, this.position1.getJoints()[1]);
         }
@@ -1219,14 +1241,8 @@ getFirstUndefinedPosition(): number{
 }
 
   deletePosition(index: number) {
-    // Remove all links if the four-bar has been generated
-    if (this.fourBarGenerated) {
-      if (window.confirm("This action will delete the entire mechanism and all other coupler positions. Are you sure?")){
-        this.removeAllPositions();
-      }
-    }
 
-    else if (index === 1) {
+    if (index === 1) {
       this.pos1Specified = false;
       this.mechanism.removePosition(this.position1!.id);
       this.resetPos(1);
@@ -1250,7 +1266,7 @@ allPositionsDefined(): boolean {
 
   removeAllPositions() {
     // Remove all links regardless of whether the four-bar has been generated
-    if (this.panel === "Synthesis"){
+    /*if (this.panel === "Synthesis"){
       let listOfLinks = this.synthedMech;
       console.log(listOfLinks);
       while (this.synthedMech.length > 0) {
@@ -1261,25 +1277,19 @@ allPositionsDefined(): boolean {
         console.log("LIST OF LINKS AFTER DELETION:");
         console.log(this.mechanism.getArrayOfLinks());
       }
-    }
+    }*/
 
-    this.pos1Specified = false;
-    this.mechanism.removePosition(this.position1!.id);
-    this.resetPos(1);
-    this.pos2Specified = false;
-    this.mechanism.removePosition(this.position2!.id);
-    this.resetPos(2);
-    this.pos3Specified = false;
-    this.mechanism.removePosition(this.position3!.id);
-    this.resetPos(3);
-    this.mechanism.clearTrajectories();
+    this.deletePosition(1);
+    this.deletePosition(2);
+    this.deletePosition(3);
 
     // Reset flags
-    this.fourBarGenerated = false;
+    /*this.fourBarGenerated = false;
     this.synthedMech = [];
     this.sixBarGenerated = false;
-    this.Generated.emit(false);
+    this.Generated.emit(false);*/
   }
+
   findIntersectionPoint(pose1_coord1: Coord, pose2_coord1: Coord, pose3_coord1: Coord) {
     //slope of Line 1
     let slope1 = 1 / ((pose2_coord1.y - pose1_coord1.y) / (pose2_coord1.x - pose1_coord1.x));

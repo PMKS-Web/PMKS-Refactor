@@ -41,7 +41,7 @@
 <!--                     Length Image-->
                       <img src="assets/icons/length.svg" alt="length icon" class="icon">
                     <!--                     Length label-->
-                      <span class="label" >Length</span>
+                      <span style="flex: 0 0 auto; margin-right: 5px;">Length</span>
                     <!--                     Length tooltip-->
                       <mat-icon id="lengthTooltip"
                         matTooltip="The length of the end-effector link"
@@ -61,7 +61,7 @@
 
                       <single-input-block
                             class="right-aligned"
-                            [input1Value]="2" style="margin-top:-12px !important;margin-left: 41px;"
+                            [input1Value]="2"
                             (input1Change)="setCouplerLength($event)"
                             unit1={{units}}
                             [showIcon]="false">
@@ -76,7 +76,7 @@
 
             <!-- The fixed reference is the center of rotation and you set that with the radio block -->
                   <div class="fixed-reference">
-                      <img src='assets/icons/referencePoint.svg' style="height: 12.5px; width: 12.5px; display: inline-block; align-items: center; margin-left: 6px;"/>
+                      <img src='assets/icons/referencePoint.svg' style="height: 12.5px; width: 12.5px; display: inline-block; align-items: center; margin-left: 0px;"/>
                       <p  class="fixedReference-title"style="display:inline-block; margin-bottom:0;">Fixed Reference</p>
 
                       <mat-icon id="fixedReferenceTooltip"
@@ -149,10 +149,8 @@
  </div>
 <!--    <hr class="solid2">-->
              <!-- If all positions are defined you can then generate a four bar or delete all positions-->
-                 <div *ngIf='!this.allPositionsDefined()' class="definedButtons">
-
+                 <div *ngIf='!this.allPositionsDefined() && !isFourBarGenerated()' class="definedButtons">
                    <button id="generateFourBarGrey">Generate Four-Bar</button>
-                   <button id="removeAllGrey" >Remove All Positions</button>
                  </div>
 
              <!--    <div *ngIf='this.allPositionsDefined()' class="definedButtons">-->
@@ -163,10 +161,8 @@
 <!--        {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}-->
 <!--      </button>-->
 
-             <div *ngIf="this.allPositionsDefined()" class="definedButtons">
-
                <!-- Place Generate Four-Bar first -->
-               <button *ngIf="!isSixBarGenerated()" id="generateFourBar" (click)="generateFourBar()">
+               <button *ngIf="(!isSixBarGenerated() && this.allPositionsDefined()) || isFourBarGenerated()" id="generateFourBar" (click)="generateFourBar()">
                  {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
                </button>
                <button id="removeAll" (click)="removeAllPositions()">Remove All Positions</button>
@@ -195,9 +191,6 @@
                    </button>
                  </div>
                </div>
-
-
-             </div>
            </div>
   </div>
 
@@ -280,11 +273,28 @@
         <!-- Action Buttons -->
         <div class="button-group">
 
-          <button  (click)="generateFourBar()">Generate Four-bar</button>
+          <button (click)="generateFourBar()">{{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}</button>
           <!--      <button  (click)="generateSixBarFromTwoPoints()">Generate Six-bar</button>-->
 
           <!-- evaluate positions button -->
-          <button  (click)="removeAllPositions()">Remove All Positions</button>
+          <button (click)="removeAllPositions()">Remove All Positions</button>
+        </div>
+        <!-- Generate Six-Bar Button -->
+        <div *ngIf="isFourBarGenerated()" class="button-group">
+          <button (click)="generateSixBar()">
+            {{ sixBarGenerated ? 'Clear Six-Bar' : 'Generate Six-Bar' }}
+          </button>
+        </div>
+
+        <div *ngIf="isFourBarGenerated()" class="button-group">
+
+          <button (click)="verifyMechanismPath()">
+            Evaluate Positions
+          </button>
+
+          <button (click)="swapInputAndGround()">
+            Swap Input & Ground
+          </button>
         </div>
       </div>
     </div>

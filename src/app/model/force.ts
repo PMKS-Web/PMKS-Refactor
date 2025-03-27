@@ -69,6 +69,10 @@ export class Force {
         this._magnitude = value;
     }
 
+    set angle(value: number) {
+      this._angle = value;//calculateAngle()
+    }
+
     set frameOfReference(frame: ForceFrame){
         this._frameOfReference = frame;
     }
@@ -98,7 +102,7 @@ export class Force {
 
     }
     setForceAngle(newAngle: number){
-        
+
     }
     setXComp(newXComp: number){
 

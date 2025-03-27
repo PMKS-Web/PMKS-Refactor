@@ -39,7 +39,7 @@
   </button>
 
   <!-- SAVE -->
-  <button mat-button class="toolbar-button" (click)="setCurrentTab('Save');"
+  <button mat-button class="toolbar-button" (click)="handleSave('Save');"
           matTooltip='Save this linkage to your device'
           matTooltipShowDelay='1000'>
     <mat-icon>save</mat-icon>
@@ -47,7 +47,7 @@
   </button>
 
   <!-- SHARE -->
-  <button mat-button class="toolbar-button" (click)="setCurrentTab('Share');"
+  <button mat-button class="toolbar-button" (click)="handleShare('Share');"
           matTooltip='Copy a URL to clipboard that contains your linakge'
           matTooltipShowDelay='1000'>
     <mat-icon>link</mat-icon>

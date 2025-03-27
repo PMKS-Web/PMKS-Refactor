@@ -13,7 +13,7 @@ export class Link implements RigidBody{
     private _mass: number;
     private _centerOfMass: Coord;
     _joints: Map<number, Joint>;
-    private _forces: Map<number, Force>;
+    _forces: Map<number, Force>;
     private _color: string = "";
     private _isLocked: boolean;
     private _angle: number;
@@ -37,17 +37,16 @@ export class Link implements RigidBody{
 
     constructor(id: number, jointA: Joint, jointB: Joint);
     constructor(id: number, joints: Joint[]);
-    constructor(id: number, jointAORJoints: Joint | Joint[], jointB?: Joint){
-        this._id = id;
+    constructor(id: number, jointAORJoints: Joint | Joint[], jointB?: Joint) {
+      this._id = id;
 
-        this._mass = 0;
-        this._forces = new Map();
-        this._joints = new Map();
-        this._color = this.linkColorOptions[id % this.linkColorOptions.length];
-        this._isLocked = false;
-        this._angle = 0;
-
-        if(Array.isArray(jointAORJoints)){
+      this._mass = 0;
+      this._forces = new Map();
+      this._joints = new Map();
+      this._color = this.linkColorOptions[id % this.linkColorOptions.length];
+      this._isLocked = false;
+      this._angle = 0;
+      if(Array.isArray(jointAORJoints)){
             jointAORJoints.forEach(joint => {
                 this._joints.set(joint.id, joint);
             });
@@ -113,7 +112,8 @@ export class Link implements RigidBody{
     }
 
     get angle(): number {
-      return this._angle;
+      let posangle = (this._angle + 360) % 360;
+      return parseFloat(posangle.toFixed(3));
     }
 
     //setters
@@ -129,9 +129,12 @@ export class Link implements RigidBody{
         this._isLocked = value;
         this.updateLocks(value);
     }
+    set color(color: string) {
+      this._color = color;
+    }
 
     set angle(value: number) {
-      this._angle = value;
+      this._angle = (value % 360 + 360) % 360;
     }
 
     addTracer(newJoint: Joint){
@@ -190,7 +193,7 @@ export class Link implements RigidBody{
         }
     }
 
-    //I don't think this works
+    //I don't think this works TODO
     calculateCenterOfMass(): Coord{
         let totalX = 0;
         let totalY = 0;
