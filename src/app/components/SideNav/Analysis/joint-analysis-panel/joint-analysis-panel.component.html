@@ -28,7 +28,7 @@
                              [btn1Action]="toggleGraph.bind(this, GraphType.JointPosition)"></analysis-graph-button>
 
 
-        <p >X:{{getJointXCoord()}}, Y: {{getJointYCoord()}}</p>
+        <p style="margin-left: 20px;">X:{{getJointXCoord()}}, Y: {{getJointYCoord()}}</p>
 
         <ng-container *ngIf="currentGraphType === GraphType.JointPosition">
           <div class="modal" (keyup.escape)="closeAnalysisGraph()">
@@ -45,7 +45,7 @@
                                [graphText]="graphExpanded['velocityOfJoint'] ? 'Close Graph' : 'Show Graph'"
                                [btn1Action]="toggleGraph.bind(this, GraphType.JointVelocity)"></analysis-graph-button>
 
-              <p style="margin-left: 20px;">V<sub>x</sub>: N/A,  V<sub>y</sub>: N/A</p>
+        <p style="margin-left: 20px;">V<sub>x</sub>: N/A,  V<sub>y</sub>: N/A</p>
 
         <ng-container *ngIf="currentGraphType === GraphType.JointVelocity">
           <div class="modal" (keyup.escape)="closeAnalysisGraph()">
@@ -73,16 +73,6 @@
           </div>
         </ng-container>
 
-
-
-      </div>
-
-      <title-block> Connected Joints </title-block>
-      <div *ngFor='let joint of getConnectedJoints(); let i = index;'>
-        <ng-container *ngIf="getCurrentJoint().name !== joint.name">
-          <p class="subtitle">Angle to Connected Joint {{joint.name}}: {{ this.getJointAngle(joint).toFixed(4) }} </p>
-          <p class="subtitle">Distance to Connected Joint {{joint.name}}: {{ this.getJointDistance(joint).toFixed(4) }} </p>
-        </ng-container>
       </div>
     </div>
   </collapsible-subsection>
