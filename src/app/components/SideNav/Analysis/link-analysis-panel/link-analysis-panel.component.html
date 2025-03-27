@@ -16,24 +16,136 @@
                           (closed)="graphExpanded['dataSummary'] = false">
     <div class="flex-container">
       <title-block>Data Summary</title-block>
-      <p>Center of Mass</p>
-      <p class="subtitle">Name of Link: {{ getLinkName() }} </p>
-      <p class="subtitle">X Coordinate of Center of Mass: {{ this.getCOMXCoord() }} </p>
-      <p class="subtitle">Y Coordinate of Center of Mass: {{ this.getCOMYCoord() }} </p>
+<!--      <p>Center of Mass</p>-->
+<!--      <p class="subtitle">Name of Link: {{ getLinkName() }} </p>-->
+<!--      <p class="subtitle">X Coordinate of Center of Mass: {{ this.getCOMXCoord() }} </p>-->
+<!--      <p class="subtitle">Y Coordinate of Center of Mass: {{ this.getCOMYCoord() }} </p>-->
 
       <!-- REFERENCE JOINTS ALL LISTED- AND LOGIC TO SELECT THEM -->
-      <div><p style="display:inline-block; margin-bottom: 5px;">Reference Joint</p> <mat-icon matTooltip='Select a reference point for the compound link' [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon> </div>
-      <div class="button-container">
-        <div *ngFor="let joint of this.getCurrentLink().getJoints()" class = "button-wrapper">
-          <button class="referenceJointSelect" (click) = onReferenceJointSelected(joint)>
-            Joint: {{ joint.name }}
-          </button>
-        </div>
-      </div>
+<!--      <div><p style="display:inline-block; margin-bottom: 5px;">Reference Joint</p> <mat-icon matTooltip='Select a reference point for the compound link' [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon> </div>-->
+<!--      <div class="button-container">-->
+<!--        <div *ngFor="let joint of this.getCurrentLink().getJoints()" class = "button-wrapper">-->
+<!--          <button class="referenceJointSelect" (click) = onReferenceJointSelected(joint)>-->
+<!--            Joint: {{ joint.name }}-->
+<!--          </button>-->
+<!--        </div>-->
+<!--      </div>-->
 
-      <p class="subtitle">Name of Joint: {{ getReferenceJointName() }} </p>
-      <p class="subtitle"> X Coordinate of Joint: {{ this.getReferenceJointXCoord() }} </p>
-      <p class="subtitle"> Y Coordinate of Joint: {{ this.getReferenceJointYCoord() }} </p>
+<!--      <p class="subtitle">Name of Joint: {{ getReferenceJointName() }} </p>-->
+<!--      <p class="subtitle"> X Coordinate of Joint: {{ this.getReferenceJointXCoord() }} </p>-->
+<!--      <p class="subtitle"> Y Coordinate of Joint: {{ this.getReferenceJointYCoord() }} </p>-->
+
+      <!--   Angle   -->
+      <analysis-graph-button [dynamicText]="'Angle:'"
+                             graphText= 'Show Graph'
+                             [btn1Action]="toggleGraph.bind(this, GraphType.referenceJointAngle)"></analysis-graph-button>
+
+      <p>θ: N/A </p>
+
+      <ng-container *ngIf="currentGraphType === GraphType.referenceJointAngle">
+        <div class="overlay">
+          <div class="modal" (keyup.escape)="closeAnalysisGraph()">
+            <app-analysis-graph-block class="large-graph"
+                                      [inputXData]="getGraphData().xData"
+                                      [inputYData]="getGraphData().yData"
+                                      [inputLabels]="getGraphData().timeLabels"
+                                      [yAxisLabel]="getGraphTypeName(currentGraphType)">
+            </app-analysis-graph-block>
+          </div>
+        </div>
+      </ng-container>
+
+      <!--   Angular Velocity   -->
+      <analysis-graph-button [dynamicText]="'Angular Velocity:'"
+                             graphText= 'Show Graph'
+                             [btn1Action]="toggleGraph.bind(this, GraphType.referenceJointAngularVelocity)"></analysis-graph-button>
+
+      <ng-container *ngIf="currentGraphType === GraphType.referenceJointAngularVelocity">
+        <div class="overlay">
+          <div class="modal" (keyup.escape)="closeAnalysisGraph()">
+            <app-analysis-graph-block class="large-graph"
+                                      [inputXData]="getGraphData().xData"
+                                      [inputYData]="getGraphData().yData"
+                                      [inputLabels]="getGraphData().timeLabels"
+                                      [yAxisLabel]="getGraphTypeName(currentGraphType)">
+            </app-analysis-graph-block>
+          </div>
+        </div>
+      </ng-container>
+
+      <!--   Angular Acceleration   -->
+      <analysis-graph-button [dynamicText]="'Angular Acceleration:'"
+                             graphText= 'Show Graph'
+                             [btn1Action]="toggleGraph.bind(this, GraphType.referenceJointAngularAcceleration)"></analysis-graph-button>
+
+      <ng-container *ngIf="currentGraphType === GraphType.referenceJointAngularAcceleration">
+        <div class="overlay">
+          <div class="modal" (keyup.escape)="closeAnalysisGraph()">
+            <app-analysis-graph-block class="large-graph"
+                                      [inputXData]="getGraphData().xData"
+                                      [inputYData]="getGraphData().yData"
+                                      [inputLabels]="getGraphData().timeLabels"
+                                      [yAxisLabel]="getGraphTypeName(currentGraphType)">
+            </app-analysis-graph-block>
+          </div>
+        </div>
+      </ng-container>
+
+      <!--   Center of Mass Position   -->
+      <analysis-graph-button [dynamicText]="'Center of Mass Position:'"
+                             graphText= 'Show Graph'
+                             [btn1Action]="toggleGraph.bind(this, GraphType.CoMPosition)"></analysis-graph-button>
+
+      <ng-container *ngIf="currentGraphType === GraphType.CoMPosition">
+        <div class="overlay">
+          <div class="modal" (keyup.escape)="closeAnalysisGraph()">
+            <app-analysis-graph-block class="large-graph"
+                                      [inputXData]="getGraphData().xData"
+                                      [inputYData]="getGraphData().yData"
+                                      [inputLabels]="getGraphData().timeLabels"
+                                      [yAxisLabel]="getGraphTypeName(currentGraphType)">
+            </app-analysis-graph-block>
+          </div>
+        </div>
+      </ng-container>
+
+      <!--   Center of Mass Velocity   -->
+      <analysis-graph-button [dynamicText]="'Center of Mass Velocity:'"
+                             graphText= 'Show Graph'
+                             [btn1Action]="toggleGraph.bind(this, GraphType.CoMVelocity)"></analysis-graph-button>
+
+      <ng-container *ngIf="currentGraphType === GraphType.CoMVelocity">
+        <div class="overlay">
+          <div class="modal" (keyup.escape)="closeAnalysisGraph()">
+            <app-analysis-graph-block class="large-graph"
+                                      [inputXData]="getGraphData().xData"
+                                      [inputYData]="getGraphData().yData"
+                                      [inputLabels]="getGraphData().timeLabels"
+                                      [yAxisLabel]="getGraphTypeName(currentGraphType)">
+            </app-analysis-graph-block>
+          </div>
+        </div>
+      </ng-container>
+
+      <!--   Center of Mass Acceleration   -->
+      <analysis-graph-button [dynamicText]="'Center of Mass Acceleration:'"
+                             graphText= 'Show Graph'
+                             [btn1Action]="toggleGraph.bind(this, GraphType.CoMAcceleration)"></analysis-graph-button>
+
+      <ng-container *ngIf="currentGraphType === GraphType.CoMAcceleration">
+        <div class="overlay">
+          <div class="modal" (keyup.escape)="closeAnalysisGraph()">
+            <app-analysis-graph-block class="large-graph"
+                                      [inputXData]="getGraphData().xData"
+                                      [inputYData]="getGraphData().yData"
+                                      [inputLabels]="getGraphData().timeLabels"
+                                      [yAxisLabel]="getGraphTypeName(currentGraphType)">
+            </app-analysis-graph-block>
+          </div>
+        </div>
+      </ng-container>
+
+
 
     </div>
   </collapsible-subsection>
@@ -41,41 +153,41 @@
 
   <!-- EVERY GRAPH OPEN BUTTON -->
   <div>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.CoMPosition) + ' Graph'" graphText= 'Show Graph'
-                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.CoMPosition)"></analysis-graph-button>
-    <p style="margin-left: 20px;">X: {{ this.getCOMXCoord() }} , Y: {{ this.getCOMYCoord() }} </p>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.CoMVelocity) + ' Graph'" graphText= 'Show Graph'
-                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.CoMVelocity)"></analysis-graph-button>
-    <p style="margin-left: 20px;">V<sub>x</sub>: N/A,  V<sub>y</sub>: N/A</p>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.CoMAcceleration) + ' Graph'" graphText= 'Show Graph'
-                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.CoMAcceleration)"></analysis-graph-button>
-    <p style="margin-left: 20px;">A<sub>x</sub>: N/A,  A<sub>y</sub>: N/A</p>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.referenceJointAngle) + ' Graph'" graphText= 'Show Graph'
-                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.referenceJointAngle)"></analysis-graph-button>
-    <p style="margin-left: 20px;">Reference Joint Angle: N/A</p>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.referenceJointAngularVelocity) + ' Graph'" graphText= 'Show Graph'
-                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.referenceJointAngularVelocity)"></analysis-graph-button>
-    <p style="margin-left: 20px;">A:V<sub>x</sub>: N/A, V<sub>y</sub>: N/A</p>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.referenceJointAngularAcceleration) + ' Graph'" graphText= 'Show Graph'
-                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.referenceJointAngularAcceleration)"></analysis-graph-button>
-    <p style="margin-left: 20px;">A<sub>x</sub>: N/A, A<sub>y</sub>: N/A</p>
+<!--    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.CoMPosition) + ' Graph'" graphText= 'Show Graph'-->
+<!--                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.CoMPosition)"></analysis-graph-button>-->
+<!--    <p style="margin-left: 20px;">X: {{ this.getCOMXCoord() }} , Y: {{ this.getCOMYCoord() }} </p>-->
+<!--    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.CoMVelocity) + ' Graph'" graphText= 'Show Graph'-->
+<!--                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.CoMVelocity)"></analysis-graph-button>-->
+<!--    <p style="margin-left: 20px;">V<sub>x</sub>: N/A,  V<sub>y</sub>: N/A</p>-->
+<!--    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.CoMAcceleration) + ' Graph'" graphText= 'Show Graph'-->
+<!--                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.CoMAcceleration)"></analysis-graph-button>-->
+<!--    <p style="margin-left: 20px;">A<sub>x</sub>: N/A,  A<sub>y</sub>: N/A</p>-->
+<!--    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.referenceJointAngle) + ' Graph'" graphText= 'Show Graph'-->
+<!--                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.referenceJointAngle)"></analysis-graph-button>-->
+<!--    <p style="margin-left: 20px;">Reference Joint Angle: N/A</p>-->
+<!--    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.referenceJointAngularVelocity) + ' Graph'" graphText= 'Show Graph'-->
+<!--                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.referenceJointAngularVelocity)"></analysis-graph-button>-->
+<!--    <p style="margin-left: 20px;">A:V<sub>x</sub>: N/A, V<sub>y</sub>: N/A</p>-->
+<!--    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.referenceJointAngularAcceleration) + ' Graph'" graphText= 'Show Graph'-->
+<!--                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.referenceJointAngularAcceleration)"></analysis-graph-button>-->
+<!--    <p style="margin-left: 20px;">A<sub>x</sub>: N/A, A<sub>y</sub>: N/A</p>-->
   </div>
 
   <!-- DYNAMICALLY HANDLE OPENING GRAPHS -->
-  <ng-container *ngIf="currentGraphType !== null">
-    <div class="overlay">
-      <div class="modal" (keyup.escape)="closeAnalysisGraph()">
-        <button class="close-button" (click)="closeAnalysisGraph()">X</button>
-        {{ getGraphTypeName(currentGraphType) }}
-        <app-analysis-graph-block class="large-graph"
-                                  [inputXData]="getGraphData().xData"
-                                  [inputYData]="getGraphData().yData"
-                                  [inputLabels]="getGraphData().timeLabels"
-                                  [yAxisLabel]="getGraphTypeName(currentGraphType)">
-        </app-analysis-graph-block>
-      </div>
-    </div>
-  </ng-container>
+<!--  <ng-container *ngIf="currentGraphType !== null">-->
+<!--    <div class="overlay">-->
+<!--      <div class="modal" (keyup.escape)="closeAnalysisGraph()">-->
+<!--        <button class="close-button" (click)="closeAnalysisGraph()">X</button>-->
+<!--        {{ getGraphTypeName(currentGraphType) }}-->
+<!--        <app-analysis-graph-block class="large-graph"-->
+<!--                                  [inputXData]="getGraphData().xData"-->
+<!--                                  [inputYData]="getGraphData().yData"-->
+<!--                                  [inputLabels]="getGraphData().timeLabels"-->
+<!--                                  [yAxisLabel]="getGraphTypeName(currentGraphType)">-->
+<!--        </app-analysis-graph-block>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </ng-container>-->
 
 </div>
 

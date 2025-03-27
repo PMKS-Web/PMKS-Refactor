@@ -91,6 +91,14 @@ export class LinkAnalysisPanelComponent {
     this.currentGraphType = null;
   }
 
+  toggleGraph(graphType: GraphType) {
+    if (this.currentGraphType === graphType) {
+      this.closeAnalysisGraph(); // If the graph is open, close it
+    } else {
+      this.openAnalysisGraph(graphType); // If it's closed, open it
+    }
+  }
+
   getGraphTypes(){
     // @ts-ignore
     return Object.keys(this.graphTypes).filter(key => !isNaN(Number(this.graphTypes[key]))).map(key => Number(this.graphTypes[key])) as GraphType[];
