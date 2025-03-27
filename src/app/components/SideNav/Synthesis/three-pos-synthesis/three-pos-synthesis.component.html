@@ -104,11 +104,11 @@
                         <p style="display:block; margin-right: auto;margin-left: 8px; margin-bottom: 0px;text-align: left !important;">Position {{i}}</p>
 
                         <span class="icons">
-                        <mat-icon id="tooltip" matTooltip="Change the x and y values of the reference point of the coupler position {{i}}" [matTooltipShowDelay]='1000'
+                        <mat-icon id="tooltip1" matTooltip="Change the x and y values of the reference point of the coupler position {{i}}" [matTooltipShowDelay]='1000'
                         [matTooltipDisabled]='disabled'
                         >help_outline
                         </mat-icon>
-                        <button id="trash" *ngIf='this.isPositionDefined(i)' (click)="this.deletePosition(i)">
+                        <button class="trash" *ngIf='this.isPositionDefined(i)' (click)="this.deletePosition(i)">
                               <img id="icon" src='assets/icons/trash.svg'/>
                         </button>
                         </span>
@@ -222,8 +222,8 @@
           <div class="position-header">
             <p>Position {{ index + 1 }}</p>
             <span class="icons">
-      <mat-icon id="tooltip" matTooltip="Specify the coordinates for Position {{ index + 1 }}" [matTooltipShowDelay]="1000">help_outline</mat-icon>
-      <button id="trash" *ngIf='this.isPositionDefined(index + 1)' (click)="deletePosition(index + 1)">
+      <mat-icon id="tooltip2" matTooltip="Specify the coordinates for Position {{ index + 1 }}" [matTooltipShowDelay]="1000">help_outline</mat-icon>
+      <button class="trash" *ngIf='this.isPositionDefined(index + 1)' (click)="deletePosition(index + 1)">
         <img id="icon" src="assets/icons/trash.svg" alt="Delete Position">
       </button>
     </span>
