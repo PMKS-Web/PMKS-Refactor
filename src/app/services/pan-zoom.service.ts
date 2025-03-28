@@ -119,4 +119,17 @@ public getZoomPan(): ZoomPan{
     this.zoomPan.viewBoxY -= ((this.zoomPan.viewBoxHeight - oldViewBoxHeight) * zoomTopFraction);
   }
 
+  public resetView() {
+    this.zoomPan = {
+      viewBoxX: -(window.innerWidth),
+      viewBoxY: -(window.innerHeight),
+      viewBoxWidth: window.innerWidth * 2,
+      viewBoxHeight: window.innerHeight * 2,
+      windowWidth: window.innerWidth,
+      windowHeight: window.innerHeight,
+      currentZoom: 2.00,
+      zoomScale: 1.10
+    };
+  }
+
 }

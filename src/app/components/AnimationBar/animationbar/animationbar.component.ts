@@ -49,6 +49,10 @@ export class AnimationBarComponent implements OnInit{
     this.panZoomService.zoomOut();
   }
 
+  resetView() {
+    this.panZoomService.resetView();
+  }
+
   ngOnInit() {
     this.stateService.setAnimationBarComponent(this);
 
