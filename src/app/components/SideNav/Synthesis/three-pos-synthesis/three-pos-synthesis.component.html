@@ -164,8 +164,10 @@
                <!-- Place Generate Four-Bar first -->
              <button *ngIf="(!isSixBarGenerated() && this.allPositionsDefined()) || isFourBarGenerated()" class="generateFourBar" (click)="generateFourBar()">
                  {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
+               </button>
+             <button class="removeAll" (click)="removeAllPositions()">
+               {{ confirmRemoveAll ? 'Are You Sure?' : 'Remove All Positions' }}
              </button>
-             <button class="removeAll" (click)="removeAllPositions()">Remove All Positions</button>
 
                <!-- Generate Six-Bar Button -->
              <div *ngIf="isFourBarGenerated()">
@@ -278,6 +280,11 @@
         </button>
         <button class="removeAll" (click)="removeAllPositions()">Remove All Positions</button>
 
+          <!-- evaluate positions button -->
+          <button (click)="removeAllPositions()">
+            {{ confirmRemoveAll ? 'Are You Sure?' : 'Remove All Positions' }}
+          </button>
+        </div>
         <!-- Generate Six-Bar Button -->
         <div *ngIf="isFourBarGenerated()">
           <button class="generateSixBar" (click)="generateSixBar()">
@@ -304,5 +311,5 @@
         </div>
       </div>
   </div>
-</div>
+
 

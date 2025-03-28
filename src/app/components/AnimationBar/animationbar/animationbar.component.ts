@@ -31,12 +31,30 @@ export class AnimationBarComponent implements OnInit{
     public interactionService: InteractionService,
     private animationService: AnimationService,
     private positionSolver: PositionSolverService,
-    private stateService: StateService
+    private stateService: StateService,
+    private panZoomService: PanZoomService // Inject PanZoomService
   ) {
     this.animationService.animationProgress$.subscribe(progress => {
       if (!this.isDragging) {
         this.sliderValue = progress * 100;
-      }});
+      }
+    });
+  }
+
+  zoomIn() {
+    this.panZoomService.zoomIn();
+  }
+
+  zoomOut() {
+    this.panZoomService.zoomOut();
+  }
+
+  resetView() {
+    this.panZoomService.resetView();
+  }
+
+  showIDLabels() {
+    this.stateService.toggleShowIDLabels();
   }
 
   ngOnInit() {

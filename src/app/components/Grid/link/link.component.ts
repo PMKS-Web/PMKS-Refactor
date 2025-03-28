@@ -12,6 +12,7 @@ import { ColorService } from 'src/app/services/color.service';
 import { SVGPathService } from 'src/app/services/svg-path.service';
 import { UnitConversionService } from "src/app/services/unit-conversion.service";
 import {Subscription} from "rxjs";
+import { HostListener } from '@angular/core';
 
 @Component({
   selector: '[app-link]',
@@ -19,18 +20,28 @@ import {Subscription} from "rxjs";
   styleUrls: ['./link.component.css'],
 })
 export class LinkComponent extends AbstractInteractiveComponent {
-
   @Input() link!: Link;
   unitSubscription: Subscription = new Subscription();
   angleSubscription: Subscription = new Subscription();
+  showIDLabelsSubscription: Subscription = new Subscription();
+  showIDLabels: boolean = false;
   units: string = "cm";
   unitsAngle: string = "º";
   angle: string = "0";
-  constructor(public override interactionService: InteractionService,
-				private stateService: StateService,
-				private colorService: ColorService,
-				private svgPathService: SVGPathService,
-        private unitConversionService: UnitConversionService, private cdr: ChangeDetectorRef) {
+
+  @HostListener('click')
+  onClick() {
+    this.stateService.hideIDLabels();
+  }
+
+  constructor(
+    public override interactionService: InteractionService,
+    private stateService: StateService,
+    private colorService: ColorService,
+    private svgPathService: SVGPathService,
+    private unitConversionService: UnitConversionService,
+    private cdr: ChangeDetectorRef
+  ) {
     super(interactionService);
   }
 
@@ -39,9 +50,16 @@ export class LinkComponent extends AbstractInteractiveComponent {
   }
 
   override ngOnInit() {
-    this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe((units) => {this.units = units;});
-    this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe((angles) => {this.unitsAngle = angles;});
+    this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe((units) => { this.units = units; });
+    this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe((angles) => { this.unitsAngle = angles; });
+    this.showIDLabelsSubscription = this.stateService.showIDLabels$.subscribe((show) => { this.showIDLabels = show; });
     super.ngOnInit();
+  }
+
+  override ngOnDestroy() {
+    this.unitSubscription.unsubscribe();
+    this.angleSubscription.unsubscribe();
+    this.showIDLabelsSubscription.unsubscribe();
   }
 
   ngAfterContentChecked(): void {
@@ -176,18 +194,16 @@ export class LinkComponent extends AbstractInteractiveComponent {
     return this.link.name + "\nLength: " + this.link.length + "\nAngle: " + this.link.angle;
   }
 
-	getDrawnPath(): string{
-	let radius: number = 30;
-  //convert all joint coordinates from to position in model to position on screen
-  let joints: IterableIterator<Joint> = this.link.joints.values();
-  let allCoords: Coord[] = [];
-    for(let joint of joints){
+  getDrawnPath(): string {
+    let radius: number = 30;
+    let joints: IterableIterator<Joint> = this.link.joints.values();
+    let allCoords: Coord[] = [];
+    for (let joint of joints) {
       let coord: Coord = joint._coords;
       coord = this.unitConversionService.modelCoordToSVGCoord(coord);
       allCoords.push(coord);
     }
-
-	return this.svgPathService.getSingleLinkDrawnPath(allCoords, radius);
+    return this.svgPathService.getSingleLinkDrawnPath(allCoords, radius);
   }
 
   getLengthSVG(): string {

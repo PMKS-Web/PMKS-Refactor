@@ -22,13 +22,15 @@
     //Fix to the bottom left, make the it cover the entire width of the screen but give it a height of 50px. Use flex to center animation bar in the middle botttom.
     position: absolute;
     bottom: 20px;
-    left: 0;
-    width: 100%;
+    right: 0;
+    width: auto;
+    max-width: 100%;
     gap: 5px;
     margin-right: 0px;
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    pointer-events: none;
 
     #viewButtons {
       pointer-events: auto;
@@ -50,6 +52,7 @@
     }
 
     #animationBar {
+      pointer-events: auto;
       height: 48px;
       margin: 5px 0;
       padding: 10px 20px;
