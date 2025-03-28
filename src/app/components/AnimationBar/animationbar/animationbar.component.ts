@@ -53,6 +53,10 @@ export class AnimationBarComponent implements OnInit{
     this.panZoomService.resetView();
   }
 
+  showIDLabels() {
+    this.stateService.toggleShowIDLabels();
+  }
+
   ngOnInit() {
     this.stateService.setAnimationBarComponent(this);
 
