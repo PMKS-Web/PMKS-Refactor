@@ -60,7 +60,7 @@ export class StateService {
    *        are stored as an array of number ID's separated by '|'
    * @param rawData
    */
-  public reconstructFromUrl(rawData:
+  public reconstructMechanism(rawData:
                             { decodedJoints:any[],
                               decodedLinks:any[],
                               decodedCompoundLinks:any[],
