@@ -165,7 +165,9 @@
                <button *ngIf="(!isSixBarGenerated() && this.allPositionsDefined()) || isFourBarGenerated()" id="generateFourBar" (click)="generateFourBar()">
                  {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
                </button>
-               <button id="removeAll" (click)="removeAllPositions()">Remove All Positions</button>
+             <button id="removeAll" (click)="removeAllPositions()">
+               {{ confirmRemoveAll ? 'Are you sure?' : 'Remove All Positions' }}
+             </button>
 
                <!-- Generate Six-Bar Button -->
                <div *ngIf="isFourBarGenerated()" class="definedButtons">

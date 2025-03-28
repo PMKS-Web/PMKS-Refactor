@@ -1264,30 +1264,18 @@ allPositionsDefined(): boolean {
         return false;
 }
 
+  confirmRemoveAll: boolean = false;
+
   removeAllPositions() {
-    // Remove all links regardless of whether the four-bar has been generated
-    /*if (this.panel === "Synthesis"){
-      let listOfLinks = this.synthedMech;
-      console.log(listOfLinks);
-      while (this.synthedMech.length > 0) {
-        let linkId = this.synthedMech[0].id;
-        console.log(linkId);
-        this.synthedMech.splice(0, 1);
-        this.mechanism.removeLink(linkId);
-        console.log("LIST OF LINKS AFTER DELETION:");
-        console.log(this.mechanism.getArrayOfLinks());
-      }
-    }*/
-
-    this.deletePosition(1);
-    this.deletePosition(2);
-    this.deletePosition(3);
-
-    // Reset flags
-    /*this.fourBarGenerated = false;
-    this.synthedMech = [];
-    this.sixBarGenerated = false;
-    this.Generated.emit(false);*/
+    if (!this.confirmRemoveAll) {
+      this.confirmRemoveAll = true;
+      setTimeout(() => this.confirmRemoveAll = false, 3000);
+    } else {
+      this.confirmRemoveAll = false;
+      this.deletePosition(1);
+      this.deletePosition(2);
+      this.deletePosition(3);
+    }
   }
 
   findIntersectionPoint(pose1_coord1: Coord, pose2_coord1: Coord, pose3_coord1: Coord) {
