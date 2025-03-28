@@ -31,6 +31,10 @@ export class StateService {
     this.showIDLabelsSubject.next(!currentValue);
   }
 
+  public hideIDLabels() {
+    this.showIDLabelsSubject.next(false);
+  }
+
     private mechanism: Mechanism;// = new Mechanism();
     //Need to use BehaviorSubjects when moving data between unrelated components
     private globalUnits = new BehaviorSubject("Metric (cm)");

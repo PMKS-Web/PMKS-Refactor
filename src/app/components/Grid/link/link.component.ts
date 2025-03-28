@@ -12,6 +12,7 @@ import { ColorService } from 'src/app/services/color.service';
 import { SVGPathService } from 'src/app/services/svg-path.service';
 import { UnitConversionService } from "src/app/services/unit-conversion.service";
 import {Subscription} from "rxjs";
+import { HostListener } from '@angular/core';
 
 @Component({
   selector: '[app-link]',
@@ -27,6 +28,11 @@ export class LinkComponent extends AbstractInteractiveComponent {
   units: string = "cm";
   unitsAngle: string = "º";
   angle: string = "0";
+
+  @HostListener('click')
+  onClick() {
+    this.stateService.hideIDLabels();
+  }
 
   constructor(
     public override interactionService: InteractionService,
