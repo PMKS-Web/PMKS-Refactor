@@ -220,7 +220,7 @@
 
         <div class="position-section">
         <!-- Loop for three positions -->
-        <div *ngFor="let index of [0,1,2]" class="position-group">
+        <div *ngFor="let index of [0,1,2]" class="position-container">
           <div class="position-header">
             <p>Position {{ index + 1 }}</p>
             <span class="icons">
@@ -232,7 +232,7 @@
           </div>
 
           <!-- allows the user to enter coordinates for the end points -->
-          <div class='endPointData' *ngIf='this.isPositionDefined(index + 1)'>
+          <div class='poseData' *ngIf='this.isPositionDefined(index + 1)'>
 
             <dual-input-block
               [input1Value]="getEndPointCoords(index + 1, 'x0')"
