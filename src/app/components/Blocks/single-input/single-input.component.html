@@ -11,9 +11,9 @@
     <div class="input-section">
       <img *ngIf="iconLabel1!==undefined" src="{{iconLabel1}}" style="height:14px;margin-left:-8px;">
       <label for="input1" style="margin-right: auto;"> {{label1}}</label>
-      <input style="padding-right:0px; margin-right: 0px;" step="any" type="number" id="input1" [(ngModel)]="input1Value"
+      <input style="width: 50px;" step="any" type="number" id="input1" [(ngModel)]="input1Value"
              (keyup.enter)="onEnterKeyInput1()" (blur)="onBlurInput1()"/>
-             <span class="unit" style="margin-left:2px; margin-right: -55px;">{{unit1}}</span>
+             <span class="unit" style="margin-left:2px;">{{unit1}}</span>
     </div>
   </div>
 </div>
