@@ -11,6 +11,7 @@ import {Link} from "../../../model/link";
 export class AnalysisGraphButtonComponent {
   @Input() dynamicText: string = '';
   @Input() graphText: string = '';
+  @Input() explainText: string = '';
   @Input() btn1Action!: () => void;
 
   executeAction() {

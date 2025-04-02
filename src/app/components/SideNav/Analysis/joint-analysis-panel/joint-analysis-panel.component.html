@@ -24,6 +24,7 @@
 
         <!--Position: -->
         <analysis-graph-button [dynamicText]="'Position:'"
+                               [explainText]="'Joint Position'"
                                [btn1Action]="toggleGraph.bind(this, GraphType.JointPosition)"
                                [graphText]="currentGraphType === GraphType.JointPosition ? 'Close Graph' : 'Show Graph'"></analysis-graph-button>
 
@@ -42,6 +43,7 @@
 
         <!--Velocity: -->
         <analysis-graph-button [dynamicText]="'Velocity:'"
+                               [explainText]="'Joint Velocity'"
                                [btn1Action]="toggleGraph.bind(this, GraphType.JointVelocity)"
                                [graphText]="currentGraphType === GraphType.JointVelocity ? 'Close Graph' : 'Show Graph'"></analysis-graph-button>
 
@@ -59,6 +61,7 @@
 
         <!--Acceleration: -->
         <analysis-graph-button [dynamicText]="'Acceleration:'"
+                               [explainText]="'Joint Acceleration'"
                                [btn1Action]="toggleGraph.bind(this, GraphType.JointAcceleration)"
                                [graphText]= "currentGraphType === GraphType.JointAcceleration ? 'Close Graph' : 'Show Graph'"></analysis-graph-button>
 

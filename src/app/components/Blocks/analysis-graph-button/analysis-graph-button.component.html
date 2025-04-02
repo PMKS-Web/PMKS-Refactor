@@ -1,6 +1,7 @@
 <div class="block-container">
   <div class="label-container">
     <label>{{ dynamicText }}</label>
+    <p class="question-icon" [attr.data-tooltip]="explainText">?</p>
   </div>
   <div class="button-container">
     <button (click)="executeAction()"> {{graphText}} </button>

@@ -37,6 +37,7 @@
 
       <!--   Angle   -->
       <analysis-graph-button [dynamicText]="'Angle:'"
+                             [explainText]="'Link Angle'"
                              [btn1Action]="toggleGraph.bind(this, GraphType.referenceJointAngle)"
                              [graphText]= "currentGraphType === GraphType.referenceJointAngle ? 'Close Graph' : 'Show Graph'"></analysis-graph-button>
 
@@ -55,6 +56,7 @@
 
       <!--   Angular Velocity   -->
       <analysis-graph-button [dynamicText]="'Angular Velocity:'"
+                             [explainText]="'Link Angular Velocity'"
                              [btn1Action]="toggleGraph.bind(this, GraphType.referenceJointAngularVelocity)"
                              [graphText]= "currentGraphType === GraphType.referenceJointAngularVelocity ? 'Close Graph' : 'Show Graph'">></analysis-graph-button>
 
@@ -73,6 +75,7 @@
 
       <!--   Angular Acceleration   -->
       <analysis-graph-button [dynamicText]="'Angular Acceleration:'"
+                             [explainText]="'Link Angular Acceleration'"
                              [btn1Action]="toggleGraph.bind(this, GraphType.referenceJointAngularAcceleration)"
                              [graphText]= "currentGraphType === GraphType.referenceJointAngularAcceleration ? 'Close Graph' : 'Show Graph'">></analysis-graph-button>
       <p style="margin-left: 10px; margin-top: 1px;">ω: N/A rad/s<sup>2</sup></p>
@@ -89,6 +92,7 @@
 
       <!--   Center of Mass Position   -->
       <analysis-graph-button [dynamicText]="'Center of Mass Position:'"
+                             [explainText]="'Link Center of Mass Position'"
                              [btn1Action]="toggleGraph.bind(this, GraphType.CoMPosition)"
                              [graphText]= "currentGraphType === GraphType.CoMPosition ? 'Close Graph' : 'Show Graph'">></analysis-graph-button>
 
@@ -107,6 +111,7 @@
 
       <!--   Center of Mass Velocity   -->
       <analysis-graph-button [dynamicText]="'Center of Mass Velocity:'"
+                             [explainText]="'Link Center of Mass Velocity'"
                              [btn1Action]="toggleGraph.bind(this, GraphType.CoMVelocity)"
                              [graphText]= "currentGraphType === GraphType.CoMVelocity ? 'Close Graph' : 'Show Graph'">></analysis-graph-button>
 
@@ -125,6 +130,7 @@
 
       <!--   Center of Mass Acceleration   -->
       <analysis-graph-button [dynamicText]="'Center of Mass Acceleration:'"
+                             [explainText]="'Link Center of Mass Acceleration'"
                              [btn1Action]="toggleGraph.bind(this, GraphType.CoMAcceleration)"
                              [graphText]= "currentGraphType === GraphType.CoMAcceleration ? 'Close Graph' : 'Show Graph'">></analysis-graph-button>
 
