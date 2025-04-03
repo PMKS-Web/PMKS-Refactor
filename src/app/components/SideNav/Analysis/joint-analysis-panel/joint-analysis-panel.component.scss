@@ -76,3 +76,65 @@
   width: fit-content;
   height: fit-content; /* Set the height to your desired value */
 }
+
+#analysis-graph-button{
+  //background-color: #007bff;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.table-auto {
+  width: 90%;
+  border-collapse: collapse;
+  border: 2px solid #ddd;
+  margin: 20px;
+  font-family: "Arial", sans-serif;
+
+  thead {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    text-align: left;
+  }
+
+  th, td {
+    padding: 12px;
+    border: 1px solid #ddd;
+  }
+
+  tbody {
+    tr {
+      transition: background-color 0.2s ease-in-out;
+
+      &:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+
+      &:hover {
+        background-color: #e2e8f0;
+      }
+    }
+  }
+}
+
+.download-btn{
+  display: block;
+  width: 90%;
+  padding: 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c52cb;
+  background-color: transparent;
+  border: 2px solid #2c52cb;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  text-align: center;
+  margin: 20px;
+
+  &:hover {
+    background-color: #2c52cb;
+    color: white;
+  }
+}
