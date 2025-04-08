@@ -178,4 +178,54 @@ export class GraphSectionComponent implements AfterViewInit, OnInit {
     link.click();
     document.body.removeChild(link);
   }
+
+  public downloadPNG() {
+    // Remove the red line temporarily
+    // const originalPlugins = this.chart.config.plugins;
+    // this.chart.config.plugins = this.chart.config.plugins?.filter(p => (p as any).id !== 'verticalLine');
+
+    Chart.unregister(verticalLinePlugin);
+
+    console.log("hehehehe");
+
+    // Redraw chart without red line
+    this.chart.update();
+
+    // Create PNG from canvas
+    const originalCanvas = this.chart.canvas;
+    const width = originalCanvas.width;
+    const height = originalCanvas.height;
+
+    // Create a temporary canvas with white background
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = width;
+    exportCanvas.height = height;
+
+    const ctx = exportCanvas.getContext('2d');
+    if (!ctx) return;
+
+    // Draw white background
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, width, height);
+
+    // 🖼 Draw the chart canvas onto the white canvas
+    ctx.drawImage(originalCanvas, 0, 0);
+
+    // Export to PNG
+    const image = exportCanvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.href = image;
+    link.download = 'graph.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Restore vertical line and redraw
+    // this.chart.config.plugins = originalPlugins;
+    Chart.register(verticalLinePlugin);
+    this.chart.update();
+
+  }
+
+
 }

@@ -24,7 +24,7 @@
     //padding: 20px;
 
     * {
-      width: 100%;
+      width: 90%;
     }
   }
 }
@@ -32,6 +32,12 @@
 canvas{
   width: 200px;
   height: fit-content;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px; // spacing between buttons
+  justify-content: center; // optional: center them horizontally
 }
 
 button{
@@ -54,3 +60,5 @@ button{
     color: white;
   }
 }
+
+
