@@ -11,9 +11,7 @@
 
   <!-- DATA SUMMARY DROPDOWN -->
 
-  <collapsible-subsection titleLabel='Data Summary' [expanded]="graphExpanded['dataSummary']"
-                          (opened)="graphExpanded['dataSummary'] = true"
-                          (closed)="graphExpanded['dataSummary'] = false">
+  <collapsible-subsection titleLabel='Data Summary'>
     <div class="flex-container">
       <div>
         <title-block>Data Summary</title-block>
@@ -79,6 +77,128 @@
 
       </div>
     </div>
+  </collapsible-subsection>
+  <collapsible-subsection titleLabel='Save Data'>
+    <table class="table-auto border-collapse border w-full text-left">
+      <thead>
+      <tr class="bg-gray-200">
+        <td class="border px-4 py-2">Parameter</td>
+        <td class="border px-4 py-2">Joints</td>
+        <td class="border px-4 py-2">Links</td>
+        <td class="border px-4 py-2"></td>
+      </tr>
+      </thead>
+      <tbody>
+      <tr class="hover:bg-gray-100">
+        <td class="border px-4 py-2">Position</td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+        <td class="border px-4 py-2"></td>
+      </tr>
+      <tr class="hover:bg-gray-100">
+        <td class="border px-4 py-2">Velocity</td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+        <td class="border px-4 py-2"></td>
+      </tr>
+      <tr class="hover:bg-gray-100">
+        <td class="border px-4 py-2">Acceleration</td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+        <td class="border px-4 py-2"></td>
+      </tr>
+      <tr class="hover:bg-gray-100">
+        <td class="border px-4 py-2">Forces/Torque</td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+        <td class="border px-4 py-2"></td>
+        <td class="border px-4 py-2"></td>
+      </tr>
+      <tr class="hover:bg-gray-100">
+        <td class="border px-4 py-2">Stress</td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+        <td class="border px-4 py-2"></td>
+      </tr>
+      <tr class="hover:bg-gray-100">
+        <td class="border px-4 py-2">Instant Centers</td>
+        <td class="border px-4 py-2"></td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+        <td class="border px-4 py-2"></td>
+      </tr>
+      <tr class="hover:bg-gray-100">
+        <td class="border px-4 py-2">Three Position Synthesis</td>
+        <td class="border px-4 py-2"></td>
+        <td class="border px-4 py-2"></td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+      </tr>
+      <tr class="hover:bg-gray-100">
+        <td class="border px-4 py-2">Path Synthesis</td>
+        <td class="border px-4 py-2"></td>
+        <td class="border px-4 py-2"></td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+      </tr>
+    </table>
+    <button (click)="downloadCSV()" class="download-btn">Download CSV</button>
   </collapsible-subsection>
 
 
