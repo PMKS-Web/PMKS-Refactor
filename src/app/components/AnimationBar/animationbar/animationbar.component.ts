@@ -33,8 +33,6 @@ export class AnimationBarComponent implements OnInit{
     private positionSolver: PositionSolverService,
     private stateService: StateService,
     private panZoomService: PanZoomService // Inject PanZoomService
-    private stateService: StateService
-
   ) {
     this.animationService.animationProgress$.subscribe(progress => {
       if (!this.isDragging) {
@@ -61,8 +59,7 @@ export class AnimationBarComponent implements OnInit{
         const mechanismIndex = this.getMechanismIndex();
         this.currentFrameIndex = this.animationService.getCurrentFrameIndex(mechanismIndex);
         this.animationService.emitCurrentFrameIndex(this.currentFrameIndex);
-      }
-    });
+
   }
 
   ngOnInit() {
@@ -176,7 +173,6 @@ export class AnimationBarComponent implements OnInit{
     const speedOptions = [0.5,1,2]
     const index = speedOptions.indexOf(this.animationSpeed);
     this.animationSpeed = speedOptions[(index+1) % speedOptions.length];
-
     this.animationService.setSpeedmultiplier(this.animationSpeed);
   }
 
