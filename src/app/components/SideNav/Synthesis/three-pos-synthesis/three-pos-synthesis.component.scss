@@ -140,13 +140,14 @@ hr.solid2 {
 }
 
 
-#trash {
+.trash {
   background-color: white;
   border: none;
   display: inline-block;
-  margin-left: -8px;
+  height: 15px;
 }
-#generateSixBar{
+
+.generateSixBar{
   margin:0 auto;
   display:inherit;
   font-family: Roboto, "Helvetica Neue", sans-serif;
@@ -163,12 +164,12 @@ hr.solid2 {
   border: none;
 }
 
-#generateSixBar:hover{
+.generateSixBar:hover{
   color: #e8eaf6;
   background-color: #3F51B5;
 }
 
-#recalc{
+.recalc{
   margin:0 auto;
   display:inherit;
   background-color: white;
@@ -185,12 +186,12 @@ hr.solid2 {
   border: none;
 }
 
-#recalc:hover {
+.recalc:hover {
   color: #e8eaf6;
   background-color: #3F51B5;
 }
 
-#recalcGray{
+.recalcGray{
   margin:0 auto;
   display:inherit;
   font-family: Roboto, "Helvetica Neue", sans-serif;
@@ -207,7 +208,7 @@ hr.solid2 {
   border: none;
 }
 
-#inputSwap{
+.inputSwap{
   margin:0 auto;
   display:inherit;
   background-color: white;
@@ -224,12 +225,12 @@ hr.solid2 {
   border: none;
 }
 
-#inputSwap:hover {
+.inputSwap:hover {
   color: #e8eaf6;
   background-color: #3F51B5;
 }
 
-#generateFourBar{
+.generateFourBar{
   margin:0 auto;
   display:inherit;
   background-color: white;
@@ -246,31 +247,31 @@ hr.solid2 {
   border: none;
   font-family: Roboto, "Helvetica Neue", sans-serif;
 }
-#generateFourBarGrey{
+
+.generateFourBarGrey{
   margin:0 auto;
   display:inherit;
+  background-color: white;
   font-family: Roboto, "Helvetica Neue", sans-serif;
-  //background-color: white;
   width: 60%;
   height: 40px;
   border-radius: 20px;
-  //border: 1px solid black;
+  border: 1px solid black;
   margin-top: 3px;
-  margin-bottom: 10px;
-  font-weight: bold;
+  margin-bottom: 8px;
   background-color: #e8eaf6;
-  color: #808080;
   border: none;
-  cursor:pointer;
-
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-weight: bold;
+  color: #808080;
 }
 
-#generateFourBar:hover {
+.generateFourBar:hover {
   color: #e8eaf6;
   background-color: #3F51B5;
 }
 
-#removeAll{
+.removeAll{
   //margin:0 auto;
   //display:inherit;
   //background-color: #ffcccb;
@@ -303,12 +304,12 @@ hr.solid2 {
 }
 
 /* Hover effect */
-#removeAll:hover {
+.removeAll:hover {
   background-color: #ffcccc;
   color: #a94442;
 }
 
-#removeAllGrey{
+.removeAllGrey{
   //margin:0 auto;
   //display:inherit;
   //background-color: #e8eaf6;
@@ -371,13 +372,13 @@ hr.solid2 {
 #lengthTooltip {
   color: #3f51b5;
   font-size: 16px;
-  padding-top: 0px;
+  padding-top: 0;
   //display: flex;
   //margin-left: -49px;
   //margin-top: 6px;
   //margin-bottom: -5px;
   display: flex;
-  margin-left: 0px !important;
+  margin-left: 0 !important;
   margin-top: 0;
   margin-bottom: 0;
   height: 15px;
@@ -393,13 +394,26 @@ hr.solid2 {
 
 }
 
-#tooltip {
+#tooltip1 {
   color: #3f51b5;
   font-size: 16px;
   vertical-align: middle;
-  padding-top: 2px;
+  padding-top: 0px;
   margin-left: 0px;
-  margin-bottom: -4px;
+  margin-bottom: 0px;
+  height: 15px;
+  margin-top: 2px;
+}
+
+#tooltip2 {
+  color: #3f51b5;
+  font-size: 16px;
+  vertical-align: middle;
+  padding-top: 0px;
+  margin-left: 0px;
+  margin-bottom: 0px;
+  height: 15px;
+  margin-top: 2px;
 }
 
 #reference {
@@ -423,8 +437,6 @@ hr.solid2 {
     color: #e8eaf6;
     background-color: #3F51B5;
   }
-
-
 
 .fixed-reference-options {
   display: flex;
@@ -513,8 +525,6 @@ div.poseData {
   flex-direction: column;
   flex-wrap: wrap;
   //align-items:center;
-  gap: 8px;
-  padding: 0 5px;
   //overflow: hidden;
 
 }
@@ -534,8 +544,11 @@ div.poseData {
 }
 
 #specify,
-#removeAll,
-#generateFourBar {
+.removeAll,
+.generateFourBar,
+.generateFourBarGrey,
+.recalc, .recalcGray,
+.inputSwap, .generateSixBar {
   height: 36px;
   width: 70%;
   font-family: Roboto, "Helvetica Neue", sans-serif;
@@ -561,6 +574,8 @@ coupler-specifications-container {
   border-radius: 6px;
   border: 1px solid #d1d4d9;
   margin-bottom: 10px;
+  margin-right: -2.5px;
+  margin-left: 2.5px;
 }
 
 .reference-icon {
@@ -644,7 +659,7 @@ coupler-specifications-container {
 }
 
 
-.synthesis-description,.subtitle {
+.synthesis-description, .subtitle {
   display: block;
   margin-left: 10px;
   margin-right: 10px;
@@ -721,8 +736,8 @@ coupler-specifications-container {
 
 .icons mat-icon, .icons img {
   font-size: 18px;
-  width: 18px;
-  height: 18px;
+  width: 15px;
+  height: 15px;
 }
 
 .icons mat-icon, .icons img {

@@ -1,4 +1,4 @@
-import {Component, HostListener, Input, OnInit, ViewChild} from '@angular/core'
+import {Component, HostListener, Input, OnInit} from '@angular/core'
 import {CompoundLinkInteractor} from 'src/app/controllers/compound-link-interactor';
 import {JointInteractor} from 'src/app/controllers/joint-interactor';
 import {LinkInteractor} from 'src/app/controllers/link-interactor';
@@ -15,8 +15,6 @@ import {PanZoomService} from "../../../services/pan-zoom.service";
 import {Mechanism} from "../../../model/mechanism";
 import {StateService} from "src/app/services/state.service";
 import { FormControl } from '@angular/forms';
-import {GraphSectionComponent} from "../../Blocks/graph-section/graph-section.component";
-
 
 
 @Component({
@@ -33,12 +31,32 @@ export class AnimationBarComponent implements OnInit{
     public interactionService: InteractionService,
     private animationService: AnimationService,
     private positionSolver: PositionSolverService,
+    private stateService: StateService,
+    private panZoomService: PanZoomService // Inject PanZoomService
     private stateService: StateService
 
   ) {
     this.animationService.animationProgress$.subscribe(progress => {
       if (!this.isDragging) {
         this.sliderValue = progress * 100;
+      }
+    });
+  }
+
+  zoomIn() {
+    this.panZoomService.zoomIn();
+  }
+
+  zoomOut() {
+    this.panZoomService.zoomOut();
+  }
+
+  resetView() {
+    this.panZoomService.resetView();
+  }
+
+  showIDLabels() {
+    this.stateService.toggleShowIDLabels();
 
         const mechanismIndex = this.getMechanismIndex();
         this.currentFrameIndex = this.animationService.getCurrentFrameIndex(mechanismIndex);
@@ -81,6 +99,7 @@ export class AnimationBarComponent implements OnInit{
         this.isAnimating = true;
         this.isPausedAnimating = false;
         this.stateService.getMechanism().populateTrajectories(this.positionSolver);
+
         setTimeout(() => {
 
         }, 100);

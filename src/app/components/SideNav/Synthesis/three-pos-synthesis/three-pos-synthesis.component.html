@@ -32,7 +32,7 @@
            <div style="margin-bottom:15px;">
             <!-- Each coupler position has the same length which is set here -->
             <p class="subtitle" style="color:#757575;">
-              Automatically create a 4-bar linkage based on 3 coupler poses.</p>
+              Automatically create a four-bar linkage based on 3 coupler poses.</p>
 
              <div class="coupler-specifications-container">
              <p class="coupler-title" style="margin-bottom:-3px; margin-right: 10px; margin-left: 10px; margin-top: 15px;">Coupler Link Specifications</p>
@@ -104,12 +104,12 @@
                         <p style="display:block; margin-right: auto;margin-left: 8px; margin-bottom: 0px;text-align: left !important;">Position {{i}}</p>
 
                         <span class="icons">
-                        <mat-icon style="margin-right:2px;margin-top: 2px; border-right: 5px; " id="tooltip" matTooltip="Change the x and y values of the reference point of the coupler position {{i}}" [matTooltipShowDelay]='1000' class='label-help'
+                        <mat-icon id="tooltip1" matTooltip="Change the x and y values of the reference point of the coupler position {{i}}" [matTooltipShowDelay]='1000'
                         [matTooltipDisabled]='disabled'
                         >help_outline
                         </mat-icon>
-                        <button id="trash" *ngIf='this.isPositionDefined(i)' (click)="this.deletePosition(i)">
-                              <img id="icon" src='assets/icons/trash.svg' style="height: 13px; width: 15px; margin-bottom: -5px; margin-left: -2px;"/>
+                        <button class="trash" *ngIf='this.isPositionDefined(i)' (click)="this.deletePosition(i)">
+                              <img id="icon" src='assets/icons/trash.svg'/>
                         </button>
                         </span>
                   </div>
@@ -146,12 +146,12 @@
    </div>
 
  </div>
- </div>
+             </div>
 <!--    <hr class="solid2">-->
              <!-- If all positions are defined you can then generate a four bar or delete all positions-->
-                 <div *ngIf='!this.allPositionsDefined() && !isFourBarGenerated()' class="definedButtons">
-                   <button id="generateFourBarGrey">Generate Four-Bar</button>
-                 </div>
+
+             <button *ngIf='!this.allPositionsDefined() && !isFourBarGenerated()' class="generateFourBarGrey">Generate Four-Bar</button>
+
 
              <!--    <div *ngIf='this.allPositionsDefined()' class="definedButtons">-->
 
@@ -162,31 +162,33 @@
 <!--      </button>-->
 
                <!-- Place Generate Four-Bar first -->
-               <button *ngIf="(!isSixBarGenerated() && this.allPositionsDefined()) || isFourBarGenerated()" id="generateFourBar" (click)="generateFourBar()">
+             <button *ngIf="(!isSixBarGenerated() && this.allPositionsDefined()) || isFourBarGenerated()" class="generateFourBar" (click)="generateFourBar()">
                  {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
                </button>
-               <button id="removeAll" (click)="removeAllPositions()">Remove All Positions</button>
+             <button class="removeAll" (click)="removeAllPositions()">
+               {{ confirmRemoveAll ? 'Are You Sure?' : 'Remove All Positions' }}
+             </button>
 
                <!-- Generate Six-Bar Button -->
-               <div *ngIf="isFourBarGenerated()" class="definedButtons">
-                 <button id="generateSixBar" (click)="generateSixBar()">
+             <div *ngIf="isFourBarGenerated()">
+               <button class="generateSixBar" (click)="generateSixBar()">
                    {{ sixBarGenerated ? 'Clear Six-Bar' : 'Generate Six-Bar' }}
-                 </button>
-               </div>
+               </button>
+             </div>
 
-               <div *ngIf="isFourBarGenerated()" class="definedButtons">
+               <div *ngIf="isFourBarGenerated()">
                  <div *ngIf="recalcNeeded">
-                   <button id="recalc" (click)="verifyMechanismPath()">
+                   <button class="recalc" (click)="verifyMechanismPath()">
                      Evaluate Positions
                    </button>
                  </div>
                  <div *ngIf="!recalcNeeded">
-                   <button id="recalcGray">
+                   <button class="recalcGray">
                      Evaluate Positions
                    </button>
                  </div>
                  <div>
-                   <button id="inputSwap" (click)="swapInputAndGround()">
+                   <button class="inputSwap" (click)="swapInputAndGround()">
                      Swap Input & Ground
                    </button>
                  </div>
@@ -212,27 +214,25 @@
 
 
     <!------------------------------ New Panel Design for End Points  ------------------------------------>
-
-    <div class="scroll-container" >
       <div *ngIf="selectedOption === 'two-points'">
 
-        <p class="panel-description">Automatically create a four-bar linkage based on the X and Y coordinate values for positions.</p>
+        <p class="subtitle">Automatically create a four-bar linkage based on the X and Y coordinate values for positions.</p>
 
-
+        <div class="position-section">
         <!-- Loop for three positions -->
-        <div *ngFor="let index of [0,1,2]" class="position-group">
+        <div *ngFor="let index of [0,1,2]" class="position-container">
           <div class="position-header">
-            <span>Position {{ index + 1 }}</span>
+            <p>Position {{ index + 1 }}</p>
             <span class="icons">
-      <mat-icon id="tooltipTwoPoints" matTooltip="Specify the coordinates for Position {{ index + 1 }}" [matTooltipShowDelay]="1000">help_outline</mat-icon>
-      <button class="delete-button" (click)="deletePosition(index + 1)">
-        <img id="trashTwoPoints" src="assets/icons/trash.svg" alt="Delete Position">
+      <mat-icon id="tooltip2" matTooltip="Specify the coordinates for Position {{ index + 1 }}" [matTooltipShowDelay]="1000">help_outline</mat-icon>
+      <button class="trash" *ngIf='this.isPositionDefined(index + 1)' (click)="deletePosition(index + 1)">
+        <img id="icon" src="assets/icons/trash.svg" alt="Delete Position">
       </button>
     </span>
           </div>
 
           <!-- allows the user to enter coordinates for the end points -->
-          <div class='endPointData' *ngIf='this.isPositionDefined(index + 1)'>
+          <div class='poseData' *ngIf='this.isPositionDefined(index + 1)'>
 
             <dual-input-block
               [input1Value]="getEndPointCoords(index + 1, 'x0')"
@@ -267,37 +267,49 @@
             <button id="specifyEndPoints" (click)="this.specifyPositionEndPoints(index + 1)">Specify Position</button>
           </div>
         </div>
+        </div>
 
 
 
         <!-- Action Buttons -->
-        <div class="button-group">
+        <button *ngIf='!this.allPositionsDefined() && !isFourBarGenerated()' class="generateFourBarGrey">Generate Four-Bar</button>
 
-          <button (click)="generateFourBar()">{{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}</button>
-          <!--      <button  (click)="generateSixBarFromTwoPoints()">Generate Six-bar</button>-->
+        <!-- Place Generate Four-Bar first -->
+        <button *ngIf="(!isSixBarGenerated() && this.allPositionsDefined()) || isFourBarGenerated()" class="generateFourBar" (click)="generateFourBar()">
+          {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
+        </button>
 
           <!-- evaluate positions button -->
-          <button (click)="removeAllPositions()">Remove All Positions</button>
-        </div>
+          <button class="removeAll" (click)="removeAllPositions()">
+            {{ confirmRemoveAll ? 'Are You Sure?' : 'Remove All Positions' }}
+          </button>
+
         <!-- Generate Six-Bar Button -->
-        <div *ngIf="isFourBarGenerated()" class="button-group">
-          <button (click)="generateSixBar()">
+        <div *ngIf="isFourBarGenerated()">
+          <button class="generateSixBar" (click)="generateSixBar()">
             {{ sixBarGenerated ? 'Clear Six-Bar' : 'Generate Six-Bar' }}
           </button>
         </div>
 
-        <div *ngIf="isFourBarGenerated()" class="button-group">
-
-          <button (click)="verifyMechanismPath()">
-            Evaluate Positions
-          </button>
-
-          <button (click)="swapInputAndGround()">
-            Swap Input & Ground
-          </button>
+        <div *ngIf="isFourBarGenerated()">
+          <div *ngIf="recalcNeeded">
+            <button class="recalc" (click)="verifyMechanismPath()">
+              Evaluate Positions
+            </button>
+          </div>
+          <div *ngIf="!recalcNeeded">
+            <button class="recalcGray">
+              Evaluate Positions
+            </button>
+          </div>
+          <div>
+            <button class="inputSwap" (click)="swapInputAndGround()">
+              Swap Input & Ground
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+      </div>
   </div>
-</div>
+
 
