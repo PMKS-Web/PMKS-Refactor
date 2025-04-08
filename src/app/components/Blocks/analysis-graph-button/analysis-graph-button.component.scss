@@ -55,27 +55,4 @@ button:hover{
   margin-bottom: 1px;
 }
 
-/* Tooltip text */
-.question-icon::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: 25px; /* Position it above the icon */
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #b7b7b7;
-  color: black;
-  padding: 5px 10px;
-  font-size: 14px;
-  visibility: hidden; /* Initially hidden */
-  opacity: 0;
-  transition: opacity 0.3s;
-  white-space: nowrap; /* Ensure the text doesn't wrap */
-  border-radius: 8px;
 
-}
-
-/* Show the tooltip when hovering */
-.question-icon:hover::after {
-  visibility: visible;
-  opacity: 1; /* Make it visible on hover */
-}

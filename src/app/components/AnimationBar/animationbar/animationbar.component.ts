@@ -1,4 +1,4 @@
-import {Component, HostListener, Input, OnInit} from '@angular/core'
+import {Component, HostListener, Input, OnInit, ViewChild} from '@angular/core'
 import {CompoundLinkInteractor} from 'src/app/controllers/compound-link-interactor';
 import {JointInteractor} from 'src/app/controllers/joint-interactor';
 import {LinkInteractor} from 'src/app/controllers/link-interactor';
@@ -15,6 +15,8 @@ import {PanZoomService} from "../../../services/pan-zoom.service";
 import {Mechanism} from "../../../model/mechanism";
 import {StateService} from "src/app/services/state.service";
 import { FormControl } from '@angular/forms';
+import {GraphSectionComponent} from "../../Blocks/graph-section/graph-section.component";
+
 
 
 @Component({
@@ -32,11 +34,17 @@ export class AnimationBarComponent implements OnInit{
     private animationService: AnimationService,
     private positionSolver: PositionSolverService,
     private stateService: StateService
+
   ) {
     this.animationService.animationProgress$.subscribe(progress => {
       if (!this.isDragging) {
         this.sliderValue = progress * 100;
-      }});
+
+        const mechanismIndex = this.getMechanismIndex();
+        this.currentFrameIndex = this.animationService.getCurrentFrameIndex(mechanismIndex);
+        this.animationService.emitCurrentFrameIndex(this.currentFrameIndex);
+      }
+    });
   }
 
   ngOnInit() {
@@ -50,6 +58,7 @@ export class AnimationBarComponent implements OnInit{
   private isAnimating: boolean = false;
   private isPausedAnimating: boolean = true;
   public animationSpeed: number = 1;
+  public currentFrameIndex: number = 0;
   timelineMarkers: { position: number; type: "clockwise" | "counterclockwise"; coords?: Coord }[] = [];
 
 
@@ -72,7 +81,6 @@ export class AnimationBarComponent implements OnInit{
         this.isAnimating = true;
         this.isPausedAnimating = false;
         this.stateService.getMechanism().populateTrajectories(this.positionSolver);
-
         setTimeout(() => {
 
         }, 100);
@@ -209,7 +217,6 @@ export class AnimationBarComponent implements OnInit{
 
     console.log("Final timelineMarkers array:", this.timelineMarkers);
   }
-
 
 }
 

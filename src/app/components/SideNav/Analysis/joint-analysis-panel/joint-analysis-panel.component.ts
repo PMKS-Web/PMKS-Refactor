@@ -8,6 +8,8 @@ import {Form, FormControl, FormGroup} from "@angular/forms";
 import {Link} from "src/app/model/link";
 import {PositionSolverService} from "src/app/services/kinematic-solver.service";
 import {AnalysisSolveService} from "src/app/services/analysis-solver.service";
+import {AnimationBarComponent} from "../../../AnimationBar/animationbar/animationbar.component";
+import {AnimationService} from "../../../../services/animation.service";
 
 interface Tab {
     selected: boolean,
@@ -34,6 +36,7 @@ export class JointAnalysisPanelComponent {
 
   currentGraphType: GraphType | null = null;
   graphTypes = GraphType; // Make the enum accessible in the template
+  currentFrameIndex = 0;
 
 
   graphExpanded: { [key: string]: boolean } = {
@@ -44,20 +47,19 @@ export class JointAnalysisPanelComponent {
     accelerationOfJoint: false
   };
 
-  constructor(private stateService: StateService, private interactorService: InteractionService,
-              private positionSolver: PositionSolverService, private analysisSolverService: AnalysisSolveService){
+  constructor(private stateService: StateService,
+              private interactorService: InteractionService,
+              private positionSolver: PositionSolverService,
+              private analysisSolverService: AnalysisSolveService){
       console.log("joint-analysis-panel.constructor");
   }
 
   // helper function to open a graph using the graph-button block
   openAnalysisGraph(graphType: GraphType): void {
     this.currentGraphType = graphType;
-    // this.graphExpanded[graphType] = true;
-    //this.getGraphData();
   }
 
   closeAnalysisGraph() {
-    // this.graphExpanded[graphType] = true;
     this.currentGraphType = null;
   }
 
@@ -69,6 +71,9 @@ export class JointAnalysisPanelComponent {
     }
   }
 
+  // getCurrentFrameIndex(): number {
+  //   return this.animationBarComponent.currentFrameIndex;
+  // }
 
 
   getGraphTypes(){

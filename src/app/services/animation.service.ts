@@ -42,6 +42,14 @@ export class AnimationService {
         });
     }
 
+
+  private frameIndexSource = new BehaviorSubject<number>(0);
+  public currentFrameIndex$ = this.frameIndexSource.asObservable();
+
+  emitCurrentFrameIndex(index: number) {
+    this.frameIndexSource.next(index);
+  }
+
   getAnimationState(index: number): JointAnimationState | undefined {{
     return this.animationStates[index];
   }}
@@ -52,6 +60,11 @@ export class AnimationService {
 
   isInvalid(): boolean {
         return this.invaldMechanism;}
+
+  getCurrentFrameIndex(mechanismIndex: number): number {
+    const state = this.animationStates[mechanismIndex];
+    return state?.currentFrameIndex ?? 0;
+  }
 
     initializeAnimations() {
         this.animationStates = new Array();
@@ -107,6 +120,7 @@ export class AnimationService {
           state.currentFrameIndex = 0;
         } else {
           state.currentFrameIndex++;
+          this.emitCurrentFrameIndex(state.currentFrameIndex);
         }
       } else {
         if (state.currentFrameIndex === 0) {
@@ -193,6 +207,8 @@ export class AnimationService {
 
                 joint.setCoordinates(newPosition);
             }
+
+          this.emitCurrentFrameIndex(frameIndex);
         }
 
         this.updateProgress(progress);
