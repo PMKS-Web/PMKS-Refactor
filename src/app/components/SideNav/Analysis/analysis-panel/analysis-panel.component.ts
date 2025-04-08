@@ -20,7 +20,6 @@ export class AnalysisPanelComponent {
     }
   }
 
-
   downloadCSV() {
     const table = document.querySelector(".table-auto");
     if (!table) return;

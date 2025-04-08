@@ -242,7 +242,6 @@ export class LinkAnalysisPanelComponent {
   }
   public GraphType = GraphType;
 
-
   downloadCSV() {
     const table = document.querySelector(".table-auto");
     if (!table) return;
@@ -285,5 +284,4 @@ export class LinkAnalysisPanelComponent {
     link.click();
     document.body.removeChild(link);
   }
-
 }
