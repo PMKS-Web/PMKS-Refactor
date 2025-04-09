@@ -62,9 +62,7 @@ import { ImportDataComponent } from "./components/Blocks/import-data/import-data
 import { SettingsPanelComponent } from './components/ToolBar/settings-panel/settings-panel.component';
 import { TemplatesPanelComponent } from './components/ToolBar/templates-panel/templates-panel.component';
 import { TutorialsPanelComponent } from './components/ToolBar/tutorials-panel/tutorials-panel.component';
-import {FeedbackPanelComponent} from "./components/ToolBar/feedback-panel/feedback-panel.component";
-import {SavePanelComponent} from "./components/ToolBar/save-panel/save-panel.component";
-import {SharePanelComponent} from "./components/ToolBar/share-panel/share-panel.component";
+
 import {MatListModule} from "@angular/material/list";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {MatCheckboxModule} from "@angular/material/checkbox";
@@ -123,9 +121,6 @@ import {NgOptimizedImage} from "@angular/common";
     SettingsPanelComponent,
     TemplatesPanelComponent,
     TutorialsPanelComponent,
-    FeedbackPanelComponent,
-    SavePanelComponent,
-    SharePanelComponent,
     PositionComponent,
     TrajectoryComponent,
   ],
