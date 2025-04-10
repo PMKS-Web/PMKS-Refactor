@@ -7,7 +7,12 @@ import { BehaviorSubject } from 'rxjs'
 import {Position} from "./position";
 import {Trajectory} from "./trajectory";
 import { PositionSolverService } from 'src/app/services/kinematic-solver.service';
+import { Injectable } from '@angular/core';
 
+
+@Injectable({
+  providedIn: 'root'
+})
 
 export class Mechanism {
     private _joints: Map<number, Joint>;
@@ -26,6 +31,8 @@ export class Mechanism {
     private _positionIDCount: number = 0;
     private _synthesizedMechArr: Link[] = [];
     private _refIdCount: number = -1;
+    private undoStack: Mechanism[] = [];
+    private redoStack: Mechanism[] = [];
 
 
     constructor() {
@@ -40,7 +47,6 @@ export class Mechanism {
         this._linkIDCount = 0;
         this._forceIDCount = 0;
         this._compoundLinkIDCount = 0;
-        console.log("Mechanism Constructor");
     }
 
 
@@ -66,7 +72,8 @@ export class Mechanism {
      * @memberof Mechanism
      */
     addLink(coordOne: Coord, coordTwo: Coord, synthesized?: boolean) {
-        let isSynth = false;
+
+      let isSynth = false;
         if (typeof synthesized !== 'undefined') {
           isSynth = synthesized;
         }
@@ -470,6 +477,8 @@ export class Mechanism {
      */
     setJointCoord(jointID: number, newCoord: Coord) {
         this.executeJointAction(jointID, (joint) => true, 'error','success', (joint) =>{joint.setCoordinates(newCoord);});
+
+
     }
     /**
      * Moves a joint to a new specified x coordinate.
@@ -1102,39 +1111,6 @@ export class Mechanism {
   public _addTrajectory(trajectory: Trajectory): void {
     this._trajectories.set(trajectory.id, trajectory);
   }
-
-  clone(): Mechanism {
-    const newMech = new Mechanism();
-    this._joints.forEach((joint, id) => {
-      newMech._joints.set(id, joint.clone());
-    });
-    this._links.forEach((link, id) => {
-      newMech._links.set(id, link.clone());
-    });
-    this._forces.forEach((force, id) => {
-      newMech._forces.set(id, force.clone());
-    });
-    this._compoundLinks.forEach((compLink, id) => {
-      newMech._compoundLinks.set(id, compLink.clone());
-    });
-    this._positions.forEach((pos, id) => {
-      newMech._positions.set(id, pos.clone());
-    });
-    this._trajectories.forEach((traj, id) => {
-      newMech._trajectories.set(id, traj.clone());
-    });
-    newMech._idCount = this._idCount;
-    newMech._jointIDCount = this._jointIDCount;
-    newMech._linkIDCount = this._linkIDCount;
-    newMech._forceIDCount = this._forceIDCount;
-    newMech._compoundLinkIDCount = this._compoundLinkIDCount;
-    newMech._positionIDCount = this._positionIDCount;
-    newMech._refIdCount = this._refIdCount;
-    return newMech;
-  }
-
-
-
 
 
 }

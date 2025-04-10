@@ -8,7 +8,7 @@ import { CreateLinkFromJointCapture } from "./click-capture/create-link-from-joi
 import { ContextMenuOption, Interactor } from "./interactor";
 import {Subscription} from "rxjs";
 import { PositionInteractor } from "./position-interactor";
-
+import {Action} from "../components/ToolBar/undo-redo-panel/action"
 /*
 This interactor defines the following behaviors:
 - Dragging the joint moves it
@@ -20,24 +20,32 @@ export class JointInteractor extends Interactor {
     private activePanel = "Edit";
     private _isDraggable: boolean = true;
 
-    constructor(public joint: Joint, private stateService: StateService,
-        private interactionService: InteractionService) {
-        super(true, true);
+    constructor(public joint: Joint,
+                private stateService: StateService,
+                private interactionService: InteractionService) {
+
+      super(true, true);
+
+
 
         this.onDragStart$.subscribe((event) => {
             if ((!this.joint.locked || this.activePanel === "Edit") && this._isDraggable) {
-              this.stateService.pushUndoState();
               this.jointStart = this.joint._coords;
             }
         });
 
         this.onDrag$.subscribe((event) => {
             if ((!this.joint.locked || this.activePanel === "Edit") && this._isDraggable) {
-                this.stateService.getMechanism().setJointCoord(this.joint.id, this.jointStart.add(this.dragOffsetInModel!))
+              this.stateService.getMechanism().setJointCoord(this.joint.id, this.jointStart.add(this.dragOffsetInModel!))
             }
         });
 
         this.onDragEnd$.subscribe((event) => {
+          console.log("Drag ended for joint", this.joint.id);
+
+          const mech = this.stateService.getMechanism();
+          mech.notifyChange();
+
         });
       this.activePanelSub = this.stateService.globalActivePanelCurrent.subscribe((panel) => {this.activePanel = panel});
         /*
@@ -84,6 +92,14 @@ export class JointInteractor extends Interactor {
                 icon: "assets/contextMenuIcons/removeInput.svg",
                 label: "Remove Input",
                 action: () => {
+
+                  const actionObj: Action = {
+                    type: 'removeInput',
+                    jointId: this.joint.id,
+                  };
+
+                  this.stateService.recordAction(actionObj);
+
                   mechanism.removeInput(this.joint.id)
                 },
                 disabled: !mechanism.canRemoveInput(this.joint)
@@ -94,6 +110,14 @@ export class JointInteractor extends Interactor {
                 icon: "assets/contextMenuIcons/addInput.svg",
                 label: "Add Input",
                 action: () => {
+
+                  const actionObj: Action = {
+                    type: 'addInput',
+                    jointId: this.joint.id,
+                  };
+
+                  this.stateService.recordAction(actionObj);
+
                   mechanism.addInput(this.joint.id)
                 },
                 disabled: !mechanism.canAddInput(this.joint)
@@ -106,6 +130,11 @@ export class JointInteractor extends Interactor {
                 icon: "assets/contextMenuIcons/removeGround.svg",
                 label: "Remove Ground",
                 action: () => {
+                  const actionObj: Action = {
+                    type: 'removeGround',
+                    jointId: this.joint.id,
+                  };
+                  this.stateService.recordAction(actionObj);
                   mechanism.removeGround(this.joint.id)
                 },
                 disabled: !mechanism.canRemoveGround(this.joint)
@@ -116,10 +145,19 @@ export class JointInteractor extends Interactor {
                 icon: "assets/contextMenuIcons/addGround.svg",
                 label: "Add Ground",
                 action: () => {
-                  mechanism.addGround(this.joint.id)
+
+                  const actionObj: Action = {
+                    type: 'addGround',
+                    jointId: this.joint.id,
+                  };
+
+                  this.stateService.recordAction(actionObj);
+
+
+                  mechanism.addGround(this.joint.id);
+
                 },
-                disabled: !mechanism.canAddGround(this.joint)
-              });
+                disabled: !mechanism.canAddGround(this.joint)});
           }
           //Logic for Slider option
           if (this.joint.type == JointType.Prismatic) {
@@ -128,6 +166,14 @@ export class JointInteractor extends Interactor {
                 icon: "assets/contextMenuIcons/removeSlider.svg",
                 label: "Remove Slider",
                 action: () => {
+
+                  const actionObj: Action = {
+                    type: 'removeSlider',
+                    jointId: this.joint.id,
+                  };
+                  this.stateService.recordAction(actionObj);
+
+
                   mechanism.removeSlider(this.joint.id)
                 },
                 disabled: !mechanism.canRemoveSlider(this.joint)
@@ -138,9 +184,16 @@ export class JointInteractor extends Interactor {
                 icon: "assets/contextMenuIcons/addSlider.svg",
                 label: "Add Slider",
                 action: () => {
+
+                  const actionObj: Action = {
+                    type: 'addSlider',
+                    jointId: this.joint.id,
+                  };
+                  this.stateService.recordAction(actionObj);
+
                   mechanism.addSlider(this.joint.id)
                 },
-                disabled: !mechanism.canAddSlider(this.joint)
+                disabled: !mechanism.canAddSlider(this.joint) || !this.joint.isGrounded
               });
           }
           //Logic for Welding option
@@ -150,6 +203,11 @@ export class JointInteractor extends Interactor {
                 icon: "assets/contextMenuIcons/removeWeld.svg",
                 label: "Remove Weld",
                 action: () => {
+                  const actionObj: Action = {
+                    type: 'removeWeld',
+                    jointId: this.joint.id,
+                  };
+                  this.stateService.recordAction(actionObj);
                   mechanism.removeWeld(this.joint.id)
                 },
                 disabled: !mechanism.canRemoveWeld(this.joint)
@@ -160,6 +218,11 @@ export class JointInteractor extends Interactor {
                 icon: "assets/contextMenuIcons/addWeld.svg",
                 label: "Add Weld",
                 action: () => {
+                  const actionObj: Action = {
+                    type: 'addWeld',
+                    jointId: this.joint.id,
+                  };
+                  this.stateService.recordAction(actionObj);
                   mechanism.addWeld(this.joint.id)
                 },
                 disabled: !mechanism.canAddWeld(this.joint)
@@ -170,6 +233,12 @@ export class JointInteractor extends Interactor {
               icon: "assets/contextMenuIcons/trash.svg",
               label: "Delete Joint",
               action: () => {
+                const actionObj: Action = {
+                  type: 'deleteJoint',
+                  jointId: this.joint.id,
+                };
+                this.stateService.recordAction(actionObj);
+
                 mechanism.removeJoint(this.joint.id)
               },
               disabled: false

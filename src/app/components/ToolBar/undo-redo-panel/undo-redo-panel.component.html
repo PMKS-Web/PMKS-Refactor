@@ -3,6 +3,7 @@
   mat-button
   class="toolbar-button"
   (click)="onUndo()"
+  [disabled]="!stateService.canUndo()"
   matTooltip="Undo the last action"
   matTooltipShowDelay="1000"
 >
@@ -14,6 +15,7 @@
   mat-button
   class="toolbar-button"
   (click)="onRedo()"
+  [disabled]="!stateService.canRedo()"
   matTooltip="Redo the last undone action"
   matTooltipShowDelay="1000"
 >

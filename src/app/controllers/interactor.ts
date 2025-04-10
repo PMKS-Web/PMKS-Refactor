@@ -30,7 +30,7 @@ export abstract class Interactor {
     public isDragged: boolean = false;
     public startMousePosInModel?: Coord;
     public dragOffsetInModel?: Coord;
-    
+
 
     public onSelect$ = new Subject<boolean>();
     public onDeselect$ = new Subject<boolean>();
@@ -40,7 +40,7 @@ export abstract class Interactor {
     public onRightClick$ = new Subject<boolean>();
     public onKeyDown$ = new Subject<KeyboardEvent>();
 
-    public getMousePos: () => MousePosition = () => { 
+    public getMousePos: () => MousePosition = () => {
         return{screen: new Coord(0,0),
                 svg: new Coord(0,0),
                 model: new Coord(0,0)}};
@@ -76,6 +76,7 @@ export abstract class Interactor {
         this.onDragStart$.next(true);
     }
     public _onDrag(): void {
+
         this.dragOffsetInModel = this.getMousePos().model.subtract(this.startMousePosInModel!);
         this.onDrag$.next(true);
     }
@@ -110,5 +111,5 @@ export abstract class Interactor {
     public type(): string {
         return "Unspecified Interactor";
     }
-    
+
 }

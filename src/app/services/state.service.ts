@@ -11,6 +11,8 @@ import {Position} from "../model/position";
 import {Coord} from "../model/coord";
 import {join} from "@angular/compiler-cli";
 import {AnimationBarComponent} from "../components/AnimationBar/animationbar/animationbar.component";
+import { cloneDeep } from 'lodash';
+import {Action} from "../components/ToolBar/undo-redo-panel/action";
 
 /*
 Stores the global state of the application. This includes the model, global settings, and Pan/Zoom State. This is a singleton service.
@@ -32,10 +34,15 @@ export class StateService {
     private globalActivePanel = new BehaviorSubject("Edit");
 
     private animationbarComponent!: AnimationBarComponent;
-    private undoStack: Mechanism[] = [];
-    private redoStack: Mechanism[] = [];
+    //private undoStack: Mechanism[] = [];
+    //private redoStack: Mechanism[] = [];
+    private currentState: any = {};
 
     private maxUndoSize = 2;
+    private stateSubject = new BehaviorSubject<any>(this.currentState);
+    public state$ = this.stateSubject.asObservable();
+    private undoStack: Action[] = [];
+    private redoStack: Action[] = [];
 
   globalUnitsCurrent = this.globalUnits.asObservable();
     globalUSuffixCurrent = this.globalUnitsSuffix.asObservable();
@@ -43,10 +50,12 @@ export class StateService {
     globalASuffixCurrent = this.globalAnglesSuffix.asObservable();
     globalActivePanelCurrent = this.globalActivePanel.asObservable();
 
-    constructor() {
-        console.log("StateService constructor");
-        this.mechanism = new Mechanism();
-     }
+  constructor() {
+    console.log("StateService constructor");
+    this.mechanism = new Mechanism();
+
+  }
+
 
 
   /**
@@ -222,66 +231,159 @@ export class StateService {
         return this.mechanism._mechanismChange$;
     }
 
-  public pushUndoState(): void {
-    const snapshot = this.mechanism.clone();
-    this.undoStack.push(snapshot);
-    if (this.undoStack.length > this.maxUndoSize) {
-      this.undoStack.shift();
+    public recordAction(action: Action): void {
+      if (this.undoStack.length >= this.maxUndoSize) {
+        // Remove the oldest action from the stack.
+        this.undoStack.shift();
+      }
+      this.undoStack.push(action);
+      this.redoStack = [];
+      console.log('Action recorded:', action);
     }
-    this.redoStack = [];
-  }
 
-  public addLink(coordOne: Coord, coordTwo: Coord, synthesized?: boolean): void {
-    this.pushUndoState();
-    this.mechanism.addLink(coordOne, coordTwo, synthesized);
-    this.mechanism.notifyChange();
-  }
+    public canUndo(): boolean {
+      return this.undoStack.length > 0;
+    }
 
-  public addPos(coordOne: Coord, coordTwo: Coord): void {
-    this.pushUndoState();
-    this.mechanism.addPos(coordOne, coordTwo);
-    this.mechanism.notifyChange();
-  }
-
-  public setJointCoord(jointID: number, newCoord: Coord): void {
-    this.pushUndoState();
-    this.mechanism.setJointCoord(jointID, newCoord);
-    this.mechanism.notifyChange();
-  }
-
-  public removeLink(linkID: number): void {
-    this.pushUndoState();
-    this.mechanism.removeLink(linkID);
-    this.mechanism.notifyChange();
-  }
-
+    public canRedo(): boolean {
+      return this.redoStack.length > 0;
+    }
 
   public undo(): void {
-      if (this.undoStack.length === 0) {
-        console.log("No undo state available");
-        return;
-      }
-      const currentSnapshot = this.mechanism.clone();
-      this.redoStack.push(currentSnapshot);
-      const previousState = this.undoStack.pop();
-      if (previousState) {
-        this.setMechanism(previousState);
-        this.mechanism.notifyChange();
-      }
+    if (!this.canUndo()) {
+      console.log('Nothing to undo');
+      return;
     }
+    const action = this.undoStack.pop()!;
+    // Apply the inverse of the action.
+    this.applyInverseAction(action);
+    // Push the action onto the redo stack.
+    this.redoStack.push(action);
+    console.log('Undo performed for action:', action);
+    this.mechanism.notifyChange();
+  }
 
-    public redo(): void {
-      if (this.redoStack.length === 0) {
-        console.log("No redo state available");
-        return;
-      }
-      const currentSnapshot = this.mechanism.clone();
-      this.undoStack.push(currentSnapshot);
-      const nextState = this.redoStack.pop();
-      if (nextState) {
-        this.setMechanism(nextState);
-        this.mechanism.notifyChange();
-      }
+  // Redo an undone action.
+  public redo(): void {
+    if (!this.canRedo()) {
+      console.log('Nothing to redo');
+      return;
     }
+    const action = this.redoStack.pop()!;
+    // Reapply the original action.
+    this.applyAction(action);
+    // Push the action back onto the undo stack.
+    this.undoStack.push(action);
+    console.log('Redo performed for action:', action);
+    this.mechanism.notifyChange();
+  }
+
+  // Define how to apply an action.
+  private applyAction(action: Action): void {
+    switch (action.type) {
+      case 'addInput':
+        if (action.jointId !== undefined) {
+          this.mechanism.addInput(action.jointId);
+        }
+        break;
+      case 'removeInput':
+        if (action.jointId !== undefined) {
+          this.mechanism.removeInput(action.jointId);
+        }
+        break;
+      case 'addGround':
+        if (action.jointId !== undefined) {
+          this.mechanism.addGround(action.jointId);
+        }
+        break;
+      case 'removeGround':
+        if (action.jointId !== undefined) {
+          this.mechanism.removeGround(action.jointId);
+        }
+        break;
+      case 'addSlider':
+        if (action.jointId !== undefined) {
+          this.mechanism.addSlider(action.jointId);
+        }
+        break;
+      case 'removeSlider':
+        if (action.jointId !== undefined) {
+          this.mechanism.removeSlider(action.jointId);
+        }
+        break;
+      case 'addWeld':
+        if (action.jointId !== undefined) {
+          this.mechanism.addWeld(action.jointId);
+        }
+        break;
+      case 'removeWeld':
+        if (action.jointId !== undefined) {
+          this.mechanism.removeWeld(action.jointId);
+        }
+        break;
+      case 'deleteJoint':
+        if (action.jointId !== undefined) {
+          this.mechanism.removeJoint(action.jointId);
+        }
+        break;
+      default:
+        console.error('Unknown action type:', action.type);
+    }
+  }
+
+// Define how to apply the inverse of an action.
+  private applyInverseAction(action: Action): void {
+    switch (action.type) {
+      case 'addInput':
+        if (action.jointId !== undefined) {
+          this.mechanism.removeInput(action.jointId);
+        }
+        break;
+      case 'removeInput':
+        if (action.jointId !== undefined) {
+          this.mechanism.addInput(action.jointId);
+        }
+        break;
+      case 'addGround':
+        if (action.jointId !== undefined) {
+          this.mechanism.removeGround(action.jointId);
+        }
+        break;
+      case 'removeGround':
+        if (action.jointId !== undefined) {
+          this.mechanism.addGround(action.jointId);
+        }
+        break;
+      case 'addSlider':
+        if (action.jointId !== undefined) {
+          this.mechanism.removeSlider(action.jointId);
+        }
+        break;
+      case 'removeSlider':
+        if (action.jointId !== undefined) {
+          this.mechanism.addSlider(action.jointId);
+        }
+        break;
+      case 'addWeld':
+        if (action.jointId !== undefined) {
+          this.mechanism.removeWeld(action.jointId);
+        }
+        break;
+      case 'removeWeld':
+        if (action.jointId !== undefined) {
+          this.mechanism.addWeld(action.jointId);
+        }
+        break;
+      case 'deleteJoint':
+        if (action.jointId !== undefined) {
+          // Assuming that the mechanism has a method to restore a joint.
+          // You might need to store additional joint data in the Action object.
+          //this.mechanism.restoreJoint(action.jointId);
+        }
+        break;
+      default:
+        console.error('No inverse defined for action type:', action.type);
+    }
+  }
 
 }

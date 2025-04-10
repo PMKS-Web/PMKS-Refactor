@@ -91,15 +91,20 @@
     margin-bottom: 5px;
   }
 
-  .label-with-icon {
+
+  p.label-with-icon {
     display: flex;
     margin-left: 10px;
     align-items: center;
-    gap: 5px;
     font-family: Roboto, "Helvetica Neue", serif;
     font-weight: normal;
     color: #000;
+    height: 80%;
+    margin-bottom: 0;
   }
+
+
+
 }
 
 

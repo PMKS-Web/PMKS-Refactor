@@ -10,6 +10,10 @@ import { MousePosition } from './mouse-position.service';
 import { PanZoomService, ZoomPan } from './pan-zoom.service';
 import { UnitConversionService } from './unit-conversion.service';
 import { BehaviorSubject } from 'rxjs';
+import { Joint } from '../model/joint';
+import { Link } from '../model/link';
+import { JointInteractor } from '../controllers/joint-interactor';
+import { LinkInteractor } from '../controllers/link-interactor';
 
 /*
 This service keeps track of global state for the interaction system, such as which
@@ -41,6 +45,7 @@ export class InteractionService {
     public onDragEndOnce$ = new Subject<boolean>();
 
     private clickCapture: ClickCapture | undefined;
+    private interactors: Interactor[] = [];
 
     constructor(private contextMenuService: ContextMenuService,
                 private stateService: StateService,
@@ -51,7 +56,15 @@ export class InteractionService {
             screen: new Coord(0,0),
             svg: new Coord(0,0),
             model: new Coord(0,0)
-        }
+        };
+
+      this.stateService.state$.subscribe((newState) => {
+        console.log("InteractionService: received new state", newState);
+        // When a new Mechanism state is loaded via undo/redo, rebuild your interactors.
+        this.rebuildAllInteractors();
+      });
+
+
     }
 
 
@@ -93,8 +106,6 @@ export class InteractionService {
 
         if (event.button !== 0) return; // only handle left click. should not be called on right click/context menu
 
-        console.log("InteractionService.onMouseDown ", object.constructor.name, event);
-
         // hide any context menus
         this.contextMenuService.hideContextMenu();
 
@@ -116,7 +127,6 @@ export class InteractionService {
 
         event.preventDefault(); // prevent context menu from appearing
         event.stopPropagation(); // don't let parent components handle this event
-        console.log("InteractionService.onMouseRightClick", object.constructor.name, event);
         // if click capture, handle special case
         if (this.clickCapture) {
             this.clickCapture.onClick$.next(this.mousePos.model);
@@ -153,8 +163,6 @@ export class InteractionService {
             objectsToRemove.forEach((obj) => this.selected.delete(obj));
 
         }
-
-        console.log("InteractionService.onMouseUp", object.constructor.name, event);
 
         let somethingDragged = false;
         this.selected.forEach((obj) => {
@@ -303,4 +311,34 @@ export class InteractionService {
     public deselectObject(){
         this.lastSelected=undefined;
     }
+
+
+
+  public rebuildAllInteractors(): void {
+    console.log("InteractionService: rebuilding interactors...");
+    // Remove the old interactors. We create a copy and unregister each.
+    const oldObjects = [...this.objects];
+    for (const obj of oldObjects) {
+      this.unregister(obj);
+    }
+
+    // Get the current Mechanism from StateService.
+    const mech = this.stateService.getMechanism();
+
+    // Create fresh JointInteractors for each joint.
+    for (const joint of mech.getJoints()) {
+      const interactor = new JointInteractor(joint, this.stateService, this);
+      this.register(interactor);
+    }
+
+    // Similarly, create new LinkInteractors if applicable.
+    for (const link of mech.getArrayOfLinks()) {
+      // Make sure you have a LinkInteractor class
+      const interactor = new LinkInteractor(link, this.stateService, this);
+      this.register(interactor);
+    }
+
+    console.log("InteractionService: interactors rebuilt", this.objects);
+  }
+
 }

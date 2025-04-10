@@ -149,11 +149,9 @@ export class Link implements RigidBody{
     // update all of the locks i.e. subjoints need to lock when the link is locked,
     // and unlock when the link is unlocked
     updateLocks(value: boolean){
-        console.log('Updating lock in link')
         this._joints.forEach((joint: Joint, key: number) => {
             joint.locked = value;
-            console.log(`Joint ${key}: ${joint}`);
-        });
+            });
     }
 
     removeJoint(idORRef: number | Joint){
