@@ -24,7 +24,7 @@
   overflow-y:scroll;
   margin:10px;
   gap:10px;
-  width: 420px;
+  width: 320px;
 }
 
 .flex-container {
@@ -89,8 +89,9 @@
   width: 90%;
   border-collapse: collapse;
   border: 2px solid #ddd;
-  margin: 20px;
+  margin: 5px auto;
   font-family: "Arial", sans-serif;
+  font-size: 13px;
 
   thead {
     background-color: #f8f9fa;
@@ -99,7 +100,7 @@
   }
 
   th, td {
-    padding: 12px;
+    padding: 6px;
     border: 1px solid #ddd;
   }
 
@@ -120,7 +121,7 @@
 
 .download-btn{
   display: block;
-  width: 90%;
+  width: 85%;
   padding: 12px 0;
   font-size: 16px;
   font-weight: 600;
