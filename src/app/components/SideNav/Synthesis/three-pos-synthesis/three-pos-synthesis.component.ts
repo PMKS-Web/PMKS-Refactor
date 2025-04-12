@@ -626,8 +626,10 @@ isSixBarGenerated(): boolean {
       return;
     }
 
+    let firstGround = this.synthedMech[0];
+    let lastGround = this.synthedMech[this.synthedMech.length-1];
     //change the inputs to ground
-    const joints = this.mechanism.getJoints();
+    const joints = [firstGround.getJoints()[0], lastGround.getJoints()[1]];
     for (const joint of joints) {
       if (joint.isInput) {
         joint.removeInput();
@@ -658,6 +660,9 @@ isSixBarGenerated(): boolean {
       console.error("no grounded link");
       return;
     }
+
+    //override for now
+    groundedLink = firstGround;
 
     const linkJoints = groundedLink.getJoints();
     const firstJoint = linkJoints[0];
@@ -1286,6 +1291,11 @@ allPositionsDefined(): boolean {
       if (this.fourBarGenerated){
         this.fourBarGenerated = false;
       }
+      if (this.sixBarGenerated){
+        this.fourBarGenerated = false;
+        this.sixBarGenerated = false;
+      }
+      this.synthedMech = [];
       this.confirmRemoveAll = false;
       this.deletePosition(1);
       this.deletePosition(2);
