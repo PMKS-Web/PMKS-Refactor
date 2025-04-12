@@ -1283,6 +1283,9 @@ allPositionsDefined(): boolean {
       this.confirmRemoveAll = true;
       setTimeout(() => this.confirmRemoveAll = false, 3000);
     } else {
+      if (this.fourBarGenerated){
+        this.fourBarGenerated = false;
+      }
       this.confirmRemoveAll = false;
       this.deletePosition(1);
       this.deletePosition(2);
