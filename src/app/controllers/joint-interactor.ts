@@ -9,7 +9,7 @@ import { ContextMenuOption, Interactor } from "./interactor";
 import {Subscription} from "rxjs";
 import { PositionInteractor } from "./position-interactor";
 import {Action} from "../components/ToolBar/undo-redo-panel/action"
-import {cloneDeep} from "lodash";
+/*import {cloneDeep} from "lodash";*/
 /*
 This interactor defines the following behaviors:
 - Dragging the joint moves it
