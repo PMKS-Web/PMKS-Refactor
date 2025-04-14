@@ -28,7 +28,8 @@ import { DoCheck } from '@angular/core';
 import {JointInteractor} from "../../../../controllers/joint-interactor";
 import {Position} from "../../../../model/position";
 import {Subscription} from "rxjs";
-
+import {AnimationService} from "../../../../services/animation.service";
+import {AnimationBarComponent} from "../../../AnimationBar/animationbar/animationbar.component";
 
 interface CoordinatePosition {
   x0: number;
@@ -1713,6 +1714,8 @@ defaultToZero(index: number, coordType: 'x0' | 'y0' | 'x1' | 'y1'): void {
     } else {
       console.warn("Input or Ground Joint not found!");
     }
+
+    this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
   }
 
   updateEndPointCoords(positionIndex: number, coordType: 'x0' | 'y0' | 'x1' | 'y1', value: number): void {

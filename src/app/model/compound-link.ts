@@ -251,16 +251,5 @@ export class CompoundLink implements RigidBody{
         console.log(this._color);
     }
 
-    clone(): CompoundLink {
-      const newLinks = new Map<number, Link>();
-      this._links.forEach((link, id) => {
-        newLinks.set(id, link.clone());
-      });
-      const newCompoundLink = new CompoundLink(this._id, Array.from(newLinks.values()));
-      newCompoundLink.name = this._name;
-      newCompoundLink.mass = this._mass;
-      newCompoundLink.lock = this._isLocked;
-      newCompoundLink.color = this._color;
-      return newCompoundLink;
-    }
+
 }

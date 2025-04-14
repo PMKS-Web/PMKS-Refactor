@@ -11,7 +11,6 @@ import {Position} from "../model/position";
 import {Coord} from "../model/coord";
 import {join} from "@angular/compiler-cli";
 import {AnimationBarComponent} from "../components/AnimationBar/animationbar/animationbar.component";
-import { cloneDeep } from 'lodash';
 import {Action} from "../components/ToolBar/undo-redo-panel/action";
 
 /*
@@ -278,7 +277,7 @@ export class StateService {
     this.mechanism.notifyChange();
   }
 
-  // Define how to apply an action.
+  // Define how to apply an action (redo)
   private applyAction(action: Action): void {
     switch (action.type) {
       case 'addInput':
@@ -325,13 +324,14 @@ export class StateService {
         if (action.jointId !== undefined) {
           this.mechanism.removeJoint(action.jointId);
         }
+
         break;
       default:
-        console.error('Unknown action type:', action.type);
+        console.error('No inverse defined for action type:', action.type);
     }
   }
 
-// Define how to apply the inverse of an action.
+// Define how to apply the inverse of an action (for undo)
   private applyInverseAction(action: Action): void {
     switch (action.type) {
       case 'addInput':
@@ -375,15 +375,54 @@ export class StateService {
         }
         break;
       case 'deleteJoint':
-        if (action.jointId !== undefined) {
-          // Assuming that the mechanism has a method to restore a joint.
-          // You might need to store additional joint data in the Action object.
-          //this.mechanism.restoreJoint(action.jointId);
+        // Restore main joint:
+        if (action.jointData) {
+          this.restoreJointFromSnapshot(action.jointData);
         }
+        // Restore extra (cascaded) joints:
+        if (action.extraJointsData) {
+          action.extraJointsData.forEach(jSnap => {
+            this.restoreJointFromSnapshot(jSnap);
+          });
+        }
+        // Restore removed links:
+        if (action.linksData) {
+          action.linksData.forEach(linkSnap => {
+            const linkJoints = linkSnap.jointIds.map(jid => this.mechanism.getJoint(jid));
+            if (linkJoints.every(j => j !== undefined)) {
+              const restoredLink = new Link(linkSnap.id, linkJoints);
+              restoredLink.name = linkSnap.name;
+              restoredLink.mass = linkSnap.mass;
+              restoredLink.angle = linkSnap.angle;
+              restoredLink.locked = linkSnap.locked;
+              restoredLink.color = linkSnap.color;
+              this.mechanism._addLink(restoredLink);
+            }
+          });
+        }
+
         break;
+
       default:
         console.error('No inverse defined for action type:', action.type);
     }
   }
+
+  private restoreJointFromSnapshot(jointSnapshot: Action['jointData']): void {
+    const restoredJoint = new Joint(jointSnapshot!.id, jointSnapshot!.coords.x, jointSnapshot!.coords.y);
+    restoredJoint.name = jointSnapshot!.name;
+    restoredJoint.type = jointSnapshot!.type;
+    restoredJoint.angle = jointSnapshot!.angle;
+    if (jointSnapshot!.isGrounded) restoredJoint.addGround();
+    if (jointSnapshot!.isWelded) restoredJoint.addWeld();
+    if (jointSnapshot!.isInput) restoredJoint.addInput();
+    restoredJoint.speed = jointSnapshot!.inputSpeed;
+    restoredJoint.locked = jointSnapshot!.locked;
+    restoredJoint.hidden = jointSnapshot!.isHidden;
+    restoredJoint.reference = jointSnapshot!.isReference;
+    this.mechanism._addJoint(restoredJoint);
+  }
+
+
 
 }

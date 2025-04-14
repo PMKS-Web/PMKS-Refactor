@@ -1,6 +1,6 @@
-import {Coord} from '../model/coord'
-import {Joint} from '../model/joint'
-import {Force} from '../model/force'
+import {Coord} from './coord'
+import {Joint} from './joint'
+import {Force} from './force'
 
 export interface RigidBody{
     getJoints(): Joint[]
@@ -447,20 +447,4 @@ export class Link implements RigidBody{
         console.log(this._color);
     }
 
-    clone(): Link {
-      const newJoints: Joint[] = [];
-      this._joints.forEach(joint => {
-        newJoints.push(joint.clone());
-      });
-      const newLink = new Link(this._id, newJoints);
-      newLink.name = this._name;
-      newLink.mass = this._mass;
-      newLink.angle = this._angle;
-      newLink.locked = this._isLocked;
-      newLink.color = this._color;
-      this._forces.forEach((force, id) => {
-        newLink._forces.set(id, force.clone());
-      });
-      return newLink;
-    }
 }

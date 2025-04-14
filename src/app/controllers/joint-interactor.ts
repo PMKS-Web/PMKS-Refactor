@@ -9,10 +9,13 @@ import { ContextMenuOption, Interactor } from "./interactor";
 import {Subscription} from "rxjs";
 import { PositionInteractor } from "./position-interactor";
 import {Action} from "../components/ToolBar/undo-redo-panel/action"
+import {cloneDeep} from "lodash";
 /*
 This interactor defines the following behaviors:
 - Dragging the joint moves it
 */
+
+
 
 export class JointInteractor extends Interactor {
     private jointStart: Coord = new Coord(0,0);
@@ -25,6 +28,12 @@ export class JointInteractor extends Interactor {
                 private interactionService: InteractionService) {
 
       super(true, true);
+
+
+
+
+
+
 
 
 
@@ -233,13 +242,76 @@ export class JointInteractor extends Interactor {
               icon: "assets/contextMenuIcons/trash.svg",
               label: "Delete Joint",
               action: () => {
+
+                const mechanism = this.stateService.getMechanism();
+                const jointToDelete = mechanism.getJoint(this.joint.id);
+
+                const jointData = {
+                  id: jointToDelete.id,
+                  coords: { x: jointToDelete.coords.x, y: jointToDelete.coords.y },
+                  name: jointToDelete.name,
+                  type: jointToDelete.type,
+                  angle: jointToDelete.angle,
+                  isGrounded: jointToDelete.isGrounded,
+                  isInput: jointToDelete.isInput,
+                  inputSpeed: jointToDelete.inputSpeed,
+                  isWelded: jointToDelete.isWelded,
+                  locked: jointToDelete.locked,
+                  isHidden: jointToDelete.isHidden,
+                  isReference: jointToDelete.isReference
+                };
+
+                const connectedLinks = mechanism.getConnectedLinksForJoint(jointToDelete);
+                const linksData = connectedLinks.map(link => {
+                  // If link.joints is a Map, convert to Array first
+                  const jointIdsArray = Array.from(link.joints.values()).map(j => j.id);
+                  return {
+                    id: link.id,
+                    jointIds: jointIdsArray,
+                    name: link.name,
+                    mass: link.mass,
+                    angle: link.angle,
+                    locked: link.locked,
+                    color: link.color
+                  };
+                });
+
+                const allJointsSnapshot = mechanism.getArrayOfJoints()
+                  .filter(j => j.id !== jointToDelete.id)
+                  .map(j => ({
+                    id: j.id,
+                    coords: { x: j.coords.x, y: j.coords.y },
+                    name: j.name,
+                    type: j.type,
+                    angle: j.angle,
+                    isGrounded: j.isGrounded,
+                    isInput: j.isInput,
+                    inputSpeed: j.inputSpeed,
+                    isWelded: j.isWelded,
+                    locked: j.locked,
+                    isHidden: j.isHidden,
+                    isReference: j.isReference
+                  }));
+
+                const preDeletionIds = new Set(mechanism.getArrayOfJoints().map(j => j.id));
+                mechanism.removeJoint(this.joint.id);
+                const postDeletionIds = new Set(mechanism.getArrayOfJoints().map(j => j.id));
+                const extraJointsSnapshots = allJointsSnapshot.filter(jSnap => !postDeletionIds.has(jSnap.id));
+
+
+
                 const actionObj: Action = {
                   type: 'deleteJoint',
-                  jointId: this.joint.id,
+                  jointId: jointToDelete.id,
+                  jointData,
+                  linksData,
+                  extraJointsData: extraJointsSnapshots
                 };
+
+
                 this.stateService.recordAction(actionObj);
 
-                mechanism.removeJoint(this.joint.id)
+
               },
               disabled: false
             });
