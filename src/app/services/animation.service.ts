@@ -262,7 +262,6 @@ export class AnimationService {
       if (connectedLinks.length > 0) {
         // Choose the first connected link.
         const link = connectedLinks[0];
-        // Assuming your link has a method getJoints() that returns an array of the joints it connects:
         const jointsOnLink = link.getJoints();
         // Find the joint on this link that is NOT the input joint.
         const otherJoint = jointsOnLink.find(j => j.id !== inputJoint.id);
