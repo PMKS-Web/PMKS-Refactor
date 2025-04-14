@@ -280,7 +280,12 @@
         <button *ngIf='!this.allPositionsDefined() && !isFourBarGenerated()' class="generateFourBarGrey">Generate Four-Bar</button>
 
         <!-- Place Generate Four-Bar first -->
-        <button *ngIf="(!isSixBarGenerated() && this.allPositionsDefined()) || isFourBarGenerated()" class="generateFourBar" (click)="generateFourBar()">
+        <button
+          *ngIf="this.allPositionsDefined() || isFourBarGenerated()"
+          [class.generateFourBarGrey]="isSixBarGenerated()"
+          [class.generateFourBar]="!isSixBarGenerated()"
+          [disabled]="isSixBarGenerated()"
+          (click)="generateFourBar()">
           {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
         </button>
 
