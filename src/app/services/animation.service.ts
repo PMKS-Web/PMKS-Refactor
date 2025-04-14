@@ -243,7 +243,6 @@ export class AnimationService {
       console.log(`Joint index ${index} with ID ${id}: isInput =`, joint ? joint.isInput : "Not found");
     });
 
-    // Find the index of the joint marked as input.
     let inputIndex = state.jointIDs.findIndex(jointId => {
       const joint = this.stateService.getMechanism().getJoint(jointId);
       return joint && joint.isInput === true;
@@ -256,11 +255,8 @@ export class AnimationService {
     const inputJointId = state.jointIDs[inputIndex];
     const inputJoint = this.stateService.getMechanism().getJoint(inputJointId);
 
-    // Now, instead of using the input joint itself (which is static),
-    // find an adjacent joint by looking at the link(s) touching the input joint.
     let adjacentIndex: number | undefined = undefined;
     if (inputJoint) {
-      // Get all links connected to the input joint.
       const connectedLinks = this.stateService.getMechanism().getConnectedLinksForJoint(inputJoint);
       console.log("Connected links for input joint:", connectedLinks);
       if (connectedLinks.length > 0) {
@@ -292,17 +288,14 @@ export class AnimationService {
 
     console.log("Using joint index", adjacentIndex, "for trajectory calculation.");
 
-    // Ensure every animation frame has an entry at the adjacent index.
     if (state.animationFrames.some(frame => frame.length <= adjacentIndex)) {
       console.error(`Some frames do not have an index ${adjacentIndex}. Check your animationFrames data!`);
       return {};
     }
 
-    // Build the trajectory array from the adjacent joint's coordinate on each frame.
     const trajectory: Coord[] = state.animationFrames.map(frame => frame[adjacentIndex]);
     console.log("Computed trajectory using joint index", adjacentIndex, ":", trajectory);
 
-    // Use your existing logic to detect direction changes along the trajectory.
     let clockwise: { frame: number, position: Coord } | undefined = undefined;
     let counterClockwise: { frame: number, position: Coord } | undefined = undefined;
 
