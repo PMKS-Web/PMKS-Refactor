@@ -521,6 +521,7 @@ isSixBarGenerated(): boolean {
       this.cdr.detectChanges();
 
       this.mechanism.addLink(firstPoint, secondPoint, true);
+      let firstGround = this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1].getJoints()[0];
       this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
 
       let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
@@ -532,8 +533,10 @@ isSixBarGenerated(): boolean {
 
       joints = this.mechanism.getJoints(); //updates list of all joints
       lastJoint = this.getLastJoint(joints);
+      let lastGround;
       if (lastJoint !== undefined) {
         this.mechanism.addLinkToJoint(lastJoint.id, fourthPoint, true);
+        lastGround = this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1].getJoints()[1];
         this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
       }
 
@@ -542,7 +545,7 @@ isSixBarGenerated(): boolean {
       //TO-DO get the location of the last joint in the joints array ans start th eindex from there because now we have joints in this array fromn the positions.!
       joints = this.mechanism.getJoints(); //instead of using it hard coded just do first and last on the list, we could do a getter for this.
       let index = 0;
-      for (const joint of joints) {
+      /*for (const joint of joints) {
         if (index === 9) { //using index so we arent dependent on ID of the joints
           joint.addGround();
           joint.addInput();
@@ -551,13 +554,16 @@ isSixBarGenerated(): boolean {
           joint.addGround();
         }
         index++
-      }
+      }*/
 
+      firstGround.addGround();
+      firstGround.addInput();
+      lastGround!.addGround();
 
-      let arrayOfJoints = this.mechanism.getArrayOfJoints();
+      /*let arrayOfJoints = this.mechanism.getArrayOfJoints();
       arrayOfJoints[9].addGround();
       arrayOfJoints[9].addInput();
-      arrayOfJoints[12].addGround();
+      arrayOfJoints[12].addGround();*/
 
       this.positionSolver.solvePositions();
       this.verifyMechanismPath();
@@ -565,18 +571,24 @@ isSixBarGenerated(): boolean {
       let initialGreenCount = this.mechanism.getArrayOfPositions().filter(position => position.color === 'green').length;
 
       if (initialGreenCount < 3) {//since is not the best we check the other input joint, to see of that gives better result
-        arrayOfJoints[9].removeInput();
+        /*arrayOfJoints[9].removeInput();
         arrayOfJoints[12].addInput();
-        arrayOfJoints[9].addGround();
+        arrayOfJoints[9].addGround();*/
+        firstGround.removeInput();
+        firstGround.addGround();
+        lastGround!.addInput();
 
         this.positionSolver.solvePositions();
         this.verifyMechanismPath();
         let alternativeGreenCount = this.mechanism.getArrayOfPositions().filter(position => position.color === 'green').length;
 
         if (initialGreenCount >= alternativeGreenCount) { //go back to initial conf
-          arrayOfJoints[12].removeInput();
+          /*arrayOfJoints[12].removeInput();
           arrayOfJoints[9].addInput();
-          arrayOfJoints[12].addGround();
+          arrayOfJoints[12].addGround();*/
+          firstGround.addInput();
+          lastGround!.removeInput();
+          lastGround!.addGround();
         }
       }
 
@@ -615,8 +627,10 @@ isSixBarGenerated(): boolean {
       return;
     }
 
+    let firstGround = this.synthedMech[0];
+    let lastGround = this.synthedMech[this.synthedMech.length-1];
     //change the inputs to ground
-    const joints = this.mechanism.getJoints();
+    const joints = [firstGround.getJoints()[0], lastGround.getJoints()[1]];
     for (const joint of joints) {
       if (joint.isInput) {
         joint.removeInput();
@@ -647,6 +661,9 @@ isSixBarGenerated(): boolean {
       console.error("no grounded link");
       return;
     }
+
+    //override for now
+    groundedLink = firstGround;
 
     const linkJoints = groundedLink.getJoints();
     const firstJoint = linkJoints[0];
@@ -1265,30 +1282,26 @@ allPositionsDefined(): boolean {
         return false;
 }
 
+  confirmRemoveAll: boolean = false;
+
   removeAllPositions() {
-    // Remove all links regardless of whether the four-bar has been generated
-    /*if (this.panel === "Synthesis"){
-      let listOfLinks = this.synthedMech;
-      console.log(listOfLinks);
-      while (this.synthedMech.length > 0) {
-        let linkId = this.synthedMech[0].id;
-        console.log(linkId);
-        this.synthedMech.splice(0, 1);
-        this.mechanism.removeLink(linkId);
-        console.log("LIST OF LINKS AFTER DELETION:");
-        console.log(this.mechanism.getArrayOfLinks());
+    if (!this.confirmRemoveAll) {
+      this.confirmRemoveAll = true;
+      setTimeout(() => this.confirmRemoveAll = false, 3000);
+    } else {
+      if (this.fourBarGenerated){
+        this.fourBarGenerated = false;
       }
-    }*/
-
-    this.deletePosition(1);
-    this.deletePosition(2);
-    this.deletePosition(3);
-
-    // Reset flags
-    /*this.fourBarGenerated = false;
-    this.synthedMech = [];
-    this.sixBarGenerated = false;
-    this.Generated.emit(false);*/
+      if (this.sixBarGenerated){
+        this.fourBarGenerated = false;
+        this.sixBarGenerated = false;
+      }
+      this.synthedMech = [];
+      this.confirmRemoveAll = false;
+      this.deletePosition(1);
+      this.deletePosition(2);
+      this.deletePosition(3);
+    }
   }
 
   findIntersectionPoint(pose1_coord1: Coord, pose2_coord1: Coord, pose3_coord1: Coord) {

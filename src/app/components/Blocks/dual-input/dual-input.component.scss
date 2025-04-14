@@ -14,13 +14,15 @@
 .dual-input-block {
   display: flex;
   flex-direction: column;
-  margin: 6px;
+  margin-top: -5px;
 }
 
 .input-sections {
   display: flex;
   flex-direction: row;
   padding-bottom: 5px;
+  justify-content: flex-start;
+  gap: 5px;
 }
 
 /* Chrome, Safari, Edge, Opera */
@@ -43,8 +45,13 @@ input[matinput][type=number] {
   cursor: not-allowed;
 }
 
+.Edit-Specific {
+  margin-left: 15px;
+}
+
 label {
-  margin-right: 5px;
+  margin-right: 3px;
+  margin-left: 10px;
 }
 
 mat-icon {
