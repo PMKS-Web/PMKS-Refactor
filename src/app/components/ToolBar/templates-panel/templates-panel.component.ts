@@ -6,8 +6,10 @@ import { Coord } from 'src/app/model/coord';
 import { Joint } from 'src/app/model/joint';
 import { Link } from 'src/app/model/link';
 import { StateService } from 'src/app/services/state.service';
+//import {PositionSolverService} from 'src/app/services/kinematic-solver.service'
 import { state } from '@angular/animations';
 import { ToolbarComponent } from 'src/app/components/ToolBar/toolbar/toolbar.component';
+import {PositionSolverService} from "../../../services/kinematic-solver.service";
 //import {window} from "rxjs";
 
 @Component({
@@ -21,7 +23,7 @@ export class TemplatesPanelComponent {
   private mechanism: Mechanism;
   public open = true;
 
-  constructor(private interactionService: InteractionService, private stateService: StateService, public toolbarComponent: ToolbarComponent){
+  constructor(private interactionService: InteractionService, private stateService: StateService, public toolbarComponent: ToolbarComponent, private positionSolver: PositionSolverService){
     //creates a new mechanism in the state
     this.mechanism = this.stateService.getMechanism();
   }
@@ -66,6 +68,7 @@ export class TemplatesPanelComponent {
     let joint3 = new Coord(3.01,2.08);
     let joint4 = new Coord(3.34,-1.65);
 
+    this.mechanism.clearLinks();
     this.mechanism.addLink(joint1, joint2);
 
     let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
@@ -91,7 +94,7 @@ export class TemplatesPanelComponent {
         joint.addGround();
       }
     }
-
+    this.positionSolver.solvePositions();
     console.log(this.mechanism);
   }
 
@@ -107,7 +110,7 @@ export class TemplatesPanelComponent {
     let tracer2 = new Coord(7.19, 5.18);
     let joint5 = new Coord(1.99,8.13);
 
-
+    this.mechanism.clearLinks();
     this.mechanism.addLink(joint1, joint2);
 
     let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
@@ -162,7 +165,7 @@ export class TemplatesPanelComponent {
         joint.addGround();
       }
     }
-
+    this.positionSolver.solvePositions();
     console.log(this.mechanism);
   }
 
@@ -176,6 +179,7 @@ export class TemplatesPanelComponent {
     let joint5 = new Coord(11, 1.2);
     let joint6 = new Coord(11.25, -2.3);
 
+    this.mechanism.clearLinks();
     this.mechanism.addLink(joint1, joint2);
 
     let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
@@ -221,7 +225,7 @@ export class TemplatesPanelComponent {
         joint.addGround();
       }
     }
-
+    this.positionSolver.solvePositions();
     console.log(this.mechanism);
   }
 
@@ -235,6 +239,7 @@ export class TemplatesPanelComponent {
     let joint5 = new Coord(.87,3.18);
     let joint6 = new Coord(5.5,1.04);
 
+    this.mechanism.clearLinks();
     this.mechanism.addLink(joint1, joint2);
 
     let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
@@ -278,7 +283,7 @@ export class TemplatesPanelComponent {
         joint.addGround();
       }
     }
-
+    this.positionSolver.solvePositions();
     console.log(this.mechanism);
   }
 
@@ -288,6 +293,7 @@ export class TemplatesPanelComponent {
     let joint2 = new Coord(-2.5,2.5);
     let joint3 = new Coord(3,1);
 
+    this.mechanism.clearLinks();
     this.mechanism.addLink(joint1, joint2);
     let joints = this.mechanism.getJoints();
     let lastJoint= this.getLastJoint(joints);
@@ -306,6 +312,7 @@ export class TemplatesPanelComponent {
         joint.addSlider();
       }
     }
+    this.positionSolver.solvePositions();
     console.log(this.mechanism);
   }
 

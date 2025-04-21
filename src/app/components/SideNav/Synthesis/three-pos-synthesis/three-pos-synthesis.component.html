@@ -59,8 +59,8 @@
                            [class.locked]="isLengthLocked"
                       >
 
+                    <!--class="right-aligned" for below-->
                       <single-input-block
-                            class="right-aligned"
                             [input1Value]="2"
                             (input1Change)="setCouplerLength($event)"
                             unit1={{units}}
@@ -162,9 +162,14 @@
 <!--      </button>-->
 
                <!-- Place Generate Four-Bar first -->
-             <button *ngIf="(!isSixBarGenerated() && this.allPositionsDefined()) || isFourBarGenerated()" class="generateFourBar" (click)="generateFourBar()">
-                 {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
-               </button>
+             <button
+               *ngIf="this.allPositionsDefined() || isFourBarGenerated()"
+               [class.generateFourBarGrey]="isSixBarGenerated()"
+               [class.generateFourBar]="!isSixBarGenerated()"
+               [disabled]="isSixBarGenerated()"
+               (click)="generateFourBar()">
+               {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
+             </button>
              <button class="removeAll" (click)="removeAllPositions()">
                {{ confirmRemoveAll ? 'Are You Sure?' : 'Remove All Positions' }}
              </button>
@@ -275,7 +280,12 @@
         <button *ngIf='!this.allPositionsDefined() && !isFourBarGenerated()' class="generateFourBarGrey">Generate Four-Bar</button>
 
         <!-- Place Generate Four-Bar first -->
-        <button *ngIf="(!isSixBarGenerated() && this.allPositionsDefined()) || isFourBarGenerated()" class="generateFourBar" (click)="generateFourBar()">
+        <button
+          *ngIf="this.allPositionsDefined() || isFourBarGenerated()"
+          [class.generateFourBarGrey]="isSixBarGenerated()"
+          [class.generateFourBar]="!isSixBarGenerated()"
+          [disabled]="isSixBarGenerated()"
+          (click)="generateFourBar()">
           {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
         </button>
 

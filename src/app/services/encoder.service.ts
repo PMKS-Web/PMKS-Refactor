@@ -18,6 +18,78 @@ export class EncoderService {
   get mechanism() {
     return this.stateService.getMechanism();
   }
+
+  private sectionHeaders: Record<string, string[]> = {
+    j: [
+      "Joint ID",
+      "Joint Name",
+      "X Position",
+      "Y Position",
+      "Joint Type",
+      "Angle",
+      "Grounded?",
+      "Is Input?",
+      "Input Speed",
+      "Is Welded?",
+      "Locked?",
+      "Hidden?",
+      "Is Reference?"
+    ],
+    l: [
+      "Link ID",
+      "Link Name",
+      "Mass",
+      "Color",
+      "Center of Mass X",
+      "Center of Mass Y",
+      "Joint IDs",
+      "Force IDs",
+      "Locked?",
+      "Length",
+      "Angle"
+    ],
+    c: [
+      "Compound Link ID",
+      "Name",
+      "Mass",
+      "Center of Mass X",
+      "Center of Mass Y",
+      "Sub-Link IDs",
+      "Lock"
+    ],
+    t: [
+      "Trajectory ID",
+      "X Position",  // If you have more than one point, expand as needed
+      "Y Position"
+    ],
+    f: [
+      "Force ID",
+      "Force Name",
+      "Start X",
+      "Start Y",
+      "End X",
+      "End Y",
+      "Magnitude",
+      "Angle",
+      "Frame of Reference"
+    ],
+    p: [
+      "Position ID",
+      "Position Name",
+      "Mass",
+      "Color",
+      "Center of Mass X",
+      "Center of Mass Y",
+      "Joint IDs",
+      "Force IDs",
+      "Locked?",
+      "Reference Point",
+      "Length",
+      "Angle"
+    ]
+  };
+
+
   /**
    * Encodes the mechanism into a one-line, URL-friendly string.
    * This method:
@@ -43,6 +115,8 @@ export class EncoderService {
     }
   }
 
+
+
   /**
    * Exports the mechanism data as a CSV string.
    * The data is produced in a compact form (arrays in a fixed order) and then converted to CSV.
@@ -54,6 +128,15 @@ export class EncoderService {
     for (const section of Object.keys(data)) {
       csvOutput += `--- ${section} ---\n`;
       // For each row, run each field through csvEscape to protect against commas, quotes, or newlines.
+
+      // Inject the header row if present
+      if (this.sectionHeaders[section]) {
+        csvOutput += this.sectionHeaders[section]
+          .map((header) => this.csvEscape(header))
+          .join(",") + "\n";
+      }
+
+
       csvOutput += data[section]
         .map((row: any[]) => row.map(value => this.csvEscape(value)).join(","))
         .join("\n");

@@ -7,7 +7,12 @@ import { BehaviorSubject } from 'rxjs'
 import {Position} from "./position";
 import {Trajectory} from "./trajectory";
 import { PositionSolverService } from 'src/app/services/kinematic-solver.service';
+import { Injectable } from '@angular/core';
 
+
+@Injectable({
+  providedIn: 'root'
+})
 
 export class Mechanism {
     private _joints: Map<number, Joint>;
@@ -26,6 +31,8 @@ export class Mechanism {
     private _positionIDCount: number = 0;
     private _synthesizedMechArr: Link[] = [];
     private _refIdCount: number = -1;
+    private undoStack: Mechanism[] = [];
+    private redoStack: Mechanism[] = [];
 
 
     constructor() {
@@ -40,15 +47,14 @@ export class Mechanism {
         this._linkIDCount = 0;
         this._forceIDCount = 0;
         this._compoundLinkIDCount = 0;
-        console.log("Mechanism Constructor");
     }
 
 
     notifyChange(): void{
-        console.log("updated Mechanism to");
-        console.log(Array.from(this._joints.values()));
-        console.log(Array.from(this._links.values()));
-        console.log(Array.from(this._positions.values()));
+        //console.log("updated Mechanism to");
+        //console.log(Array.from(this._joints.values()));
+        //console.log(Array.from(this._links.values()));
+        //console.log(Array.from(this._positions.values()));
         this._mechanismChange.next(this);
     }
 
@@ -66,7 +72,8 @@ export class Mechanism {
      * @memberof Mechanism
      */
     addLink(coordOne: Coord, coordTwo: Coord, synthesized?: boolean) {
-        let isSynth = false;
+
+      let isSynth = false;
         if (typeof synthesized !== 'undefined') {
           isSynth = synthesized;
         }
@@ -470,6 +477,8 @@ export class Mechanism {
      */
     setJointCoord(jointID: number, newCoord: Coord) {
         this.executeJointAction(jointID, (joint) => true, 'error','success', (joint) =>{joint.setCoordinates(newCoord);});
+
+
     }
     /**
      * Moves a joint to a new specified x coordinate.
@@ -1038,6 +1047,19 @@ export class Mechanism {
     this._trajectories.clear();
   }
 
+  clearLinks(): void {
+    this._links.clear();
+    this._linkIDCount = 0;
+
+    this._joints.clear();
+    this._jointIDCount = 0;
+
+    this._compoundLinks.clear();
+    this._compoundLinkIDCount = 0;
+
+    this.notifyChange();
+  }
+
  //----------------------------GET FUNCTIONS FOR KINEMATICS----------------------------
     getSubMechanisms(): Array<Map<Joint,RigidBody[]>>{
         const subMechanisms: Array<Map<Joint,RigidBody[]>> = new Array();
@@ -1102,8 +1124,6 @@ export class Mechanism {
   public _addTrajectory(trajectory: Trajectory): void {
     this._trajectories.set(trajectory.id, trajectory);
   }
-
-
 
 
 }

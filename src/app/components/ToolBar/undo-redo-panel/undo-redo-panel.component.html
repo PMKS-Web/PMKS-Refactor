@@ -1,0 +1,24 @@
+<!-- undo-redo-panel.component.html -->
+<button
+  mat-button
+  class="toolbar-button"
+  (click)="onUndo()"
+  [disabled]="!stateService.canUndo()"
+  matTooltip="Undo the last action"
+  matTooltipShowDelay="1000"
+>
+  <mat-icon>undo</mat-icon>
+  Undo
+</button>
+
+<button
+  mat-button
+  class="toolbar-button"
+  (click)="onRedo()"
+  [disabled]="!stateService.canRedo()"
+  matTooltip="Redo the last undone action"
+  matTooltipShowDelay="1000"
+>
+  <mat-icon>redo</mat-icon>
+  Redo
+</button>
