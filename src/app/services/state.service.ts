@@ -276,8 +276,9 @@ export class StateService {
     console.log('Redo performed for action:', action);
     this.mechanism.notifyChange();
   }
-
-  // Define how to apply an action (redo)
+//------------------------------------------------------------------------------------------------------
+//---------------------------------- | REDO | ----------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
   private applyAction(action: Action): void {
     switch (action.type) {
       case 'addInput':
@@ -324,14 +325,76 @@ export class StateService {
         if (action.jointId !== undefined) {
           this.mechanism.removeJoint(action.jointId);
         }
-
         break;
+
+      case 'moveJoint':
+        if (action.jointId != null && action.newCoords) {
+          this.mechanism.setJointCoord(
+            action.jointId,
+            new Coord(action.newCoords.x, action.newCoords.y)
+          );
+        }
+        break;
+
+      case 'moveLink':
+        for (const p of action.newJointPositions!) {
+          this.mechanism.setJointCoord(p.jointId, new Coord(p.coords.x, p.coords.y));
+        }
+        break;
+
+      case 'addLink':
+        if (action.extraJointsData) {
+          action.extraJointsData.forEach(js =>
+            this.restoreJointFromSnapshot(js)
+          );
+        }
+
+        //rebuild the link
+        const ld = action.linkData!;
+        const joints = ld.jointIds.map(id => {
+          const j = this.mechanism.getJoint(id);
+          if (!j) console.warn(`addLink redo: missing joint ${id}`);
+          return j!;
+        });
+
+        const newLink = new Link(ld.id, joints);
+        newLink.name   = ld.name;
+        newLink.mass   = ld.mass;
+        newLink.angle  = ld.angle;
+        newLink.locked = ld.locked;
+        newLink.color  = ld.color;
+        this.mechanism._addLink(newLink);
+        break;
+
+
+      case 'deleteLink':
+        this.mechanism.removeLink(action.linkData!.id);
+        break;
+
+      case 'addTracer':
+        const tr = action.linkTracerData!;
+        this.mechanism.addJointToLink(tr.linkId, new Coord(tr.coords.x, tr.coords.y));
+        break;
+
+
+      case 'addLinkToLink':
+        this.mechanism.addLinkToLink(
+          action.parentLinkId!,
+          action.start!,
+          action.end!
+        );
+        break;
+
+
+
+
       default:
         console.error('No inverse defined for action type:', action.type);
     }
   }
-
-// Define how to apply the inverse of an action (for undo)
+  //---------------------------------------------------------------------------------
+  // --------------------------- | UNDO | ------------------------------------------
+  //--------------------------------------------------------------------------------
   private applyInverseAction(action: Action): void {
     switch (action.type) {
       case 'addInput':
@@ -402,6 +465,85 @@ export class StateService {
         }
 
         break;
+      case 'moveJoint':
+        if (action.jointId != null && action.oldCoords) {
+          this.mechanism.setJointCoord(
+            action.jointId,
+            new Coord(action.oldCoords.x, action.oldCoords.y)
+          );
+        }
+        break;
+      case 'moveLink':
+        for (const p of action.oldJointPositions!) {
+          this.mechanism.setJointCoord(p.jointId, new Coord(p.coords.x, p.coords.y));
+        }
+        break;
+
+      case 'addLink':
+        this.mechanism.removeLink(action.linkData!.id);
+        break;
+
+      case 'deleteLink':
+        if (action.extraJointsData) {
+          action.extraJointsData.forEach(js => {
+           if (!this.mechanism.getJoint(js.id)) {
+             this.restoreJointFromSnapshot(js);
+              }
+            });
+
+        }
+
+        // rebuild the link
+        const ld = action.linkData!;
+        const jointObjs = ld.jointIds.map(id => {
+          const j = this.mechanism.getJoint(id);
+          if (!j) console.warn(`undo deleteLink: joint ${id} still missing`);
+          return j!;
+        });
+
+        // only re‑add if all its joints are present
+        if (jointObjs.every(j => j != null)) {
+          const linkRestored = new Link(ld.id, jointObjs);
+          linkRestored.name   = ld.name;
+          linkRestored.mass   = ld.mass;
+          linkRestored.angle  = ld.angle;
+          linkRestored.locked = ld.locked;
+          linkRestored.color  = ld.color;
+          this.mechanism._addLink(linkRestored);
+        }
+        break;
+
+
+
+      case 'addTracer': {
+        const tr = action.linkTracerData!;
+        const linkObj = this.mechanism.getLink(tr.linkId);
+        const toRemove = Array.from(linkObj.joints.values()).find(j =>
+          j.coords.x === tr.coords.x && j.coords.y === tr.coords.y
+        );
+        if (toRemove) {
+          this.mechanism.removeJoint(toRemove.id);
+        } else {
+          console.warn(
+            `Undo addTracer: no tracer found at (${tr.coords.x},${tr.coords.y})`
+          );
+        }
+        break;
+      }
+
+
+      case 'addLinkToLink':
+        // remove the brand‑new link
+        if (action.newLinkId !== undefined) {
+          this.mechanism.removeLink(action.newLinkId);
+        }
+        if (action.attachJointId !== undefined) {
+          this.mechanism.getJoint(action.attachJointId) &&
+          this.mechanism.removeJoint(action.attachJointId);
+        }
+        break;
+
+
 
       default:
         console.error('No inverse defined for action type:', action.type);

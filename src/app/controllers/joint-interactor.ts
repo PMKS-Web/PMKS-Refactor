@@ -8,8 +8,7 @@ import { CreateLinkFromJointCapture } from "./click-capture/create-link-from-joi
 import { ContextMenuOption, Interactor } from "./interactor";
 import {Subscription} from "rxjs";
 import { PositionInteractor } from "./position-interactor";
-import {Action} from "../components/ToolBar/undo-redo-panel/action"
-import {cloneDeep} from "lodash";
+import {Action} from "../components/ToolBar/undo-redo-panel/action";
 /*
 This interactor defines the following behaviors:
 - Dragging the joint moves it
@@ -22,6 +21,7 @@ export class JointInteractor extends Interactor {
     private activePanelSub = new Subscription();
     private activePanel = "Edit";
     private _isDraggable: boolean = true;
+    private jointStartCoords: Coord | null = null;
 
     constructor(public joint: Joint,
                 private stateService: StateService,
@@ -37,33 +37,42 @@ export class JointInteractor extends Interactor {
 
 
 
-        this.onDragStart$.subscribe((event) => {
-            if ((!this.joint.locked || this.activePanel === "Edit") && this._isDraggable) {
-              this.jointStart = this.joint._coords;
-            }
-        });
+      this.onDragStart$.subscribe(() => {
+        if ((!this.joint.locked || this.activePanel === "Edit") && this._isDraggable) {
+          this.jointStartCoords = this.joint.coords.clone();
+        }
+      });
 
-        this.onDrag$.subscribe((event) => {
-            if ((!this.joint.locked || this.activePanel === "Edit") && this._isDraggable) {
-              this.stateService.getMechanism().setJointCoord(this.joint.id, this.jointStart.add(this.dragOffsetInModel!))
-            }
-        });
 
-        this.onDragEnd$.subscribe((event) => {
-          console.log("Drag ended for joint", this.joint.id);
+      this.onDrag$.subscribe(() => {
+        if ((!this.joint.locked || this.activePanel === "Edit") && this._isDraggable && this.jointStartCoords) {
+          const newPos = this.jointStartCoords.clone().add(this.dragOffsetInModel!);
+          this.stateService.getMechanism().setJointCoord(this.joint.id, newPos);
+        }
+      });
 
-          const mech = this.stateService.getMechanism();
-          mech.notifyChange();
 
-        });
+      this.onDragEnd$.subscribe(() => {
+        if (this.jointStartCoords) {
+          const oldPos = this.jointStartCoords;
+          const newPos = this.joint.coords.clone();
+
+          if (oldPos.x !== newPos.x || oldPos.y !== newPos.y) {
+            this.stateService.recordAction({
+              type: 'moveJoint',
+              jointId: this.joint.id,
+              oldCoords: { x: oldPos.x, y: oldPos.y },
+              newCoords: { x: newPos.x, y: newPos.y }
+            });
+          }
+        }
+
+        this.jointStartCoords = null;
+        this.stateService.getMechanism().notifyChange();
+      });
+
       this.activePanelSub = this.stateService.globalActivePanelCurrent.subscribe((panel) => {this.activePanel = panel});
-        /*
-        // if backspace, delete
-        this.onKeyDown$.subscribe((event) => {
-            if (event.key === "Backspace") {
-                this.stateService.getMechanism().removeJoint(this.joint.id);
-            }
-        });*/
+
 
     }
 
@@ -90,6 +99,8 @@ export class JointInteractor extends Interactor {
               icon: "assets/contextMenuIcons/addLink.svg",
               label: "Attach Link",
               action: () => {
+
+
                 this.enterAddLinkCaptureMode()
               },
               disabled: false
@@ -184,6 +195,7 @@ export class JointInteractor extends Interactor {
 
 
                   mechanism.removeSlider(this.joint.id)
+                  mechanism.removeGround(this.joint.id)
                 },
                 disabled: !mechanism.canRemoveSlider(this.joint)
               });
@@ -200,9 +212,11 @@ export class JointInteractor extends Interactor {
                   };
                   this.stateService.recordAction(actionObj);
 
+
                   mechanism.addSlider(this.joint.id)
+                  mechanism.removeGround(this.joint.id)
                 },
-                disabled: !mechanism.canAddSlider(this.joint) || !this.joint.isGrounded
+                disabled: !mechanism.canAddSlider(this.joint)
               });
           }
           //Logic for Welding option
@@ -292,8 +306,7 @@ export class JointInteractor extends Interactor {
                     isHidden: j.isHidden,
                     isReference: j.isReference
                   }));
-
-                const preDeletionIds = new Set(mechanism.getArrayOfJoints().map(j => j.id));
+                new Set(mechanism.getArrayOfJoints().map(j => j.id));
                 mechanism.removeJoint(this.joint.id);
                 const postDeletionIds = new Set(mechanism.getArrayOfJoints().map(j => j.id));
                 const extraJointsSnapshots = allJointsSnapshot.filter(jSnap => !postDeletionIds.has(jSnap.id));
@@ -320,20 +333,71 @@ export class JointInteractor extends Interactor {
 
     }
 
-    private enterAddLinkCaptureMode(): void {
-        const capture = new CreateLinkFromJointCapture(this.joint, this.interactionService);
-        capture.onClick$.subscribe((mousePos) => {
+  private enterAddLinkCaptureMode(): void {
+    const capture = new CreateLinkFromJointCapture(this.joint, this.interactionService);
+    // ── after ──
+    capture.onClick$.subscribe(mousePos => {
+      const mech = this.stateService.getMechanism();
 
-            if (capture.getHoveringJoint() === undefined) { // if not hovering over a joint, create a new joint to attach to
-                this.stateService.getMechanism().addLinkToJoint(this.joint.id, mousePos);
-            } else { // if hovering over a joint, create a link to that joint
-                this.stateService.getMechanism().addLinkToJoint(this.joint.id, capture.getHoveringJoint()!.id);
-            }
+      // make the link (and possibly a new joint)
+      const hovered = capture.getHoveringJoint();
+      if (!hovered) {
+        mech.addLinkToJoint(this.joint.id, mousePos);
+      } else {
+        mech.addLinkToJoint(this.joint.id, hovered.id);
+      }
+
+      // grab the link
+      const allLinks = mech.getArrayOfLinks();
+      const created  = allLinks[allLinks.length - 1];
+
+      // if we just made a brand‑new joint, find it and snapshot it
+      let extraJointsData: Action['extraJointsData'] = [];
+      if (!hovered) {
+        const [a,b] = created.getJoints().map(j => j.id);
+        const newJointId = (a === this.joint.id ? b : a);
+        const newJoint   = mech.getJoint(newJointId)!;
+
+        extraJointsData.push({
+          id:          newJoint.id,
+          coords:      { x: newJoint.coords.x, y: newJoint.coords.y },
+          name:        newJoint.name,
+          type:        newJoint.type,
+          angle:       newJoint.angle,
+          isGrounded:  newJoint.isGrounded,
+          isWelded:    newJoint.isWelded,
+          isInput:     newJoint.isInput,
+          inputSpeed:  newJoint.speed,
+          locked:      newJoint.locked,
+          isHidden:      newJoint.hidden,
+          isReference: newJoint.reference
         });
-        this.interactionService.enterClickCapture(capture);
-    }
+      }
 
-    public override toString(): string {
+      //record both link + any new joint
+      this.stateService.recordAction({
+        type:             'addLink',
+        linkData:         {
+          id:       created.id,
+          jointIds: created.getJoints().map(j => j.id),
+          name:     created.name,
+          mass:     created.mass,
+          angle:    created.angle,
+          locked:   created.locked,
+          color:    created.color
+        },
+        extraJointsData: extraJointsData.length ? extraJointsData : undefined
+      });
+
+      mech.notifyChange();
+    });
+
+    this.interactionService.enterClickCapture(capture);
+  }
+
+
+
+  public override toString(): string {
         return "jointInteractor(" + this.joint.name + ")";
     }
 

@@ -6,6 +6,8 @@ import { Mechanism } from "../model/mechanism";
 import { CreateLinkFromGridCapture} from "./click-capture/create-link-from-grid-capture"
 import { PanZoomService } from "../services/pan-zoom.service";
 import {Subscription} from "rxjs";
+import type { JointSnapshot, LinkSnapshot } from "../components/ToolBar/undo-redo-panel/action";
+
 
 /*
 This handles any interaction with the SVG canvas.
@@ -51,15 +53,64 @@ export class SvgInteractor extends Interactor {
 
         return availableContext;
     }
-    private enterAddLinkCaptureMode(modelPosAtRightClick: Coord): void {
-        const capture = new CreateLinkFromGridCapture(modelPosAtRightClick, this.interactionService);
-        capture.onClick$.subscribe((mousePos) => {
-            this.stateService.getMechanism().addLink(modelPosAtRightClick, mousePos);
-        });
-        this.interactionService.enterClickCapture(capture);
-    }
+  private enterAddLinkCaptureMode(modelPosAtRightClick: Coord): void {
+    const capture = new CreateLinkFromGridCapture(modelPosAtRightClick, this.interactionService);
+    capture.onClick$.subscribe((mousePos) => {
+      const mech = this.stateService.getMechanism();
 
-    public override toString(): string {
+      const beforeLinkIds  = mech.getArrayOfLinks().map(l => l.id);
+      const beforeJointIds = mech.getArrayOfJoints().map(j => j.id);
+
+      mech.addLink(modelPosAtRightClick, mousePos);
+
+      const createdLink = mech.getArrayOfLinks().find(l => !beforeLinkIds.includes(l.id))!;
+
+      const allJoints    = mech.getArrayOfJoints();
+      const newJointIds  = allJoints.map(j => j.id)
+        .filter(id => !beforeJointIds.includes(id));
+      const extraJointsData: JointSnapshot[] = newJointIds.map(id => {
+        const j = mech.getJoint(id)!;
+        return {
+          id:         j.id,
+          coords:     { x: j.coords.x, y: j.coords.y },
+          name:       j.name,
+          type:       j.type,
+          angle:      j.angle,
+          isGrounded: j.isGrounded,
+          isWelded:   j.isWelded,
+          isInput:    j.isInput,
+          inputSpeed: j.speed,
+          locked:     j.locked,
+          isHidden:   j.hidden,
+          isReference:j.reference
+        };
+      });
+
+      // snapshot the link
+      const linkData: LinkSnapshot = {
+        id:       createdLink.id,
+        jointIds: createdLink.getJoints().map(j => j.id),
+        name:     createdLink.name,
+        mass:     createdLink.mass,
+        angle:    createdLink.angle,
+        locked:   createdLink.locked,
+        color:    createdLink.color
+      };
+
+      this.stateService.recordAction({
+        type:             'addLink',
+        linkData,
+        extraJointsData:  extraJointsData.length ? extraJointsData : undefined
+      });
+
+      mech.notifyChange();
+    });
+
+    this.interactionService.enterClickCapture(capture);
+  }
+
+
+  public override toString(): string {
         return "SvgInteractor()";
     }
     public override type(): string{
