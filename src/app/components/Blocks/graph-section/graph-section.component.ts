@@ -60,13 +60,15 @@ export class GraphSectionComponent implements AfterViewInit, OnInit {
 
   public chart!: Chart;
 
+  // public showGrid: boolean = true; // Default: grid ON
 
   constructor(private animationService: AnimationService) {}
 
   public ChartOptions: any = {
     bezierCurve: true,
     tension: 0.3,
-    scaleShowVerticalLines: false,
+    // scaleShowVerticalLines: true,
+    // scaleShowHorizontalLines: false,
     responsive: true,
     hover: {
       mode: 'nearest',
@@ -88,6 +90,9 @@ export class GraphSectionComponent implements AfterViewInit, OnInit {
             weight: 'bold',
           },
         },
+        grid: {
+          display: false,
+        }
       },
       y: {
         display: this.showYAxis,
@@ -98,6 +103,9 @@ export class GraphSectionComponent implements AfterViewInit, OnInit {
           font: {
             weight: 'bold',
           },
+        },
+        grid: {
+          display: false,
         },
         padding: {
           top: 10,
@@ -128,6 +136,8 @@ export class GraphSectionComponent implements AfterViewInit, OnInit {
     const ctx: CanvasRenderingContext2D = this.graphCanvas.nativeElement.getContext('2d');
     console.log("Creating chart!");
 
+    console.log("this.ChartOptions.scaleShowVerticalLines = " + this.ChartOptions.scaleShowVerticalLines);
+
     if (this.inputXData && this.inputYData) {
       this.chart = new Chart(ctx, {
         type: 'line',
@@ -144,8 +154,8 @@ export class GraphSectionComponent implements AfterViewInit, OnInit {
         plugins: [verticalLinePlugin]
       });
 
-      // this.animateVerticalLine();
     }
+
   }
 
   public updateGraphAtStep(step: number) {
@@ -179,17 +189,34 @@ export class GraphSectionComponent implements AfterViewInit, OnInit {
     document.body.removeChild(link);
   }
 
+  onToggleGrid(event: any): void {
+    this.ChartOptions.scales.x.grid.display= event.target.checked;
+    this.ChartOptions.scales.y.grid.display= event.target.checked;
+    this.chart.update();
+    this.updateChart();
+  }
+
+  updateChart(): void {
+
+
+    if (this.chart) {
+      this.chart.destroy();
+
+      console.log("Chart destroyed!!!");
+    }
+
+    this.createChart();
+
+
+  }
+
   public downloadPNG() {
     // Remove the red line temporarily
-    // const originalPlugins = this.chart.config.plugins;
-    // this.chart.config.plugins = this.chart.config.plugins?.filter(p => (p as any).id !== 'verticalLine');
-
     Chart.unregister(verticalLinePlugin);
-
-    console.log("hehehehe");
 
     // Redraw chart without red line
     this.chart.update();
+    this.updateChart();
 
     // Create PNG from canvas
     const originalCanvas = this.chart.canvas;
@@ -221,9 +248,9 @@ export class GraphSectionComponent implements AfterViewInit, OnInit {
     document.body.removeChild(link);
 
     // Restore vertical line and redraw
-    // this.chart.config.plugins = originalPlugins;
     Chart.register(verticalLinePlugin);
     this.chart.update();
+    this.updateChart();
 
   }
 
