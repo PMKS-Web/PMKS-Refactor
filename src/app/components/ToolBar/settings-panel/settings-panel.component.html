@@ -126,11 +126,11 @@
             </mat-icon>
           </span>
           <div class="switch-container">
-            <label class="switch" (click)="toggle()">
+            <label class="switch" (click)="toggleMinor()">
               <input
                 type="checkbox"
                 [(ngModel)]="minorGridEnabled"
-                (change)="toggle()"
+                (change)="toggleMinor()"
               />
               <span class="slider"></span>
             </label>
