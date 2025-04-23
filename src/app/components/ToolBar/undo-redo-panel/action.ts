@@ -38,6 +38,11 @@ export interface Action {
   newLinkId?: number;
   newJointIds?: number[];
 
+  oldDistance?: number;
+  newDistance?: number;
+  oldAngle?: number;
+  newAngle?: number;
+
 
 }
 

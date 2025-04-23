@@ -132,7 +132,12 @@ export class AnimationBarComponent implements OnInit{
     const inputElement = event.target as HTMLInputElement;
     const numericValue = parseFloat(inputElement.value);
     this.sliderValue = numericValue;
-    const fraction = numericValue / 100;
+    let fraction = numericValue / 100;
+
+    if (!this.animationService.startDirectionCounterclockwise) {
+      fraction = 1 - fraction;
+    }
+
     this.animationService.setAnimationProgress(fraction);
   }
 

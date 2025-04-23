@@ -43,16 +43,39 @@
                               (opened)="sectionExpanded['LBasic'] = true" (closed)="sectionExpanded['LBasic'] = false">
         <div>
           <!-- Link length and angle input -->
-          <dual-input-block id="lengthAndAngle"
-                            [input1Value]="getLinkLength()"
-                            [input2Value]="getLinkAngle()"
-                            (input1Change)="setLinkLength($event)"
-                            (input2Change)="setLinkAngle($event)"
-                            iconLabel1="assets/icons/length.svg" iconLabel2="assets/icons/angle.svg"
-                            unit1={{units}} unit2={{angles}}
-                            tooltip="Enter the length and angle of the link">
-            Link Length and Angle
-          </dual-input-block>
+          <div class="length-angle-block">
+            <!--Label on its own line -->
+            <div class="la-label">Link Length and Angle</div>
+
+            <!--Inputs side-by-side -->
+            <div class="length-angle-row">
+              <div class="la-cell">
+                <img src="assets/icons/length.svg" class="la-icon" alt="length"/>
+                <input
+                  type="number"
+                  [value]="pendingLinkLength ?? getLinkLength()"
+                  (input)="pendingLinkLength = $any($event.target).valueAsNumber"
+                  (keydown.enter)="confirmLinkLength()"
+                  [disabled]="isLocked"
+                />
+                <span class="la-unit">{{ units }}</span>
+              </div>
+
+              <div class="la-cell">
+                <img src="assets/icons/angle.svg" class="la-icon" alt="angle"/>
+                <input
+                  type="number"
+                  [value]="pendingLinkAngle ?? getLinkAngle()"
+                  (input)="pendingLinkAngle = $any($event.target).valueAsNumber"
+                  (keydown.enter)="confirmLinkAngle()"
+                  [disabled]="isLocked"
+                />
+
+                <span class="la-unit">{{ angles }}</span>
+              </div>
+            </div>
+          </div>
+
           <!-- tracer and force buttons -->
           <dual-button btn1Text="Add Tracer" btn2Text="Add Force" [btn1Action]="addTracer" [Link]=getSelectedObject() [btn1SVGPath]="addTracerIconPath" [btn2SVGPath]="addForceIconPath"
                        [mechanism]="getMechanism()">
@@ -67,18 +90,39 @@
           <!-- displays a list of all joints and tracers for a link -->
           <!--        <p>Components</p>-->
           <div id="container">
-            <div *ngFor='let joint of getLinkComponents(); let i = index;'>
-              <dual-input-block
-                [input1Value]="this.roundToThree(joint.coords.x)"
-                [input2Value]="this.roundToThree(joint.coords.y)"
-                (input1Change)="joint.coords.x=(this.roundToThree($event))"
-                (input2Change)="joint.coords.y=(this.roundToThree($event))"
-                label1="X" label2="Y"
-                unit1={{units}} unit2={{units}}
-                tooltip="Change joint positions">
-                Joint {{ joint.name }}
-              </dual-input-block>
+            <div *ngFor="let joint of getLinkComponents()">
+              <div class="xy-block">
+                <!-- label on its own line -->
+                <label class="xy-label">Joint {{ joint.name }}</label>
+
+                <!-- side by side X & Y -->
+                <div class="xy-row">
+                  <div class="xy-cell">
+                    <label>X</label>
+                    <input
+                      type="number"
+                      [value]="pendingCompX[joint.id] ?? roundToThree(joint.coords.x)"
+                      (input)="pendingCompX[joint.id] = $any($event.target).valueAsNumber"
+                      (keydown.enter)="confirmCompX(joint.id)"
+                      [disabled]="isLocked"
+                    />
+                    <span class="xy-unit">{{ units }}</span>
+                  </div>
+                  <div class="xy-cell">
+                    <label>Y</label>
+                    <input
+                      type="number"
+                      [value]="pendingCompY[joint.id] ?? roundToThree(joint.coords.y)"
+                      (input)="pendingCompY[joint.id] = $any($event.target).valueAsNumber"
+                      (keydown.enter)="confirmCompY(joint.id)"
+                      [disabled]="isLocked"
+                    />
+                    <span class="xy-unit">{{ units }}</span>
+                  </div>
+                </div>
+              </div>
             </div>
+
           </div>
         </div>
       </collapsible-subsection>

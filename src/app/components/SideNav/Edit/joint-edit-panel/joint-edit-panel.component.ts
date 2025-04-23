@@ -39,6 +39,7 @@ export class jointEditPanelComponent {
   angleSubscription: Subscription = new Subscription();
   units: string = "cm";
   angles: string = "º";
+  public pendingAngles: { [jointId: number]: number } = {};
 
   constructor(private stateService: StateService, private interactorService: InteractionService) {
     console.log("joint-edit-panel.constructor");
@@ -50,12 +51,113 @@ export class jointEditPanelComponent {
     this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe((angles) => {this.angles = angles;});
   }
 
+
+
+  public pendingX?: number;
+  public pendingY?: number;
+
+  confirmJointX(): void {
+    const newX = this.pendingX;
+    if (newX == null) return;
+
+    const joint   = this.getCurrentJoint();
+    const oldX    = this.getJointXCoord();
+    const oldY    = joint.coords.y;              // grab the *current* Y too
+    const newY    = oldY;                        // Y stays the same in an X‑only edit
+
+    if (Math.abs(oldX - newX) < 1e-6) {
+      this.pendingX = undefined;
+      return;
+    }
+
+    this.stateService.recordAction({
+      type:      "setJoint",
+      jointId:   joint.id,
+      oldCoords: { x: oldX, y: oldY },
+      newCoords: { x: newX, y: newY }
+    });
+
+    this.setJointXCoord(newX);
+    this.stateService.getMechanism().notifyChange();
+
+    this.pendingX = undefined;
+  }
+
+
+  confirmJointY(): void {
+    const newY = this.pendingY;
+    if (newY == null) return;
+
+    const joint   = this.getCurrentJoint();
+    const oldX    = joint.coords.x;             // X stays the same in a Y‑only edit
+    const oldY    = this.getJointYCoord();
+
+    if (Math.abs(oldY - newY) < 1e-6) {
+      this.pendingY = undefined;
+      return;
+    }
+
+    this.stateService.recordAction({
+      type:      "setJoint",
+      jointId:   joint.id,
+      oldCoords: { x: oldX, y: oldY },
+      newCoords: { x: oldX, y: newY }
+    });
+
+    this.setJointYCoord(newY);
+    this.stateService.getMechanism().notifyChange();
+
+    this.pendingY = undefined;
+  }
+
+
+  private applyJointAngle(notCurrentJoint: number, newAngle: number) {
+    const current = this.getCurrentJoint();
+    // find the link connecting the two joints:
+    const link = Array.from(this.getLinksForJoint())
+      .find(l => l.joints.has(notCurrentJoint))!;
+    link.setAngle(newAngle, current);
+    this.getMechanism().notifyChange();
+  }
+
+  onAngleEnter(jointId: number, raw: string) {
+    const newAngle = parseFloat(raw);
+    if (isNaN(newAngle)) { return; }
+
+    // figure out which link & compute oldAngle
+    const current = this.getCurrentJoint();
+    const link = Array.from(this.getLinksForJoint())
+      .find(l => l.joints.has(jointId))!;
+    const other  = link.joints.get(jointId)!;
+    let oldAngle = Math.atan2(
+      other.coords.y - current.coords.y,
+      other.coords.x - current.coords.x
+    ) * 180/Math.PI;
+    if (oldAngle < 0) oldAngle += 360;
+
+    // only record if it really changed
+    if (Math.abs(oldAngle - newAngle) < 1e-3) { return; }
+
+    this.stateService.recordAction({
+      type:     "changeJointAngle",
+      linkId:   link.id,
+      jointId:  current.id,
+      oldAngle,
+      newAngle
+    });
+
+    link.setAngle(newAngle, current);
+    this.getMechanism().notifyChange();
+  }
+
+
+
+
   getMechanism(): Mechanism { return this.stateService.getMechanism(); }
 
   getCurrentJoint() {
     let currentJointInteractor = this.interactorService.getSelectedObject();
 
-    // check the lock- disable dragging if the joint is locked, enable it if not
     if (currentJointInteractor) {
       if ((currentJointInteractor as JointInteractor).getJoint().locked) {
         console.log("Cannot drag current selected joint!")
@@ -81,10 +183,37 @@ export class jointEditPanelComponent {
   }
 
   setJointXCoord(xCoordInput: number): void {
+
+    const joint = this.getCurrentJoint();
+    const oldCoords = { x: joint.coords.x, y: joint.coords.y };
+    const newCoords = { x: xCoordInput,     y: oldCoords.y };
+    if (newCoords.x !== oldCoords.x) {
+      this.stateService.recordAction({
+        type: "setJoint",
+        jointId: joint.id,
+        oldCoords,
+        newCoords
+      });
+    }
+
     console.log(`Setting Joint ${this.getCurrentJoint().id}, X coord as ${xCoordInput}`);
     this.getMechanism().setXCoord(this.getCurrentJoint().id, parseFloat(xCoordInput.toFixed(3)));
   }
   setJointYCoord(yCoordInput: number): void {
+
+    const joint = this.getCurrentJoint();
+    const oldCoords = { x: joint.coords.x, y: joint.coords.y };
+    const newCoords = { x: oldCoords.x,   y: yCoordInput };
+
+    if (newCoords.y !== oldCoords.y) {
+      this.stateService.recordAction({
+        type: "setJoint",
+        jointId: joint.id,
+        oldCoords,
+        newCoords
+      });
+    }
+
     console.log(`Setting Joint ${this.getCurrentJoint().id}, Y coord as ${yCoordInput}`);
     this.getMechanism().setYCoord(this.getCurrentJoint().id, parseFloat(yCoordInput.toFixed(3)));
   }
@@ -125,27 +254,67 @@ export class jointEditPanelComponent {
     return this.getMechanism().getConnectedLinksForJoint(this.getCurrentJoint()).values();
   }
 
-  // Function utilized in conjunction with dual input blocks to change the angle of the current
-  // joint (the first parameter) in relation to the second joint (the second parameter).
+
   changeJointAngle(notCurrentJoint: number, newAngle: number): void {
     for (const link of this.getLinksForJoint()) {
       const jointIds = Array.from(link.joints.keys());
-      if (jointIds.includes(notCurrentJoint)) {
-        link.setAngle(newAngle, this.getCurrentJoint());
+      if (!jointIds.includes(notCurrentJoint)) continue;
+
+      const a = this.getCurrentJoint(), b = link.joints.get(notCurrentJoint)!;
+      // compute old angle
+      let oldAngle = Math.atan2(
+        b.coords.y - a.coords.y,
+        b.coords.x - a.coords.x
+      ) * 180 / Math.PI;
+      if (oldAngle < 0) oldAngle += 360;
+
+      // only record if truly different
+      if (Math.abs(oldAngle - newAngle) > 1e-6) {
+        this.stateService.recordAction({
+          type:      "changeJointAngle",
+          linkId:    link.id,
+          jointId:   a.id,
+          oldAngle,
+          newAngle
+        });
+
+        // apply the change
+        link.setAngle(newAngle, a);
+        this.getMechanism().notifyChange();
       }
+
+      break;  // prevent any second iteration
     }
   }
 
-  // Function utilized in conjunction with dual input blocks to change the distance of the current
-  // joint (the first parameter) in relation to the second joint (the second parameter).
   changeJointDistance(notCurrentJoint: number, newDistance: number): void {
     for (const link of this.getLinksForJoint()) {
       const jointIds = Array.from(link.joints.keys());
-      if (jointIds.includes(notCurrentJoint)) {
-        link.setLength(newDistance, this.getCurrentJoint());
+      if (!jointIds.includes(notCurrentJoint)) continue;
+
+      // compute old distance
+      const a = this.getCurrentJoint(), b = link.joints.get(notCurrentJoint)!;
+      const oldDistance = Math.hypot(b.coords.x - a.coords.x, b.coords.y - a.coords.y);
+
+      // only record if it really changed
+      if (Math.abs(oldDistance - newDistance) > 1e-6) {
+        this.stateService.recordAction({
+          type:        "changeJointDistance",
+          linkId:      link.id,
+          jointId:     a.id,
+          oldDistance,
+          newDistance
+        });
+
+        // apply the change
+        link.setLength(newDistance, a);
+        this.getMechanism().notifyChange();
       }
+      break;
     }
   }
+
+
 
   getConnectedJoints(): Joint[] {
     const connectedLinks: Link[] = Array.from(this.getLinksForJoint());
@@ -193,17 +362,6 @@ export class jointEditPanelComponent {
     const currentJoint = this.getCurrentJoint();
     if (stateChange) { this.getMechanism().addGround(this.getCurrentJoint().id); }
     else { this.getMechanism().removeGround(this.getCurrentJoint().id); }
-  }
-
-  // these values are passed into a tri button. these handle making and removing input.
-  //        [btn1Disabled]="!getCurrentJoint().canAddInput() || getCurrentJoint().isInput"
-
-  makeInputClockwise(): void {
-    console.log("Making input clockwise");
-  }
-
-  makeInputCounterClockwise(): void {
-    console.log("Making input counter-clockwise");
   }
 
 
