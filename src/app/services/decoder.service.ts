@@ -6,6 +6,7 @@ import { Trajectory } from "../model/trajectory";
 import { Force } from "../model/force";
 import { Position } from "../model/position";
 import {StateService} from "./state.service";
+import LZString from "lz-string";
 
 /**
  * DecoderService is the reverse of the EncoderService.
@@ -49,7 +50,7 @@ export class DecoderService {
    */
   static decodeFromURL(encoded: string, stateService: StateService): any {
     try {
-      const decodedJson = decodeURIComponent(encoded);
+      const decodedJson = LZString.decompressFromEncodedURIComponent(encoded);
       console.log(decodedJson);
       let decompressedJSON = decodedJson.replaceAll('--', '"]_["').replaceAll('RP', 'Reference Point').replaceAll('_', ',').replaceAll('~', '","');
       console.log(decompressedJSON);
@@ -59,9 +60,52 @@ export class DecoderService {
       const fullData = this.expandMechanismData(compactData);
 
       // Step 3. Pass the reconstructed mechanism data to the state service.
-      stateService.reconstructFromUrl(fullData);
+      stateService.reconstructMechanism(fullData);
     } catch (error) {
       console.error("Error decoding mechanism data:", error);
+    }
+  }
+
+  /**
+   * Decodes data in a csv file, reconstructs the mechanism data, and passes
+   * it to the state service for rebuilding the mechanism.
+   *
+   * @param csvContent
+   * @param stateService
+   */
+  static decodeFromCSV(csvContent: string, stateService: StateService): void {
+    try {
+      // Step 1: Parse lines into a 'compactData' structure
+      const compactData: { [section: string]: any[][] } = {};
+      const lines = csvContent.split(/\r?\n/);
+      let currentSection: string | null = null;
+
+      for (const rawLine of lines) {
+        const line = rawLine.trim();
+
+        // Detect section headers like --- j ---
+        if (line.startsWith('---') && line.endsWith('---')) {
+          currentSection = line.slice(3, -3).trim();
+          compactData[currentSection] = [];
+          continue;
+        }
+        // Skip if no section yet or blank line
+        if (!currentSection || !line) {
+          continue;
+        }
+        // Split by commas; no quotes unescaping if not needed
+        const fields = line.split(',');
+        compactData[currentSection].push(fields);
+      }
+      //Expand the compact data into a fully built object
+      const fullData = this.expandMechanismData(compactData);
+
+      // Step 3: Pass to the state service, same as decodeFromURL
+      // (Replace reconstructFromUrl with whatever your real method is)
+      stateService.reconstructMechanism(fullData);
+
+    } catch (error) {
+      console.error('Error decoding mechanism CSV:', error);
     }
   }
 
@@ -151,16 +195,7 @@ export class DecoderService {
    * If the value is not a string, it falls back to a number conversion.
    */
   private static convertNumber(value: any): number {
-    return parseInt(value, 16)
-    /*
-    if (typeof value === 'string') {
-      if (!Number.isInteger(parseFloat(value))) {
-        return Number(parseFloat(value));
-      }
-      return parseInt(value, 16);
-    }
-    return Number(parseFloat(value));
-    */
+    return parseInt(value, 16);
 
   }
 

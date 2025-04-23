@@ -160,7 +160,7 @@ export class jointEditPanelComponent {
 
     if (currentJointInteractor) {
       if ((currentJointInteractor as JointInteractor).getJoint().locked) {
-        console.log("Cannot drag current selected joint!")
+        //console.log("Cannot drag current selected joint!")
         currentJointInteractor.draggable = false;
       }
       else { currentJointInteractor.draggable = true; }

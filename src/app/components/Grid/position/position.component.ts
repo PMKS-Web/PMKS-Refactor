@@ -62,6 +62,17 @@ export class PositionComponent extends AbstractInteractiveComponent {
     return this.unitConversionService.modelCoordToSVGCoord(this.position.centerOfMass).y;
   }
 
+  getBCoord(): Coord {
+    let b = this.unitConversionService.modelCoordToSVGCoord(this.position.getJoints()[1].coords);
+    if ((this.position.angle >= 0 && this.position.angle < 90) || this.position.angle > 270) {
+      b.x = b.x + 150;
+    }
+    else if (this.position.angle >= 90 && this.position.angle < 270) {
+      b.x = b.x - 150;
+    }
+    return b;
+  }
+
   getAngleTextPosX(): number {
     let joints: IterableIterator<Joint> = this.position.joints.values();
     let allCoords: Coord[] = [];

@@ -24,6 +24,18 @@ Handles syncing client with server state, and undo/redo.
 })
 export class StateService {
 
+  private showIDLabelsSubject = new BehaviorSubject<boolean>(false);
+  showIDLabels$ = this.showIDLabelsSubject.asObservable();
+
+  toggleShowIDLabels() {
+    const currentValue = this.showIDLabelsSubject.value;
+    this.showIDLabelsSubject.next(!currentValue);
+  }
+
+  public hideIDLabels() {
+    this.showIDLabelsSubject.next(false);
+  }
+
     private mechanism: Mechanism;// = new Mechanism();
     //Need to use BehaviorSubjects when moving data between unrelated components
     private globalUnits = new BehaviorSubject("Metric (cm)");
@@ -70,7 +82,7 @@ export class StateService {
    *        are stored as an array of number ID's separated by '|'
    * @param rawData
    */
-  public reconstructFromUrl(rawData:
+  public reconstructMechanism(rawData:
                             { decodedJoints:any[],
                               decodedLinks:any[],
                               decodedCompoundLinks:any[],

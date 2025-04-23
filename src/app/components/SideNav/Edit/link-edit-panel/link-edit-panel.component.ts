@@ -192,7 +192,7 @@ export class LinkEditPanelComponent{
   //I think this is getting called continuously, should probably find a way to amend that
   getLinkAngle(): number {
     let angle = this.getSelectedObject().calculateAngle();
-    console.log(`Angle in degrees from calculateAngle: ${angle}`);
+    //console.log(`Angle in degrees from calculateAngle: ${angle}`);
     if (angle !== null) {
       if (angle < 0) {
         angle += 360;
