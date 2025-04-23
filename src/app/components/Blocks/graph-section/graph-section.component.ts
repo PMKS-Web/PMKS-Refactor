@@ -136,8 +136,6 @@ export class GraphSectionComponent implements AfterViewInit, OnInit {
     const ctx: CanvasRenderingContext2D = this.graphCanvas.nativeElement.getContext('2d');
     console.log("Creating chart!");
 
-    console.log("this.ChartOptions.scaleShowVerticalLines = " + this.ChartOptions.scaleShowVerticalLines);
-
     if (this.inputXData && this.inputYData) {
       this.chart = new Chart(ctx, {
         type: 'line',
