@@ -1,6 +1,7 @@
 import {Component} from '@angular/core';
 
 import {PanZoomService, ZoomPan} from 'src/app/services/pan-zoom.service';
+import {GridToggleService} from "../../../services/grid-toggle.service";
 
 @Component({
   selector: '[gridlines]',
@@ -9,9 +10,12 @@ import {PanZoomService, ZoomPan} from 'src/app/services/pan-zoom.service';
 })
 export class GridLinesComponent  {
   private DEFAULT_CELL_SCALE: number = 200;
-  constructor(private panZoomService: PanZoomService) {
+  constructor(private gridToggleService: GridToggleService, private panZoomService: PanZoomService) {
     console.log("GridLines.constructor");
   }
+
+  gridEnabled: boolean = true;
+  minorGridEnabled: boolean = true;
 
   getLines(majorMinor: boolean, horizontalVertical: boolean): {lines: {line: number, label:number}[]} {
     //setup returnn variable and get canvas state
@@ -52,4 +56,13 @@ export class GridLinesComponent  {
     return this.panZoomService.getZoomPan();
   }
 
+  ngOnInit() {
+    this.gridToggleService.gridEnabled$.subscribe(value => {
+      this.gridEnabled = value;
+    });
+
+    this.gridToggleService.minorGridEnabled$.subscribe(value => {
+      this.minorGridEnabled = value;
+    });
+  }
 }

@@ -1,28 +1,28 @@
 <svg:g>
-<!--  X and Y Axis-->
-<line 
-    y1='0' y2='0' 
+  <!--  X and Y Axis-->
+  <line
+    y1='0' y2='0'
     [attr.x1]='getZoomPan().viewBoxX' [attr.x2]='(getZoomPan().viewBoxX+getZoomPan().viewBoxWidth)'
     [attr.stroke-width]='((2 * getZoomPan().currentZoom))' stroke="#4657B8"
-></line>
+  ></line>
 
-<line 
-    x1='0' x2='0' 
+  <line
+    x1='0' x2='0'
     [attr.y1]='getZoomPan().viewBoxY' [attr.y2]='(getZoomPan().viewBoxY+getZoomPan().viewBoxHeight)'
     [attr.stroke-width]='(2 * getZoomPan().currentZoom)' stroke="#4657B8"
-></line>
+  ></line>
 
+  <ng-container *ngIf="gridEnabled">
+    <!--  Major X Lines-->
+    @for (lineAndLabel of getLines(true, true).lines; track $index; ){
 
-<!--  Major X Lines-->
-@for (lineAndLabel of getLines(true, true).lines; track $index; ){
-
-    <line 
+      <line
         [attr.y1]='lineAndLabel.line' [attr.y2]='lineAndLabel.line'
         [attr.x1]='getZoomPan().viewBoxX' [attr.x2]='(getZoomPan().viewBoxX+getZoomPan().viewBoxWidth)'
         [attr.stroke-width]='((1 * getZoomPan().currentZoom))' stroke='black'
-    ></line>
-<!--  Major X Labels-->
-    <text 
+      ></line>
+      <!--  Major X Labels-->
+      <text
         [attr.y]='(lineAndLabel.line-3 * getZoomPan().currentZoom) ' [attr.x]='(getZoomPan().currentZoom * -3)' text-anchor='end'
         [attr.stroke-width]='(5 * getZoomPan().currentZoom)'
         [attr.font-size]='(15 * getZoomPan().currentZoom)'
@@ -30,17 +30,17 @@
                 -moz-user-select: none;
                 -ms-user-select: none;
                 user-select: none;"
-    >{{lineAndLabel.label}} </text>
+      >{{lineAndLabel.label}} </text>
     }
-<!--  Major Y Lines-->
-@for (lineAndLabel of getLines(true, false).lines; track $index){
-    <line
-        [attr.x1]='(lineAndLabel.line)' [attr.x2]='lineAndLabel.line' 
+    <!--  Major Y Lines-->
+    @for (lineAndLabel of getLines(true, false).lines; track $index){
+      <line
+        [attr.x1]='(lineAndLabel.line)' [attr.x2]='lineAndLabel.line'
         [attr.y1]='getZoomPan().viewBoxY' [attr.y2]='(getZoomPan().viewBoxY+getZoomPan().viewBoxHeight)'
         [attr.stroke-width]='((1 * getZoomPan().currentZoom))' stroke='black'
-    ></line>
-    <!--  Major Y Labels-->
-    <text 
+      ></line>
+      <!--  Major Y Labels-->
+      <text
         [attr.x]='(lineAndLabel.line-3 * getZoomPan().currentZoom)' [attr.y]='(getZoomPan().currentZoom * -3)' text-anchor='end'
         [attr.stroke-width]='(5 * getZoomPan().currentZoom)'
         [attr.font-size]='(15 * getZoomPan().currentZoom)'
@@ -48,32 +48,37 @@
                 -moz-user-select: none;
                 -ms-user-select: none;
                 user-select: none;"
-    >{{lineAndLabel.label}} </text>
-}
-<!--  Minor X Lines-->
-@for (lineAndLabel of getLines(false, true).lines; track $index){
-    <line 
-    [attr.y1]='lineAndLabel.line' [attr.y2]='lineAndLabel.line'
-    [attr.x1]='getZoomPan().viewBoxX' [attr.x2]='(getZoomPan().viewBoxX+getZoomPan().viewBoxWidth)'
-    [attr.stroke-width]='((0.25 * getZoomPan().currentZoom))' stroke='black'
-></line>
-}
-<!--  Minor Y Lines-->
-@for (lineAndLabel of getLines(false, false).lines; track $index){
-    <line
-        [attr.x1]='lineAndLabel.line' [attr.x2]='lineAndLabel.line' 
-        [attr.y1]='getZoomPan().viewBoxY' [attr.y2]='(getZoomPan().viewBoxY+getZoomPan().viewBoxHeight)'
-        [attr.stroke-width]='((0.25 * getZoomPan().currentZoom))' stroke='black'
-    ></line>
-}
-<text 
+      >{{lineAndLabel.label}} </text>
+    }
+
+    <ng-container *ngIf="minorGridEnabled">
+      <!--  Minor X Lines-->
+      @for (lineAndLabel of getLines(false, true).lines; track $index){
+        <line
+          [attr.y1]='lineAndLabel.line' [attr.y2]='lineAndLabel.line'
+          [attr.x1]='getZoomPan().viewBoxX' [attr.x2]='(getZoomPan().viewBoxX+getZoomPan().viewBoxWidth)'
+          [attr.stroke-width]='((0.25 * getZoomPan().currentZoom))' stroke='black'
+        ></line>
+      }
+      <!--  Minor Y Lines-->
+      @for (lineAndLabel of getLines(false, false).lines; track $index){
+        <line
+          [attr.x1]='lineAndLabel.line' [attr.x2]='lineAndLabel.line'
+          [attr.y1]='getZoomPan().viewBoxY' [attr.y2]='(getZoomPan().viewBoxY+getZoomPan().viewBoxHeight)'
+          [attr.stroke-width]='((0.25 * getZoomPan().currentZoom))' stroke='black'
+        ></line>
+      }
+
+      <text
         [attr.x]='(getZoomPan().currentZoom * -3)' [attr.y]='(getZoomPan().currentZoom * -3)' text-anchor='end'
         [attr.stroke-width]='(5 * getZoomPan().currentZoom)'
         [attr.font-size]='(15 * getZoomPan().currentZoom)'
         style="-webkit-user-select: none;
-                -moz-user-select: none;
-                -ms-user-select: none;
-                user-select: none;"
-    >0</text>
+              -moz-user-select: none;
+              -ms-user-select: none;
+              user-select: none;"
+      >0</text>
+    </ng-container>
+  </ng-container>
 
 </svg:g>
