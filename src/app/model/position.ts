@@ -371,4 +371,19 @@ export class Position implements RigidBody {
   getJoints(): Joint[] {
     return Array.from(this._joints.values()); // Convert the Map of joints to an array
   }
+
+  clone(): Position {
+    const newJoints: Joint[] = [];
+    this._joints.forEach(joint => {
+      newJoints.push(joint.clone());
+    });
+    const newPosition = new Position(this._id, newJoints);
+    newPosition.name = this._name;
+    newPosition.mass = this._mass;
+    newPosition.angle = this._angle;
+    newPosition.locked = this._isLocked;
+    newPosition.setColor(this._color);
+    newPosition.setReference(this._referencePoint);
+    return newPosition;
+  }
 }

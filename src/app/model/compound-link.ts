@@ -250,4 +250,6 @@ export class CompoundLink implements RigidBody{
         this._color=this.linkColorOptions[index];
         console.log(this._color);
     }
+
+
 }

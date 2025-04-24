@@ -32,4 +32,5 @@ export class Trajectory {
   get id(): number {
     return this._jointId;
   }
+
 }

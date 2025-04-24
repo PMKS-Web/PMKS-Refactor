@@ -142,9 +142,10 @@ export class AnimationBarComponent implements OnInit{
         index = this.animationService.getSubMechanismIndex(cInteractor.compoundLink.getJoints()[0].id);
         break;
       case 'ForceInteractor':
-        return -1
+        return -2
         break;
     }
+    console.log(index);
     return index;
   }
 
@@ -178,17 +179,21 @@ export class AnimationBarComponent implements OnInit{
 
   updateTimelineMarkers(): void {
     const mechanismIndex = this.getMechanismIndex();
+
     if (mechanismIndex === -1) {
        return;
     }
 
+
+
     const mechanismState = this.animationService.getAnimationState(mechanismIndex);
     if (!mechanismState) {
+      console.log(mechanismState);
       return;
     }
 
     const changes = this.animationService.getDirectionChanges(mechanismState);
-
+    console.log("flag3");
     const totalFrames = mechanismState.totalFrames ?? 1;
     this.timelineMarkers = [];
 
@@ -196,6 +201,7 @@ export class AnimationBarComponent implements OnInit{
 
     // 1) Handle the "clockwise" change
     if (changes.clockwise !== undefined) {
+      console.log("flag4");
       const frameIndex = changes.clockwise.frame;
 
       const rawFraction = frameIndex / (totalFrames - 1);
@@ -219,7 +225,7 @@ export class AnimationBarComponent implements OnInit{
       const rawFraction = frameIndex / (totalFrames - 1);
       const finalFraction = ccw ? rawFraction : (1 - rawFraction);
       const position = Math.min(Math.max(finalFraction * 100, 0), 100);
-
+      console.log("flag5");
       const markerType = ccw ? 'counterclockwise' : 'clockwise';
 
 

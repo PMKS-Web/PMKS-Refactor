@@ -239,5 +239,20 @@ export class Joint {
         this._coords.add(coord);
     }
 
+    clone(): Joint {
+      const newJoint = new Joint(this._id, this._coords.clone());
+      newJoint.name = this._name;
+      newJoint.type = this._type;
+      newJoint.angle = this._angle;
+      if (this._isGrounded) newJoint.addGround();
+      if (this._isInput) newJoint.addInput();
+      if (this._isWelded) newJoint.addWeld();
+      newJoint.speed = this._inputSpeed;
+      newJoint.locked = this._parentLocked;
+      newJoint.hidden = this._isHidden;
+      newJoint.reference = this._isReference;
+      return newJoint;
+    }
+
 }
 

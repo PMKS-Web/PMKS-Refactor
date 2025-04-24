@@ -8,12 +8,12 @@ import { Force } from 'src/app/model/force';
 import { Position } from "src/app/model/position";
 import { Trajectory } from 'src/app/model/trajectory';
 import { CompoundLink } from 'src/app/model/compound-link';
-import { Mechanism } from 'src/app/model/mechanism';
 import { InteractionService } from 'src/app/services/interaction.service';
 import { StateService } from 'src/app/services/state.service';
 import { UnitConversionService } from 'src/app/services/unit-conversion.service';
 import {Subscription} from "rxjs";
 import {DecoderService} from "../../../services/decoder.service";
+import {PositionSolverService} from "src/app/services/kinematic-solver.service";
 
 @Component({
   selector: '[app-graph]',
@@ -28,7 +28,7 @@ export class GraphComponent {
   hidePosition: boolean = false;
 
   constructor(private stateService: StateService, private interactorService: InteractionService,
-              private unitConverter: UnitConversionService) {
+              private unitConverter: UnitConversionService, private positionSolverService: PositionSolverService) {
     console.log("GraphComponent.constructor");
     let url = window.location.href;
     //if loading from URL
@@ -37,16 +37,13 @@ export class GraphComponent {
       const encodedData = url.split("?data=")[1];
       console.log(encodedData);
       DecoderService.decodeFromURL(encodedData, stateService)
-      //stateService.setMechanism(stateService.reconstructFromUrl())
-      //OOD Refreshes the browser reset url to normal
-      //window.location.href = url.split("?data=")[0];
-      //document.getElementById("").innerHTML = response.html;
-      //document.title = response.pageTitle;
+
+      //push a new URL onto the browser stack
+      // clears the mech data for a clean appearance
       history.pushState({}, "", url.split("?data=")[0]);
-      //window.history.pushState({"html":response.html,"pageTitle":response.pageTitle},"", "");
 
-      //window.history.pushState(“string”, “Title”, “/new-url”);
-
+      //Solve positions so the Animation bar updates on page load
+      positionSolverService.solvePositions();
     }
   }
 

@@ -12,12 +12,12 @@
     "
     fill="none"
     stroke="#000"
-    stroke-width="2"
+    stroke-width="5"
   />
 
   <!-- Filled triangle pointing downward. -->
   <polygon
-    points="20,45 15,39 25,39"
+    points="20,47 13,39 27,39"
     fill="#000"
   />
 

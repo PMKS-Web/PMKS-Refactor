@@ -22,7 +22,7 @@
   flex-direction: row;
   padding-bottom: 5px;
   justify-content: flex-start;
-  gap: 15px;
+  gap: 5px;
 }
 
 /* Chrome, Safari, Edge, Opera */
@@ -45,8 +45,13 @@ input[matinput][type=number] {
   cursor: not-allowed;
 }
 
+.Edit-Specific {
+  margin-left: 15px;
+}
+
 label {
   margin-right: 3px;
+  margin-left: 10px;
 }
 
 mat-icon {

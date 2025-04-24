@@ -1,6 +1,6 @@
-import {Coord} from '../model/coord'
-import {Joint} from '../model/joint'
-import {Force} from '../model/force'
+import {Coord} from './coord'
+import {Joint} from './joint'
+import {Force} from './force'
 
 export interface RigidBody{
     getJoints(): Joint[]
@@ -149,11 +149,9 @@ export class Link implements RigidBody{
     // update all of the locks i.e. subjoints need to lock when the link is locked,
     // and unlock when the link is unlocked
     updateLocks(value: boolean){
-        console.log('Updating lock in link')
         this._joints.forEach((joint: Joint, key: number) => {
             joint.locked = value;
-            console.log(`Joint ${key}: ${joint}`);
-        });
+            });
     }
 
     removeJoint(idORRef: number | Joint){
@@ -448,4 +446,5 @@ export class Link implements RigidBody{
         this._color=this.linkColorOptions[index];
         console.log(this._color);
     }
+
 }
