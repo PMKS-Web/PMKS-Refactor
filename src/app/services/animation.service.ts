@@ -82,8 +82,7 @@ export class AnimationService {
                 inputSpeed: inputSpeed
             })
         }
-        this.invaldMechanism = this.animationStates.length == 0;
-        this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
+        this.invaldMechanism = this.animationStates.length == 0 ? true : false;
     }
     animateMechanisms(playPause: boolean) {
         if (playPause == false) {
