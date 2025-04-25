@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Mechanism } from '../model/mechanism';
 import {BehaviorSubject} from "rxjs";
 import {DecoderService} from "./decoder.service";
-import {Joint} from "../model/joint";
+import {Joint, JointType} from "../model/joint";
 import {Link} from "../model/link";
 import {CompoundLink} from "../model/compound-link";
 import {Trajectory} from "../model/trajectory";
@@ -107,7 +107,6 @@ export class StateService {
       for (const joint of rawData.decodedJoints) {
         let newJoint = new Joint(joint.id, Number(joint.x), Number(joint.y));
         newJoint.name = joint.name;
-        newJoint.type = Number(joint.type);
         newJoint.angle = (joint.angle);
         if (Boolean(joint.isGrounded)){ newJoint.addGround();}
         if (Boolean(joint.isWelded)) {newJoint.addWeld();}
@@ -116,6 +115,8 @@ export class StateService {
         newJoint.reference = Boolean(joint.isReference);
         if(Boolean(joint.isInput)) { newJoint.addInput();}
         newJoint.speed = Number(joint.inputSpeed);
+        if (Boolean(!joint.type)) {newJoint.addSlider();}
+
 
         this.mechanism._addJoint(newJoint);
       }

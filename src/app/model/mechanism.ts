@@ -1047,6 +1047,19 @@ export class Mechanism {
     this._trajectories.clear();
   }
 
+  clearLinks(): void {
+    this._links.clear();
+    this._linkIDCount = 0;
+
+    this._joints.clear();
+    this._jointIDCount = 0;
+
+    this._compoundLinks.clear();
+    this._compoundLinkIDCount = 0;
+
+    this.notifyChange();
+  }
+
  //----------------------------GET FUNCTIONS FOR KINEMATICS----------------------------
     getSubMechanisms(): Array<Map<Joint,RigidBody[]>>{
         const subMechanisms: Array<Map<Joint,RigidBody[]>> = new Array();
