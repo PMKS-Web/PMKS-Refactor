@@ -15,7 +15,7 @@
   </button>
 
   <!-- OPEN FILE -->
-  <button mat-button class="toolbar-button"
+  <button mat-button class="toolbar-button" (click)="handleLoadFile('Load');"
           matTooltip='Open a linkage from a file on your device'
           matTooltipShowDelay='1000'>
     <mat-icon>file_open</mat-icon>
@@ -39,7 +39,7 @@
   </button>
 
   <!-- SAVE -->
-  <button mat-button class="toolbar-button" (click)="setCurrentTab('Save');"
+  <button mat-button class="toolbar-button" (click)="handleSave('Save');"
           matTooltip='Save this linkage to your device'
           matTooltipShowDelay='1000'>
     <mat-icon>save</mat-icon>
@@ -47,7 +47,7 @@
   </button>
 
   <!-- SHARE -->
-  <button mat-button class="toolbar-button" (click)="setCurrentTab('Share');"
+  <button mat-button class="toolbar-button" (click)="handleShare('Share');"
           matTooltip='Copy a URL to clipboard that contains your linakge'
           matTooltipShowDelay='1000'>
     <mat-icon>link</mat-icon>
@@ -55,6 +55,9 @@
   </button>
 
   <span class="spacer"></span>
+
+  <!-- UNDO/REDO PANEL -->
+  <app-undo-redo-panel></app-undo-redo-panel>
 
   <!-- SETTINGS -->
   <button mat-button class="toolbar-button" (click)="setCurrentTab('Settings');"
@@ -89,13 +92,13 @@
       <app-tutorials-panel></app-tutorials-panel>
     }
     @case ('Save'){
-      <app-save-panel></app-save-panel>
+
     }
     @case ('Feedback'){
-      <app-feedback-panel></app-feedback-panel>
+
     }
     @case ('Share'){
-      <app-share-panel></app-share-panel>
+
     }
   }
 </div>

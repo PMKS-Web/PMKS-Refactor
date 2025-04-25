@@ -29,8 +29,8 @@ constructor() {
         viewBoxHeight: window.innerHeight*2,
         windowWidth: window.innerWidth,
         windowHeight: window.innerHeight,
-        currentZoom: 2,
-        zoomScale: 1.02
+        currentZoom: 2.00,
+        zoomScale: 1.10
     }
 
 }
@@ -45,7 +45,7 @@ public _onMouseScrollWheel(event: WheelEvent){
     let oldViewBoxHeight: number = this.zoomPan.viewBoxHeight;
 
     if(zoomDirection > 0){
-    
+
         this.zoomPan.currentZoom *= this.zoomPan.zoomScale;
         this.zoomPan.viewBoxWidth = this.zoomPan.windowWidth * this.zoomPan.currentZoom;
         this.zoomPan.viewBoxHeight = this.zoomPan.windowHeight * this.zoomPan.currentZoom;
@@ -90,5 +90,46 @@ public getZoomPan(): ZoomPan{
     return this.zoomPan;
 
 }
+
+  public zoomIn() {
+    this.zoom(1);
+  }
+
+  public zoomOut() {
+    this.zoom(-1);
+  }
+
+  private zoom(direction: number) {
+    let zoomDirection: number = direction;
+    let zoomLeftFraction: number = 0.5; // Center zoom
+    let zoomTopFraction: number = 0.5; // Center zoom
+    let oldViewBoxWidth: number = this.zoomPan.viewBoxWidth;
+    let oldViewBoxHeight: number = this.zoomPan.viewBoxHeight;
+
+    if (zoomDirection > 0) {
+      this.zoomPan.currentZoom /= this.zoomPan.zoomScale;
+    } else {
+      this.zoomPan.currentZoom *= this.zoomPan.zoomScale;
+    }
+
+    this.zoomPan.viewBoxWidth = this.zoomPan.windowWidth * this.zoomPan.currentZoom;
+    this.zoomPan.viewBoxHeight = this.zoomPan.windowHeight * this.zoomPan.currentZoom;
+
+    this.zoomPan.viewBoxX -= ((this.zoomPan.viewBoxWidth - oldViewBoxWidth) * zoomLeftFraction);
+    this.zoomPan.viewBoxY -= ((this.zoomPan.viewBoxHeight - oldViewBoxHeight) * zoomTopFraction);
+  }
+
+  public resetView() {
+    this.zoomPan = {
+      viewBoxX: -(window.innerWidth),
+      viewBoxY: -(window.innerHeight),
+      viewBoxWidth: window.innerWidth * 2,
+      viewBoxHeight: window.innerHeight * 2,
+      windowWidth: window.innerWidth,
+      windowHeight: window.innerHeight,
+      currentZoom: 2.00,
+      zoomScale: 1.10
+    };
+  }
 
 }

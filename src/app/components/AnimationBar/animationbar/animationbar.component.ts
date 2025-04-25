@@ -1,54 +1,83 @@
-import {Component, HostListener} from '@angular/core'
+import {Component, HostListener, Input, OnInit} from '@angular/core'
 import {CompoundLinkInteractor} from 'src/app/controllers/compound-link-interactor';
 import {JointInteractor} from 'src/app/controllers/joint-interactor';
 import {LinkInteractor} from 'src/app/controllers/link-interactor';
 import {AnimationService} from 'src/app/services/animation.service';
 import {InteractionService} from 'src/app/services/interaction.service';
+import { SVGPathService } from 'src/app/services/svg-path.service';
+import { PositionSolverService } from 'src/app/services/kinematic-solver.service';
 //import { MatSnackBar } from '@angular/material/snack-bar';
 import {JointComponent} from 'src/app/components/Grid/joint/joint.component'
 import { UnitConversionService } from 'src/app/services/unit-conversion.service';
 import {join} from "@angular/compiler-cli";
 import {Coord} from "../../../model/coord";
 import {PanZoomService} from "../../../services/pan-zoom.service";
+import {Mechanism} from "../../../model/mechanism";
+import {StateService} from "src/app/services/state.service";
+import { FormControl } from '@angular/forms';
+
 
 @Component({
   selector: 'app-animation-bar',
   templateUrl: './animationbar.component.html',
   styleUrls: [ './animationbar.component.scss'],
 })
-export class AnimationBarComponent {
+export class AnimationBarComponent implements OnInit{
 
-  private isAnimating: boolean = false;
-  private isPausedAnimating: boolean = true;
-  public animationSpeed: number = 1;
+  public sliderControl = new FormControl(0);
+
 
   constructor(
     public interactionService: InteractionService,
     private animationService: AnimationService,
-    private unitConversionService: UnitConversionService,
-    public panZoomService: PanZoomService
-  ) {}
-
-  cursorPosition: string = '';
-
-  toggleAnimationSpeed(): void{
-    const speedOptions = [0.5,1,2]
-    const index = speedOptions.indexOf(this.animationSpeed);
-    this.animationSpeed = speedOptions[(index+1) % speedOptions.length];
-
-    this.animationService.setSpeedmultiplier(this.animationSpeed);
+    private positionSolver: PositionSolverService,
+    private stateService: StateService,
+    private panZoomService: PanZoomService // Inject PanZoomService
+  ) {
+    this.animationService.animationProgress$.subscribe(progress => {
+      if (!this.isDragging) {
+        this.sliderValue = progress * 100;
+      }
+    });
   }
 
-  @HostListener('document:mousemove', ['$event'])
-  onMouseMove(event: MouseEvent) {
-    let screenPos: Coord = new Coord(event.offsetX, event.offsetY);
-    let currentZoomPan = this.panZoomService.getZoomPan();
-    this.cursorPosition =  this.unitConversionService.mouseCoordToModelCoord(screenPos, currentZoomPan) + "";
+  zoomIn() {
+    this.panZoomService.zoomIn();
   }
+
+  zoomOut() {
+    this.panZoomService.zoomOut();
+  }
+
+  resetView() {
+    this.panZoomService.resetView();
+  }
+
+  showIDLabels() {
+    this.stateService.toggleShowIDLabels();
+  }
+
+  ngOnInit() {
+    this.stateService.setAnimationBarComponent(this);
+
+  }
+
+
+  @Input() mechanism!: Mechanism;
+
+  private isAnimating: boolean = false;
+  private isPausedAnimating: boolean = true;
+  public animationSpeed: number = 1;
+  timelineMarkers: { position: number; type: "clockwise" | "counterclockwise"; coords?: Coord }[] = [];
+
+
+
+  //BOTTOM BAR MOVED TO svg.component FOR CURSOR COORDINATE REASONS
 
   invalidMechanism() {
-    this.animationService.isInvalid();
+    return this.animationService.isInvalid();
   }
+
   controlAnimation(state: string) {
     switch (state) {
       case 'pause':
@@ -60,23 +89,24 @@ export class AnimationBarComponent {
         this.animationService.animateMechanisms(true);
         this.isAnimating = true;
         this.isPausedAnimating = false;
-        //for some reason this doesn't work
-        // if (this.interactionService.isDragging){
-        //   this.snackBar.open("Cannot edit while animation is playing", '', {
-        //     panelClass: 'my-custom-snackbar',
-        //     horizontalPosition: 'center',
-        //     verticalPosition: 'top',
-        //     duration: 4000,
-        //   });
-        // }
+        this.stateService.getMechanism().populateTrajectories(this.positionSolver);
+
+        setTimeout(() => {
+
+        }, 100);
+        //display the trajectories
         break;
       case 'stop':
         this.animationService.reset();
         this.isAnimating = false;
         this.isPausedAnimating = true;
+        this.sliderValue = 0;
+        this.stateService.getMechanism().clearTrajectories();
+        //Clear the trajectories
         break;
     }
   }
+
   getIsAnimating():boolean{
     return this.isAnimating;
   }
@@ -106,13 +136,104 @@ export class AnimationBarComponent {
         index = this.animationService.getSubMechanismIndex(cInteractor.compoundLink.getJoints()[0].id);
         break;
       case 'ForceInteractor':
-        return -1
+        return -2
         break;
     }
+    console.log(index);
     return index;
+  }
+
+  public sliderValue = 0;
+  public isDragging = false;
+
+  onSliderInput(event: any): void {
+    const inputElement = event.target as HTMLInputElement;
+    const numericValue = parseFloat(inputElement.value);
+    this.sliderValue = numericValue;
+    const fraction = numericValue / 100;
+    this.animationService.setAnimationProgress(fraction);
+  }
+
+  onSliderDragStart(): void {
+    this.isDragging = true;
+  }
+
+  onSliderDragEnd(): void {
+    this.isDragging = false;
   }
 
 
 
+  toggleAnimationSpeed(): void{
+    const speedOptions = [0.5,1,2]
+    const index = speedOptions.indexOf(this.animationSpeed);
+    this.animationSpeed = speedOptions[(index+1) % speedOptions.length];
+
+    this.animationService.setSpeedmultiplier(this.animationSpeed);
+  }
+
+  updateTimelineMarkers(): void {
+    const mechanismIndex = this.getMechanismIndex();
+
+    if (mechanismIndex === -1) {
+       return;
+    }
+
+
+
+    const mechanismState = this.animationService.getAnimationState(mechanismIndex);
+    if (!mechanismState) {
+      console.log(mechanismState);
+      return;
+    }
+
+    const changes = this.animationService.getDirectionChanges(mechanismState);
+    console.log("flag3");
+    const totalFrames = mechanismState.totalFrames ?? 1;
+    this.timelineMarkers = [];
+
+    const ccw = this.animationService.startDirectionCounterclockwise;
+
+    // 1) Handle the "clockwise" change
+    if (changes.clockwise !== undefined) {
+      console.log("flag4");
+      const frameIndex = changes.clockwise.frame;
+
+      const rawFraction = frameIndex / (totalFrames - 1);
+      const finalFraction = ccw ? rawFraction : (1 - rawFraction);
+      const position = Math.min(Math.max(finalFraction * 100, 0), 100);
+
+      const markerType = ccw ? 'clockwise' : 'counterclockwise';
+
+
+      this.timelineMarkers.push({
+        position,
+        type: markerType,
+        coords: changes.clockwise.position
+      });
+    }
+
+    // 2) Handle the "counterClockwise" change
+    if (changes.counterClockwise !== undefined) {
+      const frameIndex = changes.counterClockwise.frame;
+
+      const rawFraction = frameIndex / (totalFrames - 1);
+      const finalFraction = ccw ? rawFraction : (1 - rawFraction);
+      const position = Math.min(Math.max(finalFraction * 100, 0), 100);
+      console.log("flag5");
+      const markerType = ccw ? 'counterclockwise' : 'clockwise';
+
+
+      this.timelineMarkers.push({
+        position,
+        type: markerType,
+        coords: changes.counterClockwise.position
+      });
+    }
+
+    console.log("Final timelineMarkers array:", this.timelineMarkers);
+  }
+
 
 }
+

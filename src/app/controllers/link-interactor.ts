@@ -8,6 +8,7 @@ import { ClickCapture, ClickCaptureID } from "./click-capture/click-capture";
 import { CreateLinkFromLinkCapture } from "./click-capture/create-link-from-link-capture";
 import { CreateForceFromLinkCapture } from "./click-capture/create-force-from-link-capture";
 import { ContextMenuOption, Interactor } from "./interactor";
+import {Subscription} from "rxjs";
 
 /*
 This interactor defines the following behaviors:
@@ -17,6 +18,8 @@ This interactor defines the following behaviors:
 export class LinkInteractor extends Interactor {
 
     public jointsStartPosModel: Map<number, Coord> = new Map();
+    private activePanelSub = new Subscription();
+    private activePanel = "Edit";
 
     constructor(public link: Link, private stateService: StateService,
         private interactionService: InteractionService) {
@@ -37,6 +40,7 @@ export class LinkInteractor extends Interactor {
         this.onDragEnd$.subscribe((event) => {
             this.jointsStartPosModel.clear();
         });
+        this.activePanelSub = this.stateService.globalActivePanelCurrent.subscribe((panel) => {this.activePanel = panel});
         /*
         // if backspace, delete
         this.onKeyDown$.subscribe((event) => {
@@ -58,39 +62,50 @@ export class LinkInteractor extends Interactor {
         let availableContext: ContextMenuOption[] = [];
         const mechanism: Mechanism = this.stateService.getMechanism();
         let modelPosAtRightClick = this.getMousePos().model;
-        availableContext.push(
+        if (this.activePanel === "Edit") {
+          availableContext.push(
             {
-                icon: "assets/contextMenuIcons/addLink.svg",
-                label: "Attach Link",
-                action: () => {this.enterAddLinkCaptureMode(modelPosAtRightClick)},
-                disabled: false
+              icon: "assets/contextMenuIcons/addLink.svg",
+              label: "Attach Link",
+              action: () => {
+                this.enterAddLinkCaptureMode(modelPosAtRightClick)
+              },
+              disabled: false
             },
             {
-                icon: "assets/contextMenuIcons/addTracer.svg",
-                label: "Attach Tracer Point",
-                action: () => {mechanism.addJointToLink(this.link.id, modelPosAtRightClick)},
-                disabled: false
+              icon: "assets/contextMenuIcons/addTracer.svg",
+              label: "Attach Tracer Point",
+              action: () => {
+                mechanism.addJointToLink(this.link.id, modelPosAtRightClick)
+              },
+              disabled: false
             },
             {
-                icon: "assets/contextMenuIcons/addForce.svg",
-                label: "Attach Force",
-                action: () => {this.enterAddForceCaptureMode(modelPosAtRightClick)},
-                disabled: false
+              icon: "assets/contextMenuIcons/addForce.svg",
+              label: "Attach Force",
+              action: () => {
+                this.enterAddForceCaptureMode(modelPosAtRightClick)
+              },
+              disabled: false
             },
             {
-                icon: this.link.locked ? "assets/contextMenuIcons/unlock.svg" : "assets/contextMenuIcons/lock.svg",
-                label: this.link.locked ? "Unlock Link" : "Lock Link",
-                action: () => {this.link.locked=(!this.link.locked)},
-                disabled: false
+              icon: this.link.locked ? "assets/contextMenuIcons/unlock.svg" : "assets/contextMenuIcons/lock.svg",
+              label: this.link.locked ? "Unlock Link" : "Lock Link",
+              action: () => {
+                this.link.locked = (!this.link.locked)
+              },
+              disabled: false
             },
             {
-                icon: "assets/contextMenuIcons/trash.svg",
-                label: "Delete Link",
-                action: () => {mechanism.removeLink(this.link.id)},
-                disabled: false
+              icon: "assets/contextMenuIcons/trash.svg",
+              label: "Delete Link",
+              action: () => {
+                mechanism.removeLink(this.link.id)
+              },
+              disabled: false
             },
-
-            );
+          );
+        }
 
         return availableContext;
 

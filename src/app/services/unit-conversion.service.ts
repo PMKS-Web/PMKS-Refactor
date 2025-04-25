@@ -6,7 +6,7 @@ import { ZoomPan } from './pan-zoom.service';
     providedIn: 'root'
 })
 export class UnitConversionService{
-    private MODEL_TO_SVG_SCALE = 200
+    private MODEL_TO_SVG_SCALE = 200.000
     constructor(){}
 
 

@@ -7,6 +7,10 @@ import { ContextMenuComponent } from '../context-menu/context-menu.component';
 import { StateService } from 'src/app/services/state.service';
 import { PanZoomService } from 'src/app/services/pan-zoom.service';
 import { UnitConversionService } from 'src/app/services/unit-conversion.service';
+import {AnimationService} from "../../../services/animation.service";
+import {Subscription} from "rxjs";
+import { Mechanism } from 'src/app/model/mechanism';
+import { Joint } from 'src/app/model/joint';
 
 @Component({
   selector: 'app-svg',
@@ -15,13 +19,21 @@ import { UnitConversionService } from 'src/app/services/unit-conversion.service'
 })
 export class SvgComponent extends AbstractInteractiveComponent {
 
+  unitSubscription: Subscription = new Subscription();
+  angleSubscription: Subscription = new Subscription();
+  units: string = "Metric (cm)";
+  angles: string = "Degree (º)";
+
   constructor(public override interactionService: InteractionService,
-    private stateService: StateService, private panZoomService: PanZoomService, private unitConversionService: UnitConversionService) {
+    private stateService: StateService, private panZoomService: PanZoomService, private unitConversionService: UnitConversionService,
+              private animationService: AnimationService) {
 
     super(interactionService);
   }
 
   override async ngOnInit(): Promise<void> {
+    this.unitSubscription = this.stateService.globalUnitsCurrent.subscribe((units) => {this.units = units;});
+    this.angleSubscription = this.stateService.globalAnglesCurrent.subscribe((angles) => {this.angles = angles;});
     super.ngOnInit();
   }
 
@@ -46,5 +58,19 @@ export class SvgComponent extends AbstractInteractiveComponent {
   }
 
 
+  invalidMechanism() {
+    return this.animationService.isInvalid();
+  }
+
+  getDegrees() {
+    //put in animation service? to get specific number of degrees.
+    return "N/A"
+  }
+
+  cursorPosition: string = " x: 0.00, y: 0.00";
+  onMouseMove(e: MouseEvent) {
+    let mouseCoords = this.interactionService.getMousePos();
+    this.cursorPosition = " x: " + mouseCoords.model.x.toFixed(2) + ", y: " + mouseCoords.model.y.toFixed(2);
+  }
 
 }

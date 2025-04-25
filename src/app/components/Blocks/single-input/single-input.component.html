@@ -1,4 +1,4 @@
-<div class="single-input-block">
+<div class="single-input-block" style="margin-left: 10px;margin-top: -5px;">
   <div class='row'>
     <span class='label {{disabled ? "disabled" : ""}}'><ng-content></ng-content></span>
     <mat-icon *ngIf="showIcon" matTooltip='{{ this.tooltip }}' [matTooltipShowDelay]='1000' class='label-help'
@@ -9,11 +9,11 @@
   </div>
   <div class="input-sections">
     <div class="input-section">
-      <img *ngIf="iconLabel1!==undefined" src="{{iconLabel1}}" style="height:14px;">
-      <label for="input1"> {{label1}}</label>
-      <input style="padding-right:30px;" type="number" id="input1" [(ngModel)]="input1Value"
+      <img *ngIf="iconLabel1!==undefined" src="{{iconLabel1}}" style="height:14px;margin-left:-5px;margin-right:3px;">
+      <label *ngIf="label1!==''" for="input1" style="margin-right: auto;"> {{label1}}</label>
+      <input style="width: 45px; padding-left: 5px;" step="any" type="number" id="input1" [(ngModel)]="input1Value"
              (keyup.enter)="onEnterKeyInput1()" (blur)="onBlurInput1()"/>
-             <span class="unit" style="margin-left:-38px;">{{unit1}}</span>
+             <span class="unit" style="margin-left:2px;">{{unit1}}</span>
     </div>
   </div>
 </div>

@@ -5,6 +5,7 @@ import { ContextMenuOption, Interactor } from "./interactor";
 import { Mechanism } from "../model/mechanism";
 import { CreateLinkFromGridCapture} from "./click-capture/create-link-from-grid-capture"
 import { PanZoomService } from "../services/pan-zoom.service";
+import {Subscription} from "rxjs";
 
 /*
 This handles any interaction with the SVG canvas.
@@ -13,7 +14,9 @@ This handles any interaction with the SVG canvas.
 export class SvgInteractor extends Interactor {
 
     private lastSVGPosition: Coord | undefined;
-    constructor(private stateService: StateService, 
+    private activePanelSub = new Subscription();
+    private activePanel = "Edit";
+    constructor(private stateService: StateService,
         private interactionService: InteractionService, private panZoomService: PanZoomService) {
         super(true, true);
 
@@ -27,23 +30,26 @@ export class SvgInteractor extends Interactor {
         });
         this.onDragEnd$.subscribe((event) => {
         });
+      this.activePanelSub = this.stateService.globalActivePanelCurrent.subscribe((panel) => {this.activePanel = panel});
     }
 
 
     public override specifyContextMenu(): ContextMenuOption[] {
         const mechanism: Mechanism = this.stateService.getMechanism();
-        let modelPosAtRightClick = this.getMousePos().model;
-        return [
-            {
-                icon: "assets/contextMenuIcons/addLink.svg",
-                label: "Create Link",
-                action: () => {
-                    this.enterAddLinkCaptureMode(modelPosAtRightClick)
-                },
-                disabled: false
-            }
-        ];
-        
+        let modelPosAtRightClick = this.interactionService.getMousePos().model;
+        let availableContext: ContextMenuOption[] = [];
+        if (this.activePanel === "Edit") {
+          availableContext.push({
+            icon: "assets/contextMenuIcons/addLink.svg",
+            label: "Create Link",
+            action: () => {
+              this.enterAddLinkCaptureMode(modelPosAtRightClick)
+            },
+            disabled: false
+          });
+        }
+
+        return availableContext;
     }
     private enterAddLinkCaptureMode(modelPosAtRightClick: Coord): void {
         const capture = new CreateLinkFromGridCapture(modelPosAtRightClick, this.interactionService);

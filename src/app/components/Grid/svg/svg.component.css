@@ -9,3 +9,39 @@
     top: 0;
     left: 0;
 }
+
+#bottomBar {
+/*5 pixel high absolute posositon white bar in the bottom of the screen 100% width */
+position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 100vw;
+  height: 20px;
+  background-color: white;
+/*z-index: 100; */
+
+/*Include elevation and font */
+font-weight: 400;
+  color: #2c2c2c;
+
+  ul {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 15px;
+
+  /*Hide the list bullets*/
+  list-style-type: none;
+    margin: 0;
+    padding-right: 4px;
+  }
+
+  #DoF1 {
+    color: red;
+  }
+
+  #DoF2 {
+    color: green;
+  }
+
+}

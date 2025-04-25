@@ -69,6 +69,10 @@ export class Force {
         this._magnitude = value;
     }
 
+    set angle(value: number) {
+      this._angle = value;//calculateAngle()
+    }
+
     set frameOfReference(frame: ForceFrame){
         this._frameOfReference = frame;
     }
@@ -98,7 +102,7 @@ export class Force {
 
     }
     setForceAngle(newAngle: number){
-        
+
     }
     setXComp(newXComp: number){
 
@@ -113,6 +117,15 @@ export class Force {
     setCoordinates(newStartCoord: Coord, newEndCoord: Coord){
         this._start = newStartCoord;
         this._end = newEndCoord;
+    }
+
+    clone(): Force {
+      const newForce = new Force(this._id, this._start.clone(), this._end.clone());
+      newForce.name = this._name;
+      newForce.magnitude = this._magnitude;
+      newForce.angle = this._angle;
+      newForce.frameOfReference = this._frameOfReference;
+      return newForce;
     }
 
 }

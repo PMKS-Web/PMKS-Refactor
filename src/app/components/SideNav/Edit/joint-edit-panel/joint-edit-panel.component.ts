@@ -6,6 +6,7 @@ import { Mechanism } from "src/app/model/mechanism";
 import { Joint } from "src/app/model/joint";
 import { Form, FormControl, FormGroup } from "@angular/forms";
 import { Link } from "src/app/model/link";
+import {Subscription} from "rxjs";
 
 interface Tab {
   selected: boolean,
@@ -34,10 +35,19 @@ export class jointEditPanelComponent {
   public rotateRightIconPath: string = "assets/icons/rotateRight.svg";
   public rotateLeftIconPath: string = "assets/icons/rotateLeft.svg";
   btn1Visible: boolean = true;
+  unitSubscription: Subscription = new Subscription();
+  angleSubscription: Subscription = new Subscription();
+  units: string = "cm";
+  angles: string = "º";
 
   constructor(private stateService: StateService, private interactorService: InteractionService) {
     console.log("joint-edit-panel.constructor");
 
+  }
+
+  ngOnInit(){
+    this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe((units) => {this.units = units;});
+    this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe((angles) => {this.angles = angles;});
   }
 
   getMechanism(): Mechanism { return this.stateService.getMechanism(); }
@@ -48,7 +58,7 @@ export class jointEditPanelComponent {
     // check the lock- disable dragging if the joint is locked, enable it if not
     if (currentJointInteractor) {
       if ((currentJointInteractor as JointInteractor).getJoint().locked) {
-        console.log("Cannot drag current selected joint!")
+        //console.log("Cannot drag current selected joint!")
         currentJointInteractor.draggable = false;
       }
       else { currentJointInteractor.draggable = true; }
@@ -63,21 +73,20 @@ export class jointEditPanelComponent {
   // the mechanism's built in setXCoord function, we are able to update with no
   // errors
   getJointXCoord(): number {
-    return Math.round(this.getCurrentJoint().coords.x * 100) / 100;
+    return this.getCurrentJoint().coords.x.toFixed(3) as unknown as number;
   }
 
   getJointYCoord(): number {
-    return Math.round(this.getCurrentJoint().coords.y * 100) / 100;
+    return this.getCurrentJoint().coords.y.toFixed(3) as unknown as number;
   }
-
 
   setJointXCoord(xCoordInput: number): void {
     console.log(`Setting Joint ${this.getCurrentJoint().id}, X coord as ${xCoordInput}`);
-    this.getMechanism().setXCoord(this.getCurrentJoint().id, xCoordInput);
+    this.getMechanism().setXCoord(this.getCurrentJoint().id, parseFloat(xCoordInput.toFixed(3)));
   }
   setJointYCoord(yCoordInput: number): void {
-    console.log(`Setting Joint ${this.getCurrentJoint().id}, X coord as ${yCoordInput}`);
-    this.getMechanism().setYCoord(this.getCurrentJoint().id, yCoordInput as number);
+    console.log(`Setting Joint ${this.getCurrentJoint().id}, Y coord as ${yCoordInput}`);
+    this.getMechanism().setYCoord(this.getCurrentJoint().id, parseFloat(yCoordInput.toFixed(3)));
   }
 
 
@@ -158,7 +167,7 @@ export class jointEditPanelComponent {
     let yDiff = otherJoint.coords.y - currentJoint.coords.y;
 
     let hypotenuse = Math.sqrt((xDiff * xDiff) + (yDiff * yDiff));
-    return Math.round(hypotenuse * 100) / 10000;
+    return parseFloat(hypotenuse.toFixed(3));
   }
 
   getJointAngle(otherJoint: Joint): number {
@@ -169,14 +178,12 @@ export class jointEditPanelComponent {
     const angleInRadians = Math.atan2(yDiff, xDiff);
     let angleInDegrees = angleInRadians * (180 / Math.PI);
 
-    // Normalize the angle to be within [-180, 180] degrees
-    if (angleInDegrees > 180) {
-      angleInDegrees -= 360;
-    } else if (angleInDegrees < -180) {
+// Normalize the angle to be within [0, 360] degrees
+    if (angleInDegrees < 0) {
       angleInDegrees += 360;
     }
 
-    return Math.round(angleInDegrees * 100) / 10000;
+    return parseFloat(angleInDegrees.toFixed(3));
   }
 
   // handleToggleGroundChanged is used by the edit panel implementation of a toggle block

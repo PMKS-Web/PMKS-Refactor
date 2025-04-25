@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import {HostListener, Injectable} from '@angular/core';
 import { ContextMenuOption, Interactor } from '../controllers/interactor';
 import { Coord } from '../model/coord';
 import { ContextMenuService } from './context-menu.service';
@@ -10,6 +10,10 @@ import { MousePosition } from './mouse-position.service';
 import { PanZoomService, ZoomPan } from './pan-zoom.service';
 import { UnitConversionService } from './unit-conversion.service';
 import { BehaviorSubject } from 'rxjs';
+import { Joint } from '../model/joint';
+import { Link } from '../model/link';
+import { JointInteractor } from '../controllers/joint-interactor';
+import { LinkInteractor } from '../controllers/link-interactor';
 
 /*
 This service keeps track of global state for the interaction system, such as which
@@ -22,7 +26,6 @@ Interactors.
     providedIn: 'root'
 })
 export class InteractionService {
-
 
     private mousePos: MousePosition;
     private objects: Interactor[] = [];
@@ -42,6 +45,7 @@ export class InteractionService {
     public onDragEndOnce$ = new Subject<boolean>();
 
     private clickCapture: ClickCapture | undefined;
+    private interactors: Interactor[] = [];
 
     constructor(private contextMenuService: ContextMenuService,
                 private stateService: StateService,
@@ -52,7 +56,9 @@ export class InteractionService {
             screen: new Coord(0,0),
             svg: new Coord(0,0),
             model: new Coord(0,0)
-        }
+        };
+
+
     }
 
 
@@ -94,8 +100,6 @@ export class InteractionService {
 
         if (event.button !== 0) return; // only handle left click. should not be called on right click/context menu
 
-        console.log("InteractionService.onMouseDown ", object.constructor.name, event);
-
         // hide any context menus
         this.contextMenuService.hideContextMenu();
 
@@ -117,7 +121,6 @@ export class InteractionService {
 
         event.preventDefault(); // prevent context menu from appearing
         event.stopPropagation(); // don't let parent components handle this event
-        console.log("InteractionService.onMouseRightClick", object.constructor.name, event);
         // if click capture, handle special case
         if (this.clickCapture) {
             this.clickCapture.onClick$.next(this.mousePos.model);
@@ -155,8 +158,6 @@ export class InteractionService {
 
         }
 
-        console.log("InteractionService.onMouseUp", object.constructor.name, event);
-
         let somethingDragged = false;
         this.selected.forEach((obj) => {
             if (obj.draggable) {
@@ -176,7 +177,9 @@ export class InteractionService {
     // if mouse is down, then drag the selected objects
     public _onMouseMove(object: Interactor, event: MouseEvent): void {
         //update the mouse position within the SVG
-        let screenPos: Coord = new Coord(event.offsetX, event.offsetY);
+        let screenX = parseFloat(event.pageX.toFixed(3));
+        let screenY = parseFloat(event.pageY.toFixed(3));
+        let screenPos: Coord = new Coord(screenX, screenY);
         let currentZoomPan: ZoomPan = this.panZoomService.getZoomPan();
         this.mousePos = {
             screen : screenPos,
@@ -302,4 +305,5 @@ export class InteractionService {
     public deselectObject(){
         this.lastSelected=undefined;
     }
+
 }

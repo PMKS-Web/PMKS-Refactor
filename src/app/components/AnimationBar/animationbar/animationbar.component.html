@@ -6,6 +6,7 @@
             matTooltip='Change Animation Speed'
             matTooltipShowDelay='500'
             (click)="toggleAnimationSpeed()"
+
     >
         {{animationSpeed}}x
       </button>
@@ -38,12 +39,49 @@
       <span id='secLabel'>sec</span>
     </div>
 
-    <mat-slider
-      min='0'
-      max='5'
-    >
-      <input id='slider' matSliderThumb />
-    </mat-slider>
+    <div class="slider-wrapper">
+      <mat-slider>
+        <input matSliderThumb
+               [value]="sliderValue"
+               [disabled]="!getIsAnimating()"
+               (mousedown)="onSliderDragStart()"
+               (mouseup)="onSliderDragEnd()"
+               (input)="onSliderInput($event)"
+               min="0"
+               max="100"
+               step="0.1">
+      </mat-slider>
+
+      <div class="timeline-marker-container">
+        <div
+          *ngFor="let marker of timelineMarkers"
+          class="timeline-marker"
+          [ngClass]="marker.type"
+          [style.left.%]="marker.position"
+        >
+          <!-- Use the rotateRight.svg for clockwise markers -->
+          <ng-container *ngIf="marker.type === 'clockwise'">
+            <img
+              src="assets/icons/rotateRight.svg"
+              alt="Clockwise Marker"
+              class="marker-svg"
+              width="40" height="40" />
+          </ng-container>
+          <!-- Use the rotateLeft.svg for counterclockwise markers -->
+          <ng-container *ngIf="marker.type === 'counterclockwise'">
+            <img
+              src="assets/icons/rotateLeft.svg"
+              alt="Counterclockwise Marker"
+              class="marker-svg"
+              width="40" height="40" />
+          </ng-container>
+        </div>
+      </div>
+
+
+    </div>
+
+
   </div>
   <div id='viewButtons'>
     <button
@@ -61,6 +99,7 @@
       [matTooltipShowDelay]='1000'
       mat-icon-button
       color='primary'
+      (click)="showIDLabels()"
     >
       <mat-icon><img src="./assets/icons/abc.svg" alt=""></mat-icon>
     </button>
@@ -70,6 +109,7 @@
       [matTooltipShowDelay]='1000'
       mat-icon-button
       color='primary'
+      (click)="zoomIn()"
     >
       <mat-icon>zoom_in</mat-icon>
     </button>
@@ -79,6 +119,7 @@
       [matTooltipShowDelay]='1000'
       mat-icon-button
       color='primary'
+      (click)="zoomOut()"
     >
       <mat-icon>zoom_out</mat-icon>
     </button>
@@ -88,17 +129,10 @@
       [matTooltipShowDelay]='1000'
       mat-icon-button
       color='primary'
+      (click)="resetView()"
     >
       <mat-icon>crop_free</mat-icon>
     </button>
   </div>
 </div>
-<div id='bottomBar'>
-  <ul>
-    <li>Degrees of Freedom: N/A</li>
-    <li>Position:{{cursorPosition}}</li>
-    <li>Units: N/A</li>
-    <li style='flex-grow: 1'></li>
-    <li>PMKS Refactor Version 1</li>
-  </ul>
-</div>
+

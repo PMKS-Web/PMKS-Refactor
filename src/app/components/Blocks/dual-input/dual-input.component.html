@@ -1,5 +1,5 @@
-<div class="dual-input-block" style="margin-left: 10px;">
-  <div class='row'>
+<div class="dual-input-block">
+  <div class='row' style="margin-left:10px; margin-top:5px;">
     <span class='label {{disabled ? "disabled" : ""}}'><ng-content></ng-content></span>
     <mat-icon *ngIf="showIcon" matTooltip='{{ this.tooltip }}' [matTooltipShowDelay]='1000' class='label-help'
               [matTooltipDisabled]='disabled'
@@ -9,19 +9,19 @@
   </div>
   <div class="input-sections">
     <div class="input-section1">
-      <img *ngIf="iconLabel1!==undefined" src="{{iconLabel1}}" style="height: 14px; vertical-align: middle;">
-      <label for="input1"> {{label1}}</label>
-      <input style="padding-right:40px;" type="number" id="input1" [(ngModel)]="input1Value"
+      <img *ngIf="iconLabel1!==undefined" src="{{iconLabel1}}" style="height: 14px; vertical-align: middle; margin-left: 15px; margin-right:3px;">
+      <label *ngIf="label1!==''" for="input1"> {{label1}}</label>
+      <input style="width:45px; margin-top:-1vh; padding-left: 5px;" step="any" type="number" id="input1" [(ngModel)]="input1Value"
              (keyup.enter)="onEnterKeyInput1()" (blur)="onBlurInput1()"/>
-      <span class="unit" style="margin-left:-30px;">{{unit1}}</span>
+      <span class="unit" style="margin-left: 2px; display: inline-block; width: 24px;">{{unit1}}</span>
     </div>
 
-    <div class="input-section2">
-      <img *ngIf="iconLabel2!==undefined" src="{{iconLabel2}}" style="height:14px; vertical-align: middle;">
-      <label for="input2">{{label2}}</label>
-      <input style="padding-right:40px;" type="number" id="input2" [(ngModel)]="input2Value"
+    <div [ngClass]="(iconLabel1!==undefined && iconLabel2 !== undefined) ? 'Edit-Specific' : 'input-section2'">
+      <img *ngIf="iconLabel2!==undefined" src="{{iconLabel2}}" style="height:14px; vertical-align: middle; margin-left: 15px; margin-right:3px;">
+      <label *ngIf="label2!==''" for="input2">{{label2}}</label>
+      <input style="width:45px; margin-top:-1vh; padding-left: 5px;" step="any" type="number" id="input2" [(ngModel)]="input2Value"
              (keyup.enter)="onEnterKeyInput2()" (blur)="onBlurInput1()"/>
-      <span class="unit" style="margin-left:-30px;">{{unit2}}</span>
+      <span class="unit" style="margin-left: 2px;">{{unit2}}</span>
     </div>
   </div>
 </div>

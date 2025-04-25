@@ -4,6 +4,15 @@ import { Link, RigidBody } from '../model/link'
 import { Force } from '../model/force'
 import { CompoundLink } from '../model/compound-link'
 import { BehaviorSubject } from 'rxjs'
+import {Position} from "./position";
+import {Trajectory} from "./trajectory";
+import { PositionSolverService } from 'src/app/services/kinematic-solver.service';
+import { Injectable } from '@angular/core';
+
+
+@Injectable({
+  providedIn: 'root'
+})
 
 export class Mechanism {
     private _joints: Map<number, Joint>;
@@ -17,23 +26,35 @@ export class Mechanism {
     private _compoundLinkIDCount: number;
     private _mechanismChange: BehaviorSubject<Mechanism> = new BehaviorSubject<Mechanism>(this);
     public _mechanismChange$ = this._mechanismChange.asObservable();
+    private _positions: Map<number, Position> = new Map();
+    private _trajectories: Map<number, Trajectory> = new Map();
+    private _positionIDCount: number = 0;
+    private _synthesizedMechArr: Link[] = [];
+    private _refIdCount: number = -1;
+    private undoStack: Mechanism[] = [];
+    private redoStack: Mechanism[] = [];
+
 
     constructor() {
         this._joints = new Map();
         this._links = new Map();
         this._forces = new Map();
+        this._positions = new Map();
+        this._trajectories = new Map()
         this._compoundLinks = new Map();
         this._idCount = 0;
         this._jointIDCount = 0;
         this._linkIDCount = 0;
         this._forceIDCount = 0;
         this._compoundLinkIDCount = 0;
-        
     }
 
+
     notifyChange(): void{
-        console.log("updated Mechanism to");
-        console.log(Array.from(this._joints.values()));
+        //console.log("updated Mechanism to");
+        //console.log(Array.from(this._joints.values()));
+        //console.log(Array.from(this._links.values()));
+        //console.log(Array.from(this._positions.values()));
         this._mechanismChange.next(this);
     }
 
@@ -47,23 +68,104 @@ export class Mechanism {
      * 2. from grid to link
      * @param {Coord} coordOne
      * @param {Coord} coordTwo
+     * @param synthesized
      * @memberof Mechanism
      */
-    addLink(coordOne: Coord, coordTwo: Coord) {
-        let jointA = new Joint(this._jointIDCount, coordOne);
+    addLink(coordOne: Coord, coordTwo: Coord, synthesized?: boolean) {
+
+      let isSynth = false;
+        if (typeof synthesized !== 'undefined') {
+          isSynth = synthesized;
+        }
+        let jointA = new Joint(this._jointIDCount, coordOne); console.log(coordOne.x); console.log(coordOne.y);
         this._jointIDCount++;
         let jointB = new Joint(this._jointIDCount, coordTwo);
         this._jointIDCount++;
         this._joints.set(jointA.id, jointA);
         this._joints.set(jointB.id, jointB);
         let linkA = new Link(this._linkIDCount, [jointA,jointB]);
+        if (linkA.calculateAngle() === null) {
+          linkA.angle = 0
+        }
+        else linkA.angle = parseFloat(linkA.calculateAngle()!.toFixed(3));
         this._linkIDCount++;
         this._links.set(linkA.id, linkA);
-        this.notifyChange();
+        if (!isSynth) {
+          this.notifyChange();
+        }
         //console.log(this);
     }
 
-    //----------------------------JOINT CONTEXT MENU ACTIONS----------------------------
+  addPos(coordOne: Coord, coordTwo: Coord) {
+    // Create two joints for the new position
+    let jointA = new Joint(this._jointIDCount, coordOne);
+    this._jointIDCount++;
+    let jointB = new Joint(this._jointIDCount, coordTwo);
+    this._jointIDCount++;
+
+    //Create pseudo joint for fixed reference point, do not add to maps, default to center
+    const centerX = (jointA.coords.x + jointB.coords.x) / 2;
+    const centerY = (jointA.coords.y + jointB.coords.y) / 2;
+    let jointC = new Joint(this._refIdCount, new Coord(centerX, centerY));
+    jointC.hidden = true;
+    jointC.reference = true;
+    this._refIdCount--;
+
+    this._joints.set(jointA.id, jointA);
+    this._joints.set(jointB.id, jointB);
+    this._joints.set(jointC.id, jointC);
+
+    let position = new Position(this._positionIDCount, [jointA, jointB, jointC]);
+
+    this._positionIDCount++;
+    this._positions.set(position.id, position);
+    // this._linkIDCount++;
+    // this._links.set(position.id, position);
+
+    // console.log("Pos:");
+    // console.log( this._positions);
+
+    this.notifyChange();
+    //console.log(this);
+  }
+
+  populateTrajectories(positionSolver: PositionSolverService): void {
+    const animationFrames = positionSolver.getAnimationFrames();
+
+    if (animationFrames.length === 0) {
+      console.warn("No animation frames available.");
+      return;
+    }
+
+    const correspondingJoints = animationFrames[0].correspondingJoints;
+
+    for (let j = 0; j < correspondingJoints.length; j++) {
+      const jointId = correspondingJoints[j];
+      const joint = this.getJoint(jointId);
+
+      if (joint.isGrounded) {
+        continue;
+      }
+
+      const trajectoryCoords: Coord[] = [];
+
+      for (let i = 0; i < animationFrames[0].positions.length; i++) {
+        const frame = animationFrames[0].positions[i];
+        trajectoryCoords.push(frame[j]);
+      }
+      console.log('trajectoryCoords', trajectoryCoords);
+
+
+      console.log('Trajectory Coords:', trajectoryCoords);
+      console.log('Animation Frames:', animationFrames);
+      console.log(`Populating trajectory for joint ID ${jointId} with coords:`, trajectoryCoords);
+
+      this.setTrajectory(jointId, new Trajectory(trajectoryCoords, jointId));
+    }
+  }
+
+
+  //----------------------------JOINT CONTEXT MENU ACTIONS----------------------------
 
 
     /**
@@ -78,11 +180,16 @@ export class Mechanism {
      * @param {string} errorMsg
      * @param {string} successMsg
      * @param {(joint: any) => void} action
+     * @param synthesized
      * @return {*}
      * @memberof Mechanism
      */
-    private executeJointAction(jointID: number, canPerformAction: (joint: Joint) => boolean, errorMsg: string, successMsg: string, action: (joint: any) => void): boolean {
+    private executeJointAction(jointID: number, canPerformAction: (joint: Joint) => boolean, errorMsg: string, successMsg: string, action: (joint: any) => void, synthesized?: boolean): boolean {
         let joint = this._joints.get(jointID);
+        let isSynth = false;
+        if (typeof synthesized !== "undefined"){
+          isSynth = synthesized;
+        }
         if (joint === undefined) {
             console.error(`Joint with ID ${jointID} does not exist`);
             return false;
@@ -99,7 +206,7 @@ export class Mechanism {
         try {
             action(joint);
             //console.log(`Joint with ID ${jointID} ${successMsg}`);
-            this.notifyChange();
+            if (!isSynth) this.notifyChange();
             //console.log(this);
             return true;
         } catch (error: any) {
@@ -258,11 +365,11 @@ export class Mechanism {
      * Given a joint's ID, and a Coordinate, creates a new joint with the coordinate, and a new Link containing the passed Joint, and the new joint.
      * TODO: Account for creating a link between two joints
      * @param {number} jointID
-     * @param {Coord} coordOne
+     * @param coordOneORJointID
+     * @param synthesized
      * @memberof Mechanism
      */
-    addLinkToJoint(jointID: number, coordOneORJointID: Coord | number) {
-
+    addLinkToJoint(jointID: number, coordOneORJointID: Coord | number, synthesized?: boolean) {
         this.executeJointAction(jointID, (joint) => true, 'cannot have a new link added','has had a new link added', (joint) =>{
             let jointB: Joint;
             if(typeof coordOneORJointID !== 'number'){
@@ -277,7 +384,7 @@ export class Mechanism {
             let linkA = new Link(this._linkIDCount, joint, jointB);
             this._linkIDCount++;
             this._links.set(linkA.id, linkA);
-        });
+        }, synthesized);
     }
 
     /**
@@ -370,6 +477,8 @@ export class Mechanism {
      */
     setJointCoord(jointID: number, newCoord: Coord) {
         this.executeJointAction(jointID, (joint) => true, 'error','success', (joint) =>{joint.setCoordinates(newCoord);});
+
+
     }
     /**
      * Moves a joint to a new specified x coordinate.
@@ -412,15 +521,15 @@ export class Mechanism {
     /**
      * Given two joints and a desired angle between them, rotates the first joint around the second(mantaining same distance) until the desired angle is reached.
      *
-     * @param {number} jointIDtoChance
+     * @param {number} jointIDtoChange
      * @param {number} jointIDReference
-     * @param {nnumber} newAngle
+     * @param {number} newAngle
      * @memberof Mechanism
      */
     setAngleToJoint(jointIDtoChange: number, jointIDReference: number, newAngle: number) {
         let jointB = this._joints.get(jointIDReference);
         if(jointB === undefined){
-            console.error(`Joint with ID ${jointIDReference} does not exist`);;
+            console.error(`Joint with ID ${jointIDReference} does not exist`);
             return;
         }
         this.executeJointAction(jointIDtoChange, (joint) => true, 'error','success',
@@ -432,26 +541,47 @@ export class Mechanism {
 
     //----------------------------LINK CONTEXT MENU ACTIONS----------------------------
         /**
-     * Higher Order function that performs all available actions on links
-     * 1. Checks the linkID is valid and gets the link to change
-     * 2. Attempts to perform the modification to the link based on the passed function.
-     * Outline: this.executeLinkAction(linkID, link => {});
-     * @private
-     * @param {number} linkID
-     * @param {(link: Link) => void} action
-     * @return {*}
-     * @memberof Mechanism
-     */
-    private executeLinkAction(linkID: number, action: (link: Link) => void) {
+         * Higher Order function that performs all available actions on links
+         * 1. Checks the linkID is valid and gets the link to change
+         * 2. Attempts to perform the modification to the link based on the passed function.
+         * Outline: this.executeLinkAction(linkID, link => {});
+         * @private
+         * @param {number} linkID
+         * @param {(link: Link) => void} action
+         * @param synthesized
+         * @return {*}
+         * @memberof Mechanism
+         */
+    private executeLinkAction(linkID: number, action: (link: Link) => void, synthesized?: boolean) {
         let link = this._links.get(linkID);
+        let isSynth: boolean = false;
+          if (typeof synthesized !== "undefined"){
+            isSynth = synthesized;
+          }
         if (link === undefined) {
             console.error(`Link with ID ${linkID} does not exist`);
             return;
         }
         action(link);
-        this.notifyChange();
+        if (!isSynth) this.notifyChange();
         //console.log(this);
     }
+
+  /**
+   * Executes an action on the specified position if it exists.
+   * @param positionId The ID of the position to act upon.
+   * @param action The action to execute.
+   */
+  private executePositionAction(positionId: number, action: (position: Position) => void): void {
+    if (this._positions.has(positionId)) {
+      const position = this._positions.get(positionId);
+      if (position) {
+        action(position);
+      }
+    } else {
+      console.error(`Position with ID ${positionId} does not exist.`);
+    }
+  }
 
     /**
      * attaches a tracer point(effectively a joint) to a an existing link.
@@ -468,6 +598,23 @@ export class Mechanism {
             link.addTracer(jointA);
         });
     }
+
+  /**
+   * attaches a tracer point(effectively a joint) to an existing position
+   *
+   * @param {number} posID
+   * @param {Coord} coord
+   * @memberof Mechanism
+   */
+  addJointToPosition(posID: number, coord: Coord) {
+    this.executePositionAction(posID, position => {
+      let jointA = new Joint(this._jointIDCount, coord);
+      this._jointIDCount++;
+      this._joints.set(jointA.id, jointA);
+      position.addTracer(jointA);
+    });
+  }
+
     /**
      * attaches a new link to another link at a point along the existing link which is not a joint.
      *
@@ -476,7 +623,7 @@ export class Mechanism {
      * @param {Coord} endCoord
      * @memberof Mechanism
      */
-    addLinkToLink(linkID: number, startCoord: Coord, endCoord: Coord) {
+    addLinkToLink(linkID: number, startCoord: Coord, endCoord: Coord, synthesized?: boolean) {
         this.executeLinkAction(linkID, link => {
             //create new joints and link
             let jointA = new Joint(this._jointIDCount, startCoord);
@@ -491,7 +638,7 @@ export class Mechanism {
             this._links.set(linkB.id,linkB);
             //attach links
             link.addTracer(jointA);
-        });
+        }, synthesized);
     }
     /**
      *attaches a force to a an existing link.
@@ -526,6 +673,18 @@ export class Mechanism {
             this._links.delete(link.id);
         });
     }
+
+    public removePosition(positionId: number): void {
+      this.executePositionAction(positionId, position => {
+        // If this position is the only one associated with a joint, delete it.
+        this.removePositionCascadeJoints(position);
+
+        // Finally, delete the position from the map
+        this._positions.delete(position.id);
+        console.log(`Position with ID ${positionId} removed.`);
+      });
+    }
+
     //----------------------------LINK HELPERS----------------------------
     private removeLinkCascadeForces(link: Link){
         for(let forceID of link.forces.keys()){
@@ -550,6 +709,30 @@ export class Mechanism {
             }
         }
     }
+
+  /**
+   * Checks if this position is the only one associated with a joint and removes it if so.
+   * @param position The position to check.
+   */
+  private removePositionCascadeJoints(position: Position): void {
+    for (let joint of position.joints.values()) {
+      let isIsolated = true; // Assume joint is isolated initially
+
+      // Check if joint is part of any other position
+      for (let aPosition of this._positions.values()) {
+        if (aPosition.id !== position.id && aPosition.containsJoint(joint.id)) {
+          isIsolated = false; // Joint isn't isolated, move to next joint
+          break;
+        }
+      }
+
+      // Delete isolated joint
+      if (isIsolated) {
+        this._joints.delete(joint.id);
+        console.log(`Isolated joint with ID ${joint.id} removed.`);
+      }
+    }
+  }
 
     // first removes every link within the compound link, then the compound link itself
     public removeCompoundLink (compoundLink: CompoundLink) {
@@ -579,8 +762,7 @@ export class Mechanism {
         }
 
     }
-
-    //----------------------------LINK EDIT MENU ACTIONS----------------------------
+        //----------------------------LINK EDIT MENU ACTIONS----------------------------
     /**
      * Sets the name of a link given its ID.
      *
@@ -610,11 +792,11 @@ export class Mechanism {
      * @param {number} newAngle
      * @memberof Mechanism
      */
-    /*
-    setLinkAngle(linkID: number, newAngle: number) {
+
+    setLinkAngle(linkID: number, refJoint: Joint, newAngle: number) {
         this.executeLinkAction(linkID, link => {link.setAngle(newAngle, refJoint);});
     }
-     */
+
     /**
      * Changes the mass of a specified Link
      *
@@ -783,14 +965,50 @@ export class Mechanism {
 
     //----------------------------GET FUNCTIONS----------------------------
     getJoint(id: number): Joint {
-        return this._joints.get(id)!;
+        return <Joint>this._joints.get(id) || this._joints.get(id);
     }
 
+    getLink(id: number): Link {
+      return <Link>this._links.get(id);
+    }
 
+    get_jointIDCount(): number {
+      return this._jointIDCount;
+    }
+
+    getLinks(): IterableIterator<Link> {
+      return this._links.values();
+    }
+
+    getArrayOfLinks(): Array<Link>{
+      return Array.from(this._links.values());
+    }
+
+    public getPositions(): Iterable<Position> {
+      return this._positions.values();
+    }
+
+    getArrayOfPositions(): Position[] {
+      return Array.from(this._positions.values());
+    }
+
+    public getTrajectories(): Iterable<Trajectory> {
+      //console.log('Trajectories:', this._trajectories.values());
+      return this._trajectories.values();
+    }
+
+    getArrayOfTrajectories(): Array<Trajectory> {
+      return Array.from(this._trajectories.values());
+    }
 
     getJoints(): IterableIterator<Joint>{
         return this._joints.values();
     }
+
+    getArrayOfJoints(): Array<Joint>{
+      return Array.from(this._joints.values());
+    }
+
     getIndependentLinks(): IterableIterator<Link>{
         let allLinks: Map<number,Link> = new Map();
         for(let [id,link] of this._links){
@@ -807,9 +1025,41 @@ export class Mechanism {
     getCompoundLinks(): IterableIterator<CompoundLink>{
         return this._compoundLinks.values();
     }
+    getArrayOfCompoundLinks(): Array<CompoundLink>{
+        return Array.from(this._compoundLinks.values());
+    }
     getForces(): IterableIterator<Force>{
         return this._forces.values();
     }
+    getArrayOfForces(): Array<Force>{
+      return Array.from(this._forces.values());
+    }
+  //----------------------------SET FUNCTIONS----------------------------
+  set_jointIDCount (count : number){
+      this._jointIDCount = count;
+  }
+  setTrajectory(jointId: number, trajectory: Trajectory): void {
+    this._trajectories.set(jointId, trajectory);
+  }
+
+  //----------------------------CLEAR FUNCTIONS----------------------------
+  clearTrajectories(): void {
+    this._trajectories.clear();
+  }
+
+  clearLinks(): void {
+    this._links.clear();
+    this._linkIDCount = 0;
+
+    this._joints.clear();
+    this._jointIDCount = 0;
+
+    this._compoundLinks.clear();
+    this._compoundLinkIDCount = 0;
+
+    this.notifyChange();
+  }
+
  //----------------------------GET FUNCTIONS FOR KINEMATICS----------------------------
     getSubMechanisms(): Array<Map<Joint,RigidBody[]>>{
         const subMechanisms: Array<Map<Joint,RigidBody[]>> = new Array();
@@ -841,7 +1091,39 @@ export class Mechanism {
 
     }
 
+  /**
+   * Reconstructor Methods
+   *  Adds configured objects to the mechanism.
+   */
 
+  public _addJoint(joint: Joint): void {
+    this._joints.set(joint.id, joint);
+    this._jointIDCount++;
+  }
+
+  public _addLink(link: Link): void {
+    this._links.set(link.id, link);
+    this._linkIDCount++;
+  }
+
+  public _addCompoundLink(compoundLink: CompoundLink): void {
+    this._compoundLinks.set(compoundLink.id, compoundLink);
+    this._compoundLinkIDCount++;
+  }
+
+  public _addForce(force: Force): void {
+    this._forces.set(force.id, force);
+    this._forceIDCount++;
+  }
+
+  public _addPosition(position: Position): void {
+    this._positions.set(position.id, position);
+    this._positionIDCount++;
+  }
+
+  public _addTrajectory(trajectory: Trajectory): void {
+    this._trajectories.set(trajectory.id, trajectory);
+  }
 
 
 }
