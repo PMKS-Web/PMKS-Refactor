@@ -198,44 +198,17 @@ export class AnimationService {
 
     }
 
-  nogetDirectionChanges(state: JointAnimationState | undefined): { clockwise?: { frame: number, position: Coord }, counterClockwise?: { frame: number, position: Coord } } {
-    if (!state) return {};
-    let clockwise: { frame: number, position: Coord } | undefined = undefined;
-    let counterClockwise: { frame: number, position: Coord } | undefined = undefined;
-    const trajectory: Coord[] = state.animationFrames.map(frame => frame[2]);
 
-    for (let i = 1; i < trajectory.length - 1; i++) {
-      const lastFrame = trajectory[i - 1];
-      const thisFrame = trajectory[i];
-      const nextFrame = trajectory[i + 1];
-
-      const isDirectionChange = this.detectDirectionChange(lastFrame, thisFrame, nextFrame);
-      if (isDirectionChange) {
-        if (this.startDirectionCounterclockwise) {
-          if (!clockwise) {
-            clockwise = { frame: i, position: thisFrame };
-          } else if (!counterClockwise) {
-            counterClockwise = { frame: i, position: thisFrame };
-          }
-        } else {
-          if (!counterClockwise) {
-            counterClockwise = { frame: i, position: thisFrame };
-          } else if (!clockwise) {
-            clockwise = { frame: i, position: thisFrame };
-          }
-        }
-      }
-    }
-    return { clockwise, counterClockwise };
-  }
 
   getDirectionChanges(state: JointAnimationState | undefined): {
     clockwise?: { frame: number, position: Coord },
-    counterClockwise?: { frame: number, position: Coord }
-  } {
+    counterClockwise?: { frame: number, position: Coord },
+    clockwise2?: { frame: number, position: Coord },
+    counterClockwise2?: { frame: number, position: Coord }
+    } {
+
     if (!state) return {};
 
-    // Log joint IDs and check their isInput status.
     console.log("Animation state jointIDs:", state.jointIDs);
     state.jointIDs.forEach((id, index) => {
       const joint = this.stateService.getMechanism().getJoint(id);
@@ -244,7 +217,7 @@ export class AnimationService {
 
     let inputIndex = state.jointIDs.findIndex(jointId => {
       const joint = this.stateService.getMechanism().getJoint(jointId);
-      return joint && joint.isInput === true;
+      return joint && joint.isInput;
     });
     if (inputIndex < 0) {
       console.warn("No joint marked as input found. Defaulting to index 0.");
@@ -265,7 +238,7 @@ export class AnimationService {
         // Find the joint on this link that is NOT the input joint.
         const otherJoint = jointsOnLink.find(j => j.id !== inputJoint.id);
         if (otherJoint) {
-          // Find the index of this "other" joint in the state.jointIDs array.
+          // Find the index of this other joint in the state.jointIDs array.
           adjacentIndex = state.jointIDs.findIndex(id => id === otherJoint.id);
           if (adjacentIndex === -1) {
             console.warn("Other joint not found in state.jointIDs. Defaulting to inputIndex.");
@@ -294,39 +267,58 @@ export class AnimationService {
     const trajectory: Coord[] = state.animationFrames.map(frame => frame[adjacentIndex]);
     console.log("Computed trajectory using joint index", adjacentIndex, ":", trajectory);
 
-    let clockwise: { frame: number, position: Coord } | undefined = undefined;
-    let counterClockwise: { frame: number, position: Coord } | undefined = undefined;
+    let clockwise: { frame: number, position: Coord } | undefined;
+    let counterClockwise: { frame: number, position: Coord } | undefined;
+    let clockwise2: { frame: number, position: Coord } | undefined;
+    let counterClockwise2: { frame: number, position: Coord } | undefined;
 
     for (let i = 1; i < trajectory.length - 1; i++) {
       const lastFrame = trajectory[i - 1];
       const thisFrame = trajectory[i];
       const nextFrame = trajectory[i + 1];
 
-      const isDirectionChange = this.detectDirectionChange(lastFrame, thisFrame, nextFrame);
-      if (isDirectionChange) {
-        if (this.startDirectionCounterclockwise) {
+      if (this.detectDirectionChange(lastFrame, thisFrame, nextFrame)) {
+       if (this.startDirectionCounterclockwise) {
           if (!clockwise) {
             clockwise = { frame: i, position: thisFrame };
-            console.log("Detected clockwise change at frame", i, thisFrame);
-          } else if (!counterClockwise) {
+            }
+
+          else if (!counterClockwise) {
             counterClockwise = { frame: i, position: thisFrame };
-            console.log("Detected counterclockwise change at frame", i, thisFrame);
+            }
+
+          else if (!clockwise2) {
+            clockwise2 = { frame: i, position: thisFrame };
+            }
+
+          else if (!counterClockwise2) {
+            counterClockwise2 = { frame: i, position: thisFrame };
+            }
           }
-        } else {
+
+
+       else {
           if (!counterClockwise) {
             counterClockwise = { frame: i, position: thisFrame };
-            console.log("Detected counterclockwise change at frame", i, thisFrame);
-          } else if (!clockwise) {
+            }
+
+          else if (!clockwise) {
             clockwise = { frame: i, position: thisFrame };
-            console.log("Detected clockwise change at frame", i, thisFrame);
+            }
+
+          else if (!counterClockwise2) {
+            counterClockwise2 = { frame: i, position: thisFrame };
+            }
+
+          else if (!clockwise2) {
+            clockwise2 = { frame: i, position: thisFrame };
+           }
           }
-        }
       }
     }
 
-    return { clockwise, counterClockwise };
+    return { clockwise, counterClockwise, clockwise2, counterClockwise2 };
   }
-
 
 
   detectDirectionChange(last: Coord, current: Coord, next: Coord): boolean {
