@@ -84,6 +84,7 @@ export class AnimationBarComponent implements OnInit{
         this.animationService.animateMechanisms(false);
         this.isAnimating = true;
         this.isPausedAnimating = true;
+        this.updateTimelineMarkers();
         break;
       case 'play':
         this.animationService.animateMechanisms(true);
@@ -92,6 +93,7 @@ export class AnimationBarComponent implements OnInit{
         this.stateService.getMechanism().populateTrajectories(this.positionSolver);
 
         setTimeout(() => {
+          this.updateTimelineMarkers();
 
         }, 100);
         //display the trajectories
@@ -103,6 +105,7 @@ export class AnimationBarComponent implements OnInit{
         this.sliderValue = 0;
         this.stateService.getMechanism().clearTrajectories();
         //Clear the trajectories
+        this.updateTimelineMarkers();
         break;
     }
   }
@@ -166,8 +169,6 @@ export class AnimationBarComponent implements OnInit{
   onSliderDragEnd(): void {
     this.isDragging = false;
   }
-
-
 
   toggleAnimationSpeed(): void{
     const speedOptions = [0.5,1,2]
