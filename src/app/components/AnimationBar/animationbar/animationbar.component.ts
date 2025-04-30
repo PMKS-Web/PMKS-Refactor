@@ -55,11 +55,6 @@ export class AnimationBarComponent implements OnInit{
 
   showIDLabels() {
     this.stateService.toggleShowIDLabels();
-
-        const mechanismIndex = this.getMechanismIndex();
-        this.currentFrameIndex = this.animationService.getCurrentFrameIndex(mechanismIndex);
-        this.animationService.emitCurrentFrameIndex(this.currentFrameIndex);
-
   }
 
   ngOnInit() {
@@ -73,7 +68,6 @@ export class AnimationBarComponent implements OnInit{
   private isAnimating: boolean = false;
   private isPausedAnimating: boolean = true;
   public animationSpeed: number = 1;
-  public currentFrameIndex: number = 0;
   timelineMarkers: { position: number; type: "clockwise" | "counterclockwise"; coords?: Coord }[] = [];
 
 
