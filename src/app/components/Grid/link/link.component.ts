@@ -1,25 +1,23 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
-import { Link } from 'src/app/model/link';
-import { Joint } from 'src/app/model/joint';
-import { Coord } from 'src/app/model/coord';
-import { Mechanism } from 'src/app/model/mechanism';
-import { StateService } from 'src/app/services/state.service';
-import { Interactor } from 'src/app/controllers/interactor';
-import { AbstractInteractiveComponent } from '../abstract-interactive/abstract-interactive.component';
-import { InteractionService } from 'src/app/services/interaction.service';
-import { LinkInteractor } from 'src/app/controllers/link-interactor';
-import { ColorService } from 'src/app/services/color.service';
-import { SVGPathService } from 'src/app/services/svg-path.service';
-import { UnitConversionService } from "src/app/services/unit-conversion.service";
+import {AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, Input} from '@angular/core';
+import {Link} from 'src/app/model/link';
+import {Joint} from 'src/app/model/joint';
+import {Coord} from 'src/app/model/coord';
+import {StateService} from 'src/app/services/state.service';
+import {Interactor} from 'src/app/controllers/interactor';
+import {AbstractInteractiveComponent} from '../abstract-interactive/abstract-interactive.component';
+import {InteractionService} from 'src/app/services/interaction.service';
+import {LinkInteractor} from 'src/app/controllers/link-interactor';
+import {ColorService} from 'src/app/services/color.service';
+import {SVGPathService} from 'src/app/services/svg-path.service';
+import {UnitConversionService} from "src/app/services/unit-conversion.service";
 import {Subscription} from "rxjs";
-import { HostListener } from '@angular/core';
 
 @Component({
   selector: '[app-link]',
   templateUrl: './link.component.html',
   styleUrls: ['./link.component.css'],
 })
-export class LinkComponent extends AbstractInteractiveComponent {
+export class LinkComponent extends AbstractInteractiveComponent implements AfterViewInit {
   @Input() link!: Link;
   unitSubscription: Subscription = new Subscription();
   angleSubscription: Subscription = new Subscription();
@@ -62,9 +60,10 @@ export class LinkComponent extends AbstractInteractiveComponent {
     this.showIDLabelsSubscription.unsubscribe();
   }
 
-  ngAfterContentChecked(): void {
-    this.angle = this.link.angle.toFixed(3);
-    this.cdr.detectChanges();
+  ngAfterViewInit(){
+    setTimeout(() => {
+      this.cdr.detectChanges();
+    })
   }
 
   getColor():string{
@@ -206,7 +205,7 @@ export class LinkComponent extends AbstractInteractiveComponent {
     return this.svgPathService.getSingleLinkDrawnPath(allCoords, radius);
   }
 
-  getLengthSVG(): string {
+  getLengthSVG(){
     const joints = this.link.getJoints();
     const allCoords: Coord[] = [];
 
@@ -216,7 +215,10 @@ export class LinkComponent extends AbstractInteractiveComponent {
       allCoords.push(coord);
     }
 
-    return this.svgPathService.calculateLengthSVGPath(allCoords[0], allCoords[1], this.link.angle);
+    document.getElementById('L')!.setAttribute('d', this.svgPathService.calculateLengthSVGPath(allCoords[0], allCoords[1], this.link.angle));
+    //Hopefully deals with the Angular checking error
+
+    //return this.svgPathService.calculateLengthSVGPath(allCoords[0], allCoords[1], this.link.angle);
   }
 
   getAngleSVG(): string{
