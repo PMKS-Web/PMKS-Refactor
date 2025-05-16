@@ -38,13 +38,12 @@
     <!-- Manual time input field -->
     <div id='timeInputWrapper'>
       <div id='tLabel'>T:</div>
-      <form #simpleForm='ngForm'>
+      <form>
         <input
           [disabled]='invalidMechanism()'
           id='animationBar-input'
           name='timestep'
           type='number'
-          #field
         />
       </form>
       <span id='secLabel'>sec</span>
@@ -75,7 +74,7 @@
           <!-- clockwise markers -->
           <ng-container *ngIf="marker.type === 'clockwise'">
             <img
-              src="assets/icons/rotateRight.svg"
+              ngSrc="assets/icons/rotateRight.svg"
               alt="Clockwise Marker"
               class="marker-svg"
               width="40" height="40" />
@@ -84,7 +83,7 @@
           <!-- counterclockwise markers -->
           <ng-container *ngIf="marker.type === 'counterclockwise'">
             <img
-              src="assets/icons/rotateLeft.svg"
+              ngSrc="assets/icons/rotateLeft.svg"
               alt="Counterclockwise Marker"
               class="marker-svg"
               width="40" height="40" />
@@ -105,7 +104,7 @@
       mat-icon-button
       color='primary'
     >
-      <mat-icon><img src="./assets/icons/centerOfMass.svg" alt=""></mat-icon>
+      <mat-icon><img ngSrc="./assets/icons/centerOfMass.svg" alt="" height="16" width="16"></mat-icon>
     </button>
 
     <!-- Toggle ID labels -->
@@ -117,7 +116,7 @@
       color='primary'
       (click)="showIDLabels()"
     >
-      <mat-icon><img src="./assets/icons/abc.svg" alt=""></mat-icon>
+      <mat-icon><img ngSrc="./assets/icons/abc.svg" alt="" height="16" width="16"></mat-icon>
     </button>
 
     <!-- Zoom in -->

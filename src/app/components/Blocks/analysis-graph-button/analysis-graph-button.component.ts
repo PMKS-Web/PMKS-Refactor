@@ -1,6 +1,4 @@
 import { Component, Input } from '@angular/core';
-import { FormGroup } from '@angular/forms';
-import {Link} from "../../../model/link";
 
 
 @Component({
@@ -24,12 +22,6 @@ export class AnalysisGraphButtonComponent {
       }
     }
   }
-
-  setAction(action: () => void): void {
-    this.btn1Action = action;
-  }
-
-
 
   constructor() {}
 }
