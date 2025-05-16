@@ -1,30 +1,41 @@
+<!-- Main container for the entire animation bar and view control UI -->
 <div id='barContainer'>
+  <!-- Animation control buttons: Speed, Play, Pause, Stop -->
   <div class='animationButtons'>
+    <!-- Change animation speed -->
     <button id='speedButton'
             [disabled]='invalidMechanism()'
             mat-mini-fab
             matTooltip='Change Animation Speed'
             matTooltipShowDelay='500'
             (click)="toggleAnimationSpeed()"
-
     >
         {{animationSpeed}}x
       </button>
 
+    <!-- Play button (shown when paused) -->
     <button class="animation-button" [disabled]='invalidMechanism()' *ngIf='this.getIsPausedAnimating()' mat-mini-fab color='primary'
             (click)="controlAnimation('play')" matTooltip='Play Animation' matTooltipShowDelay='1000'>
       <mat-icon>play_arrow</mat-icon>
     </button>
+
+    <!-- Pause button (shown when playing) -->
     <button class="animation-button" [disabled]='invalidMechanism()' *ngIf='!this.getIsPausedAnimating()' mat-mini-fab color='primary'
             (click)="controlAnimation('pause')" matTooltip='Play Animation' matTooltipShowDelay='1000'>
       <mat-icon>pause</mat-icon>
     </button>
+
+    <!-- Stop animation -->
     <button class="animation-button" [disabled]='invalidMechanism()' (click)="controlAnimation('stop')" mat-mini-fab color='warn'
             matTooltip='Play Animation' matTooltipShowDelay='1000'>
       <mat-icon>stop</mat-icon>
     </button>
   </div>
+
+  <!-- Section for time input and slider -->
   <div id='animationBar'>
+
+    <!-- Manual time input field -->
     <div id='timeInputWrapper'>
       <div id='tLabel'>T:</div>
       <form #simpleForm='ngForm'>
@@ -39,6 +50,7 @@
       <span id='secLabel'>sec</span>
     </div>
 
+    <!-- Timeline slider and marker container -->
     <div class="slider-wrapper">
       <mat-slider>
         <input matSliderThumb
@@ -52,6 +64,7 @@
                step="0.1">
       </mat-slider>
 
+      <!-- Timeline markers for clockwise / counterclockwise direction changes -->
       <div class="timeline-marker-container">
         <div
           *ngFor="let marker of timelineMarkers"
@@ -59,7 +72,7 @@
           [ngClass]="marker.type"
           [style.left.%]="marker.position"
         >
-          <!-- Use the rotateRight.svg for clockwise markers -->
+          <!-- clockwise markers -->
           <ng-container *ngIf="marker.type === 'clockwise'">
             <img
               src="assets/icons/rotateRight.svg"
@@ -67,7 +80,8 @@
               class="marker-svg"
               width="40" height="40" />
           </ng-container>
-          <!-- Use the rotateLeft.svg for counterclockwise markers -->
+
+          <!-- counterclockwise markers -->
           <ng-container *ngIf="marker.type === 'counterclockwise'">
             <img
               src="assets/icons/rotateLeft.svg"
@@ -77,13 +91,13 @@
           </ng-container>
         </div>
       </div>
-
-
     </div>
 
-
   </div>
+
+  <!-- View control buttons: COM, labels, zoom, reset -->
   <div id='viewButtons'>
+    <!-- Show Center of Mass -->
     <button
       matTooltip='Show Center of Mass'
       matTooltipPosition='above'
@@ -93,6 +107,8 @@
     >
       <mat-icon><img src="./assets/icons/centerOfMass.svg" alt=""></mat-icon>
     </button>
+
+    <!-- Toggle ID labels -->
     <button
       matTooltip='Show ID Labels'
       matTooltipPosition='above'
@@ -103,6 +119,8 @@
     >
       <mat-icon><img src="./assets/icons/abc.svg" alt=""></mat-icon>
     </button>
+
+    <!-- Zoom in -->
     <button
       matTooltip='Zoom In'
       matTooltipPosition='above'
@@ -113,6 +131,8 @@
     >
       <mat-icon>zoom_in</mat-icon>
     </button>
+
+    <!-- Zoom out -->
     <button
       matTooltip='Zoom Out'
       matTooltipPosition='above'
@@ -123,6 +143,8 @@
     >
       <mat-icon>zoom_out</mat-icon>
     </button>
+
+    <!-- Reset view -->
     <button
       matTooltip='Reset View'
       matTooltipPosition='above'

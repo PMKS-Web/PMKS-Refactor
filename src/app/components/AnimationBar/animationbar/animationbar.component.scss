@@ -3,7 +3,6 @@
 @use '@angular/material' as mat;
 
 @mixin css($theme) {
-  // Get the color config from the theme.
   $color-config: mat.m2-get-color-config($theme);
   // Get the primary color palette from the color-config.
   $primary-palette: map.get($color-config, 'primary');
@@ -19,7 +18,6 @@
   }
 
   #barContainer {
-    //Fix to the bottom left, make the it cover the entire width of the screen but give it a height of 50px. Use flex to center animation bar in the middle botttom.
     position: absolute;
     bottom: 20px;
     right: 0;
@@ -112,6 +110,7 @@
         }
       }
 
+      // Used for wrapping the slider input and timeline markers inside animationBar
       .slider-wrapper {
         position: relative;
         width: 300px;

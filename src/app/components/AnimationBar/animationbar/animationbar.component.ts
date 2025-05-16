@@ -1,20 +1,14 @@
-import {Component, HostListener, Input, OnInit} from '@angular/core'
+import {Component, Input, OnInit} from '@angular/core'
 import {CompoundLinkInteractor} from 'src/app/controllers/compound-link-interactor';
 import {JointInteractor} from 'src/app/controllers/joint-interactor';
 import {LinkInteractor} from 'src/app/controllers/link-interactor';
 import {AnimationService} from 'src/app/services/animation.service';
 import {InteractionService} from 'src/app/services/interaction.service';
-import { SVGPathService } from 'src/app/services/svg-path.service';
 import { PositionSolverService } from 'src/app/services/kinematic-solver.service';
-//import { MatSnackBar } from '@angular/material/snack-bar';
-import {JointComponent} from 'src/app/components/Grid/joint/joint.component'
-import { UnitConversionService } from 'src/app/services/unit-conversion.service';
-import {join} from "@angular/compiler-cli";
 import {Coord} from "../../../model/coord";
 import {PanZoomService} from "../../../services/pan-zoom.service";
 import {Mechanism} from "../../../model/mechanism";
 import {StateService} from "src/app/services/state.service";
-import { FormControl } from '@angular/forms';
 
 
 @Component({
@@ -22,6 +16,7 @@ import { FormControl } from '@angular/forms';
   templateUrl: './animationbar.component.html',
   styleUrls: [ './animationbar.component.scss'],
 })
+
 export class AnimationBarComponent implements OnInit{
 
   constructor(
@@ -29,8 +24,10 @@ export class AnimationBarComponent implements OnInit{
     private animationService: AnimationService,
     private positionSolver: PositionSolverService,
     private stateService: StateService,
-    private panZoomService: PanZoomService // Inject PanZoomService
-  ) {
+    private panZoomService: PanZoomService
+  )
+
+  {
     this.animationService.animationProgress$.subscribe(progress => {
       if (!this.isDragging) {
         this.sliderValue = progress * 100;
@@ -38,22 +35,28 @@ export class AnimationBarComponent implements OnInit{
     });
   }
 
+
+  // Zooms the view in
   zoomIn() {
     this.panZoomService.zoomIn();
   }
 
+  // Zooms the view out
   zoomOut() {
     this.panZoomService.zoomOut();
   }
 
+  // Resets the viewpoint to its default state
   resetView() {
     this.panZoomService.resetView();
   }
 
+  // Toggles the visibility of the joint/link ID labels
   showIDLabels() {
     this.stateService.toggleShowIDLabels();
   }
 
+  // Initializes the component
   ngOnInit() {
     this.stateService.setAnimationBarComponent(this);
 
@@ -68,13 +71,12 @@ export class AnimationBarComponent implements OnInit{
   timelineMarkers: { position: number; type: "clockwise" | "counterclockwise"; coords?: Coord }[] = [];
 
 
-
-  //BOTTOM BAR MOVED TO svg.component FOR CURSOR COORDINATE REASONS
-
+  // Determines if the current mechanism is valid
   invalidMechanism() {
     return this.animationService.isInvalid();
   }
 
+  // Handles playing, pausing, and stopping the animation
   controlAnimation(state: string) {
     switch (state) {
       case 'pause':
@@ -107,15 +109,25 @@ export class AnimationBarComponent implements OnInit{
     }
   }
 
+  // returns whether the animation is currently playing
   getIsAnimating():boolean{
     return this.isAnimating;
   }
+
+  // Returns whether the animation is currently paused
   getIsPausedAnimating():boolean{
     return this.isPausedAnimating;
   }
+
+  // Logs a notification message to the console
   sendNotification(text: string) {
     console.log(text)
   }
+
+  /**
+   * Determines the index of the mechanism currently selected by the user.
+   * Returns -1 if nothing is selected, or -2 if a force is selected.
+   */
   getMechanismIndex():number{
     let obj = this.interactionService.getSelectedObject();
     let index = -1;
@@ -137,7 +149,6 @@ export class AnimationBarComponent implements OnInit{
         break;
       case 'ForceInteractor':
         return -2
-        break;
     }
     console.log(index);
     return index;
@@ -146,6 +157,10 @@ export class AnimationBarComponent implements OnInit{
   public sliderValue = 0;
   public isDragging = false;
 
+  /**
+   * Updates the animation progress as the slider is moved.
+   * Converts slider value to fraction and sets the corresponding animation frame.
+   */
   onSliderInput(event: any): void {
     const inputElement = event.target as HTMLInputElement;
     const numericValue = parseFloat(inputElement.value);
@@ -159,14 +174,17 @@ export class AnimationBarComponent implements OnInit{
     this.animationService.setAnimationProgress(fraction);
   }
 
+  // Marks true that the animation dragging is occurring
   onSliderDragStart(): void {
     this.isDragging = true;
   }
 
+  // Marks false that the animation dragging is occurring
   onSliderDragEnd(): void {
     this.isDragging = false;
   }
 
+  //Controls the animation speed button (0.5x, 1x, or 2x)
   toggleAnimationSpeed(): void{
     const speedOptions = [0.5,1,2]
     const index = speedOptions.indexOf(this.animationSpeed);
@@ -175,6 +193,7 @@ export class AnimationBarComponent implements OnInit{
     this.animationService.setSpeedmultiplier(this.animationSpeed);
   }
 
+  // When called the timeline markers will be updated
   updateTimelineMarkers(): void {
     const mech = this.animationService.getAnimationState(this.getMechanismIndex());
     if (!mech) return;
@@ -199,12 +218,12 @@ export class AnimationBarComponent implements OnInit{
       newMarkers.push(this.createMarker(flips.counterClockwise2.frame, flips.counterClockwise2.position, 'counterclockwise'));
     }
 
-
     newMarkers.sort((a, b) => a.position - b.position);
 
     this.timelineMarkers = newMarkers;
   }
 
+  // Creates a visible timeline marker
   private createMarker(frame: number, coord: Coord, type: 'clockwise'|'counterclockwise') {
     const raw = frame / (this.animationService.getAnimationState(this.getMechanismIndex())!.totalFrames - 1);
     return {
@@ -213,8 +232,6 @@ export class AnimationBarComponent implements OnInit{
       coords: coord
     };
   }
-
-
 
 }
 

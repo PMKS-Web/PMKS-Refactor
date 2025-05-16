@@ -1,8 +1,8 @@
-import { Coord } from '../model/coord'
-import { Joint } from '../model/joint'
-import { Link, RigidBody } from '../model/link'
-import { Force } from '../model/force'
-import { CompoundLink } from '../model/compound-link'
+import { Coord } from './coord'
+import { Joint } from './joint'
+import { Link, RigidBody } from './link'
+import { Force } from './force'
+import { CompoundLink } from './compound-link'
 import { BehaviorSubject } from 'rxjs'
 import {Position} from "./position";
 import {Trajectory} from "./trajectory";
@@ -29,10 +29,7 @@ export class Mechanism {
     private _positions: Map<number, Position> = new Map();
     private _trajectories: Map<number, Trajectory> = new Map();
     private _positionIDCount: number = 0;
-    private _synthesizedMechArr: Link[] = [];
     private _refIdCount: number = -1;
-    private undoStack: Mechanism[] = [];
-    private redoStack: Mechanism[] = [];
 
 
     constructor() {
@@ -335,7 +332,6 @@ export class Mechanism {
     }
     /**
      * Given a joint's ID, attempts to add an input to the joint.
-     * TODO: Account for the case in which the joint is already connected to an input through a series of links.
      * @param {number} jointID
      * @memberof Mechanism
      */
@@ -354,16 +350,8 @@ export class Mechanism {
     }
 
 
-    lockJoint(jointID: number) {
-        this.executeJointAction(jointID, joint => joint.canLock(), 'cannot be locked', 'successfully locked', joint => joint.addLock());
-    }
-    unlockJoint(joint: Joint) {
-        joint.breakLock();
-    }
-
     /**
      * Given a joint's ID, and a Coordinate, creates a new joint with the coordinate, and a new Link containing the passed Joint, and the new joint.
-     * TODO: Account for creating a link between two joints
      * @param {number} jointID
      * @param coordOneORJointID
      * @param synthesized
@@ -419,9 +407,8 @@ export class Mechanism {
 
         let numberOfEffectiveConnectedLinks = this.getNumberOfEffectiveConnectedLinksForJoint(joint)
         //If a revolute grounded joint is connected to more than one link and isn't welded to all of them it cannot be an input.
-        if(joint.isGrounded && numberOfEffectiveConnectedLinks > 1)
-            return false;
-        return true;
+        return !(joint.isGrounded && numberOfEffectiveConnectedLinks > 1);
+
     }
     canRemoveInput(joint: Joint): boolean{
         return joint.canRemoveInput();
@@ -450,29 +437,15 @@ export class Mechanism {
     canRemoveSlider(joint: Joint): boolean{
         return joint.canRemoveSlider()
     }
-    canLock(joint: Joint): boolean{
-        return joint.canLock()
-    }
-    canUnlock(joint: Joint): boolean{
-        return joint.canUnlock()
-    }
+
 
     //----------------------------JOINT EDIT MENU ACTIONS----------------------------
-    /**
-     * Changes the name of a Joint given its ID and new name.
-     *
-     * @param {number} jointID
-     * @param {string} newName
-     * @memberof Mechanism
-     */
-    setJointName(jointID: number, newName: string) {
-        this.executeJointAction(jointID, (joint) => true, 'error','success', (joint) =>{joint.name = newName;});
-    }
+
     /**
      * Moves a joint to a new specified x coordinate.
      *
      * @param {number} jointID
-     * @param {number} newXCoord
+     * @param newCoord
      * @memberof Mechanism
      */
     setJointCoord(jointID: number, newCoord: Coord) {
