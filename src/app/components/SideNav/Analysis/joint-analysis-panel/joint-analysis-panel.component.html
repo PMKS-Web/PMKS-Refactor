@@ -6,7 +6,6 @@
     >Analysis for Joint
       {{ getJointName() }}
     </title-block>
-
   </panel-section-collapsible>
 
   <!-- DATA SUMMARY DROPDOWN -->
@@ -30,16 +29,28 @@
   </collapsible-subsection>
 
 
-  <!-- EVERY GRAPH OPEN BUTTON -->
+  <!-- GRAPH OPEN BUTTONS SECTION -->
   <div>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.JointPosition) + ' Graph'" graphText= 'Show Graph'
-                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointPosition)"></analysis-graph-button>
+    <!-- Position Graph Button -->
+    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.JointPosition) + ' Graph'"
+                           graphText= 'Show Graph'
+                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointPosition)">
+    </analysis-graph-button>
     <p>Position X:{{getJointXCoord()}}, Y: {{getJointYCoord()}}</p>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.JointVelocity) + ' Graph'" graphText= 'Show Graph'
-                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointVelocity)"></analysis-graph-button>
+
+    <!-- Velocity Graph Button -->
+    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.JointVelocity) + ' Graph'"
+                           graphText= 'Show Graph'
+                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointVelocity)">
+    </analysis-graph-button>
     <p style="margin-left: 20px;">V<sub>x</sub>: N/A,  V<sub>y</sub>: N/A</p>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.JointAcceleration) + ' Graph'" graphText= 'Show Graph'
-                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointAcceleration)"></analysis-graph-button>
+
+    <!-- Acceleration Graph Button -->
+    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.JointAcceleration) + ' Graph'"
+                           graphText= 'Show Graph'
+                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointAcceleration)">
+
+    </analysis-graph-button>
     <p style="margin-left: 20px;">A<sub>x</sub>: N/A,  A<sub>y</sub>: N/A</p>
   </div>
 

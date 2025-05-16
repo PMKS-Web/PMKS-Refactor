@@ -1,6 +1,7 @@
+<!-- Root container for the compound link analysis panel -->
 <div id="linkAnalysisPanel">
-  <!--  LINK PANEL-->
-  <!-- TITLE BLOCK: CONTAINS TITLE AND DYNAMIC LINK NAME -->
+
+  <!-- Section title showing "Analysis for Compound Link" and the link's name -->
   <panel-section-collapsible>
     <title-block description='' class = "analysisHeader"
     >Analysis for Compound Link
@@ -9,19 +10,20 @@
 
   </panel-section-collapsible>
 
-  <!-- DATA SUMMARY DROPDOWN -->
-
+  <!-- Expandable section that shows center of mass data and reference joint info -->
   <collapsible-subsection titleLabel='Data Summary' [expanded]="graphExpanded['dataSummary']"
                           (opened)="graphExpanded['dataSummary'] = true"
                           (closed)="graphExpanded['dataSummary'] = false">
     <div class="flex-container">
       <h3>Data Summary</h3>
+
+      <!-- Center of Mass values -->
       <p>Center of Mass</p>
       Name of Link: {{ getLinkName() }} <br>
       X Coordinate of Center of Mass: {{ this.getCOMXCoord() }} <br>
       Y Coordinate of Center of Mass: {{ this.getCOMYCoord() }} <br>
 
-      <!-- REFERENCE JOINTS ALL LISTED- AND LOGIC TO SELECT THEM -->
+      <!-- Buttons to select the reference joint from the list of joints -->
       <p>Reference Joint</p>
       <div class="button-container">
         <div *ngFor="let joint of this.getCurrentCompoundLink().getJoints()" class = "button-wrapper">
@@ -31,38 +33,64 @@
         </div>
       </div>
 
+      <!-- Reference Joint data output -->
       Name of Joint: {{ getReferenceJointName() }} <br>
       X Coordinate of Joint: {{ this.getReferenceJointXCoord() }} <br>
       Y Coordinate of Joint: {{ this.getReferenceJointYCoord() }} <br>
-
     </div>
   </collapsible-subsection>
 
 
-  <!-- EVERY GRAPH OPEN BUTTON -->
+  <!-- Buttons to open graph visualizations for various compound link properties -->
   <div>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.CoMPosition) + ' Graph'" graphText= 'Show Graph'
-                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.CoMPosition)"></analysis-graph-button>
+    <!-- Graph for center of mass position -->
+    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.CoMPosition) + ' Graph'"
+                           graphText= 'Show Graph'
+                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.CoMPosition)">
+    </analysis-graph-button>
     <p style="margin-left: 20px;">X: {{ this.getCOMXCoord() }} , Y: {{ this.getCOMYCoord() }} </p>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.CoMVelocity) + ' Graph'" graphText= 'Show Graph'
-                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.CoMVelocity)"></analysis-graph-button>
+
+    <!-- Graph for center of mass velocity -->
+    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.CoMVelocity) + ' Graph'"
+                           graphText= 'Show Graph'
+                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.CoMVelocity)">
+
+    </analysis-graph-button>
     <p style="margin-left: 20px;">V<sub>x</sub>: N/A,  V<sub>y</sub>: N/A</p>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.CoMAcceleration) + ' Graph'" graphText= 'Show Graph'
-                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.CoMAcceleration)"></analysis-graph-button>
+
+    <!-- Graph for center of mass acceleration -->
+    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.CoMAcceleration) + ' Graph'"
+                           graphText= 'Show Graph'
+                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.CoMAcceleration)">
+
+    </analysis-graph-button>
     <p style="margin-left: 20px;">A<sub>x</sub>: N/A,  A<sub>y</sub>: N/A</p>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.referenceJointPosition) + ' Graph'" graphText= 'Show Graph'
-                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.referenceJointPosition)"></analysis-graph-button>
+
+    <!-- Graph for reference joint position -->
+    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.referenceJointPosition) + ' Graph'"
+                           graphText= 'Show Graph'
+                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.referenceJointPosition)">
+    </analysis-graph-button>
     <p style="margin-left: 20px;">X: {{ this.getReferenceJointXCoord() }}
       Y: {{ this.getReferenceJointYCoord() }}</p>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.referenceJointVelocity) + ' Graph'" graphText= 'Show Graph'
-                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.referenceJointVelocity)"></analysis-graph-button>
+
+    <!-- Graph for reference joint velocity -->
+    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.referenceJointVelocity) + ' Graph'"
+                           graphText= 'Show Graph'
+                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.referenceJointVelocity)">
+    </analysis-graph-button>
     <p style="margin-left: 20px;">V<sub>x</sub>: N/A, V<sub>y</sub>: N/A</p>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.referenceJointAcceleration) + ' Graph'" graphText= 'Show Graph'
-                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.referenceJointAcceleration)"></analysis-graph-button>
+
+    <!-- Graph for reference joint acceleration -->
+    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.referenceJointAcceleration) + ' Graph'"
+                           graphText= 'Show Graph'
+                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.referenceJointAcceleration)">
+
+    </analysis-graph-button>
     <p style="margin-left: 20px;">A<sub>x</sub>: N/A, A<sub>y</sub>: N/A</p>
   </div>
 
-  <!-- DYNAMICALLY HANDLE OPENING GRAPHS -->
+  <!-- Modal window to display a large graph, appears only when a graph is open -->
   <ng-container *ngIf="currentGraphType !== null">
     <div class="overlay">
       <div class="modal" (keyup.escape)="closeAnalysisGraph()">

@@ -2,17 +2,9 @@ import {Component} from '@angular/core'
 import {StateService} from "src/app/services/state.service";
 import {InteractionService} from "src/app/services/interaction.service";
 import {Mechanism} from "src/app/model/mechanism";
-import {PositionSolverService} from "src/app/services/kinematic-solver.service";
 import {Joint} from "src/app/model/joint";
 import {CompoundLinkInteractor} from "src/app/controllers/compound-link-interactor";
 import {AnalysisSolveService, JointAnalysis} from "src/app/services/analysis-solver.service";
-import {first} from "rxjs";
-
-interface Tab {
-  selected: boolean,
-  label: string,
-  icon: string
-}
 
 // enum contains every kind of graph this panel can open.
 export enum GraphType {
@@ -34,7 +26,6 @@ export enum GraphType {
 export class CompoundLinkAnalysisPanelComponent {
 
   currentGraphType: GraphType | null = null;
-  graphTypes = GraphType;
   referenceJoint: Joint = this.getCurrentCompoundLink().getJoints()[0];
 
   graphExpanded: { [key: string]: boolean } = {
@@ -45,21 +36,44 @@ export class CompoundLinkAnalysisPanelComponent {
     accelerationOfJoint: false
   };
 
-  constructor(private stateService: StateService, private interactorService: InteractionService,
-              private positionSolver: PositionSolverService, private analysisSolverService: AnalysisSolveService){
-    console.log("joint-analysis-panel.constructor");
+  constructor(private stateService: StateService,
+              private interactorService: InteractionService,
+              private analysisSolverService: AnalysisSolveService){
   }
 
-  getMechanism(): Mechanism {return this.stateService.getMechanism();}
+  // Returns the current mechanism from state
+  getMechanism(): Mechanism {
+    return this.stateService.getMechanism();
+  }
+
+  // Retrieves the compound link currently selected by the user
   getCurrentCompoundLink(){
     let currentCompoundLinkInteractor = this.interactorService.getSelectedObject();
     return (currentCompoundLinkInteractor as CompoundLinkInteractor).getCompoundLink();
   }
-  getLinkName(): string {return this.getCurrentCompoundLink().name;}
-  getReferenceJoint(){return this.referenceJoint;}
-  getReferenceJointName(){return this.getReferenceJoint()?.name;}
-  getReferenceJointXCoord(){return this.getReferenceJoint()?.coords.x.toFixed(3) as unknown as number;}
-  getReferenceJointYCoord(){return this.getReferenceJoint()?.coords.y.toFixed(3) as unknown as number;}
+
+  // Returns the name of the selected compound link
+  getLinkName(): string {
+    return this.getCurrentCompoundLink().name;
+  }
+
+  //returns the reference joint
+  getReferenceJoint(){
+    return this.referenceJoint;
+  }
+
+  //returns the name of the reference joint
+  getReferenceJointName(){
+    return this.getReferenceJoint()?.name;
+  }
+
+  getReferenceJointXCoord(){
+    return this.getReferenceJoint()?.coords.x.toFixed(3) as unknown as number;
+  }
+
+  getReferenceJointYCoord(){
+    return this.getReferenceJoint()?.coords.y.toFixed(3) as unknown as number;
+  }
 
 
 
@@ -68,10 +82,6 @@ export class CompoundLinkAnalysisPanelComponent {
   getCOMYCoord(): number {return this.getCurrentCompoundLink()?.centerOfMass.y.toFixed(3) as unknown as number;}
 
 
-  /*
-  setJointXCoord(xCoordInput: number): void {this.getMechanism().setXCoord(this.getCurrentLink().id, xCoordInput);}
-  setJointYCoord(yCoordInput: number): void {this.getMechanism().setYCoord(this.getCurrentLink().id, yCoordInput);}
-   */
 
   openAnalysisGraph(graphType: GraphType): void {
     this.currentGraphType = graphType;
@@ -89,15 +99,10 @@ export class CompoundLinkAnalysisPanelComponent {
       this.currentGraphType == GraphType.CoMAcceleration) {
       this.removePlaceholderCoMJoint();
     }
-
     this.currentGraphType = null;
   }
 
-  getGraphTypes(){
-    // @ts-ignore
-    return Object.keys(this.graphTypes).filter(key => !isNaN(Number(this.graphTypes[key]))).map(key => Number(this.graphTypes[key])) as GraphType[];
-  }
-
+  //returns the Type of the Graph
   getGraphTypeName(graphType: GraphType): string {
     switch (graphType) {
       case GraphType.CoMPosition:
@@ -176,18 +181,15 @@ export class CompoundLinkAnalysisPanelComponent {
     switch(this.currentGraphType) {
       case GraphType.CoMPosition:
         jointKinematics = this.analysisSolverService.getJointKinematics(this.getPlaceholderCoMJoint().id);
-        let comPositionChartData = this.analysisSolverService.transformJointKinematicGraph(jointKinematics, "Position");
-        return comPositionChartData;
+        return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, "Position");
 
       case GraphType.CoMVelocity:
         jointKinematics = this.analysisSolverService.getJointKinematics(this.getPlaceholderCoMJoint().id);
-        let comVelocityChartData = this.analysisSolverService.transformJointKinematicGraph(jointKinematics, "Velocity");
-        return comVelocityChartData;
+        return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, "Velocity");
 
       case GraphType.CoMAcceleration:
         jointKinematics = this.analysisSolverService.getJointKinematics(this.getPlaceholderCoMJoint().id);
-        let comAccelerationChartData = this.analysisSolverService.transformJointKinematicGraph(jointKinematics, "Acceleration");
-        return comAccelerationChartData;
+        return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, "Acceleration");
 
 
       case GraphType.referenceJointPosition:
@@ -223,8 +225,6 @@ export class CompoundLinkAnalysisPanelComponent {
           timeLabels: []
         };
 
-
-
       default:
         return {
           xData: [],
@@ -234,32 +234,14 @@ export class CompoundLinkAnalysisPanelComponent {
     }
   }
 
+  // Sets the reference joint for graphing based on user selection
   onReferenceJointSelected(joint: Joint){
     this.referenceJoint = joint;
   }
+
   public GraphType = GraphType;
 
 
-  // geteLinksForJoint and getConnectedJoints are both used to dynamically
-  // view and modify the connected joints in a mechanism. Is sent to a loop of
-  // dual input blocks in the HTML, that's created by looping through all of the
-  // connected joints
-  /*
-getLinksForJoint(): IterableIterator<Link> {return this.getMechanism().getConnectedLinksForJoint(this.getCurrentJoint()).values();}
-getConnectedJoints(): Joint[] {
-  const connectedLinks: Link[] = Array.from(this.getLinksForJoint());
-  const allJoints: Joint[] = connectedLinks.reduce(
-      (accumulator: Joint[], link: Link) => {
-        const jointMap: Map<number, Joint> = link.joints;
-        const joints: Joint[] = Array.from(jointMap.values());
-        return accumulator.concat(joints);
-      },
-      []
-  );
-  // console.log(allJoints);
-  return allJoints;
-}
 
-   */
 
 }

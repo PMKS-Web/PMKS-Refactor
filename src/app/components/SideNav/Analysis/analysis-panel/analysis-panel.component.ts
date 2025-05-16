@@ -1,7 +1,5 @@
 import { Component} from '@angular/core'
 import { InteractionService } from 'src/app/services/interaction.service'
-import { JointInteractor } from 'src/app/controllers/joint-interactor';
-import {MatExpansionModule} from '@angular/material/expansion';
 
 @Component({
   selector: 'app-analysis-panel',

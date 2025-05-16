@@ -1,30 +1,45 @@
+<!-- Container for the analysis panel -->
 <div class="app-analysis-panel-container">
+
+  <!-- Dynamically switch between analysis panels based on selected object type -->
   @switch (getSelectedObjectType()){
+
+    <!-- Show joint-specific analysis panel -->
     @case('JointInteractor'){
       <app-joint-analysis-panel></app-joint-analysis-panel>
     }
+
+    <!-- Show link-specific analysis panel -->
     @case('LinkInteractor'){
       <app-link-analysis-panel></app-link-analysis-panel>
     }
+
+    <!-- Show compound link-specific analysis panel -->
     @case('CompoundLinkInteractor'){
       <app-compound-link-analysis-panel></app-compound-link-analysis-panel>
     }
+
+    <!-- Placeholder for force selection (not yet implemented) -->
     @case('ForceInteractor'){
       <p>Force Selected</p>
     }
-    @default(){
 
+    <!-- Default case shown when no valid object is selected -->
+    @default(){
       <div id="default-view"><div class="scroll-container">
+
+        <!-- Collapsible section explaining why analysis is not possible -->
         <panel-section-collapsible
           [warning]='true'
           [expanded]='false'
           id='placeholderContainer'
-
         >
           <title-block class="title" alwaysShown icon='expand_more'
                        description='This linkage is not valid and cannot be analyzed. Make sure all requirements are met:'>
             <div style="margin-right: 9em;">Analysis</div>
           </title-block>
+
+          <!-- List of validation requirements for a mechanism -->
           <mat-list class='example-list-wrapping'>
             <mat-list-item lines='3'>
               <span matListItemTitle>Must have one input</span>
@@ -63,10 +78,11 @@
       </div></div>
     }
   }
+
+  <!-- Import/export section at bottom of panel -->
   <div id="import-export">
     <p>Use this panel to import and export kinematic data!</p>
     <import-data></import-data>
     <export-data></export-data>
   </div>
-
 </div>
