@@ -1,18 +1,30 @@
 <div class="app-sidenav-container">
+
+  <!-- SIDE NAVIGATION BAR -->
   <nav class="side-nav">
     @for(tab of this.tabs; track $index){
       <button
         class ="sidenav-button"
         [ngClass]="{ 'selected': isSelected(tab.label) }"
         (click)="togglePanel(tab.label)">
-        <img [src]="tab.icon" style="height:40px; width:40px">
+
+        <!-- Tab icon and label -->
+        <img [src]="tab.icon" style="height:40px; width:40px" alt="">
         {{tab.label}}
       </button>
     }
   </nav>
-    <div class="app-panel-container">
+
+  <!-- MAIN PANEL CONTAINER: Panels shown depending on tab selection -->
+  <div class="app-panel-container">
+
+            <!-- Edit panel: always visible -->
             <app-edit-panel></app-edit-panel>
+
+            <!-- Synthesis panel: hidden by default, shown when triggered -->
             <app-synthesis-panel hidden (passGenerated)="changeGeneratedCheck($event)"></app-synthesis-panel>
+
+            <!-- Analysis panel: hidden by default, shown when triggered -->
             <app-analysis-panel hidden></app-analysis-panel>
   </div>
 </div>

@@ -1,5 +1,4 @@
 import { Component} from '@angular/core'
-import { Interactor } from 'src/app/controllers/interactor';
 import { LinkInteractor } from 'src/app/controllers/link-interactor';
 import { Link } from 'src/app/model/link';
 import { Mechanism } from 'src/app/model/mechanism';
@@ -7,7 +6,6 @@ import { InteractionService } from 'src/app/services/interaction.service';
 import { StateService } from 'src/app/services/state.service';
 import { Joint } from 'src/app/model/joint';
 import { ColorService } from 'src/app/services/color.service';
-import {Subscription} from "rxjs";
 
 
 @Component({
@@ -39,9 +37,6 @@ export class LinkEditPanelComponent{
   /** Buffers for component edits */
   public pendingCompX: Record<number, number> = {};
   public pendingCompY: Record<number, number> = {};
-
-  unitSubscription: Subscription = new Subscription();
-  angleSubscription: Subscription = new Subscription();
   units: string = "cm";
   angles: string = "º";
 
@@ -50,11 +45,7 @@ export class LinkEditPanelComponent{
 
     }
 
-  ngOnInit(){
-    this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe((units) => {this.units = units;});
-    this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe((angles) => {this.angles = angles;});
-  }
-
+  // Saves the new X value for a joint component
   confirmCompX(jointId: number): void {
     const raw = this.pendingCompX[jointId];
     if (raw == null) return;
@@ -82,6 +73,7 @@ export class LinkEditPanelComponent{
     delete this.pendingCompX[jointId];
   }
 
+  // Saves the new Y value for a joint component
   confirmCompY(jointId: number): void {
     const raw = this.pendingCompY[jointId];
     if (raw == null) return;
@@ -107,7 +99,7 @@ export class LinkEditPanelComponent{
     delete this.pendingCompY[jointId];
   }
 
-
+  // Saves the new pending link length
   confirmLinkLength(): void {
     const raw = this.pendingLinkLength;
     if (raw == null) return;
@@ -137,6 +129,7 @@ export class LinkEditPanelComponent{
     this.pendingLinkLength = undefined;
   }
 
+  // Saves the new pending link angle
   confirmLinkAngle(): void {
     const raw = this.pendingLinkAngle;
     if (raw == null) return;
@@ -174,12 +167,13 @@ export class LinkEditPanelComponent{
       return this.stateService.getMechanism();
     }
 
+    // Toggles the lock state of the link
     lockLink(): void {
         this.isLocked = !this.isLocked;
-        console.log('Setting in link edit panel')
         this.getSelectedObject().locked = this.isLocked;
     }
 
+  // Returns the length of the selected link
   getLinkLength(): number {
     const length = this.getSelectedObject().calculateLength();
     if (length !== null) {
@@ -204,98 +198,99 @@ export class LinkEditPanelComponent{
     return 0; // Handle null/undefined case as per your application logic
   }
 
+  //Returns the joints attached to the selected link
   getLinkJoints(): Map<number, Joint>{
         return this.getSelectedObject().joints;
     }
 
-    //Returns the joints contained in a link.
-    getLinkComponents(): Joint[]{
-        return Array.from(this.getLinkJoints().values());
-    }
+  //Returns the joints contained in a link.
+  getLinkComponents(): Joint[]{
+      return Array.from(this.getLinkJoints().values());
+  }
 
-    getLinkName(): string{
-        return this.getSelectedObject().name;
-    }
 
-    setLinkLength(newLength: number): void{
-      let refJoint = this.getSelectedObject().joints.get(0);
-      for (const joint of this.getSelectedObject().joints.values()) {
-        if (joint !== null && joint !== undefined) {
-          refJoint = joint;
-          break;
-        }
-      }
-      if(refJoint) {
-        console.log("Reference joint ID: " + refJoint.id)
-        this.getSelectedObject().setLength(newLength, refJoint);
-      }
-    }
+  //Returns the name of the selected Link
+  getLinkName(): string{
+      return this.getSelectedObject().name;
+  }
 
-    setLinkAngle(newAngle: number): void{
-      let refJoint = this.getSelectedObject().joints.get(0);
-      for (const joint of this.getSelectedObject().joints.values()) {
-        if (joint !== null && joint !== undefined) {
-          refJoint = joint;
-          break;
-        }
-      }
-      if(refJoint) {
-        this.getSelectedObject().setAngle(newAngle, refJoint);
+
+  // Sets the length of the selected Link
+  setLinkLength(newLength: number): void{
+    let refJoint = this.getSelectedObject().joints.get(0);
+    for (const joint of this.getSelectedObject().joints.values()) {
+      if (joint !== null && joint !== undefined) {
+        refJoint = joint;
+        break;
       }
     }
-
-
-    setLinkName(newName: string){
-        this.getSelectedObject().name = newName;
-        this.isEditingTitle=false;
+    if(refJoint) {
+      this.getSelectedObject().setLength(newLength, refJoint);
     }
+  }
 
-    //will create a tracer at the center of mass of the link
-    addTracer(): void{
-        let CoM = this.getSelectedObject().centerOfMass;
-        let linkID = this.getSelectedObject().id;
-        this.getMechanism().addJointToLink(linkID, CoM);
-    }
-
-    //deletes the link and calls deselectObject to close the panel
-    deleteLink(){
-        console.log("link " + this.getSelectedObject().id + " has been deleted")
-        this.stateService.getMechanism().removeLink(this.getSelectedObject().id);
-        this.interactionService.deselectObject();
-    }
-
-    //allows link name to be edited
-    onTitleBlockClick(event: MouseEvent): void {
-        const clickedElement = event.target as HTMLElement;
-        // Check if the clicked element has the 'edit-svg' class, so we can enable editing
-        if (clickedElement && clickedElement.classList.contains('edit-svg')) {
-          console.log('Edit SVG clicked!');
-          this.isEditingTitle = true;
-        }
+  setLinkAngle(newAngle: number): void{
+    let refJoint = this.getSelectedObject().joints.get(0);
+    for (const joint of this.getSelectedObject().joints.values()) {
+      if (joint !== null && joint !== undefined) {
+        refJoint = joint;
+        break;
       }
+    }
+    if(refJoint) {
+      this.getSelectedObject().setAngle(newAngle, refJoint);
+    }
+  }
 
-    //helper function to quickly round to 3 decimals :)
-    roundToThree(round:number): number{
-        return parseFloat(round.toFixed(3));
+
+  setLinkName(newName: string){
+      this.getSelectedObject().name = newName;
+      this.isEditingTitle=false;
+  }
+
+  //will create a tracer at the center of mass of the link
+  addTracer(): void{
+      let CoM = this.getSelectedObject().centerOfMass;
+      let linkID = this.getSelectedObject().id;
+      this.getMechanism().addJointToLink(linkID, CoM);
+  }
+
+  //deletes the link and calls deselectObject to close the panel
+  deleteLink(){
+      console.log("link " + this.getSelectedObject().id + " has been deleted")
+      this.stateService.getMechanism().removeLink(this.getSelectedObject().id);
+      this.interactionService.deselectObject();
+  }
+
+  //allows link name to be edited
+  onTitleBlockClick(event: MouseEvent): void {
+      const clickedElement = event.target as HTMLElement;
+      // Check if the clicked element has the 'edit-svg' class, so we can enable editing
+      if (clickedElement && clickedElement.classList.contains('edit-svg')) {
+        console.log('Edit SVG clicked!');
+        this.isEditingTitle = true;
+      }
     }
 
-    getColors(): string[]{
-        return this.colorService.getLinkColorOptions();
-    }
+  //helper function to quickly round to 3 decimals :)
+  roundToThree(round:number): number{
+      return parseFloat(round.toFixed(3));
+  }
 
-    getColor(): string{
-        return this.getSelectedObject().color;
-    }
+  // Returns available colors from the color palette
+  getColors(): string[]{
+      return this.colorService.getLinkColorOptions();
+  }
 
-    getColorIndex(): number{
+  // Gets the color index of the link from the palette
+  getColorIndex(): number{
         return this.colorService.getLinkColorIndex(this.getSelectedObject().id);
-    }
+  }
 
-    setLinkColor(newColor: number){
-        console.log(newColor);
-        this.getSelectedObject().setColor(newColor);
-        this.selectedIndex=newColor;
-    }
-
-
+  // Sets the color of the link to the selected index
+  setLinkColor(newColor: number){
+      console.log(newColor);
+      this.getSelectedObject().setColor(newColor);
+      this.selectedIndex=newColor;
+  }
 }

@@ -1,16 +1,13 @@
 import { Component} from '@angular/core'
 import { InteractionService } from 'src/app/services/interaction.service'
-import { JointInteractor } from 'src/app/controllers/joint-interactor';
 import { Mechanism } from 'src/app/model/mechanism';
 import { Coord } from 'src/app/model/coord';
 import { Joint } from 'src/app/model/joint';
 import { Link } from 'src/app/model/link';
 import { StateService } from 'src/app/services/state.service';
-//import {PositionSolverService} from 'src/app/services/kinematic-solver.service'
-import { state } from '@angular/animations';
 import { ToolbarComponent } from 'src/app/components/ToolBar/toolbar/toolbar.component';
 import {PositionSolverService} from "../../../services/kinematic-solver.service";
-//import {window} from "rxjs";
+
 
 @Component({
   selector: 'app-templates-panel',
@@ -341,6 +338,4 @@ export class TemplatesPanelComponent {
     else
       return undefined;
   }
-
-  protected readonly window = window;
 }

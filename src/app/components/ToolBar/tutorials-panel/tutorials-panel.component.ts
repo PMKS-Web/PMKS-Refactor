@@ -1,6 +1,4 @@
 import { Component} from '@angular/core'
-import { InteractionService } from 'src/app/services/interaction.service'
-import { JointInteractor } from 'src/app/controllers/joint-interactor';
 
 
 @Component({
@@ -14,7 +12,7 @@ export class TutorialsPanelComponent {
         basic: true
       };
 
-    constructor(private interactionService: InteractionService){
+    constructor(){
     }
 
 

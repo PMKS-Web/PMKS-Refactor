@@ -1,25 +1,29 @@
 <div class="app-synthesis-panel-container">
-    <panel-section-collapsible>
-        <title-block description='' class="synthesisHeader" >
-          Synthesis
-        </title-block>
 
-    <!--each type of synthesis has its own file and is a collapsible sub section-->
-    <!-- Three Position Synthesis -->
+  <!-- SYNTHESIS PANEL TITLE SECTION -->
+  <panel-section-collapsible>
+      <title-block description='' class="synthesisHeader" >
+        Synthesis
+      </title-block>
 
-      <p class ="collapsible-subsection-margin" style="margin: 5px;margin-right: 50px;"></p>
-      <collapsible-subsection [expanded]='true'  titleLabel='Three Position Synthesis' [expanded]="sectionExpanded['LBasic']"
-      (opened)="sectionExpanded['threePos'] = true"
-    (closed)="sectionExpanded['threePos'] = false">
+      <!-- each synthesis type is placed in its own collapsible subsection -->
+
+      <!-- THREE POSITION SYNTHESIS SECTION -->
+      <p class ="collapsible-subsection-margin" style="margin: 5px 50px 5px 5px;"></p>
+      <collapsible-subsection titleLabel='Three Position Synthesis'
+                              [expanded]="sectionExpanded['LBasic']"
+                              (opened)="sectionExpanded['threePos'] = true"
+                              (closed)="sectionExpanded['threePos'] = false">
       <three-pos-synthesis (Generated)="changeGeneratedCheck($event)"></three-pos-synthesis>
-    </collapsible-subsection>
+      </collapsible-subsection>
 
 
-      <!-- Path Synthesis -->
-    <collapsible-subsection [expanded]='true' titleLabel='Path Synthesis' [expanded]="sectionExpanded['LBasic']"
-    (opened)="sectionExpanded['path'] = true"
-    (closed)="sectionExpanded['path'] = false">
-    <path-synthesis></path-synthesis>
-    </collapsible-subsection>
+        <!-- Path Synthesis -->
+      <collapsible-subsection titleLabel='Path Synthesis'
+                              [expanded]="sectionExpanded['LBasic']"
+                              (opened)="sectionExpanded['path'] = true"
+                              (closed)="sectionExpanded['path'] = false">
+      <path-synthesis></path-synthesis>
+      </collapsible-subsection>
   </panel-section-collapsible>
 </div>

@@ -14,6 +14,7 @@ import { CompoundLink } from "src/app/model/compound-link";
 })
 export class CompoundLinkEditPanelComponent {
 
+  // Tracks which UI sections are expanded
   sectionExpanded: { [key: string]: boolean } = {
     LBasic: true,
     LVisual: false,
@@ -23,6 +24,7 @@ export class CompoundLinkEditPanelComponent {
     FBasic: true,
     FVisual: false,
   };
+
   isLocked = false;
   isEditingTitle: boolean = false;
   selectedIndex: number = this.getColorIndex();
@@ -31,20 +33,24 @@ export class CompoundLinkEditPanelComponent {
 
   constructor(private stateService: StateService, private interactionService: InteractionService, private colorService: ColorService) {}
 
+  // Helper to get the selected object cast as a compound link
   getSelectedObject(): CompoundLink {
     let compoundLink = this.interactionService.getSelectedObject() as CompoundLinkInteractor;
     return compoundLink.compoundLink as CompoundLink;
   }
 
+  // Returns a list of all sublinks connected to the compound link
   getAllConnectedLinks(): IterableIterator<Link> {
     let compoundLink = this.getSelectedObject();
     return compoundLink.links.values();
   }
 
+  // Computes and returns the length of a sublink
   getLinkLength(currentLink: Link): number {
     return currentLink.calculateLength()?.toFixed(4) as unknown as number;
   }
 
+  // Computes and returns the angle of a sublink
   getLinkAngle(currentLink: Link): number {
     return currentLink.calculateAngle()?.toFixed(4) as unknown as number;
   }
@@ -53,6 +59,7 @@ export class CompoundLinkEditPanelComponent {
     return currentLink.joints;
   }
 
+  // Get list of all unique joints from all links
   getUniqueJoints(): Set<Joint> {
     let allUniqueJoints: Set<Joint> = new Set();
     for (let link of this.getAllConnectedLinks()) {
@@ -63,33 +70,40 @@ export class CompoundLinkEditPanelComponent {
     return allUniqueJoints;
   }
 
+  // Returns the joints associated with a given sublink
   getLinkComponents(currentLink: Link): IterableIterator<Joint> {
     return this.getLinkJoints(currentLink).values();
   }
 
+  // Returns the compound link's name
   getCompoundLinkName(): string {
     return this.getSelectedObject().name;
   }
 
+  // Returns the lock state of the compound link
   getCompoundLinkLockState(): boolean {
     return this.getSelectedObject().lock;
   }
 
+  // Updates the compound link's name and exits edit mode
   setCompoundLinkName(newName: string) {
     this.getSelectedObject().name = newName;
     this.isEditingTitle = false;
   }
 
+  // Toggles whether the compound link is locked/unlocked
   updateCompoundLinkLock(): void {
     this.isLocked = !this.isLocked;
     this.getSelectedObject().lock = this.isLocked;
   }
 
+  // Sets the reference joint for distance/angle calculations
   onReferenceJointSelected(joint: Joint) {
     this.referenceJoint = joint;
     console.log('Selected Joint:', this.referenceJoint);
   }
 
+  // Gets distance from reference joint to center of mass
   getReferenceJointDist(): number {
     let refJointCoord = this.referenceJoint?.coords;
     let xDiff = 0;
@@ -103,6 +117,7 @@ export class CompoundLinkEditPanelComponent {
     return this.roundToFour(Math.sqrt((xDiff * xDiff) + (yDiff * yDiff)));
   }
 
+  // Gets angle from reference joint to center of mass
   getReferenceJointAngle(): number {
     let refJointCoord = this.referenceJoint?.coords;
     let vectorX = 0;
@@ -125,9 +140,13 @@ export class CompoundLinkEditPanelComponent {
     return this.roundToFour(angleInDegrees);
   }
 
-  setReferenceJointAngle(newAngle: number) {}
-  setReferenceJointDist(newDist: number) {}
+  // Sets new angle from reference joint to center of mass
+  setReferenceJointAngle() {}
 
+  // Sets new distance from reference joint to center of mass
+  setReferenceJointDist() {}
+
+  // Deletes the selected compound link
   deleteCompoundLink() {
     this.stateService.getMechanism().removeCompoundLink(this.getSelectedObject());
     this.interactionService.deselectObject();
@@ -140,22 +159,27 @@ export class CompoundLinkEditPanelComponent {
     }
   }
 
+  // Rounds a number to 3 decimal places
   roundToThree(round:number): number{
     return parseFloat(round.toFixed(3));
   }
 
+  // Rounds a number to 4 decimal places
   roundToFour(round: number): number {
     return round.toFixed(4) as unknown as number;
   }
 
+  // Gets available color options
   getColors(): string[] {
     return this.colorService.getLinkColorOptions();
   }
 
+  // Gets index of the current link's color in the color palette
   getColorIndex(): number {
     return this.colorService.getLinkColorIndex(this.getSelectedObject().id);
   }
 
+  // Sets the color of the compound link
   setLinkColor(newColor: number) {
     this.getSelectedObject().setColor(newColor);
     this.selectedIndex = newColor;

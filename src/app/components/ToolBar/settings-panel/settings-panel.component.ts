@@ -1,9 +1,6 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core'
-import { InteractionService } from 'src/app/services/interaction.service'
-import { JointInteractor } from 'src/app/controllers/joint-interactor';
 import { ToolbarComponent } from 'src/app/components/ToolBar/toolbar/toolbar.component';
 import {StateService} from "../../../services/state.service";
-import {Subscription} from "rxjs";
 import { AnimationService } from 'src/app/services/animation.service';
 import {GridToggleService} from "../../../services/grid-toggle.service";
 
@@ -29,38 +26,16 @@ export class SettingsPanelComponent{
 
   gridEnabled: boolean= true;
   minorGridEnabled: boolean = true;
-  unitSubscription: Subscription = new Subscription();
-  angleSubscription: Subscription = new Subscription();
   units: string = "Metric (cm)";
   angles: string = "Degree (º)";
 
   @Input() iconClass: string = ''; // Add this line
 
-  constructor(private gridToggleService: GridToggleService, private interactionService: InteractionService, public toolbarComponent: ToolbarComponent, private stateService: StateService, public animationService: AnimationService) {
+  constructor(private gridToggleService: GridToggleService, public toolbarComponent: ToolbarComponent, private stateService: StateService, public animationService: AnimationService) {
 
   }
   @Output() valueChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
   public value: boolean = this.gridEnabled;
-
-  ngOnInit() {
-    const saved = getItem<panel>('preferences');
-    if (saved) {
-      this.gridEnabled = saved.gridenabled;
-      this.minorGridEnabled = saved.minorgridenabled;
-
-      this.gridToggleService.setGridEnabled(this.gridEnabled);
-      this.gridToggleService.setMinorGridEnabled(this.minorGridEnabled);
-    }
-
-    this.unitSubscription = this.stateService.globalUnitsCurrent.subscribe((units) => {
-      this.units = units;
-    });
-    this.angleSubscription = this.stateService.globalAnglesCurrent.subscribe((angles) => {
-      this.angles = angles;
-    });
-  }
-
-
   public onDirectionChanged(selection: string): void {
     this.animationService.animateMechanisms(false);
     this.animationService.reset();
@@ -68,7 +43,7 @@ export class SettingsPanelComponent{
     this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
   }
 
-
+  //Controls when the user changes the unit
   changeUnits(newUnits: string){
     console.log(newUnits);
     if (newUnits === "English (in)"){
@@ -80,6 +55,7 @@ export class SettingsPanelComponent{
     else this.stateService.changeUnits(newUnits, "cm");
   }
 
+  // Handles the user changing the angle unit (e.g., degrees or radians)
   changeAngle(newAngle: string){
     if (newAngle === "Radian (rad)"){
       this.stateService.changeAngles(newAngle, "rad")
@@ -87,6 +63,7 @@ export class SettingsPanelComponent{
     else this.stateService.changeAngles(newAngle, "º");
   }
 
+  // Toggles both the grid and minor grid, and emits value change
   toggle() {
     this.value = !this.value;
     this.valueChanged.emit(this.value);
@@ -98,6 +75,7 @@ export class SettingsPanelComponent{
     this.gridToggleService.setMinorGridEnabled(this.minorGridEnabled);
   }
 
+  // Toggles only the minor grid and emits value change
   toggleMinor() {
     this.value = !this.value;
     this.valueChanged.emit(this.value);
@@ -106,6 +84,7 @@ export class SettingsPanelComponent{
     this.gridToggleService.setMinorGridEnabled(this.minorGridEnabled);
   }
 
+  // Closes the settings panel if the user clicks outside of it
   closePanel(event: MouseEvent) {
     const target = event.target as HTMLElement;
     if (!target.closest('.settings')) {
@@ -114,34 +93,18 @@ export class SettingsPanelComponent{
       this.toolbarComponent.setCurrentTab('');
     }
   }
+
+  // Updates the gridEnabled flag when a toggle change is received
   handleToggleGridChange(stateChange: boolean){
     this.gridEnabled=stateChange;
     return this.gridEnabled
   }
 
+  // Returns whether the grid is currently enabled
   getGridEnabled(): boolean{
     return this.handleToggleGridChange(this.gridEnabled);
   }
-
-  handleToggleMinorGridChange(stateChange: boolean){
-    this.minorGridEnabled=stateChange;
-  }
-
-  getMinorGridEnabled(): boolean{
-    return this.minorGridEnabled;
-  }
-
-  ngOnDestroy() {
-    this.unitSubscription.unsubscribe();
-    this.angleSubscription.unsubscribe();
-  }
-
-  protected readonly AnimationService = AnimationService;
 }
-function setItem<T>(key: string, value: T): void {
-  localStorage.setItem(key, JSON.stringify(value));
-}
-function getItem<T>(key: string): T | null {
-  const item = localStorage.getItem(key);
-  return item ? JSON.parse(item) as T : null;
+  function setItem<T>(key: string, value: T): void {
+    localStorage.setItem(key, JSON.stringify(value));
 }

@@ -1,6 +1,5 @@
 import { Component} from '@angular/core'
 import { InteractionService } from 'src/app/services/interaction.service'
-import { JointInteractor } from 'src/app/controllers/joint-interactor';
 import { Interactor } from 'src/app/controllers/interactor';
 
 
@@ -15,12 +14,13 @@ export class EditPanelComponent {
     private selectedObj: Interactor | undefined
     constructor(private interactionService: InteractionService){
         this.selectedObj = this.interactionService.getSelectedObject();
-        this.interactionService._selectionChange$.subscribe(selection => {
+        this.interactionService._selectionChange$.subscribe(() => {
             this.selectedObj = this.interactionService.getSelectedObject();
         });
 
     }
 
+    // Returns the type name of the currently selected object
     getSelectedObjectType(): string{
         if(this.selectedObj == undefined){
             //console.log("selected obj is undefined");

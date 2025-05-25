@@ -1,35 +1,21 @@
 import {
   Component,
   Input,
-  OnInit,
-  OnChanges,
   Output,
   EventEmitter,
-  numberAttribute,
-  HostListener,
-  input
+  HostListener
 } from '@angular/core';
-import { Interactor } from 'src/app/controllers/interactor';
 import { LinkInteractor } from 'src/app/controllers/link-interactor';
 import { Link } from 'src/app/model/link';
 import { Mechanism } from 'src/app/model/mechanism';
 import { InteractionService } from 'src/app/services/interaction.service';
 import { StateService } from 'src/app/services/state.service';
 import { Joint } from 'src/app/model/joint';
-import { ColorService } from 'src/app/services/color.service';
-import { FormControl, FormGroup } from "@angular/forms";
-import { LinkComponent } from 'src/app/components/Grid/link/link.component';
 import { Coord } from 'src/app/model/coord';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { ChangeDetectorRef } from '@angular/core';
 import {PositionSolverService} from "../../../../services/kinematic-solver.service";
-import { DoCheck } from '@angular/core';
-import {JointInteractor} from "../../../../controllers/joint-interactor";
 import {Position} from "../../../../model/position";
-import {Subscription} from "rxjs";
-import {AnimationService} from "../../../../services/animation.service";
-import {AnimationBarComponent} from "../../../AnimationBar/animationbar/animationbar.component";
+
 
 interface CoordinatePosition {
   x0: number;
@@ -50,11 +36,7 @@ interface PositionLock {
   lockedLength: number;
   isLocked: boolean;
 }
-
-type CoordinateField = 'x0' | 'y0' | 'x1' | 'y1'; // Explicitly define valid keys
-
-export class AppModule { }
-
+// Explicitly define valid keys
 @Component({
     selector: 'three-pos-synthesis',
     templateUrl: './three-pos-synthesis.component.html',
@@ -89,7 +71,6 @@ export class ThreePosSynthesis{
   position1: Position | null = null;
   position2: Position | null = null;
   position3: Position | null = null;
-  position1LengthErr: lengthErrRecentPoint = {x1: false, y1: false, x2: false, y2: false};
   position2LengthErr: lengthErrRecentPoint = {x1: false, y1: false, x2: false, y2: false};
   position3LengthErr: lengthErrRecentPoint = {x1: false, y1: false, x2: false, y2: false}; //To be used with End Points system, True if position x has a different length than position 1
   fourBarGenerated: boolean = false;
@@ -100,11 +81,7 @@ export class ThreePosSynthesis{
   coord2B = new Coord(this.pos2X + this.couplerLength / 2, this.pos2Y);
   coord1C = new Coord(this.pos3X - this.couplerLength / 2, this.pos3Y);
   coord2C = new Coord(this.pos3X + this.couplerLength / 2, this.pos3Y);
-  notifNeeded = false;
   recalcNeeded = false;
-  unitSubscription: Subscription = new Subscription();
-  angleSubscription: Subscription = new Subscription();
-  panelSubscription: Subscription = new Subscription();
   units: string = "cm";
   angles: string = "º";
   panel: string = "Synthesis";
@@ -127,116 +104,13 @@ export class ThreePosSynthesis{
   ];
   // Flags to control placeholder visibility
   placeholderFlags : { [key: number]: { x0: boolean; y0: boolean; x1: boolean; y1: boolean } } = {};
-  private mechanism: Mechanism;
+  private readonly mechanism: Mechanism;
 
 
 
   constructor(private stateService: StateService, private interactionService: InteractionService, private cdr: ChangeDetectorRef, private positionSolver: PositionSolverService) {
     this.mechanism = this.stateService.getMechanism();
   }
-
-  ngOnInit(): void {
-    this.lockCurrentJoint();
-    this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe((units) => {this.units = units;});
-    this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe((angles) => {this.angles = angles;});
-
-    this.twoPointPositions.forEach((_, index) => {
-    this.placeholderFlags[index] = { x0: true, y0: true, x1: true, y1: true };
-    });
-    this.panelSubscription = this.stateService.globalActivePanelCurrent.subscribe((panel) => {
-      this.panel = panel;
-      this.sendNotif();
-      this.changePosLocks();
-    });
-    this.mechanism._mechanismChange$.subscribe(() => this.checkForChange());
-  }
-
-  getMechanism(): Mechanism {
-    return this.stateService.getMechanism();
-  }
-
-  getCurrentJoint() {
-    let currentJointInteractor = this.interactionService.getSelectedObject();
-
-    if (currentJointInteractor instanceof JointInteractor && this.panel === "Synthesis") {
-    }
-    return (currentJointInteractor as JointInteractor).getJoint();
-  }
-
-  lockCurrentJoint(): void {
-    let currentJointInteractor = this.interactionService.getSelectedObject();
-
-    if (currentJointInteractor instanceof JointInteractor && this.panel === "Synthesis") {
-      currentJointInteractor.getJoint().locked = true;
-    }
-  }
-
-  lockCurrentLink(): void {
-    let currentLinkInteractor = this.interactionService.getSelectedObject();
-
-    if (currentLinkInteractor instanceof LinkInteractor && this.panel === "Synthesis") {
-      currentLinkInteractor.draggable = true;
-      const joints = this.mechanism.getJoints();
-      for (const joint of joints) {
-        joint.locked = false;
-      }
-    }
-  }
-
-  ngDoCheck() {
-    if (this.panel === "Synthesis") {
-      this.lockCurrentJoint();
-      this.lockCurrentLink();
-    }
-    if (this.position1 && this.pos1Specified) {
-      const newCoord = this.getNewCoord(this.position1);
-      this.updatePositionCoords(1, newCoord);
-      const angle = this.calculateAngle(this.position1.getJoints()[0], this.position1.getJoints()[1]);
-      this.updatePositionAngle(1, angle);
-    }
-    if (this.position2 && this.pos2Specified) {
-      const newCoord = this.getNewCoord(this.position2);
-      this.updatePositionCoords(2, newCoord);
-      const angle = this.calculateAngle(this.position2.getJoints()[0], this.position2.getJoints()[1]);
-      this.updatePositionAngle(2, angle);
-    }
-    if (this.position3 && this.pos3Specified) {
-      const newCoord = this.getNewCoord(this.position3);
-      this.updatePositionCoords(3, newCoord);
-      const angle = this.calculateAngle(this.position3.getJoints()[0], this.position3.getJoints()[1]);
-      this.updatePositionAngle(3, angle);
-    }
-
-    // Dynamically update "End Points" panel
-    if (this.position1 && this.pos1Specified) {
-        this.updateEndPointPanel(1, this.position1);
-    }
-    if (this.position2 && this.pos2Specified) {
-        this.updateEndPointPanel(2, this.position2);
-    }
-    if (this.position3 && this.pos3Specified) {
-        this.updateEndPointPanel(3, this.position3);
-    }
-}
-
-updateEndPointPanel(positionIndex: number, position: Position): void {
-  const index = positionIndex - 1; // Adjust for zero-based indexing
-
-  const backJoint = position.getJoints()[0];
-  const frontJoint = position.getJoints()[1];
-
-  // Update `twoPointPositions` with the current joint coordinates rounded to hundredths
-  this.twoPointPositions[index].x0 = parseFloat(backJoint.coords.x.toFixed(2));
-  this.twoPointPositions[index].y0 = parseFloat(backJoint.coords.y.toFixed(2));
-  this.twoPointPositions[index].x1 = parseFloat(frontJoint.coords.x.toFixed(2));
-  this.twoPointPositions[index].y1 = parseFloat(frontJoint.coords.y.toFixed(2));
-
-  // Ensure Angular change detection picks up the updates
-  this.cdr.detectChanges();
-}
-
-
-
   setReference(r: string) {
       this.reference = r;
       if (this.position1){
@@ -259,66 +133,6 @@ updateEndPointPanel(positionIndex: number, position: Position): void {
   toggleOption(selectedOption: string) {
     this.selectedOption = selectedOption;
   }
-
-getReference(): string{
-    return this.reference;
-}
-
-  checkForChange(): void {
-    let found = false;
-    for (let i: number = 0; i < this.synthedMech.length; i++){
-      for (let j = 0; j < this.mechanism.getArrayOfLinks().length; j++){
-        if (this.synthedMech[i].name === this.mechanism.getArrayOfLinks()[j].name){
-          found = true
-          break;
-        }
-        else found = false;
-      }
-      if (!found) {this.reset(); this.notifNeeded = false;}
-    }
-    if (found) this.notifNeeded = true;
-  }
-
-  sendNotif() {
-    if (this.notifNeeded && this.panel === "Synthesis"){
-      window.alert("Please recalculate position accuracy using the \"Evaluate Positions\" button.");
-      this.recalcNeeded = true;
-    }
-    this.notifNeeded = false;
-  }
-
-  reset(): void {
-    console.log("CALLED RESET")
-    this.removeAllPositions();
-    this.reference = "Center";
-    this.couplerLength = 2;
-  }
-
-  changePosLocks(): void {
-    if (this.panel === "Synthesis" && this.fourBarGenerated){
-      if (this.position1 instanceof Position) {
-        this.position1.locked = true;
-      }
-      if (this.position2 instanceof Position) {
-        this.position2.locked = true;
-      }
-      if (this.position3 instanceof Position) {
-        this.position3.locked = true;
-      }
-    }
-    else {
-      if (this.position1 instanceof Position) {
-        this.position1.locked = false;
-      }
-      if (this.position2 instanceof Position) {
-        this.position2.locked = false;
-      }
-      if (this.position3 instanceof Position) {
-        this.position3.locked = false;
-      }
-    }
-  }
-
   specifyPosition(index: number) {
     if (index === 1) {
       this.pos1Specified = true;
@@ -362,7 +176,7 @@ getReference(): string{
   }
 
   @HostListener('document:mousemove', ['$event'])
-  onMouseMove(event: MouseEvent) {
+  onMouseMove() {
     if (this.position1 && this.pos1Specified) {
       const newCoord = this.getNewCoord(this.position1);
       this.updatePositionCoords(1, newCoord);
@@ -393,39 +207,7 @@ getReference(): string{
     }
     this.cdr.detectChanges();
   }
-
-  calculateAngle(joint1: Joint, joint2: Joint): number {
-    const deltaX = joint2.coords.x - joint1.coords.x;
-    const deltaY = joint2.coords.y - joint1.coords.y;
-    let angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI); // Convert radians to degrees
-    if (angle < 0) {
-      angle += 360; // Normalize to 0-360
-    }
-    return angle;
-  }
-
-  updatePositionAngle(posNum: number, angle: number) {
-    let normalizedAngle = angle % 360;
-    if (normalizedAngle < 0) {
-      normalizedAngle += 360;
-    }
-
-    const roundedAngle = parseFloat(normalizedAngle.toFixed(3));
-
-    if (posNum === 1) {
-      this.pos1Angle = roundedAngle;
-      this.position1!.angle = roundedAngle;
-    } else if (posNum === 2) {
-      this.pos2Angle = roundedAngle;
-      this.position2!.angle = roundedAngle
-    } else if (posNum === 3) {
-      this.pos3Angle = roundedAngle;
-      this.position3!.angle = roundedAngle
-    }
-    this.cdr.detectChanges();
-  }
-
-resetPos(pos: number){
+  resetPos(pos: number){
     if(pos==1){
         this.pos1Angle=0;
         this.position1!.angle = 0;
@@ -543,18 +325,17 @@ isSixBarGenerated(): boolean {
       //adds the grounded joints and input
 
       //TO-DO get the location of the last joint in the joints array ans start th eindex from there because now we have joints in this array fromn the positions.!
-      joints = this.mechanism.getJoints(); //instead of using it hard coded just do first and last on the list, we could do a getter for this.
-      let index = 0;
+      this.mechanism.getJoints(); //instead of using it hard coded just do first and last on the list, we could do a getter for this.
       /*for (const joint of joints) {
-        if (index === 9) { //using index so we arent dependent on ID of the joints
-          joint.addGround();
-          joint.addInput();
-        }
-        if (index === 12) {
-          joint.addGround();
-        }
-        index++
-      }*/
+              if (index === 9) { //using index so we arent dependent on ID of the joints
+                joint.addGround();
+                joint.addInput();
+              }
+              if (index === 12) {
+                joint.addGround();
+              }
+              index++
+            }*/
 
       firstGround.addGround();
       firstGround.addInput();
@@ -1085,39 +866,8 @@ setPosYCoord(y: number, posNum: number){
       const frontJoint = this.position1.getJoints()[1];
       const midJoint = this.position1.getJoints()[2];
       const referenceJoint = this.getReferenceJoint(this.position1);
-      const centerX = referenceJoint.coords.x;
-      const centerY = referenceJoint.coords.y;
-      const halfLength = this.couplerLength / 2;
+      this.setCouplerJointCoordinates(referenceJoint, radians, backJoint, midJoint, frontJoint);
 
-      if (this.reference === "Center") {
-        backJoint.setCoordinates(new Coord(
-          centerX - halfLength * Math.cos(radians),
-          centerY - halfLength * Math.sin(radians)
-        ));
-        midJoint.setCoordinates(new Coord (centerX, centerY));
-        frontJoint.setCoordinates(new Coord(
-          centerX + halfLength * Math.cos(radians),
-          centerY + halfLength * Math.sin(radians)
-        ));
-      } else if (this.reference === "Back") {
-        frontJoint.setCoordinates(new Coord(
-          centerX + this.couplerLength * Math.cos(radians),
-          centerY + this.couplerLength * Math.sin(radians)
-        ));
-        midJoint.setCoordinates(new Coord (
-          centerX + Math.cos(radians),
-          centerY + Math.sin(radians)
-        ));
-      } else if (this.reference === "Front") {
-        backJoint.setCoordinates(new Coord(
-          centerX - this.couplerLength * Math.cos(radians),
-          centerY - this.couplerLength * Math.sin(radians)
-        ));
-        midJoint.setCoordinates(new Coord (
-          centerX - Math.cos(radians),
-          centerY - Math.sin(radians)
-        ));
-      }
     } else if (posNum === 2 && this.position2) {
       this.pos2Angle = angle;
       this.position2.angle = angle;
@@ -1125,39 +875,8 @@ setPosYCoord(y: number, posNum: number){
       const frontJoint = this.position2.getJoints()[1];
       const midJoint = this.position2.getJoints()[2];
       const referenceJoint = this.getReferenceJoint(this.position2);
-      const centerX = referenceJoint.coords.x;
-      const centerY = referenceJoint.coords.y;
-      const halfLength = this.couplerLength / 2;
+      this.setCouplerJointCoordinates(referenceJoint, radians, backJoint, midJoint, frontJoint);
 
-      if (this.reference === "Center") {
-        backJoint.setCoordinates(new Coord(
-          centerX - halfLength * Math.cos(radians),
-          centerY - halfLength * Math.sin(radians)
-        ));
-        midJoint.setCoordinates(new Coord (centerX, centerY));
-        frontJoint.setCoordinates(new Coord(
-          centerX + halfLength * Math.cos(radians),
-          centerY + halfLength * Math.sin(radians)
-        ));
-      } else if (this.reference === "Back") {
-        frontJoint.setCoordinates(new Coord(
-          centerX + this.couplerLength * Math.cos(radians),
-          centerY + this.couplerLength * Math.sin(radians)
-        ));
-        midJoint.setCoordinates(new Coord (
-          centerX + Math.cos(radians),
-          centerY + Math.sin(radians)
-        ));
-      } else if (this.reference === "Front") {
-        backJoint.setCoordinates(new Coord(
-          centerX - this.couplerLength * Math.cos(radians),
-          centerY - this.couplerLength * Math.sin(radians)
-        ));
-        midJoint.setCoordinates(new Coord (
-          centerX - Math.cos(radians),
-          centerY - Math.sin(radians)
-        ));
-      }
     } else if (posNum === 3 && this.position3) {
       this.pos3Angle = angle;
       this.position3.angle = angle;
@@ -1165,39 +884,8 @@ setPosYCoord(y: number, posNum: number){
       const frontJoint = this.position3.getJoints()[1];
       const midJoint = this.position3.getJoints()[2];
       const referenceJoint = this.getReferenceJoint(this.position3);
-      const centerX = referenceJoint.coords.x;
-      const centerY = referenceJoint.coords.y;
-      const halfLength = this.couplerLength / 2;
+      this.setCouplerJointCoordinates(referenceJoint, radians, backJoint, midJoint, frontJoint);
 
-      if (this.reference === "Center") {
-        backJoint.setCoordinates(new Coord(
-          centerX - halfLength * Math.cos(radians),
-          centerY - halfLength * Math.sin(radians)
-        ));
-        midJoint.setCoordinates(new Coord (centerX, centerY));
-        frontJoint.setCoordinates(new Coord(
-          centerX + halfLength * Math.cos(radians),
-          centerY + halfLength * Math.sin(radians)
-        ));
-      } else if (this.reference === "Back") {
-        frontJoint.setCoordinates(new Coord(
-          centerX + this.couplerLength * Math.cos(radians),
-          centerY + this.couplerLength * Math.sin(radians)
-        ));
-        midJoint.setCoordinates(new Coord (
-          centerX + Math.cos(radians),
-          centerY + Math.sin(radians)
-        ));
-      } else if (this.reference === "Front") {
-        backJoint.setCoordinates(new Coord(
-          centerX - this.couplerLength * Math.cos(radians),
-          centerY - this.couplerLength * Math.sin(radians)
-        ));
-        midJoint.setCoordinates(new Coord (
-          centerX - Math.cos(radians),
-          centerY - Math.sin(radians)
-        ));
-      }
     }
     this.cdr.detectChanges();
   }
@@ -1285,10 +973,7 @@ getFirstUndefinedPosition(): number{
   }
 
 allPositionsDefined(): boolean {
-    if(this.pos1Specified && this.pos2Specified && this.pos3Specified)
-        return true;
-    else
-        return false;
+    return this.pos1Specified && this.pos2Specified && this.pos3Specified;
 }
 
   confirmRemoveAll: boolean = false;
@@ -1424,19 +1109,6 @@ verifyMechanismPath() {
 
     this.cdr.detectChanges();
   }
-
-  unlockPositions() {
-    this.positionLocks.forEach(positionLock => {
-      positionLock.isLocked = false;
-    });
-    console.log(this.positionLocks);
-  }
-
-
-  getFirstUndefinedPositionEndPoints() :number {
-      return this.twoPointPositions.findIndex(position => !position.defined )
-      }
-
   specifyPositionEndPoints(index: number){
     console.log(index);
     if (index >= 0) {
@@ -1453,26 +1125,7 @@ verifyMechanismPath() {
       this.placeholderFlags[index].y1 = false;
     }
   }
-
-  deletePositionTwoPoints(index:number){
-    console.log("Delete Positions");
-    if (index >= 0 && index < this.twoPointPositions.length) {
-      this.twoPointPositions[index] = { x0: 0, y0: 0, x1: 0, y1: 0, defined: false };
-    }
-  }
-
-  removeAllPositionsTwoPoints(): void {
-    this.twoPointPositions.forEach(pos => {
-      pos.defined = false;
-      pos.x0 = 0;
-      pos.y0 = 0;
-      pos.x1 = 0;
-      pos.y1 = 0;
-    });
-    console.log("All positions removed");
-  }
-
-  // onPositionChange(): void {
+// onPositionChange(): void {
   //   // Recalculate the positions based on the updated user input
   //   this.positionSolverService.solvePositions();
   //
@@ -1487,207 +1140,7 @@ verifyMechanismPath() {
 
 
 // Handles focus event to hide placeholder
-  handleFocus(index: number, field: 'x0' | 'y0' | 'x1' | 'y1'): void {
-    if (this.twoPointPositions[index][field] === 0) {
-      this.twoPointPositions[index][field] = '' as any;
-    }
-  }
-
-
 // Handles blur event to restore placeholder if input is empty
-  handleBlur(index: number, field: 'x0' | 'y0' | 'x1' | 'y1'): void {
-    const value = this.twoPointPositions[index][field];
-
-    // Check if the value is empty or invalid
-    if (value === null || value === undefined || `${value}` === '') {
-      this.twoPointPositions[index][field] = 0;
-      this.placeholderFlags[index][field] = true;
-    } else {
-      this.placeholderFlags[index][field] = false;
-  }
-  }
-
-  handleInput(event: Event, index: number, coordType: 'x0' | 'y0' | 'x1' | 'y1'): void {
-    const inputElement = event.target as HTMLInputElement;
-
-    // Allow temporary empty or negative values
-    const value = inputElement.value;
-
-    if (value === '' || value === '-') {
-        // Allow empty or negative sign temporarily
-        this.twoPointPositions[index][coordType] = NaN; // Use NaN for invalid number state
-    } else {
-        // Parse and store valid numeric values
-        const parsedValue = parseFloat(value);
-        this.twoPointPositions[index][coordType] = isNaN(parsedValue) ? 0 : parsedValue;
-    }
-}
-
-defaultToZero(index: number, coordType: 'x0' | 'y0' | 'x1' | 'y1'): void {
-    const value = this.twoPointPositions[index][coordType];
-
-    // Check for NaN (temporary invalid state) and reset to 0
-    if (isNaN(value)) {
-        this.twoPointPositions[index][coordType] = 0;
-    }
-}
-
-
-  pipeToEndPoint(e: Event, posNum: number, endPoint: string) {
-    let val = parseFloat((e.target as HTMLInputElement).value);
-    switch (endPoint) {
-      case "x1":
-        this.setPosX1CoordEndPoints(parseFloat(val.toFixed(3)), posNum);
-        break;
-      case "y1":
-        this.setPosY1CoordEndPoints(parseFloat(val.toFixed(3)), posNum);
-        break;
-      case "x2":
-        this.setPosX2CoordEndPoints(parseFloat(val.toFixed(3)), posNum);
-        break;
-      case "y2":
-        this.setPosY2CoordEndPoints(parseFloat(val.toFixed(3)), posNum);
-        break;
-    }
-
-  }
-
-  setPosX1CoordEndPoints(x: number, posNum: number) {
-    switch (posNum){
-      case 1:
-        const x1 = this.position1!.getJoints()[0];
-        const midjoint1 = this.position1!.getJoints()[2];
-        x1.setCoordinates(new Coord(x, x1.coords.y));
-        const centerCoord1 = this.getReferenceJoint(this.position1!);
-        midjoint1.setCoordinates(centerCoord1.coords);
-        if (this.position1!.length !== this.position2?.length && this.position2) { this.position2LengthErr = {x1: true, y1: false, x2: false, y2: false}; }
-        else this.position2LengthErr = {x1: false, y1: false, x2: false, y2: false};
-        if (this.position1!.length !== this.position3?.length && this.position3) { this.position3LengthErr = {x1: true, y1: false, x2: false, y2: false}; }
-        else this.position3LengthErr = {x1: false, y1: false, x2: false, y2: false};
-        break;
-      case 2:
-        const x2 = this.position2!.getJoints()[0];
-        const midjoint2 = this.position2!.getJoints()[2];
-        x2.setCoordinates(new Coord(x, x2.coords.y));
-        const centerCoord2 = this.getReferenceJoint(this.position2!);
-        midjoint2.setCoordinates(centerCoord2.coords);
-        if (this.position2!.length !== this.position1?.length) { this.position2LengthErr = {x1: true, y1: false, x2: false, y2: false}; }
-        else {this.position2LengthErr = {x1: false, y1: false, x2: false, y2: false};}
-        break;
-      case 3:
-        const x3 = this.position3!.getJoints()[0];
-        const midjoint3 = this.position3!.getJoints()[2];
-        x3.setCoordinates(new Coord(x, x3.coords.y));
-        const centerCoord3 = this.getReferenceJoint(this.position3!);
-        midjoint3.setCoordinates(centerCoord3.coords);
-        if (this.position3!.length !== this.position1?.length) { this.position3LengthErr = {x1: true, y1: false, x2: false, y2: false}; }
-        else { this.position3LengthErr = {x1: false, y1: false, x2: false, y2: false};}
-        break;
-    }
-  }
-
-  setPosX2CoordEndPoints(x: number, posNum: number) {
-    switch (posNum){
-      case 1:
-        const x1 = this.position1!.getJoints()[1];
-        const midjoint1 = this.position1!.getJoints()[2];
-        x1.setCoordinates(new Coord(x, x1.coords.y));
-        const centerCoord1 = this.getReferenceJoint(this.position1!);
-        midjoint1.setCoordinates(centerCoord1.coords);
-        if (this.position1!.length !== this.position2?.length && this.position2) { this.position2LengthErr = {x1: false, y1: false, x2: true, y2: false}; }
-        else this.position2LengthErr = {x1: false, y1: false, x2: false, y2: false};
-        if (this.position1!.length !== this.position3?.length && this.position3) { this.position3LengthErr = {x1: false, y1: false, x2: true, y2: false}; }
-        else this.position3LengthErr = {x1: false, y1: false, x2: false, y2: false};
-        break;
-      case 2:
-        const x2 = this.position2!.getJoints()[1];
-        const midjoint2 = this.position2!.getJoints()[2];
-        x2.setCoordinates(new Coord(x, x2.coords.y));
-        const centerCoord2 = this.getReferenceJoint(this.position2!);
-        midjoint2.setCoordinates(centerCoord2.coords);
-        if (this.position2!.length !== this.position1?.length) { this.position2LengthErr = {x1: false, y1: false, x2: true, y2: false}; }
-        else {this.position2LengthErr = {x1: false, y1: false, x2: false, y2: false}; }
-        break;
-      case 3:
-        const x3 = this.position3!.getJoints()[1];
-        const midjoint3 = this.position3!.getJoints()[2];
-        x3.setCoordinates(new Coord(x, x3.coords.y));
-        const centerCoord3 = this.getReferenceJoint(this.position3!);
-        midjoint3.setCoordinates(centerCoord3.coords);
-        if (this.position3!.length !== this.position1?.length) { this.position3LengthErr = {x1: false, y1: false, x2: true, y2: false}; }
-        else {this.position3LengthErr = {x1: false, y1: false, x2: false, y2: false}; }
-        break;
-    }
-  }
-
-  setPosY1CoordEndPoints(y: number, posNum: number) {
-    switch (posNum){
-      case 1:
-        const y1 = this.position1!.getJoints()[0];
-        const midjoint1 = this.position1!.getJoints()[2];
-        y1.setCoordinates(new Coord(y1.coords.x, y));
-        const centerCoord1 = this.getReferenceJoint(this.position1!);
-        midjoint1.setCoordinates(centerCoord1.coords);
-        if (this.position1!.length !== this.position2?.length && this.position2) { this.position2LengthErr = {x1: false, y1: true, x2: false, y2: false}; }
-        else this.position2LengthErr = {x1: false, y1: false, x2: false, y2: false};
-        if (this.position1!.length !== this.position3?.length && this.position3) { this.position3LengthErr = {x1: false, y1: true, x2: false, y2: false}; }
-        else this.position3LengthErr = {x1: false, y1: false, x2: false, y2: false};
-        break;
-      case 2:
-        const y2 = this.position2!.getJoints()[0];
-        const midjoint2 = this.position2!.getJoints()[2];
-        y2.setCoordinates(new Coord(y2.coords.x, y));
-        const centerCoord2 = this.getReferenceJoint(this.position2!);
-        midjoint2.setCoordinates(centerCoord2.coords);
-        if (this.position2!.length !== this.position1?.length) { this.position2LengthErr = {x1: false, y1: true, x2: false, y2: false}; }
-        else {this.position2LengthErr = {x1: false, y1: false, x2: false, y2: false}; this.position1LengthErr = {x1: false, y1: false, x2: false, y2: false}; }
-        break;
-      case 3:
-        const y3 = this.position3!.getJoints()[0];
-        const midjoint3 = this.position3!.getJoints()[2];
-        y3.setCoordinates(new Coord(y3.coords.x, y));
-        const centerCoord3 = this.getReferenceJoint(this.position3!);
-        midjoint3.setCoordinates(centerCoord3.coords);
-        if (this.position3!.length !== this.position1?.length) { this.position3LengthErr = {x1: false, y1: true, x2: false, y2: false}; }
-        else {this.position3LengthErr = {x1: false, y1: false, x2: false, y2: false}; this.position1LengthErr = {x1: false, y1: false, x2: false, y2: false}; }
-        break;
-    }
-  }
-
-  setPosY2CoordEndPoints(y: number, posNum: number) {
-    switch (posNum){
-      case 1:
-        const y1 = this.position1!.getJoints()[1];
-        const midjoint1 = this.position1!.getJoints()[2];
-        y1.setCoordinates(new Coord(y1.coords.x, y));
-        const centerCoord1 = this.getReferenceJoint(this.position1!);
-        midjoint1.setCoordinates(centerCoord1.coords);
-        if (this.position1!.length !== this.position2?.length && this.position2) { this.position2LengthErr = {x1: false, y1: false, x2: false, y2: true}; }
-        else this.position2LengthErr = {x1: false, y1: false, x2: false, y2: false};
-        if (this.position1!.length !== this.position3?.length && this.position3) { this.position3LengthErr = {x1: false, y1: false, x2: false, y2: true}; }
-        else this.position3LengthErr = {x1: false, y1: false, x2: false, y2: false};
-        break;
-      case 2:
-        const y2 = this.position2!.getJoints()[1];
-        const midjoint2 = this.position2!.getJoints()[2];
-        y2.setCoordinates(new Coord(y2.coords.x, y));
-        const centerCoord2 = this.getReferenceJoint(this.position2!);
-        midjoint2.setCoordinates(centerCoord2.coords); //work
-        if (this.position2!.length !== this.position1?.length) { this.position2LengthErr = {x1: false, y1: false, x2: false, y2: true}; }
-        else {this.position2LengthErr = {x1: false, y1: false, x2: false, y2: false}; }
-        break;
-      case 3:
-        const y3 = this.position3!.getJoints()[1];
-        const midjoint3 = this.position3!.getJoints()[2];
-        y3.setCoordinates(new Coord(y3.coords.x, y));
-        const centerCoord3 = this.getReferenceJoint(this.position3!);
-        midjoint3.setCoordinates(centerCoord3.coords);
-        if (this.position3!.length !== this.position1?.length) { this.position3LengthErr = {x1: false, y1: false, x2: false, y2: true}; }
-        else {this.position3LengthErr = {x1: false, y1: false, x2: false, y2: false}; }
-        break;
-    }
-  }
-
   swapInputAndGround() {
     const mechanism: Mechanism = this.stateService.getMechanism();
     const joints = mechanism.getJoints();
@@ -1795,78 +1248,25 @@ getEndPointCoords(positionIndex: number, coordType: 'x0' | 'y0' | 'x1' | 'y1'): 
     return this.twoPointPositions[index][coordType];
 }
 
+// Helper to update joint positions based on center and reference type
+  private setCouplerJointCoordinates(referenceJoint: Joint, radians: number, backJoint: Joint, midJoint: Joint, frontJoint: Joint): void {
+    const centerX = referenceJoint.coords.x;
+    const centerY = referenceJoint.coords.y;
+    const halfLength = this.couplerLength / 2;
 
-  generateFourBarFromTwoPoints(): void {
-    // Logic to generate a Four-Bar mechanism based on two points
-    console.log(`Generating Four-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
-    console.log('Current Values of Two Point Positions:', this.twoPointPositions);
+    const dx = Math.cos(radians);
+    const dy = Math.sin(radians);
 
-  }
-
-  generateSixBarFromTwoPoints(): void {
-    // Logic to generate a Four-Bar mechanism based on two points
-    console.log(`Generating Six-Bar with distance: ${this.distance} cm and angle: ${this.angle}°`);
-
-  }
-
-  getPositionLengthErrX1(pos: number): boolean {
-    let retVal: boolean = false;
-    switch (pos) {
-      case 1:
-        retVal = false;
-        break;
-      case 2:
-        retVal = this.position2LengthErr.x1;
-        break;
-      case 3:
-        retVal = this.position3LengthErr.x1;
+    if (this.reference === "Center") {
+      backJoint.setCoordinates(new Coord(centerX - halfLength * dx, centerY - halfLength * dy));
+      midJoint.setCoordinates(new Coord(centerX, centerY));
+      frontJoint.setCoordinates(new Coord(centerX + halfLength * dx, centerY + halfLength * dy));
+    } else if (this.reference === "Back") {
+      frontJoint.setCoordinates(new Coord(centerX + this.couplerLength * dx, centerY + this.couplerLength * dy));
+      midJoint.setCoordinates(new Coord(centerX + dx, centerY + dy));
+    } else if (this.reference === "Front") {
+      backJoint.setCoordinates(new Coord(centerX - this.couplerLength * dx, centerY - this.couplerLength * dy));
+      midJoint.setCoordinates(new Coord(centerX - dx, centerY - dy));
     }
-    return retVal;
   }
-
-  getPositionLengthErrY1(pos: number): boolean {
-    let retVal: boolean = false;
-    switch (pos) {
-      case 1:
-        retVal = false;
-        break;
-      case 2:
-        retVal = this.position2LengthErr.y1;
-        break;
-      case 3:
-        retVal = this.position3LengthErr.y1;
-    }
-    return retVal;
-  }
-
-  getPositionLengthErrX2(pos: number): boolean {
-    let retVal: boolean = false;
-    switch (pos) {
-      case 1:
-        retVal = false;
-        break;
-      case 2:
-        retVal = this.position2LengthErr.x2;
-        break;
-      case 3:
-        retVal = this.position3LengthErr.x2;
-    }
-    return retVal;
-  }
-
-  getPositionLengthErrY2(pos: number): boolean {
-    let retVal: boolean = false;
-    switch (pos) {
-      case 1:
-        retVal = false;
-        break;
-      case 2:
-        retVal = this.position2LengthErr.y2;
-        break;
-      case 3:
-        retVal = this.position3LengthErr.y2;
-    }
-    return retVal;
-  }
-
 }

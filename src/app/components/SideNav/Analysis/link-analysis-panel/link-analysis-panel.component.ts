@@ -3,15 +3,8 @@ import {StateService} from "src/app/services/state.service";
 import {InteractionService} from "src/app/services/interaction.service";
 import {Mechanism} from "src/app/model/mechanism";
 import {LinkInteractor} from "src/app/controllers/link-interactor";
-import {PositionSolverService} from "src/app/services/kinematic-solver.service";
 import {Joint} from "src/app/model/joint";
 import {AnalysisSolveService, JointAnalysis} from "src/app/services/analysis-solver.service";
-
-interface Tab {
-    selected: boolean,
-    label: string,
-    icon: string
-}
 
 // enum contains every kind of graph this panel can open.
 export enum GraphType {
@@ -34,19 +27,9 @@ export enum GraphType {
 export class LinkAnalysisPanelComponent {
 
   currentGraphType: GraphType | null = null;
-  graphTypes = GraphType;
   referenceJoint: Joint = this.getCurrentLink().joints.get(0) as Joint;
-
-  graphExpanded: { [key: string]: boolean } = {
-    dataSummary: true,
-    graphicalAnalysis: false,
-    positionOfJoint: false,
-      velocityOfJoint: false,
-      accelerationOfJoint: false
-  };
-
   constructor(private stateService: StateService, private interactorService: InteractionService,
-              private positionSolver: PositionSolverService, private analysisSolverService: AnalysisSolveService){
+              private analysisSolverService: AnalysisSolveService){
       console.log("joint-analysis-panel.constructor");
   }
 
@@ -57,20 +40,9 @@ export class LinkAnalysisPanelComponent {
   }
   getLinkName(): string {return this.getCurrentLink().name;}
     getReferenceJoint(){return this.referenceJoint;}
-    getReferenceJointName(){return this.getReferenceJoint()?.name;}
-    getReferenceJointXCoord(){return this.getReferenceJoint()?.coords.x.toFixed(3) as unknown as number;}
-    getReferenceJointYCoord(){return this.getReferenceJoint()?.coords.y.toFixed(3) as unknown as number;}
-
-
-
-    // get x coord and y coord return the number of the center of mass
+// get x coord and y coord return the number of the center of mass
   getCOMXCoord(): number {return this.getCurrentLink()?.centerOfMass.x.toFixed(3) as unknown as number;}
     getCOMYCoord(): number {return this.getCurrentLink()?.centerOfMass.y.toFixed(3) as unknown as number;}
-
-
-  setJointXCoord(xCoordInput: number): void {this.getMechanism().setXCoord(this.getCurrentLink().id, xCoordInput);}
-  setJointYCoord(yCoordInput: number): void {this.getMechanism().setYCoord(this.getCurrentLink().id, yCoordInput);}
-
   openAnalysisGraph(graphType: GraphType): void {
     this.currentGraphType = graphType;
     if(this.currentGraphType == GraphType.CoMPosition ||
@@ -98,12 +70,6 @@ export class LinkAnalysisPanelComponent {
       this.openAnalysisGraph(graphType); // If it's closed, open it
     }
   }
-
-  getGraphTypes(){
-    // @ts-ignore
-    return Object.keys(this.graphTypes).filter(key => !isNaN(Number(this.graphTypes[key]))).map(key => Number(this.graphTypes[key])) as GraphType[];
-  }
-
   getGraphTypeName(graphType: GraphType): string {
     switch (graphType) {
       case GraphType.CoMPosition:
@@ -173,18 +139,15 @@ export class LinkAnalysisPanelComponent {
     switch(this.currentGraphType) {
       case GraphType.CoMPosition:
         jointKinematics = this.analysisSolverService.getJointKinematics(this.getPlaceholderCoMJoint().id);
-        let comPositionChartData = this.analysisSolverService.transformJointKinematicGraph(jointKinematics, "Position");
-        return comPositionChartData;
+        return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, "Position");
 
       case GraphType.CoMVelocity:
         jointKinematics = this.analysisSolverService.getJointKinematics(this.getPlaceholderCoMJoint().id);
-        let comVelocityChartData = this.analysisSolverService.transformJointKinematicGraph(jointKinematics, "Velocity");
-        return comVelocityChartData;
+        return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, "Velocity");
 
       case GraphType.CoMAcceleration:
         jointKinematics = this.analysisSolverService.getJointKinematics(this.getPlaceholderCoMJoint().id);
-        let comAccelerationChartData = this.analysisSolverService.transformJointKinematicGraph(jointKinematics, "Acceleration");
-        return comAccelerationChartData;
+        return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, "Acceleration");
 
 
       case GraphType.referenceJointAngle:
@@ -192,8 +155,7 @@ export class LinkAnalysisPanelComponent {
           let joints = this.getCurrentLink().getJoints();
           let jointIds = joints.map(joint => joint.id);
           let linkKinematics = this.analysisSolverService.getLinkKinematics(jointIds);
-          let chartData = this.analysisSolverService.transformLinkKinematicGraph(linkKinematics, "Angle");
-          return chartData;
+          return this.analysisSolverService.transformLinkKinematicGraph(linkKinematics, "Angle");
         }
         return {
           xData: [],
@@ -206,8 +168,7 @@ export class LinkAnalysisPanelComponent {
           let joints = this.getCurrentLink().getJoints();
           let jointIds = joints.map(joint => joint.id);
           let linkKinematics = this.analysisSolverService.getLinkKinematics(jointIds);
-          let chartData = this.analysisSolverService.transformLinkKinematicGraph(linkKinematics, "Velocity");
-          return chartData;
+          return this.analysisSolverService.transformLinkKinematicGraph(linkKinematics, "Velocity");
         }
         return {
           xData: [],
@@ -220,8 +181,7 @@ export class LinkAnalysisPanelComponent {
           let joints = this.getCurrentLink().getJoints();
           let jointIds = joints.map(joint => joint.id);
           let linkKinematics = this.analysisSolverService.getLinkKinematics(jointIds);
-          let chartData = this.analysisSolverService.transformLinkKinematicGraph(linkKinematics, "Acceleration");
-          return chartData;
+          return this.analysisSolverService.transformLinkKinematicGraph(linkKinematics, "Acceleration");
         }
         return {
           xData: [],
@@ -235,10 +195,6 @@ export class LinkAnalysisPanelComponent {
           timeLabels: []
         };
     }
-  }
-
-  onReferenceJointSelected(joint: Joint){
-    this.referenceJoint = joint;
   }
   public GraphType = GraphType;
 

@@ -1,12 +1,11 @@
-
 <div id="editJoint">
     <div class="scroll-container">
       <div id="body" [class.disabled-panel]="getJointLockState()">
 
 
-        <!--  JOINT PANEL-->
-        <!-- TITLE BLOCK: CONTAINS TITLE, INPUT SECTION FOR JOINT NAME, EDIT AND DELETE SVGS -->
+        <!-- JOINT PANEL HEADER -->
         <panel-section-collapsible>
+          <!-- Title block with inline editing, edit and delete buttons -->
           <title-block description='' class = "editHeader" (click)="onTitleBlockClick($event)"
           >Edit Joint
             <ng-container *ngIf="isEditingTitle; else jointNameDisplay">
@@ -15,11 +14,13 @@
             <ng-template #jointNameDisplay>
               {{ getJointName() }}
             </ng-template>
+            <!-- Edit button -->
             <button (click)="isEditingTitle=true">
-              <img src='assets/icons/edit.svg' style="height: 16px; width: 16px;"/>
+              <img ngSrc='assets/icons/edit.svg' style="height: 16px; width: 16px;" alt="" height="48" width="48"/>
             </button>
+            <!-- Delete button -->
             <button (click)="deleteJoint()">
-              <img src='assets/icons/trash.svg' style="height: 16px; width: 16px;"/>
+              <img ngSrc='assets/icons/trash.svg' style="height: 16px; width: 16px;" alt="" height="18" width="15"/>
             </button>
           </title-block>
           <p class="subtitle">This is where you edit joints. Change things such as the position.</p>
@@ -35,6 +36,7 @@
           <div id="jointPositions" class="xy-block">
             <label class="xy-label">Input X and Y positions</label>
             <div class="xy-row">
+              <!-- X position input -->
               <div class="xy-cell">
                 <label>X</label>
                 <input
@@ -46,6 +48,8 @@
                 />
                 <span class="xy-unit">{{ units }}</span>
               </div>
+
+              <!-- Y position input -->
               <div class="xy-cell">
                 <label>Y</label>
                 <input
@@ -81,7 +85,7 @@
                     <div class="distance-angle-row">
                       <div class="dar-cell">
                         <!-- distance input -->
-                        <img src="assets/icons/length.svg" class="dar-icon"/>
+                        <img ngSrc="assets/icons/length.svg" class="dar-icon" height="15" width="12" alt=""/>
                         <input
                           type="number"
                           [value]="getJointDistance(joint)"
@@ -93,7 +97,7 @@
 
                       <div class="dar-cell">
                         <!-- angle input -->
-                        <img src="assets/icons/angle.svg" class="dar-icon"/>
+                        <img ngSrc="assets/icons/angle.svg" class="dar-icon" height="10" width="10" alt=""/>
                         <input
                           type="number"
                           [ngModel]="getJointAngle(joint)"

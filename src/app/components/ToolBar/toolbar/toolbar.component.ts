@@ -15,27 +15,33 @@ export class ToolbarComponent {
 
   }
 
-selectedPanel: string = '';
+  selectedPanel: string = '';
 
-setCurrentTab(clickedPanel: string){
-    console.log(clickedPanel);
-    if(clickedPanel==this.selectedPanel) {
-      this.selectedPanel = '';
-    }else{
-        this.selectedPanel= clickedPanel;}
+  // Sets the currently active tab
+  setCurrentTab(clickedPanel: string){
 
-    console.log("Current Selected: " + this.selectedPanel);
-}
+      if(clickedPanel==this.selectedPanel) {
+        this.selectedPanel = '';
+      }
+      else{
+          this.selectedPanel= clickedPanel;
+      }
+   }
 
-getSelected(): string {
-    return this.selectedPanel;
-}
-  handleShare(tab:string) {
+  // Returns the name of the currently selected panel
+  getSelected(): string {
+      return this.selectedPanel;
+  }
+
+  // Handles sharing functionality by copying the generated URL to the clipboard
+  handleShare() {
     //this.setCurrentTab("Share");
     let urlService = new UrlGenerationService(this.stateService);
     urlService.copyURL();
   }
-  handleSave(tab:string) {
+
+  // Handles sharing functionality by copying the generated URL to the clipboard
+  handleSave() {
     //this.setCurrentTab("Save");
     console.log("save button pressed");
     let encoderService = new EncoderService(this.stateService);
@@ -51,13 +57,15 @@ getSelected(): string {
     URL.revokeObjectURL(url);
     //todo notification of download
   }
-  handleLoadFile(tab:string) {
+
+  // Handles saving functionality by exporting data as CSV and triggering a file download
+  handleLoadFile() {
     // Create a hidden file input object
     const fileInput: HTMLInputElement = document.createElement('input');
     fileInput.type = 'file';
     fileInput.style.display = 'none'; // Keep it hidden
     document.body.appendChild(fileInput);
-// Handle the file selection
+    // Handle the file selection
     fileInput.addEventListener('change', (event: Event): void => {
       const target = event.target as HTMLInputElement;
       if (!target.files || target.files.length === 0) {

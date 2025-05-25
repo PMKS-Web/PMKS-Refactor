@@ -14,6 +14,7 @@ export class UndoRedoPanelComponent {
     public mechanism: Mechanism,
   ) {}
 
+  // WHEN USER CLICKS UNDO
   onUndo(): void {
     console.log('Undo button clicked');
     // Call the undo function from UndoRedoService.
@@ -23,6 +24,7 @@ export class UndoRedoPanelComponent {
 
   }
 
+  //WHEN USER CLICKS REDO
   onRedo(): void {
     console.log('Redo button clicked');
     this.stateService.redo();

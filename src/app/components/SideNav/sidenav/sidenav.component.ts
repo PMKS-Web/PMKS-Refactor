@@ -16,6 +16,7 @@ interface Tab {
 })
 export class SidenavComponent {
 
+  // Array of navigation tabs shown in the side menu
   tabs: Tab[] = [
     {selected: false, label: 'Synthesis',icon: 'assets/sidenav/synthesize.svg'},
     {selected: true, label: 'Edit',icon: 'assets/sidenav/edit.svg'},
@@ -30,10 +31,12 @@ export class SidenavComponent {
   constructor(private stateService: StateService){
   }
 
+  // Called when synthesis panel emits a generated state
   changeGeneratedCheck(changeTo: boolean): void {
     this.generatedCheck = changeTo;
   }
 
+  // Toggles visibility of a panel when a tab is clicked
   togglePanel(clickedTab: string): void {
     let editPanel = this.sidePanels[0].children[0];
     let synthPanel = this.sidePanels[0].children[1];
@@ -72,28 +75,18 @@ export class SidenavComponent {
     }
     }
 
-
+  // Checks if a given tab label is currently selected
   isSelected(id: string): boolean {
     return this.tabs.find(tab => tab.label === id)?.selected ?? false;
   }
 
+  // Unhides the given panel element
   unHide(panel: Element) {
     panel.removeAttribute("hidden");
   }
 
+  // Hides the given panel element
   hide(panel: Element): void {
     panel.setAttribute("hidden", "true")
   }
-
-getSelected(): string {
-    let selectedTab = '';
-    this.tabs.forEach((tab)=>{
-      if(tab.selected){
-        selectedTab = tab.label;
-      }
-    });
-    return selectedTab;
-  }
-
-
 }

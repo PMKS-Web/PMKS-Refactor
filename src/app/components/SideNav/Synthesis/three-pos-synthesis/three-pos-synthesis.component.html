@@ -1,16 +1,6 @@
 <!-- This is the panel for three position synthesis -->
 <div id="threePos">
 
-<!--  <div class="toggle-container">-->
-<!--    <input type="checkbox" id="toggle-switch" (change)="toggleOption(toggle.checked ? 'two-points' : 'xy-angle')" #toggle>-->
-<!--    <label for="toggle-switch" class="toggle-label">-->
-<!--&lt;!&ndash;      <span class="toggle-text">Position & Angle</span>&ndash;&gt;-->
-<!--      <span class="toggle-text">Distance</span>-->
-<!--      <span class="toggle-indicator">{{ toggle.checked ? 'Distance' : 'Position & Angle' }}</span>-->
-<!--    </label>-->
-<!--  </div>-->
-
-
 
 
   <div class="scroll-container" >
@@ -27,6 +17,7 @@
       </label>
     </div>
 
+    <!-- XY + ANGLE MODE -->
     <div *ngIf="selectedOption === 'xy-angle'">
 
            <div style="margin-bottom:15px;">
@@ -35,11 +26,11 @@
               Automatically create a four-bar linkage based on 3 coupler poses.</p>
 
              <div class="coupler-specifications-container">
-             <p class="coupler-title" style="margin-bottom:-3px; margin-right: 10px; margin-left: 10px; margin-top: 15px;">Coupler Link Specifications</p>
+             <p class="coupler-title" style="margin: 15px 10px -3px;">Coupler Link Specifications</p>
                <div class="coupler-block">
                   <div class="input-container">
 <!--                     Length Image-->
-                      <img src="assets/icons/length.svg" alt="length icon" class="icon">
+                      <img ngSrc="assets/icons/length.svg" alt="length icon" class="icon" height="15" width="12">
                     <!--                     Length label-->
                       <span style="flex: 0 0 auto; margin-right: 5px;">Length</span>
                     <!--                     Length tooltip-->
@@ -52,12 +43,12 @@
                       </mat-icon>
 
                     <!-- Lock Icon with Click Handler -->
-                      <img src="assets/icons/lock.svg"
+                      <img ngSrc="assets/icons/lock.svg"
                            alt="lock icon"
                            class="lock-icon"
                            (click)="toggleLengthLock()"
                            [class.locked]="isLengthLocked"
-                      >
+                           height="24" width="24">
 
                     <!--class="right-aligned" for below-->
                       <single-input-block
@@ -76,7 +67,8 @@
 
             <!-- The fixed reference is the center of rotation and you set that with the radio block -->
                   <div class="fixed-reference">
-                      <img src='assets/icons/referencePoint.svg' style="height: 12.5px; width: 12.5px; display: inline-block; align-items: center; margin-left: 0px;"/>
+                      <img ngSrc='assets/icons/referencePoint.svg' style="height: 12.5px; width: 12.5px; display: inline-block; align-items: center; margin-left: 0;"
+                           height="14" width="14" alt=""/>
                       <p  class="fixedReference-title"style="display:inline-block; margin-bottom:0;">Fixed Reference</p>
 
                       <mat-icon id="fixedReferenceTooltip"
@@ -101,7 +93,7 @@
                    <!-- displays each position label, if the position is specified/defined, then the trash icon appears -->
 
                    <div class="position-header">
-                        <p style="display:block; margin-right: auto;margin-left: 8px; margin-bottom: 0px;text-align: left !important;">Position {{i}}</p>
+                        <p style="display:block; margin-right: auto;margin-left: 8px; margin-bottom: 0;text-align: left !important;">Position {{i}}</p>
 
                         <span class="icons">
                         <mat-icon id="tooltip1" matTooltip="Change the x and y values of the reference point of the coupler position {{i}}" [matTooltipShowDelay]='1000'
@@ -109,7 +101,7 @@
                         >help_outline
                         </mat-icon>
                         <button class="trash" *ngIf='this.isPositionDefined(i)' (click)="this.deletePosition(i)">
-                              <img id="icon" src='assets/icons/trash.svg'/>
+                              <img id="icon" ngSrc='assets/icons/trash.svg' height="18" width="15" alt=""/>
                         </button>
                         </span>
                   </div>
@@ -231,7 +223,7 @@
             <span class="icons">
       <mat-icon id="tooltip2" matTooltip="Specify the coordinates for Position {{ index + 1 }}" [matTooltipShowDelay]="1000">help_outline</mat-icon>
       <button class="trash" *ngIf='this.isPositionDefined(index + 1)' (click)="deletePosition(index + 1)">
-        <img id="icon" src="assets/icons/trash.svg" alt="Delete Position">
+        <img id="icon" ngSrc="assets/icons/trash.svg" alt="Delete Position" height="18" width="15">
       </button>
     </span>
           </div>

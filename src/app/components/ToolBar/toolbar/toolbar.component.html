@@ -15,7 +15,7 @@
   </button>
 
   <!-- OPEN FILE -->
-  <button mat-button class="toolbar-button" (click)="handleLoadFile('Load');"
+  <button mat-button class="toolbar-button" (click)="handleLoadFile();"
           matTooltip='Open a linkage from a file on your device'
           matTooltipShowDelay='1000'>
     <mat-icon>file_open</mat-icon>
@@ -39,7 +39,7 @@
   </button>
 
   <!-- SAVE -->
-  <button mat-button class="toolbar-button" (click)="handleSave('Save');"
+  <button mat-button class="toolbar-button" (click)="handleSave();"
           matTooltip='Save this linkage to your device'
           matTooltipShowDelay='1000'>
     <mat-icon>save</mat-icon>
@@ -47,7 +47,7 @@
   </button>
 
   <!-- SHARE -->
-  <button mat-button class="toolbar-button" (click)="handleShare('Share');"
+  <button mat-button class="toolbar-button" (click)="handleShare();"
           matTooltip='Copy a URL to clipboard that contains your linakge'
           matTooltipShowDelay='1000'>
     <mat-icon>link</mat-icon>

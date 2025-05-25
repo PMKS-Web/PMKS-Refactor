@@ -1,6 +1,7 @@
 import {Coord} from "../../../model/coord";
 
-
+//THE ACTION CLASS CONTAINS ANY POSSIBLE VALUE WE
+//WOULD NEED TO UNDO A USER ACTION
 export interface Action {
   type: string;
   linkId?: number;

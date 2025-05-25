@@ -1,37 +1,51 @@
 <div id="editLink">
   <div class="scroll-container">
-    <!--  LINK PANEL-->
-    <!--  Name does not work because no name is set-->
+    <!-- MAIN EDIT PANEL FOR COMPOUND LINK -->
     <panel-section-collapsible>
+
+      <!-- Title block with editable name, delete, and lock buttons -->
       <title-block description='' class="editHeader" (click)="onTitleBlockClick($event)">
         Edit Compound Link
+
+        <!-- Editable title input -->
         <ng-container *ngIf="isEditingTitle; else linkNameDisplay">
-          <input #linkNameInput [(ngModel)]="this.getSelectedObject().name" (blur)="setCompoundLinkName(linkNameInput.value)" (keyup.enter)="setCompoundLinkName(linkNameInput.value)"/>
+          <input #linkNameInput [(ngModel)]="this.getSelectedObject().name"
+                 (blur)="setCompoundLinkName(linkNameInput.value)"
+                 (keyup.enter)="setCompoundLinkName(linkNameInput.value)"/>
         </ng-container>
+
+        <!-- Display link name if not editing -->
         <ng-template #linkNameDisplay>
           {{ this.getCompoundLinkName() }}
         </ng-template>
+
+        <!-- Edit, delete, and lock/unlock buttons -->
         <button class="topbuttons" (click)="this.isEditingTitle=true">
-          <img src='assets/icons/edit.svg' style="height: 16px; width: 16px;"/>
+          <img ngSrc='assets/icons/edit.svg' style="height: 16px; width: 16px;" height="48" width="48" alt=""/>
         </button>
         <button class="topbuttons" (click)="this.deleteCompoundLink()">
-          <img src='assets/icons/trash.svg' style="height: 16px; width: 16px;"/>
+          <img ngSrc='assets/icons/trash.svg' style="height: 16px; width: 16px;" height="18" width="15" alt=""/>
         </button>
         <button class="topbuttons" (click)="this.updateCompoundLinkLock()">
           <ng-container *ngIf="isLocked; else unlockIcon">
-            <img src='assets/icons/unlock.svg' style="height: 16px; width: 16px;"/>
+            <img ngSrc='assets/icons/unlock.svg' style="height: 16px; width: 16px;" height="24" width="24" alt=""/>
           </ng-container>
           <ng-template #unlockIcon>
-            <img src='assets/icons/lock.svg' style="height: 16px; width: 16px;"/>
+            <img ngSrc='assets/icons/lock.svg' style="height: 16px; width: 16px;" alt="" height="24" width="24"/>
           </ng-template>
         </button>
-
       </title-block>
 
-      <!-- DYNAMICALLY LIST EVERY UNIQUE REFERENCE JOINT, SO THE USER CAN SELECT ONE -->
+      <!-- REFERENCE JOINT SELECTION AREA -->
       <div>
         <p style="display:inline; margin-bottom: 5px; margin-left: 15px;">Reference Joint</p>
-        <mat-icon matTooltip='Select a reference point for the link' [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon> </div>
+        <mat-icon matTooltip='Select a reference point for the link'
+                  [matTooltipShowDelay]='1000'
+                  class='label-help'>help_outline</mat-icon>
+
+      </div>
+
+      <!-- Button list for all unique joints -->
       <div class="button-container" style="align-items: center;">
         <div *ngFor="let joint of uniqueJoints" class="button-wrapper">
           <div class='groupedButtons'>
@@ -52,13 +66,13 @@
       </div>
 
 
-
+      <!-- DISTANCE AND ANGLE INPUT FOR REFERENCE JOINT TO CENTER OF MASS -->
       <dual-input-block id="referenceJoint"
                         [disabled]=false
                         [input1Value]="getReferenceJointDist()"
                         [input2Value]="getReferenceJointAngle()"
-                        (input1Change)="setReferenceJointDist($event)"
-                        (input2Change)="setReferenceJointAngle($event)"
+                        (input1Change)="setReferenceJointDist()"
+                        (input2Change)="setReferenceJointAngle()"
                         iconLabel1="assets/icons/length.svg" iconLabel2="assets/icons/angle.svg"
                         unit1="cm" unit2="deg"
                         tooltip = "The position and angle of the reference joint">
@@ -68,6 +82,8 @@
 
 
     </panel-section-collapsible>
+
+    <!-- LOCKED PANEL CONTENTS -->
     <div id="body" [class.disabled-panel]="getCompoundLinkLockState()">
       <!-- BASIC SETTING DROPDOWN -->
       <collapsible-subsection titleLabel='Sublinks' [expanded]="sectionExpanded['LBasic'] || getCompoundLinkLockState()"
@@ -115,7 +131,10 @@
           </div>
         </div>
       </collapsible-subsection>
-      <collapsible-subsection [expanded]='true' titleLabel='Visual Settings' [expanded]="sectionExpanded['LVisual']"
+
+
+      <!-- COLOR PICKER FOR LINK VISUALIZATION -->
+      <collapsible-subsection titleLabel='Visual Settings' [expanded]="sectionExpanded['LVisual']"
                               (opened)="sectionExpanded['LVisual'] = true"
                               (closed)="sectionExpanded['LVisual'] = false">
         <div>
