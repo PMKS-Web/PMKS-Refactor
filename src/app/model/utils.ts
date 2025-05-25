@@ -862,16 +862,16 @@ export function arc_arc_intersect(
     //The circles are coicident, so we need to check if the arcs intersect.
     //First, check if the start and end points of the arcs are within the other arc.
     let allImportantIntersections: Coord[] = [];
-    if (isPointInArc(startPosition, startPosition2, endPosition2, center2)) {
+    if (isPointInArc(startPosition, startPosition2, endPosition2)) {
       allImportantIntersections.push(startPosition);
     }
-    if (isPointInArc(endPosition, startPosition2, endPosition2, center2)) {
+    if (isPointInArc(endPosition, startPosition2, endPosition2)) {
       allImportantIntersections.push(endPosition);
     }
-    if (isPointInArc(startPosition2, startPosition, endPosition, center)) {
+    if (isPointInArc(startPosition2, startPosition, endPosition)) {
       allImportantIntersections.push(startPosition2);
     }
-    if (isPointInArc(endPosition2, startPosition, endPosition, center)) {
+    if (isPointInArc(endPosition2, startPosition, endPosition)) {
       allImportantIntersections.push(endPosition2);
     }
 
@@ -908,8 +908,8 @@ export function arc_arc_intersect(
 
   for (let intersection of intersections) {
     if (
-      isPointInArc(intersection, startPosition, endPosition, center) &&
-      isPointInArc(intersection, startPosition2, endPosition2, center2) &&
+      isPointInArc(intersection, startPosition, endPosition) &&
+      isPointInArc(intersection, startPosition2, endPosition2) &&
       !intersection.equals(startPosition) &&
       !intersection.equals(endPosition) &&
       !intersection.equals(startPosition2) &&
@@ -980,7 +980,7 @@ export function line_arc_intersect(
 
   for (let intersection of intersections) {
     if (
-      isPointInArc(intersection, arcStart, arcEnd, arcCenter) &&
+      isPointInArc(intersection, arcStart, arcEnd) &&
       !intersection.equals(arcStart) &&
       !intersection.equals(arcEnd)
     ) {
@@ -1088,8 +1088,7 @@ function line_circle_intersect(
 function isPointInArc(
   intersection: Coord,
   arcStart: Coord,
-  arcEnd: Coord,
-  arcCenter: Coord
+  arcEnd: Coord
 ): boolean {
   //Return true if the point is within the arc.
   //Return false if the point is outside the circle.
@@ -1247,11 +1246,6 @@ export function has_mouse_pointer() {
 }
 
 // Whether HTML5's local storage is available
-export function local_storage_available() {
-  return typeof(Storage) !== "undefined";
-}
-
-
 // https://stackoverflow.com/questions/1560492/how-to-tell-whether-a-point-is-to-the-right-or-left-side-of-a-line
 export function isLeft(a: Coord, b: Coord, c: Coord) {
   return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x) > 0;

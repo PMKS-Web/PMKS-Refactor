@@ -5,7 +5,6 @@ import { Component } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './save-panel-component.component.html',
-  styleUrl: './save-panel-component.component.css'
 })
 export class SavePanelComponentComponent {
 

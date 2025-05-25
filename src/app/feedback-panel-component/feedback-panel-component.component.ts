@@ -5,7 +5,6 @@ import { Component } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './feedback-panel-component.component.html',
-  styleUrl: './feedback-panel-component.component.css'
 })
 export class FeedbackPanelComponentComponent {
 

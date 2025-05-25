@@ -9,7 +9,6 @@ import {Trajectory} from "../model/trajectory";
 import {Force} from "../model/force";
 import {Position} from "../model/position";
 import {Coord} from "../model/coord";
-import {join} from "@angular/compiler-cli";
 import {AnimationBarComponent} from "../components/AnimationBar/animationbar/animationbar.component";
 import {Action} from "../components/ToolBar/undo-redo-panel/action";
 
