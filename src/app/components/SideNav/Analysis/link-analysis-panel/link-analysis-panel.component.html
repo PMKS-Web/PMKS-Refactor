@@ -41,22 +41,28 @@
 
   <!-- EVERY GRAPH OPEN BUTTON -->
   <div>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.CoMPosition) + ' Graph'" graphText= 'Show Graph'
+    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.CoMPosition) + ' Graph'"
+                           graphText= 'Show Graph'
                            [btn1Action]="openAnalysisGraph.bind(this, GraphType.CoMPosition)"></analysis-graph-button>
     <p style="margin-left: 20px;">X: {{ this.getCOMXCoord() }} , Y: {{ this.getCOMYCoord() }} </p>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.CoMVelocity) + ' Graph'" graphText= 'Show Graph'
+    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.CoMVelocity) + ' Graph'"
+                           graphText= 'Show Graph'
                            [btn1Action]="openAnalysisGraph.bind(this, GraphType.CoMVelocity)"></analysis-graph-button>
     <p style="margin-left: 20px;">V<sub>x</sub>: N/A,  V<sub>y</sub>: N/A</p>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.CoMAcceleration) + ' Graph'" graphText= 'Show Graph'
+    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.CoMAcceleration) + ' Graph'"
+                           graphText= 'Show Graph'
                            [btn1Action]="openAnalysisGraph.bind(this, GraphType.CoMAcceleration)"></analysis-graph-button>
     <p style="margin-left: 20px;">A<sub>x</sub>: N/A,  A<sub>y</sub>: N/A</p>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.referenceJointAngle) + ' Graph'" graphText= 'Show Graph'
+    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.referenceJointAngle) + ' Graph'"
+                           graphText= 'Show Graph'
                            [btn1Action]="openAnalysisGraph.bind(this, GraphType.referenceJointAngle)"></analysis-graph-button>
     <p style="margin-left: 20px;">Reference Joint Angle: N/A</p>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.referenceJointAngularVelocity) + ' Graph'" graphText= 'Show Graph'
+    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.referenceJointAngularVelocity) + ' Graph'"
+                           graphText= 'Show Graph'
                            [btn1Action]="openAnalysisGraph.bind(this, GraphType.referenceJointAngularVelocity)"></analysis-graph-button>
     <p style="margin-left: 20px;">A:V<sub>x</sub>: N/A, V<sub>y</sub>: N/A</p>
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.referenceJointAngularAcceleration) + ' Graph'" graphText= 'Show Graph'
+    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.referenceJointAngularAcceleration) + ' Graph'"
+                           graphText= 'Show Graph'
                            [btn1Action]="openAnalysisGraph.bind(this, GraphType.referenceJointAngularAcceleration)"></analysis-graph-button>
     <p style="margin-left: 20px;">A<sub>x</sub>: N/A, A<sub>y</sub>: N/A</p>
   </div>
