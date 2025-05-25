@@ -169,6 +169,122 @@ export class LinkComponent extends AbstractInteractiveComponent implements After
     return this.unitConversionService.modelCoordToSVGCoord(new Coord(x,y)).y;
   }
 
+  getMidPointX(): number {
+    const joints = this.link.getJoints();
+    const startCoord = this.unitConversionService.modelCoordToSVGCoord(joints[0]._coords);
+    const endCoord = this.unitConversionService.modelCoordToSVGCoord(joints[1]._coords);
+
+    return (startCoord.x + endCoord.x) / 2;
+  }
+
+  getMidPointY(): number {
+    const joints = this.link.getJoints();
+    const startCoord = this.unitConversionService.modelCoordToSVGCoord(joints[0]._coords);
+    const endCoord = this.unitConversionService.modelCoordToSVGCoord(joints[1]._coords);
+
+    return (startCoord.y + endCoord.y) / 2;
+  }
+
+  getLeftLineSVG(): string {
+    const joints = this.link.getJoints();
+    const startCoord = this.unitConversionService.modelCoordToSVGCoord(joints[0]._coords);
+    const endCoord = this.unitConversionService.modelCoordToSVGCoord(joints[1]._coords);
+
+    // Calculate midpoint
+    const midX = (startCoord.x + endCoord.x) / 2;
+    const midY = (startCoord.y + endCoord.y) / 2;
+
+    // Shorten the line towards the middle by a fixed amount (e.g., 10 pixels or 10% of the total length)
+    const offset = 10; // Adjust this value as needed
+
+    const leftX = startCoord.x + (midX - startCoord.x) * 0.9; // Shorten the distance towards the middle
+    const leftY = startCoord.y + (midY - startCoord.y) * 0.9;
+
+    // Draw line from start to the shortened midpoint
+    return `M${startCoord.x},${startCoord.y} L${leftX},${leftY}`;
+  }
+
+  getRightLineSVG(): string {
+    const joints = this.link.getJoints();
+    const startCoord = this.unitConversionService.modelCoordToSVGCoord(joints[0]._coords);
+    const endCoord = this.unitConversionService.modelCoordToSVGCoord(joints[1]._coords);
+
+    // Calculate midpoint
+    const midX = (startCoord.x + endCoord.x) / 2;
+    const midY = (startCoord.y + endCoord.y) / 2;
+
+    // Shorten the line towards the middle by a fixed amount (e.g., 10 pixels or 10% of the total length)
+    const offset = 10; // Adjust this value as needed
+
+    const rightX = endCoord.x - (endCoord.x - midX) * 0.9; // Shorten the distance towards the middle
+    const rightY = endCoord.y - (endCoord.y - midY) * 0.9;
+
+    // Draw line from shortened midpoint to end
+    return `M${rightX},${rightY} L${endCoord.x},${endCoord.y}`;
+  }
+
+  getUpperBoundSVG(): string {
+    const joints = this.link.getJoints();
+    const allCoords: Coord[] = [];
+
+    for (let i = 0; i < joints.length; i++) {
+      let coord: Coord = joints[i]._coords;
+      coord = this.unitConversionService.modelCoordToSVGCoord(coord);
+      allCoords.push(coord);
+    }
+
+    return `M ${allCoords[0].x}, ${allCoords[1].y} H ${allCoords[0].x + 300} `;
+  }
+
+
+  getLowerBoundSVG(): string {
+    const joints = this.link.getJoints();
+    const allCoords: Coord[] = [];
+
+    for (let i = 0; i < joints.length; i++) {
+      let coord: Coord = joints[i]._coords;
+      coord = this.unitConversionService.modelCoordToSVGCoord(coord);
+      allCoords.push(coord);
+    }
+
+    return `M ${allCoords[0].x}, ${allCoords[1].y} L ${allCoords[0].x}, ${allCoords[1].y} `;
+  }
+
+
+  getCurvedPathSVG(): string {
+    const joints = this.link.getJoints();
+    const allCoords: Coord[] = [];
+
+    for (let i = 0; i < joints.length; i++) {
+      let coord: Coord = joints[i]._coords;
+      coord = this.unitConversionService.modelCoordToSVGCoord(coord);
+      allCoords.push(coord);
+    }
+
+    const coord1 = allCoords[0];
+    const coord2 = allCoords[1]
+
+    let pathData = "";
+    let d = Math.sqrt((allCoords[1].x - allCoords[0].x) * (allCoords[1].x - allCoords[0].x) + (allCoords[1].y-allCoords[0].y) * (allCoords[1].y-allCoords[0].y));
+    let r = 150 / d;
+    let angle = this.link.angle;
+
+    if (angle < 180) {
+      pathData += `M ${coord1.x + 150}, ${coord1.y} `; //Move to first coord
+      //pathData += `M ${coord1.x}, ${coord1.y} `; //Move to first coord
+      pathData += `A ${150} ${150} 0 0 0 ${(1-r)*coord1.x + r * coord2.x} ${(1-r)*coord1.y + r * coord2.y}`;
+    }
+    else if (angle >= 180){
+      pathData += `M ${coord1.x + 150}, ${coord1.y} `; //Move to first coord
+      // pathData += `H ${coord1.x + 150} `; //Draw horizontal 25 units right
+      pathData += `A ${150} ${150} 0 1 0 ${(1-r)*coord1.x + r * coord2.x} ${(1-r)*coord1.y*0.9 + r * coord2.y*0.9} `;
+    }
+
+    return pathData;
+  }
+
+
+
   getStrokeColor(): string{
     if (this.getInteractor().isSelected) {
       return '#FFCA28'

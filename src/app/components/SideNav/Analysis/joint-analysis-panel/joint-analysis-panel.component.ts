@@ -1,11 +1,21 @@
-import {Component} from '@angular/core'
+import {Component, OnInit} from '@angular/core'
 import {StateService} from "src/app/services/state.service";
 import {InteractionService} from "src/app/services/interaction.service";
 import {JointInteractor} from "src/app/controllers/joint-interactor"
 import {Mechanism} from "src/app/model/mechanism";
 import {Joint} from "src/app/model/joint";
+import {Form, FormControl, FormGroup} from "@angular/forms";
 import {Link} from "src/app/model/link";
+import {PositionSolverService} from "src/app/services/kinematic-solver.service";
 import {AnalysisSolveService} from "src/app/services/analysis-solver.service";
+import {AnimationBarComponent} from "../../../AnimationBar/animationbar/animationbar.component";
+import {AnimationService} from "../../../../services/animation.service";
+
+interface Tab {
+    selected: boolean,
+    label: string,
+    icon: string
+}
 
 // enum contains every kind of graph this panel can open.
 export enum GraphType {
@@ -25,29 +35,51 @@ export enum GraphType {
 export class JointAnalysisPanelComponent {
 
   currentGraphType: GraphType | null = null;
-// Make the enum accessible in the template
+  graphTypes = GraphType; // Make the enum accessible in the template
+  currentFrameIndex = 0;
 
 
   graphExpanded: { [key: string]: boolean } = {
     dataSummary: true,
     graphicalAnalysis: false,
     positionOfJoint: false,
-      velocityOfJoint: false,
-      accelerationOfJoint: false
+    velocityOfJoint: false,
+    accelerationOfJoint: false
   };
 
   constructor(private stateService: StateService,
               private interactorService: InteractionService,
+              private positionSolver: PositionSolverService,
               private analysisSolverService: AnalysisSolveService){
+      console.log("joint-analysis-panel.constructor");
   }
 
   // helper function to open a graph using the graph-button block
   openAnalysisGraph(graphType: GraphType): void {
     this.currentGraphType = graphType;
-    //this.getGraphData();
   }
 
-  closeAnalysisGraph() {this.currentGraphType = null;}
+  closeAnalysisGraph() {
+    this.currentGraphType = null;
+  }
+
+  toggleGraph(graphType: GraphType) {
+    if (this.currentGraphType === graphType) {
+      this.closeAnalysisGraph(); // If the graph is open, close it
+    } else {
+      this.openAnalysisGraph(graphType); // If it's closed, open it
+    }
+  }
+
+  // getCurrentFrameIndex(): number {
+  //   return this.animationBarComponent.currentFrameIndex;
+  // }
+
+
+  getGraphTypes(){
+    // @ts-ignore
+    return Object.keys(this.graphTypes).filter(key => !isNaN(Number(this.graphTypes[key]))).map(key => Number(this.graphTypes[key])) as GraphType[];
+  }
 
   getGraphTypeName(graphType: GraphType): string {
     switch (graphType) {
@@ -72,14 +104,17 @@ export class JointAnalysisPanelComponent {
     const jointKinematics = this.analysisSolverService.getJointKinematics(this.getCurrentJoint().id);
     switch(this.currentGraphType) {
       case GraphType.JointPosition:
-        return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, this.getGraphTypeName(this.currentGraphType));
+        let positionChartData = this.analysisSolverService.transformJointKinematicGraph(jointKinematics, this.getGraphTypeName(this.currentGraphType));
+        return positionChartData;
 
       case GraphType.JointVelocity:
-        return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, this.getGraphTypeName(this.currentGraphType));
+        let velocityChartData = this.analysisSolverService.transformJointKinematicGraph(jointKinematics, this.getGraphTypeName(this.currentGraphType));
+        return velocityChartData;
 
 
       case GraphType.JointAcceleration:
-        return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, this.getGraphTypeName(this.currentGraphType));
+        let accelerationChartData = this.analysisSolverService.transformJointKinematicGraph(jointKinematics, this.getGraphTypeName(this.currentGraphType));
+        return accelerationChartData;
 
       default:
         return {
@@ -91,29 +126,21 @@ export class JointAnalysisPanelComponent {
   }
 
   getMechanism(): Mechanism {return this.stateService.getMechanism();}
-
-  // Returns the joint currently selected in the UI
+  getKinematicSolver(): PositionSolverService{
+    return this.positionSolver;
+  }
   getCurrentJoint(){
     let currentJointInteractor = this.interactorService.getSelectedObject();
     return (currentJointInteractor as JointInteractor).getJoint();
   }
+  getJointName(): string {return this.getCurrentJoint().name;}
 
-  // Returns the name of the currently selected joint
-  getJointName(): string {
-    return this.getCurrentJoint().name;
-  }
+  // get x coord and y coord return the number of the currently selected coord
+  getJointXCoord(): number {return this.getCurrentJoint().coords.x.toFixed(3) as unknown as number;}
+  getJointYCoord(): number {return this.getCurrentJoint().coords.y.toFixed(3) as unknown as number;}
+  setJointXCoord(xCoordInput: number): void {this.getMechanism().setXCoord(this.getCurrentJoint().id, xCoordInput);}
+  setJointYCoord(yCoordInput: number): void {this.getMechanism().setYCoord(this.getCurrentJoint().id, yCoordInput);}
 
-  // Returns the X coordinate of the joint
-  getJointXCoord(): number {
-    return this.getCurrentJoint().coords.x.toFixed(3) as unknown as number;
-  }
-
-  // Returns the Y coordinate of the joint
-  getJointYCoord(): number {
-    return this.getCurrentJoint().coords.y.toFixed(3) as unknown as number;
-  }
-
-  // Calculates distance between current joint and the given connected joint
   getJointDistance(otherJoint: Joint): number{
     let currentJoint = this.getCurrentJoint();
     let xDiff = otherJoint.coords.x - currentJoint.coords.x;
@@ -123,13 +150,12 @@ export class JointAnalysisPanelComponent {
     return Math.sqrt(hypotenuse);
   }
 
-  // Calculates angle between current joint and the given connected joint
   getJointAngle(otherJoint: Joint): number{
 
     let currentJoint = this.getCurrentJoint();
     let xDiff = otherJoint.coords.x - currentJoint.coords.x;
     let yDiff = otherJoint.coords.y - currentJoint.coords.y;
-    // Calculate the angle using arc tangent
+    // Calculate the angle using arctangent
     const angleInRadians = Math.atan2(yDiff, xDiff);
 
     // Convert the angle to degrees
@@ -143,7 +169,20 @@ export class JointAnalysisPanelComponent {
     }
     return angleInDegrees;
   }
-// geteLinksForJoint and getConnectedJoints are both used to dynamically
+
+
+    getVelocityData(): any[] {
+      let mechanism = this.getMechanism()
+        return [{data: [24,8,16,3,10], label: ["Velocity of Joint"]}];
+    }
+    getAccelerationData(): any[] {
+        return [{data: [0,0,0,0,0], label: ["Acceleration of Joint"]}];
+    }
+    getJointTimeData(): string[]{
+      return ["1", "2", "3", "4", "5"]
+    }
+
+  // geteLinksForJoint and getConnectedJoints are both used to dynamically
   // view and modify the connected joints in a mechanism. Is sent to a loop of
   // dual input blocks in the HTML, that's created by looping through all of the
   // connected joints
@@ -151,14 +190,15 @@ export class JointAnalysisPanelComponent {
 
   getConnectedJoints(): Joint[] {
     const connectedLinks: Link[] = Array.from(this.getLinksForJoint());
-    return connectedLinks.reduce(
-      (accumulator: Joint[], link: Link) => {
-        const jointMap: Map<number, Joint> = link.joints;
-        const joints: Joint[] = Array.from(jointMap.values());
-        return accumulator.concat(joints);
-      },
-      []
+    const allJoints: Joint[] = connectedLinks.reduce(
+        (accumulator: Joint[], link: Link) => {
+          const jointMap: Map<number, Joint> = link.joints;
+          const joints: Joint[] = Array.from(jointMap.values());
+          return accumulator.concat(joints);
+        },
+        []
     );
+    return allJoints;
   }
 
   // Function utilized in conjunction with dual input blocks to change the angle of the current
@@ -177,4 +217,47 @@ export class JointAnalysisPanelComponent {
   }
 
   protected readonly GraphType = GraphType;
+
+  downloadCSV() {
+    const table = document.querySelector(".table-auto");
+    if (!table) return;
+
+    const headers: string[] = [];
+    const data: string[][] = [];
+
+    const ths = table.querySelectorAll("thead td");
+    ths.forEach((th, colIndex) => {
+      if (colIndex > 0) {
+        headers.push(th.textContent?.trim() || "");
+      }
+    });
+
+    const rows = table.querySelectorAll("tbody tr");
+    rows.forEach((row) => {
+      const cells = row.querySelectorAll("td");
+      const rowHeader = cells[0].textContent?.trim() || "";
+
+      cells.forEach((cell, index) => {
+        const checkbox = cell.querySelector("input[type='checkbox']") as HTMLInputElement;
+        if (checkbox && checkbox.checked) {
+          data.push([`${headers[index - 1]} ${rowHeader}`]);
+        }
+      });
+    });
+
+    if (data.length === 0) {
+      alert("No selections made");
+      return;
+    }
+
+    const csvContent = ["Time," + data.map(d => d[0]).join(",")].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "selected_data.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 }

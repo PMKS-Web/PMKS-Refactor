@@ -5,6 +5,7 @@ import { ToolbarComponent } from 'src/app/components/ToolBar/toolbar/toolbar.com
 import {StateService} from "../../../services/state.service";
 import {Subscription} from "rxjs";
 import { AnimationService } from 'src/app/services/animation.service';
+import {GridToggleService} from "../../../services/grid-toggle.service";
 
 interface panel{
   gridenabled:boolean;
@@ -35,15 +36,28 @@ export class SettingsPanelComponent{
 
   @Input() iconClass: string = ''; // Add this line
 
-  constructor(private interactionService: InteractionService, public toolbarComponent: ToolbarComponent, private stateService: StateService, public animationService: AnimationService) {
+  constructor(private gridToggleService: GridToggleService, private interactionService: InteractionService, public toolbarComponent: ToolbarComponent, private stateService: StateService, public animationService: AnimationService) {
 
   }
   @Output() valueChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
   public value: boolean = this.gridEnabled;
 
   ngOnInit() {
-    this.unitSubscription = this.stateService.globalUnitsCurrent.subscribe((units) => {this.units = units;});
-    this.angleSubscription = this.stateService.globalAnglesCurrent.subscribe((angles) => {this.angles = angles;});
+    const saved = getItem<panel>('preferences');
+    if (saved) {
+      this.gridEnabled = saved.gridenabled;
+      this.minorGridEnabled = saved.minorgridenabled;
+
+      this.gridToggleService.setGridEnabled(this.gridEnabled);
+      this.gridToggleService.setMinorGridEnabled(this.minorGridEnabled);
+    }
+
+    this.unitSubscription = this.stateService.globalUnitsCurrent.subscribe((units) => {
+      this.units = units;
+    });
+    this.angleSubscription = this.stateService.globalAnglesCurrent.subscribe((angles) => {
+      this.angles = angles;
+    });
   }
 
 
@@ -76,6 +90,20 @@ export class SettingsPanelComponent{
   toggle() {
     this.value = !this.value;
     this.valueChanged.emit(this.value);
+
+    this.gridEnabled = !this.gridEnabled;
+    this.gridToggleService.setGridEnabled(this.gridEnabled);
+
+    this.minorGridEnabled = !this.minorGridEnabled;
+    this.gridToggleService.setMinorGridEnabled(this.minorGridEnabled);
+  }
+
+  toggleMinor() {
+    this.value = !this.value;
+    this.valueChanged.emit(this.value);
+
+    this.minorGridEnabled = !this.minorGridEnabled;
+    this.gridToggleService.setMinorGridEnabled(this.minorGridEnabled);
   }
 
   closePanel(event: MouseEvent) {

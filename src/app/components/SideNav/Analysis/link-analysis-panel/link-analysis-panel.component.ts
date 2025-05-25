@@ -3,8 +3,15 @@ import {StateService} from "src/app/services/state.service";
 import {InteractionService} from "src/app/services/interaction.service";
 import {Mechanism} from "src/app/model/mechanism";
 import {LinkInteractor} from "src/app/controllers/link-interactor";
+import {PositionSolverService} from "src/app/services/kinematic-solver.service";
 import {Joint} from "src/app/model/joint";
 import {AnalysisSolveService, JointAnalysis} from "src/app/services/analysis-solver.service";
+
+interface Tab {
+    selected: boolean,
+    label: string,
+    icon: string
+}
 
 // enum contains every kind of graph this panel can open.
 export enum GraphType {
@@ -27,6 +34,7 @@ export enum GraphType {
 export class LinkAnalysisPanelComponent {
 
   currentGraphType: GraphType | null = null;
+  graphTypes = GraphType;
   referenceJoint: Joint = this.getCurrentLink().joints.get(0) as Joint;
 
   graphExpanded: { [key: string]: boolean } = {
@@ -38,57 +46,31 @@ export class LinkAnalysisPanelComponent {
   };
 
   constructor(private stateService: StateService, private interactorService: InteractionService,
-              private analysisSolverService: AnalysisSolveService){
+              private positionSolver: PositionSolverService, private analysisSolverService: AnalysisSolveService){
       console.log("joint-analysis-panel.constructor");
   }
 
-  // Returns the current mechanism from the state
-  getMechanism(): Mechanism {
-    return this.stateService.getMechanism();
-  }
-
-  // Gets the current link object selected by the user
+  getMechanism(): Mechanism {return this.stateService.getMechanism();}
   getCurrentLink(){
     let currentLinkInteractor = this.interactorService.getSelectedObject();
     return (currentLinkInteractor as LinkInteractor).getLink();
   }
-
-  // Returns the name of the current link
-  getLinkName(): string {
-    return this.getCurrentLink().name;
-  }
-
-  // Returns the reference joint
-  getReferenceJoint(){
-    return this.referenceJoint;
-  }
-
-  // Returns the name of the reference joint
-  getReferenceJointName(){
-    return this.getReferenceJoint()?.name;
-  }
-
-  // Returns the X coordinate of the reference joint
-  getReferenceJointXCoord(){
-    return this.getReferenceJoint()?.coords.x.toFixed(3) as unknown as number;
-  }
-
-  // Returns the Y coordinate of the reference joint
-  getReferenceJointYCoord(){
-    return this.getReferenceJoint()?.coords.y.toFixed(3) as unknown as number;
-  }
+  getLinkName(): string {return this.getCurrentLink().name;}
+    getReferenceJoint(){return this.referenceJoint;}
+    getReferenceJointName(){return this.getReferenceJoint()?.name;}
+    getReferenceJointXCoord(){return this.getReferenceJoint()?.coords.x.toFixed(3) as unknown as number;}
+    getReferenceJointYCoord(){return this.getReferenceJoint()?.coords.y.toFixed(3) as unknown as number;}
 
 
-  // get x coord and y coord return the number of the center of mass
-  getCOMXCoord(): number {
-    return this.getCurrentLink()?.centerOfMass.x.toFixed(3) as unknown as number;
-  }
 
-  getCOMYCoord(): number {
-    return this.getCurrentLink()?.centerOfMass.y.toFixed(3) as unknown as number;
-  }
+    // get x coord and y coord return the number of the center of mass
+  getCOMXCoord(): number {return this.getCurrentLink()?.centerOfMass.x.toFixed(3) as unknown as number;}
+    getCOMYCoord(): number {return this.getCurrentLink()?.centerOfMass.y.toFixed(3) as unknown as number;}
 
-  // Opens the graph modal for the specified graph type
+
+  setJointXCoord(xCoordInput: number): void {this.getMechanism().setXCoord(this.getCurrentLink().id, xCoordInput);}
+  setJointYCoord(yCoordInput: number): void {this.getMechanism().setYCoord(this.getCurrentLink().id, yCoordInput);}
+
   openAnalysisGraph(graphType: GraphType): void {
     this.currentGraphType = graphType;
     if(this.currentGraphType == GraphType.CoMPosition ||
@@ -99,7 +81,6 @@ export class LinkAnalysisPanelComponent {
     this.getGraphData();
   }
 
-  // Closes the currently open graph modal
   closeAnalysisGraph() {
     if(this.currentGraphType == GraphType.CoMPosition ||
       this.currentGraphType == GraphType.CoMVelocity ||
@@ -110,7 +91,19 @@ export class LinkAnalysisPanelComponent {
     this.currentGraphType = null;
   }
 
-  // Returns a string label for a given GraphType
+  toggleGraph(graphType: GraphType) {
+    if (this.currentGraphType === graphType) {
+      this.closeAnalysisGraph(); // If the graph is open, close it
+    } else {
+      this.openAnalysisGraph(graphType); // If it's closed, open it
+    }
+  }
+
+  getGraphTypes(){
+    // @ts-ignore
+    return Object.keys(this.graphTypes).filter(key => !isNaN(Number(this.graphTypes[key]))).map(key => Number(this.graphTypes[key])) as GraphType[];
+  }
+
   getGraphTypeName(graphType: GraphType): string {
     switch (graphType) {
       case GraphType.CoMPosition:
@@ -180,15 +173,18 @@ export class LinkAnalysisPanelComponent {
     switch(this.currentGraphType) {
       case GraphType.CoMPosition:
         jointKinematics = this.analysisSolverService.getJointKinematics(this.getPlaceholderCoMJoint().id);
-        return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, "Position");
+        let comPositionChartData = this.analysisSolverService.transformJointKinematicGraph(jointKinematics, "Position");
+        return comPositionChartData;
 
       case GraphType.CoMVelocity:
         jointKinematics = this.analysisSolverService.getJointKinematics(this.getPlaceholderCoMJoint().id);
-        return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, "Velocity");
+        let comVelocityChartData = this.analysisSolverService.transformJointKinematicGraph(jointKinematics, "Velocity");
+        return comVelocityChartData;
 
       case GraphType.CoMAcceleration:
         jointKinematics = this.analysisSolverService.getJointKinematics(this.getPlaceholderCoMJoint().id);
-        return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, "Acceleration");
+        let comAccelerationChartData = this.analysisSolverService.transformJointKinematicGraph(jointKinematics, "Acceleration");
+        return comAccelerationChartData;
 
 
       case GraphType.referenceJointAngle:
@@ -196,7 +192,8 @@ export class LinkAnalysisPanelComponent {
           let joints = this.getCurrentLink().getJoints();
           let jointIds = joints.map(joint => joint.id);
           let linkKinematics = this.analysisSolverService.getLinkKinematics(jointIds);
-          return this.analysisSolverService.transformLinkKinematicGraph(linkKinematics, "Angle");
+          let chartData = this.analysisSolverService.transformLinkKinematicGraph(linkKinematics, "Angle");
+          return chartData;
         }
         return {
           xData: [],
@@ -209,7 +206,8 @@ export class LinkAnalysisPanelComponent {
           let joints = this.getCurrentLink().getJoints();
           let jointIds = joints.map(joint => joint.id);
           let linkKinematics = this.analysisSolverService.getLinkKinematics(jointIds);
-          return this.analysisSolverService.transformLinkKinematicGraph(linkKinematics, "Velocity");
+          let chartData = this.analysisSolverService.transformLinkKinematicGraph(linkKinematics, "Velocity");
+          return chartData;
         }
         return {
           xData: [],
@@ -222,7 +220,8 @@ export class LinkAnalysisPanelComponent {
           let joints = this.getCurrentLink().getJoints();
           let jointIds = joints.map(joint => joint.id);
           let linkKinematics = this.analysisSolverService.getLinkKinematics(jointIds);
-          return this.analysisSolverService.transformLinkKinematicGraph(linkKinematics, "Acceleration");
+          let chartData = this.analysisSolverService.transformLinkKinematicGraph(linkKinematics, "Acceleration");
+          return chartData;
         }
         return {
           xData: [],
@@ -238,10 +237,51 @@ export class LinkAnalysisPanelComponent {
     }
   }
 
-  //Returns the selected reference joint
   onReferenceJointSelected(joint: Joint){
     this.referenceJoint = joint;
   }
   public GraphType = GraphType;
 
+  downloadCSV() {
+    const table = document.querySelector(".table-auto");
+    if (!table) return;
+
+    const headers: string[] = [];
+    const data: string[][] = [];
+
+    const ths = table.querySelectorAll("thead td");
+    ths.forEach((th, colIndex) => {
+      if (colIndex > 0) {
+        headers.push(th.textContent?.trim() || "");
+      }
+    });
+
+    const rows = table.querySelectorAll("tbody tr");
+    rows.forEach((row) => {
+      const cells = row.querySelectorAll("td");
+      const rowHeader = cells[0].textContent?.trim() || "";
+
+      cells.forEach((cell, index) => {
+        const checkbox = cell.querySelector("input[type='checkbox']") as HTMLInputElement;
+        if (checkbox && checkbox.checked) {
+          data.push([`${headers[index - 1]} ${rowHeader}`]);
+        }
+      });
+    });
+
+    if (data.length === 0) {
+      alert("No selections made");
+      return;
+    }
+
+    const csvContent = ["Time," + data.map(d => d[0]).join(",")].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "selected_data.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 }

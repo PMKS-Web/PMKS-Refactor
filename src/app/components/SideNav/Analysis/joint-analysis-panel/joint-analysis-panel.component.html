@@ -6,67 +6,229 @@
     >Analysis for Joint
       {{ getJointName() }}
     </title-block>
+
   </panel-section-collapsible>
 
   <!-- DATA SUMMARY DROPDOWN -->
 
-  <collapsible-subsection titleLabel='Data Summary' [expanded]="graphExpanded['dataSummary']"
-                          (opened)="graphExpanded['dataSummary'] = true"
-                          (closed)="graphExpanded['dataSummary'] = false">
+  <collapsible-subsection titleLabel='Data Summary'>
     <div class="flex-container">
-      <title-block>Data Summary</title-block>
-      <p class="subtitle">Name of Joint: {{ getJointName() }} </p>
-      <p class="subtitle">X Coordinate of Joint: {{ this.getJointXCoord() }} </p>
-      <p class="subtitle">Y Coordinate of Joint: {{ this.getJointYCoord() }} </p>
-      <title-block> Connected Joints </title-block>
-      <div *ngFor='let joint of getConnectedJoints(); let i = index;'>
-        <ng-container *ngIf="getCurrentJoint().name !== joint.name">
-          <p class="subtitle">Angle to Connected Joint {{joint.name}}: {{ this.getJointAngle(joint).toFixed(4) }} </p>
-          <p class="subtitle">Distance to Connected Joint {{joint.name}}: {{ this.getJointDistance(joint).toFixed(4) }} </p>
+      <div>
+        <title-block>Data Summary</title-block>
+
+        <!--      <p class="subtitle">Name of Joint: {{ getJointName() }} </p>-->
+        <!--      <p class="subtitle">X Coordinate of Joint: {{ this.getJointXCoord() }} </p>-->
+        <!--      <p class="subtitle">Y Coordinate of Joint: {{ this.getJointYCoord() }} </p>-->
+
+        <!--Position: -->
+        <analysis-graph-button [dynamicText]="'Position:'"
+                               [explainText]="'Joint Position'"
+                               [btn1Action]="toggleGraph.bind(this, GraphType.JointPosition)"
+                               [graphText]="currentGraphType === GraphType.JointPosition ? 'Close Graph' : 'Show Graph'"></analysis-graph-button>
+
+
+        <p style="margin-left: 10px; margin-top: 1px;">X:{{getJointXCoord()}}, Y: {{getJointYCoord()}}</p>
+
+        <ng-container *ngIf="currentGraphType === GraphType.JointPosition">
+          <div class="modal" (keyup.escape)="closeAnalysisGraph()">
+            <app-analysis-graph-block class="large-graph"
+                                      [inputXData]="getGraphData().xData"
+                                      [inputYData]="getGraphData().yData"
+                                      [inputLabels]="getGraphData().timeLabels">
+            </app-analysis-graph-block>
+          </div>
         </ng-container>
+
+        <!--Velocity: -->
+        <analysis-graph-button [dynamicText]="'Velocity:'"
+                               [explainText]="'Joint Velocity'"
+                               [btn1Action]="toggleGraph.bind(this, GraphType.JointVelocity)"
+                               [graphText]="currentGraphType === GraphType.JointVelocity ? 'Close Graph' : 'Show Graph'"></analysis-graph-button>
+
+        <p style="margin-left: 10px; margin-top: 1px;">V<sub>x</sub>: N/A,  V<sub>y</sub>: N/A</p>
+
+        <ng-container *ngIf="currentGraphType === GraphType.JointVelocity">
+          <div class="modal" (keyup.escape)="closeAnalysisGraph()">
+            <app-analysis-graph-block class="large-graph"
+                                      [inputXData]="getGraphData().xData"
+                                      [inputYData]="getGraphData().yData"
+                                      [inputLabels]="getGraphData().timeLabels">
+            </app-analysis-graph-block>
+          </div>
+        </ng-container>
+
+        <!--Acceleration: -->
+        <analysis-graph-button [dynamicText]="'Acceleration:'"
+                               [explainText]="'Joint Acceleration'"
+                               [btn1Action]="toggleGraph.bind(this, GraphType.JointAcceleration)"
+                               [graphText]= "currentGraphType === GraphType.JointAcceleration ? 'Close Graph' : 'Show Graph'"></analysis-graph-button>
+
+        <p style="margin-left: 10px; margin-top: 1px;">A<sub>x</sub>: N/A,  A<sub>y</sub>: N/A</p>
+
+        <ng-container *ngIf="currentGraphType === GraphType.JointAcceleration">
+          <div class="modal" (keyup.escape)="closeAnalysisGraph()">
+            <app-analysis-graph-block class="large-graph"
+                                      [inputXData]="getGraphData().xData"
+                                      [inputYData]="getGraphData().yData"
+                                      [inputLabels]="getGraphData().timeLabels">
+            </app-analysis-graph-block>
+          </div>
+        </ng-container>
+
       </div>
     </div>
   </collapsible-subsection>
+  <collapsible-subsection titleLabel='Save Data'>
+    <table class="table-auto border-collapse border w-full text-left">
+      <thead>
+      <tr class="bg-gray-200">
+        <td class="border px-4 py-2">Parameter</td>
+        <td class="border px-4 py-2">Joints</td>
+        <td class="border px-4 py-2">Links</td>
+        <td class="border px-4 py-2"></td>
+      </tr>
+      </thead>
+      <tbody>
+      <tr class="hover:bg-gray-100">
+        <td class="border px-4 py-2">Position</td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+        <td class="border px-4 py-2"></td>
+      </tr>
+      <tr class="hover:bg-gray-100">
+        <td class="border px-4 py-2">Velocity</td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+        <td class="border px-4 py-2"></td>
+      </tr>
+      <tr class="hover:bg-gray-100">
+        <td class="border px-4 py-2">Acceleration</td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+        <td class="border px-4 py-2"></td>
+      </tr>
+      <tr class="hover:bg-gray-100">
+        <td class="border px-4 py-2">Forces/Torque</td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+        <td class="border px-4 py-2"></td>
+        <td class="border px-4 py-2"></td>
+      </tr>
+      <tr class="hover:bg-gray-100">
+        <td class="border px-4 py-2">Stress</td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+        <td class="border px-4 py-2"></td>
+      </tr>
+      <tr class="hover:bg-gray-100">
+        <td class="border px-4 py-2">Instant Centers</td>
+        <td class="border px-4 py-2"></td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+        <td class="border px-4 py-2"></td>
+      </tr>
+      <tr class="hover:bg-gray-100">
+        <td class="border px-4 py-2">Three Position Synthesis</td>
+        <td class="border px-4 py-2"></td>
+        <td class="border px-4 py-2"></td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+      </tr>
+      <tr class="hover:bg-gray-100">
+        <td class="border px-4 py-2">Path Synthesis</td>
+        <td class="border px-4 py-2"></td>
+        <td class="border px-4 py-2"></td>
+        <td class="border px-4 py-2 text-center">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </td>
+      </tr>
+    </table>
+    <button (click)="downloadCSV()" class="download-btn">Download CSV</button>
+  </collapsible-subsection>
 
 
-  <!-- GRAPH OPEN BUTTONS SECTION -->
+  <!-- EVERY GRAPH OPEN BUTTON -->
   <div>
-    <!-- Position Graph Button -->
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.JointPosition) + ' Graph'"
-                           graphText= 'Show Graph'
-                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointPosition)">
-    </analysis-graph-button>
-    <p>Position X:{{getJointXCoord()}}, Y: {{getJointYCoord()}}</p>
-
-    <!-- Velocity Graph Button -->
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.JointVelocity) + ' Graph'"
-                           graphText= 'Show Graph'
-                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointVelocity)">
-    </analysis-graph-button>
-    <p style="margin-left: 20px;">V<sub>x</sub>: N/A,  V<sub>y</sub>: N/A</p>
-
-    <!-- Acceleration Graph Button -->
-    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.JointAcceleration) + ' Graph'"
-                           graphText= 'Show Graph'
-                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointAcceleration)">
-
-    </analysis-graph-button>
-    <p style="margin-left: 20px;">A<sub>x</sub>: N/A,  A<sub>y</sub>: N/A</p>
+<!--    <analysis-graph-button [dynamicText]="''" graphText= 'Show Graph'-->
+<!--                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointPosition)"></analysis-graph-button>-->
+<!--    <p >Position X:{{getJointXCoord()}}, Y: {{getJointYCoord()}}</p>-->
+<!--    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.JointPosition) + ' Graph'" graphText= 'Show Graph'-->
+<!--                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointPosition)"></analysis-graph-button>-->
+<!--    <p>Position X:{{getJointXCoord()}}, Y: {{getJointYCoord()}}</p>-->
+<!--    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.JointVelocity) + ' Graph'" graphText= 'Show Graph'-->
+<!--                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointVelocity)"></analysis-graph-button>-->
+<!--    <p style="margin-left: 20px;">V<sub>x</sub>: N/A,  V<sub>y</sub>: N/A</p>-->
+<!--    <analysis-graph-button [dynamicText]="'Open ' + getGraphTypeName(GraphType.JointAcceleration) + ' Graph'" graphText= 'Show Graph'-->
+<!--                           [btn1Action]="openAnalysisGraph.bind(this, GraphType.JointAcceleration)"></analysis-graph-button>-->
+<!--    <p style="margin-left: 20px;">A<sub>x</sub>: N/A,  A<sub>y</sub>: N/A</p>-->
   </div>
 
   <!-- DYNAMICALLY HANDLE OPENING GRAPHS -->
-  <ng-container *ngIf="currentGraphType !== null">
-    <div class="overlay">
-      <div class="modal" (keyup.escape)="closeAnalysisGraph()">
-        <button class="close-button" (click)="closeAnalysisGraph()">X</button>
-        {{ getGraphTypeName(currentGraphType) }}
-        <app-analysis-graph-block class="large-graph"
-                                  [inputXData]="getGraphData().xData"
-                                  [inputYData]="getGraphData().yData"
-                                  [inputLabels]="getGraphData().timeLabels">
-        </app-analysis-graph-block>
-      </div>
-    </div>
-  </ng-container>
+  <!--        <ng-container *ngIf="currentGraphType !== null">-->
+  <!--          <div class="modal" (keyup.escape)="closeAnalysisGraph()">-->
+  <!--            {{ getGraphTypeName(currentgraphname) }}-->
+  <!--            <app-analysis-graph-block class="large-graph"-->
+  <!--                                      [inputXData]="getGraphData().xData"-->
+  <!--                                      [inputYData]="getGraphData().yData"-->
+  <!--                                      [inputLabels]="getGraphData().timeLabels">-->
+  <!--            </app-analysis-graph-block>-->
+  <!--          </div>-->
+  <!--        </ng-container>-->
+
 
 </div>

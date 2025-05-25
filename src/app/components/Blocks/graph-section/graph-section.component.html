@@ -1,4 +1,19 @@
-<div style="display: block">
-  <canvas style="height: 250px; width:350px;" #graphCanvas></canvas>
+<div style="display: flex; flex-direction: column; ">
+  <!-- Grid Toggle -->
+  <div style="display: flex; justify-content: flex-end; width: 100%;">
+    <label class="switch">
+      <input type="checkbox" (change)="onToggleGrid($event)">
+      <span class="slider round"></span>
+    </label>
+    <span style="font-size: 14px">Show Grid</span>
+  </div>
 
+  <!-- Graph Canvas -->
+  <canvas style="height: 300px; width: 300px;" #graphCanvas></canvas>
+
+  <!-- Download Buttons -->
+  <div class="button-group">
+    <button (click)="downloadCSV()" class="download-btn">Download CSV</button>
+    <button (click)="downloadPNG()" class="download-btn">Download PNG</button>
+  </div>
 </div>

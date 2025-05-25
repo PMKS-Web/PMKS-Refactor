@@ -1,4 +1,6 @@
 import { Component, Input } from '@angular/core';
+import { FormGroup } from '@angular/forms';
+import {Link} from "../../../model/link";
 
 
 @Component({
@@ -9,19 +11,25 @@ import { Component, Input } from '@angular/core';
 export class AnalysisGraphButtonComponent {
   @Input() dynamicText: string = '';
   @Input() graphText: string = '';
+  @Input() explainText: string = '';
   @Input() btn1Action!: () => void;
 
   executeAction() {
     if (this.btn1Action) {
       this.btn1Action();
       if(this.graphText == 'Show Graph'){
-        this.graphText = 'Hide Graph'
+        this.graphText = 'Close Graph'
       }
       else{
         this.graphText = 'Show Graph'
       }
     }
   }
+
+  setAction(action: () => void): void {
+    this.btn1Action = action;
+  }
+
 
   constructor() {}
 }

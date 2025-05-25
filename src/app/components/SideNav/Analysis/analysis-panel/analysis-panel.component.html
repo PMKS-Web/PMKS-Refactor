@@ -1,45 +1,30 @@
-<!-- Container for the analysis panel -->
 <div class="app-analysis-panel-container">
-
-  <!-- Dynamically switch between analysis panels based on selected object type -->
   @switch (getSelectedObjectType()){
-
-    <!-- Show joint-specific analysis panel -->
     @case('JointInteractor'){
       <app-joint-analysis-panel></app-joint-analysis-panel>
     }
-
-    <!-- Show link-specific analysis panel -->
     @case('LinkInteractor'){
       <app-link-analysis-panel></app-link-analysis-panel>
     }
-
-    <!-- Show compound link-specific analysis panel -->
     @case('CompoundLinkInteractor'){
       <app-compound-link-analysis-panel></app-compound-link-analysis-panel>
     }
-
-    <!-- Placeholder for force selection (not yet implemented) -->
     @case('ForceInteractor'){
       <p>Force Selected</p>
     }
-
-    <!-- Default case shown when no valid object is selected -->
     @default(){
-      <div id="default-view"><div class="scroll-container">
 
-        <!-- Collapsible section explaining why analysis is not possible -->
+      <div id="default-view"><div class="scroll-container">
         <panel-section-collapsible
           [warning]='true'
           [expanded]='false'
           id='placeholderContainer'
+
         >
           <title-block class="title" alwaysShown icon='expand_more'
                        description='This linkage is not valid and cannot be analyzed. Make sure all requirements are met:'>
             <div style="margin-right: 9em;">Analysis</div>
           </title-block>
-
-          <!-- List of validation requirements for a mechanism -->
           <mat-list class='example-list-wrapping'>
             <mat-list-item lines='3'>
               <span matListItemTitle>Must have one input</span>
@@ -75,14 +60,142 @@
             </mat-list-item>
           </mat-list>
         </panel-section-collapsible>
-      </div></div>
+        <panel-section-collapsible
+          [warning]='true'
+          [expanded]='false'
+        >
+          <title-block class="title" alwaysShown icon='expand_more'>
+            <div style="margin-right: 9em;">Save Data</div>
+          </title-block>
+          <table class="table-auto border-collapse border w-full text-left">
+            <thead>
+            <tr class="bg-gray-200">
+              <td class="border px-4 py-2">Parameter</td>
+              <td class="border px-4 py-2">Joints</td>
+              <td class="border px-4 py-2">Links</td>
+              <td class="border px-4 py-2"></td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="hover:bg-gray-100">
+              <td class="border px-4 py-2">Position</td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="border px-4 py-2"></td>
+            </tr>
+            <tr class="hover:bg-gray-100">
+              <td class="border px-4 py-2">Velocity</td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="border px-4 py-2"></td>
+            </tr>
+            <tr class="hover:bg-gray-100">
+              <td class="border px-4 py-2">Acceleration</td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="border px-4 py-2"></td>
+            </tr>
+            <tr class="hover:bg-gray-100">
+              <td class="border px-4 py-2">Forces/Torque</td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="border px-4 py-2"></td>
+              <td class="border px-4 py-2"></td>
+            </tr>
+            <tr class="hover:bg-gray-100">
+              <td class="border px-4 py-2">Stress</td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="border px-4 py-2"></td>
+            </tr>
+            <tr class="hover:bg-gray-100">
+              <td class="border px-4 py-2">Instant Centers</td>
+              <td class="border px-4 py-2"></td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="border px-4 py-2"></td>
+            </tr>
+            <tr class="hover:bg-gray-100">
+              <td class="border px-4 py-2">Three Position Synthesis</td>
+              <td class="border px-4 py-2"></td>
+              <td class="border px-4 py-2"></td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+            </tr>
+            <tr class="hover:bg-gray-100">
+              <td class="border px-4 py-2">Path Synthesis</td>
+              <td class="border px-4 py-2"></td>
+              <td class="border px-4 py-2"></td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+            </tr>
+          </table>
+          <button (click)="downloadCSV()" class="download-btn">Download CSV</button>
+        </panel-section-collapsible>
+      </div>
+      </div>
     }
   }
+<!--  <div id="import-export">-->
+<!--    <p>Use this panel to import and export kinematic data!</p>-->
+<!--    <import-data></import-data>-->
+<!--    <export-data></export-data>-->
+<!--  </div>-->
 
-  <!-- Import/export section at bottom of panel -->
-  <div id="import-export">
-    <p>Use this panel to import and export kinematic data!</p>
-    <import-data></import-data>
-    <export-data></export-data>
-  </div>
 </div>
