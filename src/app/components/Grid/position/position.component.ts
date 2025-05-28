@@ -37,7 +37,7 @@ export class PositionComponent extends AbstractInteractiveComponent {
   }
 
   override registerInteractor(): Interactor {
-    return new PositionInteractor(this.position, this.stateService, this.interactionService);
+    return new PositionInteractor(this.position, this.stateService);
   }
 
   override ngOnInit() {

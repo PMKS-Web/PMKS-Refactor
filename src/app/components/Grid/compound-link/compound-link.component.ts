@@ -27,7 +27,7 @@ export class CompoundLinkComponent extends AbstractInteractiveComponent {
   }
 
   override registerInteractor(): Interactor {
-    return new CompoundLinkInteractor(this.compoundLink, this.stateService, this.interactionService);
+    return new CompoundLinkInteractor(this.compoundLink, this.stateService);
   }
 
   getColor():string{

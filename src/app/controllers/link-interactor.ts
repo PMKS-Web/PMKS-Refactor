@@ -4,11 +4,9 @@ import { Joint } from "../model/joint";
 import { Mechanism } from "../model/mechanism";
 import { InteractionService } from "../services/interaction.service";
 import { StateService } from "../services/state.service";
-import { ClickCapture, ClickCaptureID } from "./click-capture/click-capture";
 import { CreateLinkFromLinkCapture } from "./click-capture/create-link-from-link-capture";
 import { CreateForceFromLinkCapture } from "./click-capture/create-force-from-link-capture";
 import { ContextMenuOption, Interactor } from "./interactor";
-import {Subscription} from "rxjs";
 import type {JointSnapshot, LinkSnapshot} from "../components/ToolBar/undo-redo-panel/action";
 
 
@@ -18,65 +16,60 @@ This interactor defines the following behaviors:
 */
 
 export class LinkInteractor extends Interactor {
+  private activePanel = "Edit";
+  private linkStartPositions = new Map<number, Coord>();
 
-    public jointsStartPosModel: Map<number, Coord> = new Map();
-    private activePanelSub = new Subscription();
-    private activePanel = "Edit";
-    private linkStartPositions = new Map<number, Coord>();
+  constructor(public link: Link, private stateService: StateService,
+              private interactionService: InteractionService) {
+    super(true, true);
 
-    constructor(public link: Link, private stateService: StateService,
-        private interactionService: InteractionService) {
-        super(true, true);
-
-        this.onDragStart$.subscribe((event) => {
-            this.link.joints.forEach((joint: Joint,id: number) =>{
-              this.linkStartPositions.set(id, joint.coords.clone());
-            })
+    this.onDragStart$.subscribe(() => {
+      this.link.joints.forEach((joint: Joint, id: number) => {
+        this.linkStartPositions.set(id, joint.coords.clone());
+      })
 
 
-        });
-        this.onDrag$.subscribe(() => {
-          this.linkStartPositions.forEach((startPos, jointID) => {
-            const newPos = startPos.clone().add(this.dragOffsetInModel!);
-            this.stateService.getMechanism().setJointCoord(jointID, newPos);
-          });
-        });
+    });
+    this.onDrag$.subscribe(() => {
+      this.linkStartPositions.forEach((startPos, jointID) => {
+        const newPos = startPos.clone().add(this.dragOffsetInModel!);
+        this.stateService.getMechanism().setJointCoord(jointID, newPos);
+      });
+    });
 
-      // On drag end, inside LinkInteractor:
-      this.onDragEnd$.subscribe(() => {
-        //Snapshot the old positions from your Map<number,Coord>
-        const oldPositions = Array.from(this.linkStartPositions.entries()).map(
-          ([jointId, coords]) => ({ jointId, coords: { x: coords.x, y: coords.y } })
-        );
+    // On drag end, inside LinkInteractor:
+    this.onDragEnd$.subscribe(() => {
+      //Snapshot the old positions from your Map<number,Coord>
+      const oldPositions = Array.from(this.linkStartPositions.entries()).map(
+        ([jointId, coords]) => ({jointId, coords: {x: coords.x, y: coords.y}})
+      );
 
-        //Snapshot the *new* positions by converting link.joints into an Array
-        const newPositions = Array.from(this.link.joints.values()).map(j => ({
-          jointId: j.id,
-          coords: { x: j.coords.x, y: j.coords.y }
-        }));
+      //Snapshot the *new* positions by converting link.joints into an Array
+      const newPositions = Array.from(this.link.joints.values()).map(j => ({
+        jointId: j.id,
+        coords: {x: j.coords.x, y: j.coords.y}
+      }));
 
-        const moved = oldPositions.some(oldP => {
-          const newP = newPositions.find(n => n.jointId === oldP.jointId)!;
-          return oldP.coords.x !== newP.coords.x || oldP.coords.y !== newP.coords.y;
-        });
-
-        if (moved) {
-          this.stateService.recordAction({
-            type: 'moveLink',
-            linkId: this.link.id,
-            oldJointPositions: oldPositions,
-            newJointPositions: newPositions
-          });
-        }
-
-        this.linkStartPositions.clear();
-        this.stateService.getMechanism().notifyChange();
+      const moved = oldPositions.some(oldP => {
+        const newP = newPositions.find(n => n.jointId === oldP.jointId)!;
+        return oldP.coords.x !== newP.coords.x || oldP.coords.y !== newP.coords.y;
       });
 
-      this.activePanelSub = this.stateService.globalActivePanelCurrent.subscribe((panel) => {this.activePanel = panel});
+      if (moved) {
+        this.stateService.recordAction({
+          type: 'moveLink',
+          linkId: this.link.id,
+          oldJointPositions: oldPositions,
+          newJointPositions: newPositions
+        });
+      }
+
+      this.linkStartPositions.clear();
+      this.stateService.getMechanism().notifyChange();
+    });
 
 
-    }
+  }
 
 
     /**
@@ -266,17 +259,7 @@ export class LinkInteractor extends Interactor {
 
     }
 
-    private enterAddLinkCaptureMode(modelPosAtRightClick: Coord): void {
-        const capture = new CreateLinkFromLinkCapture(this.link, modelPosAtRightClick, this.interactionService);
-        capture.onClick$.subscribe((mousePos) => {
-
-
-            this.stateService.getMechanism().addLinkToLink(this.link.id,modelPosAtRightClick, mousePos);
-
-
-        });
-        this.interactionService.enterClickCapture(capture);
-    }
+  // Starts the click-capture interaction to add a force to this link
   private enterAddForceCaptureMode(modelPosAtRightClick: Coord): void {
     const capture = new CreateForceFromLinkCapture(this.link, modelPosAtRightClick, this.interactionService);
     capture.onClick$.subscribe((mousePos) => {
@@ -286,16 +269,19 @@ export class LinkInteractor extends Interactor {
     this.interactionService.enterClickCapture(capture);
   }
 
-
+  // Returns the link associated with this interactor
   public getLink(): Link {
         return this.link;
     }
 
-    public override toString(): string {
-        return "LinkInteractor(" + this.link.name + ")";
-    }
-    public override type(): string{
-        return "LinkInteractor"
-    }
+  // Returns a string representation of this LinkInteractor
+  public override toString(): string {
+      return "LinkInteractor(" + this.link.name + ")";
+  }
+
+  // Returns the type identifier for this interactor
+  public override type(): string{
+      return "LinkInteractor"
+  }
 
 }

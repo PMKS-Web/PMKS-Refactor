@@ -1,4 +1,4 @@
-import { Coord } from '../model/coord'
+import { Coord } from './coord'
 
 export enum JointType{
     Prismatic,
@@ -6,7 +6,7 @@ export enum JointType{
 }
 
 export class Joint {
-    private _id: number;
+    private readonly _id: number;
     private _name: string;
     public _coords: Coord;
     private _type: JointType;
@@ -18,8 +18,6 @@ export class Joint {
     private _parentLocked: boolean;
     private _isHidden: boolean;
     private _isReference: boolean;
-
-
 
     constructor(id: number, x: number, y: number);
     constructor(id: number, coord: Coord);
@@ -136,7 +134,7 @@ export class Joint {
     }
     addInput(){
       //console.log("input being called");
-        if(this._isGrounded == false && this._type == JointType.Revolute){
+        if(!this._isGrounded && this._type == JointType.Revolute){
             throw new Error("Input Joints must be Grounded or Prismatic");
 
         } else{
@@ -190,11 +188,7 @@ export class Joint {
     }
 
     canAddInput(): boolean {
-        if(this._isGrounded == false && this._type == JointType.Revolute){
-            return false;
-        } else{
-            return true;
-        }
+        return !(!this._isGrounded && this._type == JointType.Revolute);
     }
 
     canRemoveInput(): boolean {
@@ -223,11 +217,11 @@ export class Joint {
     }
 
     //----------------------------Joint Alteration Relative to other Joints----------------------------
-    setDistancetoJoint(newDistance: number, jointRef: Joint){
+    setDistancetoJoint(){
 
     }
 
-    setAngletoJoint(newAngle: number, jointRef: Joint){
+    setAngletoJoint(newAngle: number){
         this.angle = newAngle;
     }
 
@@ -256,3 +250,5 @@ export class Joint {
 
 }
 
+export class RealJoint {
+}

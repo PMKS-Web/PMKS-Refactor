@@ -1,7 +1,6 @@
 import { Subject } from "rxjs";
 import { Coord } from "../model/coord";
 import { MousePosition } from "../services/mouse-position.service";
-import { Joint } from "../model/joint";
 
 /*
 You should subclass Interactor to create Interactors specific to your interactive components, like joints
@@ -30,8 +29,6 @@ export abstract class Interactor {
     public isDragged: boolean = false;
     public startMousePosInModel?: Coord;
     public dragOffsetInModel?: Coord;
-
-
     public onSelect$ = new Subject<boolean>();
     public onDeselect$ = new Subject<boolean>();
     public onDragStart$ = new Subject<boolean>();
@@ -45,19 +42,17 @@ export abstract class Interactor {
                 svg: new Coord(0,0),
                 model: new Coord(0,0)}};
 
-    constructor(public selectable: boolean, public draggable: boolean) {
+    protected constructor(public selectable: boolean, public draggable: boolean) {
 
         if (draggable && !selectable) {
             throw new Error("Error: draggable objects must be selectable");
         }
-
     }
 
     // set the interaction service's mouse event handlers
     public initInteraction(getMousePos: () => MousePosition): void {
         this.getMousePos = getMousePos;
     }
-
 
     // hooks for interaction service to call.
     // This updates Interactor state and sends events to subscribers.
@@ -94,11 +89,6 @@ export abstract class Interactor {
     public _onKeyDown(event: KeyboardEvent): void {
         this.onKeyDown$.next(event);
     }
-    public getSubJoints(): Joint[] {
-        return [];
-    }
-
-
     // functions for subclasses to specify behavior
     public specifyContextMenu(): ContextMenuOption[] {
         return [];
@@ -108,6 +98,8 @@ export abstract class Interactor {
     public toString(): string {
         return "Unspecified Interactor";
     }
+
+    // Returns the type identifier for this interactor
     public type(): string {
         return "Unspecified Interactor";
     }

@@ -1,4 +1,4 @@
-import { Coord } from '../model/coord'
+import { Coord } from './coord'
 
 export enum ForceFrame{
     Local,
@@ -6,7 +6,7 @@ export enum ForceFrame{
 }
 
 export class Force {
-    private _id: number;
+    private readonly _id: number;
     private _name: string;
     private _start: Coord;
     private _end: Coord;
@@ -101,10 +101,10 @@ export class Force {
     switchForceDirection(){
 
     }
-    setForceAngle(newAngle: number){
+    setForceAngle(){
 
     }
-    setXComp(newXComp: number){
+    setXComp(){
 
     }
     setYComp(newYComp: number){

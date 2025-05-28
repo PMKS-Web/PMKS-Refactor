@@ -7,12 +7,12 @@ export interface RigidBody {
 }
 
 export class Position implements RigidBody {
-  private _id: number;
+  private readonly _id: number;
   private _name: string;
   private _mass: number;
   private _centerOfMass: Coord;
   _joints: Map<number, Joint>;
-  private _forces: Map<number, Force>;
+  private readonly _forces: Map<number, Force>;
   private _color: string = "";
   private _isLocked: boolean;
   private _referencePoint: string = "Center";
@@ -337,53 +337,15 @@ export class Position implements RigidBody {
     const id = typeof idORRef === 'number' ? idORRef : idORRef.id;
     return this._joints.has(id);
   }
-
-  containsJoints(joints: Joint[]): Joint[] {
-    return joints.filter(joint => this._joints.has(joint.id));
-  }
-
   containsForce(idORRef: number | Force): boolean {
     const id = typeof idORRef === 'number' ? idORRef : idORRef.id;
     return this._forces.has(id);
   }
-
-  moveCoordinates(coord: Coord) {
-    for (const jointID of this._joints.keys()) {
-      const joint = this._joints.get(jointID)!;
-      joint.setCoordinates(joint.coords.add(coord));
-    }
-    for (const forceID of this._forces.keys()) {
-      const force = this._forces.get(forceID)!;
-      force.setCoordinates(force.start.add(coord), force.end.add(coord));
-    }
-  }
-
-  // setColor(index: number) {
-  //   console.log(index);
-  //   this._color = this.positionColorOptions[index];
-  //   console.log(this._color);
-  // }
-
   setColor(color: string) {
     this._color = color;
   }
 
   getJoints(): Joint[] {
     return Array.from(this._joints.values()); // Convert the Map of joints to an array
-  }
-
-  clone(): Position {
-    const newJoints: Joint[] = [];
-    this._joints.forEach(joint => {
-      newJoints.push(joint.clone());
-    });
-    const newPosition = new Position(this._id, newJoints);
-    newPosition.name = this._name;
-    newPosition.mass = this._mass;
-    newPosition.angle = this._angle;
-    newPosition.locked = this._isLocked;
-    newPosition.setColor(this._color);
-    newPosition.setReference(this._referencePoint);
-    return newPosition;
   }
 }

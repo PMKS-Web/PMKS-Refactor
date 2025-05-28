@@ -154,6 +154,7 @@ export class Link implements RigidBody{
             });
     }
 
+    //Removes a joint from the link
     removeJoint(idORRef: number | Joint){
         let id: number;
         if(typeof idORRef === 'number'){
@@ -179,10 +180,12 @@ export class Link implements RigidBody{
 
     }
 
+    // Adds a force to the link
     addForce(newForce: Force){
         this._forces.set(newForce.id, newForce);
     }
 
+    //Removes a force from a link
     removeForce(idORRef: number | Force){
         if(typeof idORRef === 'number'){
             this._forces.delete(idORRef);

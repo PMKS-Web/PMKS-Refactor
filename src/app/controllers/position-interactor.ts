@@ -1,8 +1,6 @@
 import { Coord } from "../model/coord";
 import { Position } from "../model/position";
 import { Joint } from "../model/joint";
-import { Mechanism } from "../model/mechanism";
-import { InteractionService } from "../services/interaction.service";
 import { StateService } from "../services/state.service";
 import { ContextMenuOption, Interactor } from "./interactor";
 
@@ -15,18 +13,17 @@ export class PositionInteractor extends Interactor {
 
   public jointsStartPosModel: Map<number, Coord> = new Map();
 
-  constructor(public position: Position, private stateService: StateService,
-              private interactionService: InteractionService) {
+  constructor(public position: Position, private stateService: StateService) {
     super(true, true);
 
-    this.onDragStart$.subscribe((event) => {
+    this.onDragStart$.subscribe(() => {
 
       this.position.joints.forEach((joint: Joint, id: number) => {
         this.jointsStartPosModel.set(id, joint._coords);
       });
     });
 
-    this.onDrag$.subscribe((event) => {
+    this.onDrag$.subscribe(() => {
       this.jointsStartPosModel.forEach((coord: Coord, jointID: number) => {
         const joint = this.position.joints.get(jointID);
         if (this.position.locked){
@@ -41,13 +38,10 @@ export class PositionInteractor extends Interactor {
       });
     });
 
-    this.onDragEnd$.subscribe((event) => {
+    this.onDragEnd$.subscribe(() => {
       this.jointsStartPosModel.clear();
     });
 
-    // this.onRightClick$.subscribe((event) => {
-    //   this.showContextMenu(event);
-    // });
   }
 
   /**
@@ -57,35 +51,17 @@ export class PositionInteractor extends Interactor {
    */
   public override specifyContextMenu(): ContextMenuOption[] {
     let availableContext: ContextMenuOption[] = [];
-    const mechanism: Mechanism = this.stateService.getMechanism();
-    let modelPosAtRightClick = this.getMousePos().model;
-
-    /*availableContext.push(
-      {
-        icon: this.position.locked ? "assets/contextMenuIcons/unlock.svg" : "assets/contextMenuIcons/lock.svg",
-        label: this.position.locked ? "Unlock Position" : "Lock Position",
-        action: () => { this.position.locked = !this.position.locked },
-        disabled: false
-      },
-      {
-        icon: "assets/contextMenuIcons/trash.svg",
-        label: "Delete Position",
-        action: () => { mechanism.removePosition(this.position.id) }, // Assuming removePosition exists
-        disabled: false
-      }
-    );*/
-
+    this.stateService.getMechanism();
+    this.getMousePos().model;
     return availableContext;
   }
 
-  public getPosition(): Position {
-    return this.position;
-  }
-
+  // Returns a string representation of this PositionInteractor
   public override toString(): string {
     return "PositionInteractor(" + this.position.name + ")";
   }
 
+  // Returns the type identifier for this interactor
   public override type(): string {
     return "PositionInteractor";
   }

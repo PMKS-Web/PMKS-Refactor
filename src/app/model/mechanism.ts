@@ -358,7 +358,7 @@ export class Mechanism {
      * @memberof Mechanism
      */
     addLinkToJoint(jointID: number, coordOneORJointID: Coord | number, synthesized?: boolean) {
-        this.executeJointAction(jointID, (joint) => true, 'cannot have a new link added','has had a new link added', (joint) =>{
+        this.executeJointAction(jointID, () => true, 'cannot have a new link added','has had a new link added', (joint) =>{
             let jointB: Joint;
             if(typeof coordOneORJointID !== 'number'){
                 jointB = new Joint(this._jointIDCount, coordOneORJointID);
@@ -449,7 +449,7 @@ export class Mechanism {
      * @memberof Mechanism
      */
     setJointCoord(jointID: number, newCoord: Coord) {
-        this.executeJointAction(jointID, (joint) => true, 'error','success', (joint) =>{joint.setCoordinates(newCoord);});
+        this.executeJointAction(jointID, () => true, 'error','success', (joint) =>{joint.setCoordinates(newCoord);});
 
 
     }
@@ -461,7 +461,7 @@ export class Mechanism {
      * @memberof Mechanism
      */
     setXCoord(jointID: number, newXCoord: number) {
-        this.executeJointAction(jointID, (joint) => true, 'error','success', (joint) =>{joint.coords.x = newXCoord;});
+        this.executeJointAction(jointID, () => true, 'error','success', (joint) =>{joint.coords.x = newXCoord;});
     }
 
     /**
@@ -489,7 +489,7 @@ export class Mechanism {
             console.error(`Joint with ID ${jointIDReference} does not exist`);
             return;
         }
-        this.executeJointAction(jointIDtoChange, (joint) => true, 'error','success', (joint) =>{joint.setDistancetoJoint(newDistance, jointB);});
+        this.executeJointAction(jointIDtoChange, (joint) => true, 'error','success', (joint) =>{joint.setDistancetoJoint();});
     }
     /**
      * Given two joints and a desired angle between them, rotates the first joint around the second(mantaining same distance) until the desired angle is reached.
@@ -505,8 +505,8 @@ export class Mechanism {
             console.error(`Joint with ID ${jointIDReference} does not exist`);
             return;
         }
-        this.executeJointAction(jointIDtoChange, (joint) => true, 'error','success',
-        (joint) =>{joint.setAngletoJoint(newAngle, jointB);});
+        this.executeJointAction(jointIDtoChange, () => true, 'error','success',
+        (joint) =>{joint.setAngletoJoint(newAngle);});
     }
 
 
@@ -869,7 +869,7 @@ export class Mechanism {
      * @memberof Mechanism
      */
     setForceXComp(forceID: number, newXComp: number) {
-        this.executeForceAction(forceID, force => force.setXComp(newXComp));
+        this.executeForceAction(forceID, force => force.setXComp());
     }
     /**
      *Sets the y component(not be confused with individual coordinates) of a force given its ID by changing its end coordinate.
@@ -889,7 +889,7 @@ export class Mechanism {
      * @memberof Mechanism
      */
     setForceAngle(forceID: number, newAngle: number) {
-        this.executeForceAction(forceID, force => force.setForceAngle(newAngle));
+        this.executeForceAction(forceID, force => force.setForceAngle());
     }
 
     //----------------------------HELPER FUNCTIONS----------------------------
@@ -1097,6 +1097,5 @@ export class Mechanism {
   public _addTrajectory(trajectory: Trajectory): void {
     this._trajectories.set(trajectory.id, trajectory);
   }
-
 
 }

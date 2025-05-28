@@ -3,88 +3,63 @@ import { Joint, JointType } from "../model/joint";
 import { Mechanism } from "../model/mechanism";
 import { InteractionService } from "../services/interaction.service";
 import { StateService } from "../services/state.service";
-import { ClickCapture, ClickCaptureID } from "./click-capture/click-capture";
 import { CreateLinkFromJointCapture } from "./click-capture/create-link-from-joint-capture";
 import { ContextMenuOption, Interactor } from "./interactor";
-import {Subscription} from "rxjs";
-import { PositionInteractor } from "./position-interactor";
 import {Action} from "../components/ToolBar/undo-redo-panel/action";
 /*
 This interactor defines the following behaviors:
 - Dragging the joint moves it
 */
 
-
-
 export class JointInteractor extends Interactor {
-    private jointStart: Coord = new Coord(0,0);
-    private activePanelSub = new Subscription();
-    private activePanel = "Edit";
-    private _isDraggable: boolean = true;
-    private jointStartCoords: Coord | null = null;
+  private activePanel = "Edit";
+  private _isDraggable: boolean = true;
+  private jointStartCoords: Coord | null = null;
 
-    constructor(public joint: Joint,
-                private stateService: StateService,
-                private interactionService: InteractionService) {
+  constructor(public joint: Joint,
+              private stateService: StateService,
+              private interactionService: InteractionService) {
 
-      super(true, true);
+    super(true, true);
 
 
+    this.onDragStart$.subscribe(() => {
+      if ((!this.joint.locked || this.activePanel === "Edit") && this._isDraggable) {
+        this.jointStartCoords = this.joint.coords.clone();
+      }
+    });
 
 
+    this.onDrag$.subscribe(() => {
+      if ((!this.joint.locked || this.activePanel === "Edit") && this._isDraggable && this.jointStartCoords) {
+        const newPos = this.jointStartCoords.clone().add(this.dragOffsetInModel!);
+        this.stateService.getMechanism().setJointCoord(this.joint.id, newPos);
+      }
+    });
 
 
+    this.onDragEnd$.subscribe(() => {
+      if (this.jointStartCoords) {
+        const oldPos = this.jointStartCoords;
+        const newPos = this.joint.coords.clone();
 
-
-
-      this.onDragStart$.subscribe(() => {
-        if ((!this.joint.locked || this.activePanel === "Edit") && this._isDraggable) {
-          this.jointStartCoords = this.joint.coords.clone();
+        if (oldPos.x !== newPos.x || oldPos.y !== newPos.y) {
+          this.stateService.recordAction({
+            type: 'moveJoint',
+            jointId: this.joint.id,
+            oldCoords: {x: oldPos.x, y: oldPos.y},
+            newCoords: {x: newPos.x, y: newPos.y}
+          });
         }
-      });
+      }
+
+      this.jointStartCoords = null;
+      this.stateService.getMechanism().notifyChange();
+    });
 
 
-      this.onDrag$.subscribe(() => {
-        if ((!this.joint.locked || this.activePanel === "Edit") && this._isDraggable && this.jointStartCoords) {
-          const newPos = this.jointStartCoords.clone().add(this.dragOffsetInModel!);
-          this.stateService.getMechanism().setJointCoord(this.joint.id, newPos);
-        }
-      });
-
-
-      this.onDragEnd$.subscribe(() => {
-        if (this.jointStartCoords) {
-          const oldPos = this.jointStartCoords;
-          const newPos = this.joint.coords.clone();
-
-          if (oldPos.x !== newPos.x || oldPos.y !== newPos.y) {
-            this.stateService.recordAction({
-              type: 'moveJoint',
-              jointId: this.joint.id,
-              oldCoords: { x: oldPos.x, y: oldPos.y },
-              newCoords: { x: newPos.x, y: newPos.y }
-            });
-          }
-        }
-
-        this.jointStartCoords = null;
-        this.stateService.getMechanism().notifyChange();
-      });
-
-      this.activePanelSub = this.stateService.globalActivePanelCurrent.subscribe((panel) => {this.activePanel = panel});
-
-
-    }
-
-    public setDraggable(value: boolean): void {
-        this._isDraggable = value;
-    }
-
-    public canDrag(): boolean {
-        return this._isDraggable && !this.joint.locked;
-    }
-
-    /**
+  }
+  /**
      * Determines what options should be shown for the context menu when right clicking on a joint
      *
      * @returns
@@ -395,22 +370,18 @@ export class JointInteractor extends Interactor {
     this.interactionService.enterClickCapture(capture);
   }
 
-
-
+  // Returns a string representation of this JointInteractor
   public override toString(): string {
         return "jointInteractor(" + this.joint.name + ")";
     }
 
-    public getJoint(): Joint {
-      return this.joint ;
-    }
+  // Returns the joint associated with this interactor
+  public getJoint(): Joint {
+    return this.joint ;
+  }
 
-    public override type(): string{
-        return "JointInteractor"
-    }
-
-    private isDraggingPosition(): boolean {
-        const selectedObject = this.interactionService.getSelectedObject();
-        return selectedObject instanceof PositionInteractor;
-    }
+  // Returns the type identifier for this interactor
+  public override type(): string{
+      return "JointInteractor"
+  }
 }

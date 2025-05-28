@@ -1,6 +1,6 @@
 import { Injectable, Injector } from '@angular/core';
-import { Joint, PrisJoint, RealJoint, RevJoint } from '../model/joint';
-import { Link, Piston, RealLink } from '../model/link';
+import { Joint, PrisJoint, RealJoint } from '../model/joint';
+import { Link, RealLink } from '../model/link';
 import { Force } from '../model/force';
 import { Mechanism } from '../model/mechanism/mechanism';
 import { InstantCenter } from '../model/instant-center';

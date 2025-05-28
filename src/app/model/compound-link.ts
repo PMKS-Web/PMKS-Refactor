@@ -1,15 +1,14 @@
-import {Link} from '../model/link'
-import { RigidBody } from '../model/link'
-import { Coord } from '../model/coord'
-import {Joint} from '../model/joint'
-import { Force } from '../model/force'
+import {Link, RigidBody} from './link'
+import { Coord } from './coord'
+import {Joint} from './joint'
+import { Force } from './force'
 
 export class CompoundLink implements RigidBody{
-    private _id: number;
+    private readonly _id: number;
     private _name: string;
     private _mass: number;
     private _centerOfMass: Coord;
-    private _links: Map<number, Link>;
+    private readonly _links: Map<number, Link>;
     private _isLocked: boolean;
     private _color: string = "";
 
@@ -89,167 +88,174 @@ export class CompoundLink implements RigidBody{
     set mass(value: number) {
         this._mass = value;
     }
-  set color(color: string){
-      this._color = color;
-  }
-  set lock(value: boolean) {
-      this._isLocked = value;
-      this.updateSublinkLocks(value);
-  }
+    set color(color: string){
+        this._color = color;
+    }
+    set lock(value: boolean) {
+        this._isLocked = value;
+        this.updateSublinkLocks(value);
+    }
 
+  // Updates the locked state of all sub-links within the compound link
   updateSublinkLocks(value: boolean) {
-    this._links.forEach((link: Link, key: number) => {
+    this._links.forEach((link: Link) => {
       link.locked = value;
     });
   }
 
-    calculateCenterOfMass(): Coord{
-      let totalX = 0;
-      let totalY = 0;
-      let totalJoints = 0;
+  // Calculates the center of mass of the compound link based on its joint
+  calculateCenterOfMass(): Coord{
+    let totalX = 0;
+    let totalY = 0;
+    let totalJoints = 0;
 
-      // Iterate over each joint and accumulate x and y coordinates
-      this._links.forEach((link) => {
-        link._joints.forEach((joint) => {
-          totalX += joint.coords.x;
-          totalY += joint.coords.y;
-          totalJoints += 1;
-        });
+    // Iterate over each joint and accumulate x and y coordinates
+    this._links.forEach((link) => {
+      link._joints.forEach((joint) => {
+        totalX += joint.coords.x;
+        totalY += joint.coords.y;
+        totalJoints += 1;
       });
+    });
 
-      // Calculate the mean (average) by dividing by the number of joints
-      const centerX = totalX / totalJoints;
-      const centerY = totalY / totalJoints;
+    // Calculate the mean (average) by dividing by the number of joints
+    const centerX = totalX / totalJoints;
+    const centerY = totalY / totalJoints;
 
-      this._centerOfMass = new Coord(centerX, centerY);
-      return this._centerOfMass;
-    }
+    this._centerOfMass = new Coord(centerX, centerY);
+    return this._centerOfMass;
+  }
 
-    addLink(newLink: Link){
-        this._links.set(newLink.id,newLink);
-        this.calculateCenterOfMass();
-        this._name = "";
-        for(let joint of this.getJoints()){
-            this._name += joint.name;
-        }
-    }
+  // Adds a new link to the compound link and updates the center of mass and name
+  addLink(newLink: Link){
+      this._links.set(newLink.id,newLink);
+      this.calculateCenterOfMass();
+      this._name = "";
+      for(let joint of this.getJoints()){
+          this._name += joint.name;
+      }
+  }
 
-    removeLink(idORRef: number | Link){
-        if(typeof idORRef === 'number'){
-            this._links.delete(idORRef);
-        } else {
-            this._links.delete(idORRef.id);
-        }
-        this.calculateCenterOfMass();
-        if(this._links.size === 1){
-            throw new Error("Compound Link now only contains 1 Link");
-        }
-        this._name = "";
-        for(let joint of this.getJoints()){
-            this._name += joint.name;
-        }
-    }
-    containsLink(linkID: number): boolean {
-        return this._links.has(linkID);
-    }
+  // Removes a link from the compound link and updates the center of mass and name
+  removeLink(idORRef: number | Link){
+      if(typeof idORRef === 'number'){
+          this._links.delete(idORRef);
+      } else {
+          this._links.delete(idORRef.id);
+      }
+      this.calculateCenterOfMass();
+      if(this._links.size === 1){
+          throw new Error("Compound Link now only contains 1 Link");
+      }
+      this._name = "";
+      for(let joint of this.getJoints()){
+          this._name += joint.name;
+      }
+  }
 
-    containsJoint(jointID: number): boolean {
-        for(let link of this._links.values()){
-            if(link.containsJoint(jointID)){
-                return true;
-            }
-        }
-        return false;
-    }
+  // Checks if a specific link is part of the compound link
+  containsLink(linkID: number): boolean {
+      return this._links.has(linkID);
+  }
 
-    moveCoordinates(offset: Coord): void{
-        let allUniqueJoints: Set<Joint> = new Set();
-        let allUniqueForces: Set<Force> = new Set();
-        for(let link of this.links.values()){
-            for(let joint of link.joints.values())
-                allUniqueJoints.add(joint);
-                for(let force of link.forces.values())
-                allUniqueForces.add(force);
-        }
-        for(const joint of allUniqueJoints){
-            joint.setCoordinates(joint.coords.add(offset));
-        }
-        for(const force of allUniqueForces){
-            force.setCoordinates(force.start.add(offset), force.end.add(offset));
-        }
-    }
+  // Checks if a specific joint is part of any of the links in the compound link
+  containsJoint(jointID: number): boolean {
+      for(let link of this._links.values()){
+          if(link.containsJoint(jointID)){
+              return true;
+          }
+      }
+      return false;
+  }
 
+  //I think this should be used for forces later on
+  moveCoordinates(offset: Coord): void{
+      let allUniqueJoints: Set<Joint> = new Set();
+      let allUniqueForces: Set<Force> = new Set();
+      for(let link of this.links.values()){
+          for(let joint of link.joints.values())
+              allUniqueJoints.add(joint);
+              for(let force of link.forces.values())
+              allUniqueForces.add(force);
+      }
+      for(const joint of allUniqueJoints){
+          joint.setCoordinates(joint.coords.add(offset));
+      }
+      for(const force of allUniqueForces){
+          force.setCoordinates(force.start.add(offset), force.end.add(offset));
+      }
+  }
 
+  // Returns new compound links after removing a weld joint, using DFS to find connected subgraphs
+  compoundLinkAfterRemoveWeld(joint: Joint, idCount: number): CompoundLink[]{
+      let replacementCompoundLinks: CompoundLink[] = [];
+      let count:number = idCount
+      //need to isolate welds, and their respective links in order to perform DFS and build all CompoundLinks
+      let weldedSets: Map<Joint,Link[]> = this.getAllWeldedSets()
+      console.log(weldedSets);
+      weldedSets.delete(joint);
+      const visitedLinks: Link[] = [];
+      for(const [weldedJoint,links] of weldedSets){
+          const compound: Link[] = [];
+          if(links.some(link => !visitedLinks.includes(link))){
+              this.DepthFirstSearch(weldedJoint,weldedSets,compound, visitedLinks);
 
-    compoundLinkAfterRemoveWeld(joint: Joint, idCount: number): CompoundLink[]{
-        let replacementCompoundLinks: CompoundLink[] = [];
-        let count:number = idCount
-        //need to isolate welds, and their respective links in order to perform DFS and build all CompoundLinks
-        let weldedSets: Map<Joint,Link[]> = this.getAllWeldedSets()
-        console.log(weldedSets);
-        weldedSets.delete(joint);
-        const visitedLinks: Link[] = [];
-        for(const [weldedJoint,links] of weldedSets){
-            const compound: Link[] = [];
-            if(links.some(link => !visitedLinks.includes(link))){
-                this.DepthFirstSearch(weldedJoint,weldedSets,compound, visitedLinks);
+              replacementCompoundLinks.push(new CompoundLink(count,compound));
+              count++;
+          }
+      }
+      return replacementCompoundLinks;
+  }
 
-                replacementCompoundLinks.push(new CompoundLink(count,compound));
-                count++;
-            }
-        }
-        return replacementCompoundLinks;
-    }
+  // Collects all welded joints and the links they are part of
+  private getAllWeldedSets(): Map<Joint,Link[]>{
+      let sets: Map<Joint, Link[]> = new Map();
+      for(let link of this._links.values()){
+          for(let joint of link.joints.values()){
+              if( joint.isWelded && sets.has(joint)){
+                  let links: Link[] = sets.get(joint)!
+                  links.push(link)
+                  sets.set(joint, links);
+              }else if(joint.isWelded){
+                  let links: Link[] = [link];
+                  sets.set(joint, links);
+              }
+          }
+      }
+      return sets;
+  }
 
-    private getAllWeldedSets(): Map<Joint,Link[]>{
-        let sets: Map<Joint, Link[]> = new Map();
-        for(let link of this._links.values()){
-            for(let joint of link.joints.values()){
-                if( joint.isWelded && sets.has(joint)){
-                    let links: Link[] = sets.get(joint)!
-                    links.push(link)
-                    sets.set(joint, links);
-                }else if(joint.isWelded){
-                    let links: Link[] = [link];
-                    sets.set(joint, links);
-                }
-            }
-        }
-        return sets;
-    }
+  // Recursively visits connected links via welded joints to build a compound link
+  private DepthFirstSearch(joint: Joint, sets: Map<Joint,Link[]>,compound: Link[],visited: Link[]){
+      for(const link of sets.get(joint)!){
+          if(!visited.includes(link)){
+              visited.push(link);
+              compound.push(link);
+              for(const [nextJoint,links] of sets){
+                  if(links.includes(link) && nextJoint !== joint)
+                      this.DepthFirstSearch(nextJoint,sets,compound,visited);
+              }
+          }
+      }
+  }
 
-    private DepthFirstSearch(joint: Joint, sets: Map<Joint,Link[]>,compound: Link[],visited: Link[]){
-        for(const link of sets.get(joint)!){
-            if(!visited.includes(link)){
-                visited.push(link);
-                compound.push(link);
-                for(const [nextJoint,links] of sets){
-                    if(links.includes(link) && nextJoint !== joint)
-                        this.DepthFirstSearch(nextJoint,sets,compound,visited);
-                }
-            }
-        }
-    }
+  // Returns all unique joints present in the compound link
+  getJoints(): Array<Joint>{
+      const joints: Set<Joint> = new Set();
+      for(let link of this._links.values()){
+          for(let joint of link.joints.values()){
+              joints.add(joint);
+          }
+      }
+      return Array.from(joints);
+  }
 
-
-    getJoints(): Array<Joint>{
-        const joints: Set<Joint> = new Set();
-        for(let link of this._links.values()){
-            for(let joint of link.joints.values()){
-                joints.add(joint);
-            }
-
-
-        }
-
-        return Array.from(joints);
-    }
-
-    setColor(index: number){
-        console.log(index);
-        this._color=this.linkColorOptions[index];
-        console.log(this._color);
-    }
+  // Sets the color of the compound link based on a palette index
+  setColor(index: number){
+      console.log(index);
+      this._color=this.linkColorOptions[index];
+      console.log(this._color);
+  }
 
 
 }

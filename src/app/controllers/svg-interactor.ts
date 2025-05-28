@@ -2,10 +2,8 @@ import { Coord } from "../model/coord";
 import { InteractionService } from "../services/interaction.service";
 import { StateService } from "../services/state.service";
 import { ContextMenuOption, Interactor } from "./interactor";
-import { Mechanism } from "../model/mechanism";
 import { CreateLinkFromGridCapture} from "./click-capture/create-link-from-grid-capture"
 import { PanZoomService } from "../services/pan-zoom.service";
-import {Subscription} from "rxjs";
 import type { JointSnapshot, LinkSnapshot } from "../components/ToolBar/undo-redo-panel/action";
 
 
@@ -15,44 +13,45 @@ This handles any interaction with the SVG canvas.
 
 export class SvgInteractor extends Interactor {
 
-    private lastSVGPosition: Coord | undefined;
-    private activePanelSub = new Subscription();
-    private activePanel = "Edit";
-    constructor(private stateService: StateService,
-        private interactionService: InteractionService, private panZoomService: PanZoomService) {
-        super(true, true);
+  private lastSVGPosition: Coord | undefined;
+  private activePanel = "Edit";
 
-        this.onDragStart$.subscribe((event) => {
-            this.lastSVGPosition = this.getMousePos().screen;
+  constructor(private stateService: StateService,
+              private interactionService: InteractionService,
+              private panZoomService: PanZoomService) {
+              super(true, true);
+
+    this.onDragStart$.subscribe(() => {this.lastSVGPosition = this.getMousePos().screen;
+    });
+    this.onDrag$.subscribe(() => {
+      let currentSVGPosition = this.getMousePos().screen;
+      this.panZoomService._onSVGDrag(currentSVGPosition.subtract(this.lastSVGPosition!));
+      this.lastSVGPosition = currentSVGPosition;
+    });
+    this.onDragEnd$.subscribe(() => {
+    });
+  }
+
+  // Defines which context menu options should appear when user right-clicks on the SVG canvas
+  public override specifyContextMenu(): ContextMenuOption[] {
+    this.stateService.getMechanism();
+    let modelPosAtRightClick = this.interactionService.getMousePos().model;
+    let availableContext: ContextMenuOption[] = [];
+      if (this.activePanel === "Edit") {
+        availableContext.push({
+          icon: "assets/contextMenuIcons/addLink.svg",
+          label: "Create Link",
+          action: () => {
+            this.enterAddLinkCaptureMode(modelPosAtRightClick)
+          },
+          disabled: false
         });
-        this.onDrag$.subscribe((event) => {
-            let currentSVGPosition = this.getMousePos().screen;
-            this.panZoomService._onSVGDrag(currentSVGPosition.subtract(this.lastSVGPosition!));
-            this.lastSVGPosition = currentSVGPosition;
-        });
-        this.onDragEnd$.subscribe((event) => {
-        });
-      this.activePanelSub = this.stateService.globalActivePanelCurrent.subscribe((panel) => {this.activePanel = panel});
-    }
+      }
 
+      return availableContext;
+  }
 
-    public override specifyContextMenu(): ContextMenuOption[] {
-        const mechanism: Mechanism = this.stateService.getMechanism();
-        let modelPosAtRightClick = this.interactionService.getMousePos().model;
-        let availableContext: ContextMenuOption[] = [];
-        if (this.activePanel === "Edit") {
-          availableContext.push({
-            icon: "assets/contextMenuIcons/addLink.svg",
-            label: "Create Link",
-            action: () => {
-              this.enterAddLinkCaptureMode(modelPosAtRightClick)
-            },
-            disabled: false
-          });
-        }
-
-        return availableContext;
-    }
+  // Begins the process of adding a new link between joints via a capture interaction
   private enterAddLinkCaptureMode(modelPosAtRightClick: Coord): void {
     const capture = new CreateLinkFromGridCapture(modelPosAtRightClick, this.interactionService);
     capture.onClick$.subscribe((mousePos) => {
@@ -109,12 +108,14 @@ export class SvgInteractor extends Interactor {
     this.interactionService.enterClickCapture(capture);
   }
 
-
+  // Returns the string representation of this interactor
   public override toString(): string {
         return "SvgInteractor()";
-    }
-    public override type(): string{
-        return "SVGInteractor"
-    }
+  }
+
+  // Returns the type of this interactor
+  public override type(): string{
+      return "SVGInteractor"
+  }
 
 }

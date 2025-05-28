@@ -3,11 +3,7 @@ import { Link } from "../model/link";
 import { Joint } from "../model/joint";
 import { CompoundLink } from "../model/compound-link";
 import { Mechanism } from "../model/mechanism";
-import { InteractionService } from "../services/interaction.service";
 import { StateService } from "../services/state.service";
-import { ClickCapture, ClickCaptureID } from "./click-capture/click-capture";
-import { CreateLinkFromLinkCapture } from "./click-capture/create-link-from-link-capture";
-import { CreateForceFromLinkCapture } from "./click-capture/create-force-from-link-capture";
 import { ContextMenuOption, Interactor } from "./interactor";
 
 /*
@@ -20,24 +16,23 @@ export class CompoundLinkInteractor extends Interactor {
     private jointsStartPosModel: Map<number, Coord> = new Map();
 
 
-    constructor(public compoundLink: CompoundLink, private stateService: StateService,
-        private interactionService: InteractionService) {
+    constructor(public compoundLink: CompoundLink, private stateService: StateService) {
         super(true, true);
 
-        this.onDragStart$.subscribe((event) => {
-            this.compoundLink.links.forEach((link: Link, id: number) => {
+        this.onDragStart$.subscribe(() => {
+            this.compoundLink.links.forEach((link: Link) => {
                 link.joints.forEach((joint: Joint, id: number) => {
                     this.jointsStartPosModel.set(id, joint._coords);
                 });
             });
         });
 
-        this.onDrag$.subscribe((event) => {
+        this.onDrag$.subscribe(() => {
             this.jointsStartPosModel.forEach((coord: Coord, jointID: number) => {
                 this.stateService.getMechanism().setJointCoord(jointID, coord.add(this.dragOffsetInModel!))
             });
         });
-        this.onDragEnd$.subscribe((event) => {
+        this.onDragEnd$.subscribe(() => {
             this.jointsStartPosModel.clear();
         });
 
@@ -65,7 +60,7 @@ export class CompoundLinkInteractor extends Interactor {
             {
                 icon: "assets/contextMenuIcons/addLink.svg",
                 label: "Attach Link",
-                action: () => { this.enterAddLinkCaptureMode(modelPosAtRightClick) },
+                action: () => { this.enterAddLinkCaptureMode() },
                 disabled: false
             },
             {
@@ -77,7 +72,7 @@ export class CompoundLinkInteractor extends Interactor {
             {
                 icon: "assets/contextMenuIcons/addForce.svg",
                 label: "Attach Force",
-                action: () => { this.enterAddForceCaptureMode(modelPosAtRightClick) },
+                action: () => { this.enterAddForceCaptureMode() },
                 disabled: false
             },
             {
@@ -98,18 +93,23 @@ export class CompoundLinkInteractor extends Interactor {
 
     }
 
-    private enterAddLinkCaptureMode(modelPosAtRightClick: Coord): void {
-    }
-    private enterAddForceCaptureMode(modelPosAtRightClick: Coord): void {
-    }
+    // Placeholder for logic to handle adding a link to this compound link
+    private enterAddLinkCaptureMode(): void {}
 
+    // Placeholder for logic to handle adding a force to this compound link
+    private enterAddForceCaptureMode(): void {}
+
+    // Returns a string representation for debugging
     public override toString(): string {
         return "CompoundLinkInteractor(" + this.compoundLink.name + ")";
     }
+
+    // Returns the type identifier of this interactor
     public override type(): string{
         return "CompoundLinkInteractor"
     }
 
+  // Returns the compound link associated with this interactor
     public getCompoundLink(): CompoundLink {
         return this.compoundLink;
     }

@@ -16,11 +16,8 @@ export enum ClickCaptureID {
 }
 
 export abstract class ClickCapture {
-    
     onClick$ = new Subject<Coord>();
     onMouseMove$ = new Subject<Coord>();
-
-    constructor(public id: ClickCaptureID) {}
-
+    protected constructor(public id: ClickCaptureID) {}
     abstract getStartPos():Coord
 }
