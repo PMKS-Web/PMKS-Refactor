@@ -19,6 +19,8 @@ export class TemplatesPanelComponent {
 
   private mechanism: Mechanism;
   public open = true;
+  // Get current URL without query params
+  private currentUrl = window.location.href.split('?')[0]; 
 
   constructor(private interactionService: InteractionService, private stateService: StateService, public toolbarComponent: ToolbarComponent, private positionSolver: PositionSolverService){
     //creates a new mechanism in the state
@@ -36,306 +38,24 @@ export class TemplatesPanelComponent {
 
   openTemplate(linkage: string){
     this.open=false; //closes panel sort of, will need a better fix to actually close the panel in the toolbar
-
-    //calls helper functions to call to the state and create the mechanisms by calling to the mechanism class
-    //these functions are temporary solutions, in the future should be done using encoding
+    //Opens a new windows using the encoded data from the url encoder
     switch (linkage) {
       case 'fourbar':
-        this.makeFourBar();
+        window.open(`${this.currentUrl}?data=N4IgViBcDa0gDAPwIIgPoFoDMA6AjFpgEw7x5oh6JICeidAhogHYtvMYZUBC6GJANiJp4OAJwUqSVqyYz2nIogDC6XGTQl4ADknV2iOQY7ZEAETU4sAFkx4cAgKx7abI-OYgAul4oAbKFgEFG59AGIAdiIIgDEzRz4SbQjnDFFHR2sxbJzcnIp4AB8qFnQSMUy0bVF4RzFfOB5lcKIYrABRMRj0UTwxLLzB7Vt7LMlCpVK0RxwU4QRFFTNw+DM8IkdUNFw8FJEcIjxHeBPTs9PdECJCrEQp3AjrZwRvXxAAYygQRAAXL8QAGb-AAOXxAAF8gA
+          &newTab=true`, '_blank');
         break;
       case 'watt':
-        this.makeWatt();
+          window.open(`${this.currentUrl}?data=N4IgViBcDa0gDAPwIIgPoFoCMA6A7FprgMzFohaJICeitAhogHbOtMbaIBC6GATDgCsANjTwcwvuUpIWLRnLYc+iAMK9c8MsSGiKVNogWH2GYogAi6AQBY0JPTMPHFpm4gCi6PELv8JUvo0rC5KGIKIAGLeOFgAnGiCsQAc0gaKoXIcwogA4ui4cQnJsWRBzibMIAC61eQANlCwCChcBgDEeHx4kRaCvAJYxIKY4sOC8JNT01N2CAA+lFVog932Q0KCfHVwlFyqFh18kcQecdGjOMRxwrd39-d49jjJNg-vt08U83zz5ss6YhYObwZSWDyRDrwCxYPiCVCJfCEEjwD4fcjEeY2eYRZbCITwQgIDjmSK5I7wLpxPDoGxCBL44SCEYgQTzHLLJLUhLEjDuXKqKGouKCKxiHA2VJJV4TGYzInCH6ITkSvCpBA1OogADGUBAiAALnrEAAzY0ABz1IAAvkA`);
         break;
       case 'watt2':
-        this.makeWatt2();
+          window.open(`${this.currentUrl}?data=N4IgViBcDa0gDAPwIKILQGZ0CZEEZEkBPRAO0QEMzrzS00CAhdDEAfTXgDoBWNkAklqUaNergDC7TrzZ5ZAwqKrDa9LABF2PWfOz9By0WrQAWRAFF2GBWlyGSJFcfo9EAMUQAjdnoNLhZ1V6ADZEAHFfPT47Lgx-YmogmhAAXVT+ABsoWAQUZiQAYgB2bGL3DTdMaWj+eAAfAjJfBR4KeiYJJULsdwwLAE53Gq5ivm4+AXrcZrYbbHh9BHFECQ0LbvgNPGweZHZsLgAODFOz8-PxrmwL27PTfmx6jHrzWZCueHhiuvVEDU8RQWpQGxXYR2ufD8IBeblmOkm8Ho5nc4U28BCAx4Wjk8h2MQmpgGxJJpNJ-B49TCsxsPHgAzqaQyIAAxlAQIgAC7sxAAMx5AAd2SAAL5AA`);
         break;
       case 'steph3':
-        this.makeSteph3();
+          window.open(`${this.currentUrl}?data=N4IgViBcDa0gDAPwIIgPoFoBMA6LncAWAdjRAEZEkBPRWgQ0QDtnWmMNKAhdbHQgGyZ4OAJwAOMpSQsWjWWw5ZEAYUQBmdCPLqpVNonkH2GdYgAi6dXiGcx+CvtpzjzDoUQBRXiPwjRejKsRgomAKyIAGJaOOKk1uSSjkEuoW4YAogA4uhhOGFo5DjwhIF0wa5MIAC61WQANlCwCChc+gDExFjEkeZhvLjqunZdBQgAPpTM6EVhOmiiorESdXDcKp4dWJHqnqLRaNo6Qyenp6Ui8OQCN7d3d0nk41jjHtNoeWFdZPBKquYdeDmchYMKoNAJYYicSiMYvMzvXDwG4-DhmTyRLbwLqiYgxIaERZE4nEoRI0ogQjjCKI-LkAIIdxRLKA5GwywQnCJAq4cjkeACwVCwW6EBhcaZd55fnkH41OogADGUBAiAALirEAAzTUABxVIAAvkA`);
         break;
       case 'slider':
-        this.makeSlider();
+          window.open(`${this.currentUrl}?data=N4IgViBcDa0gDAPwIKILQGZFIIzcQJ6GICGiAdhVeWmngEIgD6aATAHQCsTH3IeSSpTJDqtVogDCiLAPxFh1aiAC6KpiAA2UWAhT18AYgDsrYwDEAIp2Zt2x7jnas+8AD54KzXt2MAOdgA2AE51OAZpJENWcwwAUWDzZnhnR3s+HDcJLyZOe3gcDXhVdRAAYygQRAAXSsQAMzqAB0qQAF8gA`);
         break;
     }
-  }
-
-  makeFourBar(){
-    //these are all of the joints used in the four bar, referenced later
-    let joint1 = new Coord(-3.13,-2.01);
-    let joint2 = new Coord(-2.62,.9);
-    let joint3 = new Coord(3.01,2.08);
-    let joint4 = new Coord(3.34,-1.65);
-
-    this.mechanism.clearLinks();
-    this.mechanism.addLink(joint1, joint2);
-
-    let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
-    let lastJoint= this.getLastJoint(joints);
-    if (lastJoint !== undefined) {
-      this.mechanism.addLinkToJoint(lastJoint.id, joint3);
-    }
-
-    joints=this.mechanism.getJoints(); //updates list of all joints
-    lastJoint= this.getLastJoint(joints);
-    if (lastJoint !== undefined) {
-      this.mechanism.addLinkToJoint(lastJoint.id, joint4);
-    }
-
-    //adds the grounded joints and input
-    joints=this.mechanism.getJoints();
-    for (const joint of joints) {
-      if(joint.id===0){
-        joint.addGround();
-        joint.addInput();
-      }
-      if(joint.id===3){
-        joint.addGround();
-      }
-    }
-    this.positionSolver.solvePositions();
-    console.log(this.mechanism);
-  }
-
-
-
-  makeWatt(){
-    //these are all of the joints used in the watt1linkage, referenced later
-    let joint1 = new Coord(-1.71, -1.33);
-    let joint2 = new Coord(-2.56, .62);
-    let joint3 = new Coord(-1.03,3.56);
-    let tracer1 = new Coord(2.4,1.36);
-    let joint4 = new Coord(7.54,-2.62);
-    let tracer2 = new Coord(7.19, 5.18);
-    let joint5 = new Coord(1.99,8.13);
-
-    this.mechanism.clearLinks();
-    this.mechanism.addLink(joint1, joint2);
-
-    let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
-    let lastJoint= this.getLastJoint(joints);
-    if (lastJoint !== undefined) {
-      this.mechanism.addLinkToJoint(lastJoint.id, joint3);
-    }
-
-    joints = this.mechanism.getJoints(); //updates list of all joints
-    lastJoint= this.getLastJoint(joints);
-    let joint3Id= lastJoint?.id;
-
-    let links = this.mechanism.getIndependentLinks(); //makes a list of all the links in the mechanism
-    let lastLink  = this.getLastLink(links);
-    if (lastLink !== undefined) {
-      this.mechanism.addJointToLink(lastLink.id, tracer1);
-    }
-
-    joints = this.mechanism.getJoints(); //updates list of all joints
-    lastJoint= this.getLastJoint(joints);
-    if (lastJoint !== undefined) {
-      this.mechanism.addLinkToJoint(lastJoint.id, joint4);
-    }
-
-    links = this.mechanism.getIndependentLinks(); //updates list of all links
-    lastLink  = this.getLastLink(links);
-    if (lastLink !== undefined) {
-      this.mechanism.addJointToLink(lastLink.id, tracer2);
-    }
-
-    joints = this.mechanism.getJoints(); //updates list of all joints
-    lastJoint= this.getLastJoint(joints);
-    if (lastJoint !== undefined) {
-      this.mechanism.addLinkToJoint(lastJoint.id, joint5);
-    }
-
-    joints = this.mechanism.getJoints(); //updates list of all joints
-    lastJoint= this.getLastJoint(joints);
-    if (lastJoint !== undefined && joint3Id!==undefined) {
-      this.mechanism.addLinkToJoint(lastJoint.id, joint3Id);
-    }
-
-
-    //adds the grounded joints and input
-    joints=this.mechanism.getJoints();
-    for (const joint of joints) {
-      if(joint.id===0){
-        joint.addGround();
-        joint.addInput();
-      }
-      if(joint.id===4){
-        joint.addGround();
-      }
-    }
-    this.positionSolver.solvePositions();
-    console.log(this.mechanism);
-  }
-
-  makeWatt2(){
-    //these are all of the joints used in the watt2linkage, referenced later
-    let joint1 = new Coord(-3,-2);
-    let joint2 = new Coord(-3,-.5);
-    let joint3 = new Coord(-.5,1.5);
-    let joint4 = new Coord(5.5, 1.2);
-    let tracer1 = new Coord(3.5,-2);
-    let joint5 = new Coord(11, 1.2);
-    let joint6 = new Coord(11.25, -2.3);
-
-    this.mechanism.clearLinks();
-    this.mechanism.addLink(joint1, joint2);
-
-    let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
-    let lastJoint= this.getLastJoint(joints);
-    if (lastJoint !== undefined) {
-      this.mechanism.addLinkToJoint(lastJoint.id, joint3);
-    }
-
-    joints = this.mechanism.getJoints(); //updates list of all joints
-    lastJoint= this.getLastJoint(joints);
-    if (lastJoint !== undefined) {
-      this.mechanism.addLinkToJoint(lastJoint.id, joint4);
-    }
-
-    joints = this.mechanism.getJoints(); //updates list of all joints
-    lastJoint= this.getLastJoint(joints);
-
-    let links = this.mechanism.getIndependentLinks(); //makes a list of all the links in the mechanism
-    let lastLink  = this.getLastLink(links);
-    if (lastLink !== undefined) {
-      this.mechanism.addJointToLink(lastLink.id, tracer1);
-    }
-
-    //doesn't update last joint so it doesn't add a link to the tracer point
-    if (lastJoint !== undefined) {
-      this.mechanism.addLinkToJoint(lastJoint.id, joint5);
-    }
-
-    joints = this.mechanism.getJoints(); //updates list of all joints
-    lastJoint= this.getLastJoint(joints);
-    if (lastJoint !== undefined) {
-      this.mechanism.addLinkToJoint(lastJoint.id, joint6);
-    }
-
-    //adds the grounded joints and input
-    joints=this.mechanism.getJoints();
-    for (const joint of joints) {
-      if(joint.id===4){
-        joint.addGround();
-        joint.addInput();
-      }
-      if(joint.id===0 || joint.id===6){
-        joint.addGround();
-      }
-    }
-    this.positionSolver.solvePositions();
-    console.log(this.mechanism);
-  }
-
-  makeSteph3(){
-    //these are all of the joints used in the steph3linkage, referenced later
-    let joint1 = new Coord(-2.2,-2.47);
-    let joint2 = new Coord(-2.46,-.98);
-    let joint3 = new Coord(3,.13);
-    let tracer1 = new Coord(-.2, .9);
-    let joint4 = new Coord(3.26,-1.92);
-    let joint5 = new Coord(.87,3.18);
-    let joint6 = new Coord(5.5,1.04);
-
-    this.mechanism.clearLinks();
-    this.mechanism.addLink(joint1, joint2);
-
-    let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
-    let lastJoint= this.getLastJoint(joints);
-    if (lastJoint !== undefined) {
-      this.mechanism.addLinkToJoint(lastJoint.id, joint3);
-    }
-    let links = this.mechanism.getIndependentLinks(); //makes a list of all the links in the mechanism
-    joints = this.mechanism.getJoints(); //updates list of all joints
-    lastJoint= this.getLastJoint(joints);
-    let lastLink  = this.getLastLink(links);
-    if (lastJoint !== undefined) {
-      this.mechanism.addLinkToJoint(lastJoint.id, joint4);
-    }
-
-    //let lastLink  = this.getLastLink(links);
-    if (lastLink !== undefined) {
-      this.mechanism.addJointToLink(lastLink.id, tracer1);
-    }
-
-    joints = this.mechanism.getJoints();
-    lastJoint= this.getLastJoint(joints);
-    if (lastJoint !== undefined) {
-      this.mechanism.addLinkToJoint(lastJoint.id, joint5);
-    }
-
-    joints = this.mechanism.getJoints();
-    lastJoint= this.getLastJoint(joints);
-    if (lastJoint !== undefined) {
-      this.mechanism.addLinkToJoint(lastJoint.id, joint6);
-    }
-
-    //adds the grounded joints and input
-    joints=this.mechanism.getJoints();
-    for (const joint of joints) {
-      if(joint.id===0){
-        joint.addGround();
-        joint.addInput();
-      }
-      if(joint.id===3 || joint.id===6){
-        joint.addGround();
-      }
-    }
-    this.positionSolver.solvePositions();
-    console.log(this.mechanism);
-  }
-
-  makeSlider(){
-    //these are all of the joints used in the sliderlinkage, referenced later
-    let joint1 = new Coord(-3,0);
-    let joint2 = new Coord(-2.5,2.5);
-    let joint3 = new Coord(3,1);
-
-    this.mechanism.clearLinks();
-    this.mechanism.addLink(joint1, joint2);
-    let joints = this.mechanism.getJoints();
-    let lastJoint= this.getLastJoint(joints);
-    if (lastJoint !== undefined) {
-      this.mechanism.addLinkToJoint(lastJoint.id, joint3);
-    }
-
-    //adds the grounded joints and input and slider
-    joints=this.mechanism.getJoints();
-    for (const joint of joints) {
-      if(joint.id===0){
-        joint.addGround();
-        joint.addInput();
-      }
-      if(joint.id===2){
-        joint.addSlider();
-      }
-    }
-    this.positionSolver.solvePositions();
-    console.log(this.mechanism);
-  }
-
-  //this is used to access the last joint added to the mechanism so it can be referenced to create new links/joints
-  getLastJoint(joints: IterableIterator<Joint>): Joint | undefined{
-    let lastJoint: Joint | undefined;
-    for (const joint of joints) {
-      lastJoint = joint;
-    }
-    if (lastJoint !== undefined) {
-      return lastJoint;
-    }
-    else
-      return undefined;
-  }
-
-  //this is used to access the last link added to the mechanism so it can be referenced to create new links/joints
-  getLastLink(links: IterableIterator<Link>): Link | undefined {
-    let lastLink: Link | undefined;
-    for (const link of links) {
-      lastLink = link;
-    }
-    if (lastLink !== undefined) {
-      return lastLink;
-    }
-    else
-      return undefined;
   }
 }
