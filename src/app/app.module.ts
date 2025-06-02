@@ -72,6 +72,8 @@ import { PositionComponent } from './components/Grid/position/position.component
 import {TrajectoryComponent} from './components/Grid/trajectory/trajectory.component';
 import {NgOptimizedImage} from "@angular/common";
 import { UndoRedoPanelComponent } from './components/ToolBar/undo-redo-panel/undo-redo-panel.component';
+import { NewTabAlertComponent } from './components/ToolBar/new-tab-alert/new-tab-alert.component';
+import { RouterModule } from '@angular/router';
 
 @NgModule({
   declarations: [
@@ -125,6 +127,7 @@ import { UndoRedoPanelComponent } from './components/ToolBar/undo-redo-panel/und
     PositionComponent,
     TrajectoryComponent,
     UndoRedoPanelComponent,
+    NewTabAlertComponent,
   ],
     imports: [
         BrowserModule,
@@ -147,6 +150,8 @@ import { UndoRedoPanelComponent } from './components/ToolBar/undo-redo-panel/und
         MatCheckboxModule,
         MatSliderModule,
         NgOptimizedImage,
+        RouterModule.forRoot([]),
+        
     ],
   providers: [],
   exports: [
