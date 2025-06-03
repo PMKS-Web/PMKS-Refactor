@@ -1,10 +1,3 @@
-import { Mechanism } from '../model/mechanism';
-import { Joint } from "../model/joint";
-import { Link } from "../model/link";
-import { CompoundLink } from "../model/compound-link";
-import { Trajectory } from "../model/trajectory";
-import { Force } from "../model/force";
-import { Position } from "../model/position";
 import {StateService} from "./state.service";
 import LZString from "lz-string";
 

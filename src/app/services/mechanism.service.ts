@@ -1,3 +1,21 @@
+
+
+
+
+
+
+
+
+
+//This file contains information on how to implement forces
+//Once Forces are added we can remove many components to this
+
+
+
+
+
+
+
 import { Injectable, Injector } from '@angular/core';
 import { Joint, PrisJoint, RealJoint } from '../model/joint';
 import { Link, RealLink } from '../model/link';
@@ -162,8 +180,6 @@ export class MechanismService {
     }
     this.updateMechanism(true);
   }
-
-
 
 
 

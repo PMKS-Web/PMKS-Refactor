@@ -9,10 +9,12 @@ export class GridToggleService {
   gridEnabled$ = this.gridEnabledSubject.asObservable();
   minorGridEnabled$ = this.minorGridEnabledSubject.asObservable();
 
+  // Enables or disables the main grid visibility.
   setGridEnabled(value: boolean) {
     this.gridEnabledSubject.next(value);
   }
 
+  // Enables or disables the minor grid visibility.
   setMinorGridEnabled(value: boolean) {
     this.minorGridEnabledSubject.next(value);
   }

@@ -1,7 +1,6 @@
 import { Mechanism } from '../model/mechanism';
 import { Joint } from "../model/joint";
 import { Link } from "../model/link";
-import { Coord } from "../model/coord";
 import { CompoundLink } from "../model/compound-link";
 import { Trajectory } from "../model/trajectory";
 import { Force } from "../model/force";
@@ -12,9 +11,9 @@ import LZString from 'lz-string';
 export class EncoderService {
 
   constructor(private stateService: StateService) {
-    //this._mechanism = this.stateService.getMechanism();
   }
 
+  // Retrieves the current Mechanism instance from the StateService.
   get mechanism() {
     return this.stateService.getMechanism();
   }
@@ -246,7 +245,7 @@ export class EncoderService {
    *
    * Note: On decoding, you'll need to reverse these transformations.
    */
-  private compressionReplacer(key: string, value: any): any {
+  private compressionReplacer(value: any): any {
     if (typeof value === "boolean") {
       return value ? "y" : "n"
     }
