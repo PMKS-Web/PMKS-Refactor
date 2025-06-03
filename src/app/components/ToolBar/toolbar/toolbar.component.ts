@@ -20,7 +20,6 @@ export class ToolbarComponent {
 
   // Sets the currently active tab
   setCurrentTab(clickedPanel: string){
-    this.notificationService.showNotification("oadsfihjgikosdfjkjlsdfgsd");
       if(clickedPanel==this.selectedPanel) {
         this.selectedPanel = '';
       }
@@ -39,6 +38,7 @@ export class ToolbarComponent {
     //this.setCurrentTab("Share");
     let urlService = new UrlGenerationService(this.stateService);
     urlService.copyURL();
+    this.notificationService.showNotification("Link Copied!");
   }
 
   // Handles sharing functionality by copying the generated URL to the clipboard
