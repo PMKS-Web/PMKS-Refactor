@@ -1,10 +1,7 @@
 import { Injectable } from '@angular/core';
 import { StateService } from './state.service';
-import { Joint, JointType } from '../model/joint';
-import { Link, RigidBody } from '../model/link';
 import { Coord } from '../model/coord';
 import { PositionSolverService } from './kinematic-solver.service';
-import { Mechanism } from '../model/mechanism';
 import { AnimationPositions } from './kinematic-solver.service';
 import { BehaviorSubject } from 'rxjs';
 
@@ -25,8 +22,6 @@ export interface JointAnimationState {
     providedIn: 'root'
 })
 export class AnimationService {
-
-
     public startDirectionCounterclockwise: boolean = true;
     private animationStates: JointAnimationState[];
     private invaldMechanism: boolean;
@@ -34,40 +29,41 @@ export class AnimationService {
     private speedMultiplier: number = 1;
     animationProgress$ = this.animationProgressSource.asObservable();
 
+    // Initializes the AnimationService, sets up state array, and subscribes to kinematic updates.
     constructor(private stateService: StateService, private positionSolver: PositionSolverService) {
-        this.animationStates = new Array();
+        this.animationStates = [];
         this.invaldMechanism = true;
-        this.positionSolver.getKinematicsObservable().subscribe(updatedPositions => {
-            this.initializeAnimations();
-        });
+        this.positionSolver.getKinematicsObservable().subscribe(() => {
+          this.initializeAnimations();
+      });
     }
 
 
   private frameIndexSource = new BehaviorSubject<number>(0);
   public currentFrameIndex$ = this.frameIndexSource.asObservable();
 
+  // Emits the current frame index to subscribers for synchronization with the animation timeline.
   emitCurrentFrameIndex(index: number) {
     this.frameIndexSource.next(index);
   }
 
+  // Retrieves the JointAnimationState object for a given sub-mechanism index, if it exists.
   getAnimationState(index: number): JointAnimationState | undefined {{
     return this.animationStates[index];
   }}
 
+  // Sets the playback speed multiplier for all ongoing animations.
   setSpeedmultiplier(multiplier: number) {
     this.speedMultiplier = multiplier;
   }
 
+  // Returns whether the current mechanism is invalid (no animation states available).
   isInvalid(): boolean {
         return this.invaldMechanism;}
 
-  getCurrentFrameIndex(mechanismIndex: number): number {
-    const state = this.animationStates[mechanismIndex];
-    return state?.currentFrameIndex ?? 0;
-  }
-
-    initializeAnimations() {
-        this.animationStates = new Array();
+  // Initializes all animation states by extracting frame data from the PositionSolverService.
+  initializeAnimations() {
+        this.animationStates = [];
         let frames: AnimationPositions[] = this.positionSolver.getAnimationFrames();
 
         for (let subMechanismIndex = 0; subMechanismIndex < frames.length; subMechanismIndex++) {
@@ -76,8 +72,8 @@ export class AnimationService {
                 currentFrameIndex: number = 0,
                 totalFrames: number = frames[subMechanismIndex].positions.length,
                 isPaused: boolean = true,
-                startingPositions: Coord[] = new Array(),
-                jointIDs: number[] = new Array(),
+                startingPositions: Coord[] = [],
+                jointIDs: number[] = [],
                 animationFrames: Coord[][] = frames[subMechanismIndex].positions,
                 inputSpeed: number = this.stateService.getMechanism().getJoint(frames[subMechanismIndex].correspondingJoints[0]).inputSpeed;
             for (let jointIndex = 0; jointIndex < frames[subMechanismIndex].correspondingJoints.length; jointIndex++) {
@@ -95,20 +91,24 @@ export class AnimationService {
                 inputSpeed: inputSpeed
             })
         }
-        this.invaldMechanism = this.animationStates.length == 0 ? true : false;
+        this.invaldMechanism = this.animationStates.length == 0;
     }
-    animateMechanisms(playPause: boolean) {
-        if (playPause == false) {
-            for (let state of this.animationStates) {
-                state.isPaused = true;
-            }
-        } else {
-            for (let state of this.animationStates) {
-                state.isPaused = false;
-                this.singleMechanismAnimation(state);
-            }
-        }
-    }
+
+  // Starts or pauses animation for all sub-mechanisms based on the playPause flag.
+  animateMechanisms(playPause: boolean) {
+      if (!playPause) {
+          for (let state of this.animationStates) {
+              state.isPaused = true;
+          }
+      } else {
+          for (let state of this.animationStates) {
+              state.isPaused = false;
+              this.singleMechanismAnimation(state);
+          }
+      }
+  }
+
+  // Recursively updates joint positions for a single mechanism’s animation frames.
   singleMechanismAnimation(state: JointAnimationState) {
     if (state.isPaused) {
       return;
@@ -153,6 +153,7 @@ export class AnimationService {
     }
   }
 
+  // Resets each mechanism’s joints to their starting positions and pauses the animation.
   reset() {
         for (let state of this.animationStates) {
             for (let jointIndex = 0; jointIndex < state.jointIDs.length; jointIndex++) {
@@ -162,60 +163,48 @@ export class AnimationService {
             state.currentFrameIndex = 0;
         }
     }
-    getSubMechanismIndex(jointID: number): number{
-        for(let state of this.animationStates){
-            if(state.jointIDs.indexOf(jointID) != -1){
-                return this.animationStates.indexOf(state);
-            }
-        }
-        return -1;
-    }
-    getCurrentTime(mechanismIndex: number){
-        let animationState = this.animationStates[mechanismIndex];
-        return (60 / (animationState.inputSpeed * 360)) * animationState.currentFrameIndex;
 
-    }
-    setCurrentTime(timeInSeconds: number, mechanismIndex: number){
-        let animationState = this.animationStates[mechanismIndex];
-        let frame = Math.round(timeInSeconds / (60 / (animationState.inputSpeed * 360)));
-        while(frame > animationState.totalFrames){
-            frame -= animationState.totalFrames;
-        }
-        while(frame < 0){
-            frame += animationState.totalFrames
-        }
-        animationState.currentFrameIndex = frame;
-    }
-    updateProgress(progress: number) {
+  // Finds and returns the sub-mechanism index that contains the specified joint ID, or –1 if not found.
+  getSubMechanismIndex(jointID: number): number{
+      for(let state of this.animationStates){
+          if(state.jointIDs.indexOf(jointID) != -1){
+              return this.animationStates.indexOf(state);
+          }
+      }
+      return -1;
+  }
+  // Sends the normalized animation progress value (0–1) to subscribers.
+  updateProgress(progress: number) {
         this.animationProgressSource.next(progress);
-    }
-    setAnimationProgress(progress: number) {
-        if (progress < 0 || progress > 1) {
-            return;
-        }
+  }
 
-        for (let state of this.animationStates) {
-            const frameIndex = Math.floor(progress * (state.totalFrames - 1));
-            state.currentFrameIndex = frameIndex;
+  // Sets joint positions to correspond to a specific normalized progress value across all frames.
+  setAnimationProgress(progress: number) {
+      if (progress < 0 || progress > 1) {
+          return;
+      }
 
-            for (let jointIndex = 0; jointIndex < state.jointIDs.length; jointIndex++) {
-                const joint = this.stateService.getMechanism().getJoint(state.jointIDs[jointIndex]);
-                const newPosition = state.animationFrames[frameIndex][jointIndex];
+      for (let state of this.animationStates) {
+          const frameIndex = Math.floor(progress * (state.totalFrames - 1));
+          state.currentFrameIndex = frameIndex;
 
-              //console.log(`Frame ${frameIndex}: Joint ${jointIndex} moving to `, newPosition);
+          for (let jointIndex = 0; jointIndex < state.jointIDs.length; jointIndex++) {
+              const joint = this.stateService.getMechanism().getJoint(state.jointIDs[jointIndex]);
+              const newPosition = state.animationFrames[frameIndex][jointIndex];
 
-                joint.setCoordinates(newPosition);
-            }
+            //console.log(`Frame ${frameIndex}: Joint ${jointIndex} moving to `, newPosition);
 
-          this.emitCurrentFrameIndex(frameIndex);
-        }
+              joint.setCoordinates(newPosition);
+          }
 
-        this.updateProgress(progress);
+        this.emitCurrentFrameIndex(frameIndex);
+      }
 
-    }
+      this.updateProgress(progress);
 
+  }
 
-
+  // Analyzes a JointAnimationState to identify direction changes (clockwise and counter-clockwise) in the trajectory.
   getDirectionChanges(state: JointAnimationState | undefined): {
     clockwise?: { frame: number, position: Coord },
     counterClockwise?: { frame: number, position: Coord },
@@ -336,7 +325,7 @@ export class AnimationService {
     return { clockwise, counterClockwise, clockwise2, counterClockwise2 };
   }
 
-
+  // Detects whether the movement direction has reversed via velocity sign changes between three consecutive coordinates.
   detectDirectionChange(last: Coord, current: Coord, next: Coord): boolean {
     const xVelocityBefore = current.x - last.x;
     const xVelocityAfter = next.x - current.x;
@@ -344,6 +333,4 @@ export class AnimationService {
     const yVelocityAfter = next.y - current.y;
     return (xVelocityBefore * xVelocityAfter < 0) && (yVelocityBefore * yVelocityAfter < 0);
   }
-
-
 }

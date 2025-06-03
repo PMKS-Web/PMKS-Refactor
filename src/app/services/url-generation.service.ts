@@ -1,7 +1,6 @@
 
 import { EncoderService } from './encoder.service';
 import { StateService } from './state.service';
-import {DecoderService} from "./decoder.service";
 
 export class UrlGenerationService {
 
@@ -43,8 +42,7 @@ export class UrlGenerationService {
   copyURL() {
     console.log('copyURL');
     let url = this.generateUrl; //todo TEST
-    let promise = this.copyToClipboard(url);
-
+    this.copyToClipboard(url);
     console.log('Mechanism URL copied. If you make additional changes, copy the URL again.');
   }
 }

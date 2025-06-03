@@ -1,13 +1,7 @@
 import { Injectable } from '@angular/core';
-import { StateService } from './state.service';
-import { Joint, JointType } from '../model/joint';
-import { Link, RigidBody } from '../model/link';
 import { Coord } from '../model/coord';
 import { PositionSolverService, SolveOrder, SolvePrerequisite, SolveType } from './kinematic-solver.service';
-import { Mechanism } from '../model/mechanism';
 import { AnimationPositions } from './kinematic-solver.service';
-import { link } from "d3-shape";
-
 
 export interface JointAnalysis {
     timeIncrement: number,
@@ -32,13 +26,14 @@ export interface LinkAnalysis {
 })
 export class AnalysisSolveService {
 
-    private solveOrders: SolveOrder[] = new Array();
-    private jointPositions: AnimationPositions[] = new Array();
+    private solveOrders: SolveOrder[] = [];
+    private jointPositions: AnimationPositions[] = [];
     private jointKinematics: Map<number, JointAnalysis> = new Map();
-    constructor(private stateService: StateService, private positionSolver: PositionSolverService) {
+    constructor(private positionSolver: PositionSolverService) {
 
     }
 
+    // Updates kinematic data by fetching solve orders and joint positions, then solving submechanism kinematics.
     updateKinematics() {
         /**Order of operations
          * 1. First we need the Solve Orders and Positions of the joints from position solver
@@ -54,14 +49,15 @@ export class AnalysisSolveService {
         }
     }
 
+    // Solves kinematics for a specific submechanism given its solve order and joint positions.
     solveSubmechanimsKinematics(solveOrder: SolveOrder, jointPositions: AnimationPositions) {
         /**we are given the animation positions and solve order for a submechanism
          * 1. iterate over each set of positions to solve
          * 2. call a function that returns all relevant calculations
          * 3. update jointKinematics
          */
-        let mechanismVelocities: Coord[][] = new Array();
-        let mechanismAccelerations: Coord[][] = new Array();
+        let mechanismVelocities: Coord[][] = [];
+        let mechanismAccelerations: Coord[][] = [];
         for (let time = 0; time < jointPositions.positions.length; time++) {
             let solutions = this.solveJointKinematics(solveOrder, jointPositions.positions[time]);
             mechanismVelocities.push(solutions.velocities);
@@ -80,10 +76,10 @@ export class AnalysisSolveService {
         }
     }
 
-
+    // Computes velocities and accelerations for all joints in a solve order at a single time step.
     solveJointKinematics(solveOrder: SolveOrder, positions: Coord[]): { velocities: Coord[], accelerations: Coord[] } {
-        let velocities: Coord[] = new Array();
-        let accelerations: Coord[] = new Array();
+        let velocities: Coord[] = [];
+        let accelerations: Coord[] = [];
 
         for (let index = 0; index < solveOrder.order.length; index++) {
             let id = solveOrder.order[index];
@@ -151,7 +147,7 @@ export class AnalysisSolveService {
         return { velocity: jointVelocity, acceleration: jointAcceleration };
     }
 
-
+    // Calculates velocity and acceleration for a prismatic input joint from its prerequisites.
     solvePrisInputJointKinematics(prereq: SolvePrerequisite): { velocity: Coord, acceleration: Coord } {
         const velocityMag = prereq.jointToSolve.inputSpeed * (0.05 * 6) //Kinematic solver generates frames for 0.05m increments, and animator uses Rev-Input timeInterval calculation
         const velocityTheta = prereq.jointToSolve.angle;
@@ -160,8 +156,9 @@ export class AnalysisSolveService {
         const jointVelocity: Coord = new Coord(deltaX, deltaY);
         const jointAcceleration: Coord = new Coord(0, 0);
         return { velocity: jointVelocity, acceleration: jointAcceleration };
-
     }
+
+    // Determines velocity and acceleration for a joint constrained by two circular motions using known indices, positions, velocities, and accelerations.
     solveCircleCirlceJointKinematics(jointIndex: number, known1Index: number, known2Index: number, positions: Coord[], velocities: Coord[], accelerations: Coord[]): { velocity: Coord, acceleration: Coord } {
         //velocity
         const v_k1: Coord = velocities[known1Index];
@@ -183,7 +180,7 @@ export class AnalysisSolveService {
         return { velocity: jointVelocity, acceleration: jointAcceleration };
     }
 
-
+    // Determines velocity and acceleration for a joint constrained by a circle and a line using known index, prerequisites, positions, velocities, and accelerations.
     solveCircleLineJointKinematics(jointIndex: number, known1Index: number, prereq: SolvePrerequisite, positions: Coord[], velocities: Coord[], accelerations: Coord[]): { velocity: Coord, acceleration: Coord } {
         //velocity
         const v_k1: Coord = velocities[known1Index];
@@ -197,7 +194,7 @@ export class AnalysisSolveService {
         const jointAcceleration: Coord = this.parametricLineIntersection(centripetal_accel_jk1, perp_angle_jk1, new Coord(0, 0), prereq.jointToSolve.angle);
         return { velocity: jointVelocity, acceleration: jointAcceleration };
     }
-
+    // Finds the intersection point of two parametric lines defined by starting coordinates and angles.
     parametricLineIntersection(pos1: Coord, theta1: number, pos2: Coord, theta2: number): Coord {
         const t_2 = ((pos1.y - pos2.y) + ((pos2.x - pos1.x) / Math.cos(theta1))) / ((Math.sin(theta2)) - (Math.cos(theta2) / Math.cos(theta1)));
         const x_intersection = pos2.x + (t_2 * Math.cos(theta2));
@@ -205,10 +202,12 @@ export class AnalysisSolveService {
         return new Coord(x_intersection, y_intersection);
     }
 
+    // Retrieves stored kinematic analysis (positions, velocities, accelerations) for a specific joint ID.
     getJointKinematics(jointID: number): JointAnalysis {
         return this.jointKinematics.get(jointID)!;
     }
 
+    // Converts joint kinematic data into arrays suitable for plotting, based on requested data type (position, velocity, or acceleration).
     transformJointKinematicGraph(jointAnalysis: JointAnalysis, dataOf: string): { xData: any[], yData: any[], timeLabels: string[] } {
         const xData: any[] = [];
         const yData: any[] = [];
@@ -242,6 +241,8 @@ export class AnalysisSolveService {
         }
 
     }
+
+    // Converts link kinematic data into arrays suitable for plotting, based on requested data type (angle, velocity, or acceleration).
     transformLinkKinematicGraph(linkAnalysis: LinkAnalysis, dataOf: string): { xData: any[], yData: any[], timeLabels: string[] } {
         const xData: any[] = [];
         const yData: any[] = [];
@@ -272,9 +273,9 @@ export class AnalysisSolveService {
         }
 
     }
-
+    // Computes center-of-mass and angular kinematics for a link given its associated joint IDs.
     getLinkKinematics(jointIDs: number[]): LinkAnalysis {
-        let subJoints: JointAnalysis[] = new Array();
+        let subJoints: JointAnalysis[] = [];
         for (let id of jointIDs) {
             subJoints.push(this.jointKinematics.get(id)!);
         }
@@ -291,11 +292,11 @@ export class AnalysisSolveService {
         } as LinkAnalysis
 
     }
-
+    // Calculates center-of-mass positions, velocities, and accelerations from joint-level kinematic data for a link.
     getLinkCOMSolutions(subJoints: JointAnalysis[]) {
-        let com_positions: Coord[] = new Array();
-        let com_velocities: Coord[] = new Array();
-        let com_accelerations: Coord[] = new Array();
+        let com_positions: Coord[] = [];
+        let com_velocities: Coord[] = [];
+        let com_accelerations: Coord[] = [];
         for (let time = 0; time < subJoints[0].positions.length; time++) {
             let x_pos: number = 0;
             let y_pos: number = 0;
@@ -319,10 +320,11 @@ export class AnalysisSolveService {
         return { pos: com_positions, vel: com_velocities, acc: com_accelerations }
     }
 
+    // Calculates angular positions, velocities, and accelerations for a link using two joint-level kinematic analyses.
     getLinkAngularSolutions(subJoints: JointAnalysis[]) {
-        let ang_pos: number[] = new Array();
-        let ang_vel: number[] = new Array();
-        let ang_acc: number[] = new Array();
+        let ang_pos: number[] = [];
+        let ang_vel: number[] = [];
+        let ang_acc: number[] = [];
         for (let time = 0; time < subJoints[0].positions.length; time++) {
             let x_diff_pos: number = subJoints[1].positions[time].x - subJoints[0].positions[time].x;
             let y_diff_pos: number = subJoints[1].positions[time].y - subJoints[0].positions[time].y;
