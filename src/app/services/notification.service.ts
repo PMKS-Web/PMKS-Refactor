@@ -36,7 +36,7 @@ export class NotificationService {
     }, fadeOutDurationMS);
   }
 
-  startFadeOut(id: string): void {
+  private startFadeOut(id: string): void {
     const currentNotifications = this.notificationsSubject.value;
     const updatedNotifications = currentNotifications.map(n => 
       n.id === id ? { ...n, fadingOut: true } : n

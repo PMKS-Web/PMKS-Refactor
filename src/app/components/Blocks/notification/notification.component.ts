@@ -24,13 +24,7 @@ export class NotificationComponent implements OnInit, OnDestroy {
   }
 
   closeNotification(id: string): void {
-    // Start fade out animation first
-    this.notificationService.startFadeOut(id);
-    
-    // Remove after animation completes
-    setTimeout(() => {
-      this.notificationService.removeNotification(id);
-    }, 300);
+    this.notificationService.removeNotification(id);
   }
 
   trackByFn(index: number, item: Notification): string {
