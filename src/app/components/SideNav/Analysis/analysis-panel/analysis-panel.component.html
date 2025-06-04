@@ -14,60 +14,75 @@
     }
     @default(){
 
-      <div id="default-view"><div class="scroll-container">
-        <panel-section-collapsible
-          [warning]='true'
-          [expanded]='false'
-          id='placeholderContainer'
+      <div id="default-view">
+  <div class="scroll-container">
+    <panel-section-collapsible
+      [warning]="true"
+      [expanded]="false"
+      id="placeholderContainer"
+      #panelRef>
+      
+      <title-block 
+        class="title" 
+        alwaysShown 
+        icon="expand_more"
+        description="This linkage is not valid and cannot be analyzed. Make sure all requirements are met:">
+        <div style="margin-right: 9em;">Analysis</div>
+      </title-block>
+      
+      <mat-list class="example-list-wrapping" *ngIf="panelRef.expanded">
+        <mat-list-item lines="3">
+          <span matListItemTitle>Must have one input</span>
+          <span>Mechanisms should have 1 and only one joint defined as a input.</span>
+        </mat-list-item>
+        
+        <mat-list-item lines="2">
+          <span matListItemTitle>At least one joint is grounded</span>
+          <span>An input joint doubles as a ground joint.</span>
+        </mat-list-item>
+        
+        <mat-list-item lines="3">
+          <span matListItemTitle>No orphaned joints</span>
+          <span>
+            Joints that are not a part of any link are orphaned. Remove or connect
+            orphaned joints.
+          </span>
+        </mat-list-item>
+        
+        <mat-list-item lines="3">
+          <span matListItemTitle>No free floating links</span>
+          <span>
+            Links that are not part of a grounded joint are free floating. Remove or
+            connect free floating links.
+          </span>
+        </mat-list-item>
+        
+        <mat-list-item lines="3">
+          <span matListItemTitle>Degress of freedom must be one</span>
+          <span>DOF = 3*(#_of_Links-1) - 2*(#_of_joints). Count both revolute joints and slider joints.</span>
+        </mat-list-item>
+        
+        <mat-list-item lines="3">
+          <span matListItemTitle>Welded links count as one link</span>
+          <span>
+            If two or more links are welded together at a joint they should only be counted as 1 link.
+          </span>
+        </mat-list-item>
+      </mat-list>
+      
+    </panel-section-collapsible>
 
-        >
-          <title-block class="title" alwaysShown icon='expand_more'
-                       description='This linkage is not valid and cannot be analyzed. Make sure all requirements are met:'>
-            <div style="margin-right: 9em;">Analysis</div>
-          </title-block>
-          <mat-list class='example-list-wrapping'>
-            <mat-list-item lines='3'>
-              <span matListItemTitle>Must have one input</span>
-              <span>Mechanisms should have 1 and only one joint defined as a input.</span>
-            </mat-list-item>
-            <mat-list-item lines='2'>
-              <span matListItemTitle>At least one joint is grounded</span>
-              <span>An input joint doubles as a ground joint.</span>
-            </mat-list-item>
-            <mat-list-item lines='3'>
-              <span matListItemTitle>No orphaned joints</span>
-              <span>
-          Joints that are not a part of any link are orphaned. Remove or connect
-          orphaned joints.
-        </span>
-            </mat-list-item>
-            <mat-list-item lines='3'>
-              <span matListItemTitle>No free floating links</span>
-              <span>
-          Links that are not part of a grounded joint are free floating. Remove or
-          connect free floating links.
-        </span>
-            </mat-list-item>
-            <mat-list-item lines='3'>
-              <span matListItemTitle>Degress of freedom must be one</span>
-              <span>DOF = 3*(#_of_Links-1) - 2*(#_of_joints). Count both revolute joints and slider joints.</span>
-            </mat-list-item>
-            <mat-list-item lines='3'>
-              <span matListItemTitle>Welded links count as one link</span>
-              <span>
-          If two or more links are welded together at a joint they should only be counted as 1 link.
-        </span>
-            </mat-list-item>
-          </mat-list>
-        </panel-section-collapsible>
+    <!-- Save Pannel -->
         <panel-section-collapsible
           [warning]='true'
           [expanded]='false'
+          [hidden]="this.checkInvalid()"
+          #panel2Ref 
         >
           <title-block class="title" alwaysShown icon='expand_more'>
             <div style="margin-right: 9em;">Save Data</div>
           </title-block>
-          <table class="table-auto border-collapse border w-full text-left">
+          <table class="table-auto border-collapse border w-full text-left" *ngIf="panel2Ref.expanded">
             <thead>
             <tr class="bg-gray-200">
               <td class="border px-4 py-2">Parameter</td>
@@ -186,7 +201,7 @@
               </td>
             </tr>
           </table>
-          <button (click)="downloadCSV()" class="download-btn">Download CSV</button>
+          <button (click)="downloadCSV()" class="download-btn" *ngIf="panel2Ref.expanded">Download CSV</button>
         </panel-section-collapsible>
       </div>
       </div>
