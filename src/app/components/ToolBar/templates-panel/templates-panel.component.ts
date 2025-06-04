@@ -7,6 +7,7 @@ import { Link } from 'src/app/model/link';
 import { StateService } from 'src/app/services/state.service';
 import { ToolbarComponent } from 'src/app/components/ToolBar/toolbar/toolbar.component';
 import {PositionSolverService} from "../../../services/kinematic-solver.service";
+import { NotificationService } from 'src/app/services/notification.service';
 
 
 @Component({
@@ -16,7 +17,6 @@ import {PositionSolverService} from "../../../services/kinematic-solver.service"
 
 })
 export class TemplatesPanelComponent {
-
   private mechanism: Mechanism;
   public open = true;
   // Get current URL without query params
@@ -26,9 +26,9 @@ export class TemplatesPanelComponent {
     //creates a new mechanism in the state
     this.mechanism = this.stateService.getMechanism();
   }
+
   togglePanel(event: MouseEvent) {
     const target = event.target as HTMLElement;
-
     if (!target.closest('.app-templates-panel-container')) {
       this.open = false;
       this.toolbarComponent.setCurrentTab('');

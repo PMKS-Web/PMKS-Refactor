@@ -74,6 +74,7 @@ import {NgOptimizedImage} from "@angular/common";
 import { UndoRedoPanelComponent } from './components/ToolBar/undo-redo-panel/undo-redo-panel.component';
 import { NewTabAlertComponent } from './components/ToolBar/new-tab-alert/new-tab-alert.component';
 import { RouterModule } from '@angular/router';
+import { NotificationComponent } from './components/Blocks/notification/notification.component';
 
 @NgModule({
   declarations: [
@@ -128,6 +129,7 @@ import { RouterModule } from '@angular/router';
     TrajectoryComponent,
     UndoRedoPanelComponent,
     NewTabAlertComponent,
+    NotificationComponent
   ],
     imports: [
         BrowserModule,

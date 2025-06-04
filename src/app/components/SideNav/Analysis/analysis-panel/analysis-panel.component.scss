@@ -22,6 +22,7 @@
     margin-right: 10px;
     position: absolute;
   }
+  
   .analysisHeader {
     border: 2px solid white;
     padding: 5px;
@@ -69,10 +70,6 @@ h3{
   margin-left: 5px;
   overflow-y: auto;
   max-height:calc(60vh - 30px);;
-}
-
-#analysis-graph-button{
-  //background-color: #007bff;
 }
 
 .table-container {
