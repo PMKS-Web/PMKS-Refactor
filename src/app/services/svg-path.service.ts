@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
-import { Coord } from 'src/app/model/coord'
-import { Joint } from 'src/app/model/joint'
+import {Injectable} from '@angular/core';
+import {Coord} from 'src/app/model/coord'
+
 @Injectable({
   providedIn: 'root',
 })
@@ -8,6 +8,7 @@ export class SVGPathService {
 
   constructor() {}
 
+  // Generates an SVG path string representing a single connection based on provided coordinates and radius.
   getSingleLinkDrawnPath(allCoords: Coord[], radius: number): string{
 
     //check if coordinates are collinear. If they are, use the two returned coords(the end points) to draw a line
@@ -22,6 +23,7 @@ export class SVGPathService {
     return this.calculateConvexPath(hullCoords,radius);
   }
 
+  // Creates an SVG path string tracing the trajectory through all provided coordinates with the given radius.
   getTrajectoryDrawnPath(allCoords: Coord[], radius: number): string {
     if (allCoords.length === 0) {
       return '';
@@ -43,6 +45,7 @@ export class SVGPathService {
     return pathData.trim();
   }
 
+  // Generates an SVG path string for a single position or connection, using convex hull or collinear logic and the given radius.
   getSinglePosDrawnPath(allCoords: Coord[], radius: number): string {
 
     //check if coordinates are collinear. If they are, use the two returned coords(the end points) to draw a line
@@ -57,6 +60,7 @@ export class SVGPathService {
     return this.calculateConvexPath(hullCoords,radius);
   }
 
+  // Identifies if all coordinates lie on a straight line and returns the endpoints if they are collinear.
   private findCollinearCoords(coords: Coord[]): Coord[] | undefined {
 
     if (coords.length < 2) {
@@ -84,6 +88,8 @@ export class SVGPathService {
     // If all coords have the same slope with the 'start' point, they are collinear
     return [start, end];
   }
+
+  // Computes the convex hull of a set of points using Graham's scan algorithm.
   grahamScan(coords: Coord[]): Coord[] {
     // Find the point with the lowest y-coordinate, break ties by lowest x-coordinate
     let startPoint = coords[0];
@@ -119,36 +125,29 @@ export class SVGPathService {
     return crossProduct > 0; // if cross product is positive, the coords are counter-clockwise
   }
 
-calculateTwoPointPath(coord1: Coord, coord2: Coord, r: number): string {
-  // Calculate perpendicular direction vectors for the line
-  const dirFirstToSecond = this.perpendicularDirection(coord1, coord2);
-  const dirSecondToFirst = this.perpendicularDirection(coord2, coord1);
-  // Create the rounded line path
-  let pathData = `M ${coord1.x + dirFirstToSecond.x * r},${coord1.y + dirFirstToSecond.y * r} `; // Move to the first point
-  pathData += `L ${coord2.x + dirFirstToSecond.x * r},${coord2.y + dirFirstToSecond.y * r} `; // Line from first to second Point
-  pathData += `A ${r},${r} 0 0 1 ${coord2.x + dirSecondToFirst.x * r},${coord2.y + dirSecondToFirst.y * r} `; // Arc from Second to Third Point
-  pathData += `L ${coord1.x + dirSecondToFirst.x * r},${coord1.y + dirSecondToFirst.y * r} `; // Line From Third to Fourth Point
-  pathData += `A ${r},${r} 0 0 1 ${coord1.x + dirFirstToSecond.x * r},${coord1.y + dirFirstToSecond.y * r} `; // Arc from Fourth to First Point
-  pathData += 'Z'; // Close the path
-  return pathData;
-}
+  // Calculates the SVG path for a straight or rounded connection between two points using the specified radius.
+  calculateTwoPointPath(coord1: Coord, coord2: Coord, r: number): string {
+    // Calculate perpendicular direction vectors for the line
+    const dirFirstToSecond = this.perpendicularDirection(coord1, coord2);
+    const dirSecondToFirst = this.perpendicularDirection(coord2, coord1);
+    // Create the rounded line path
+    let pathData = `M ${coord1.x + dirFirstToSecond.x * r},${coord1.y + dirFirstToSecond.y * r} `; // Move to the first point
+    pathData += `L ${coord2.x + dirFirstToSecond.x * r},${coord2.y + dirFirstToSecond.y * r} `; // Line from first to second Point
+    pathData += `A ${r},${r} 0 0 1 ${coord2.x + dirSecondToFirst.x * r},${coord2.y + dirSecondToFirst.y * r} `; // Arc from Second to Third Point
+    pathData += `L ${coord1.x + dirSecondToFirst.x * r},${coord1.y + dirSecondToFirst.y * r} `; // Line From Third to Fourth Point
+    pathData += `A ${r},${r} 0 0 1 ${coord1.x + dirFirstToSecond.x * r},${coord1.y + dirFirstToSecond.y * r} `; // Arc from Fourth to First Point
+    pathData += 'Z'; // Close the path
+    return pathData;
+  }
 
-//performs a XOR on the direction of the path between two coordinates
- arcDirection(coord1: Coord, coord2: Coord): number{
-	return (coord2.x-coord1.x < 0) !== (coord2.y-coord1.y < 0) ? 0 : 1;
- }
+  // Function to calculate the correct perpendicular direction vector between two points
+  perpendicularDirection(c1: Coord, c2: Coord): Coord {
+    const dir: Coord = this.direction(c1,c2);
+    return new Coord(dir.y, -dir.x);
+  }
 
-// Function to calculate the correct perpendicular direction vector between two points
-perpendicularDirection(c1: Coord, c2: Coord): Coord {
-  const dir: Coord = this.direction(c1,c2);
-  let xStatus = (dir.x > 0) ? 'pos' : (dir.x < 0) ? 'neg' : 'zero';
-  let yStatus = (dir.y > 0) ? 'pos' : (dir.y < 0) ? 'neg' : 'zero';
-  const caseKey = `${xStatus}_${yStatus}`;
-  let pointAtRadiusPerpToDir = new Coord(dir.y,-dir.x)
-  return pointAtRadiusPerpToDir;
-}
-
-calculateConvexPath(hullPoints: Coord[], r: number): string {
+  // Constructs an SVG path string for a convex polygon defined by hull points with rounded corners based on radius.
+  calculateConvexPath(hullPoints: Coord[], r: number): string {
     if (hullPoints.length < 3) {
       throw new Error('At least three points are required to create a path with rounded corners.');
     }
@@ -179,10 +178,7 @@ calculateConvexPath(hullPoints: Coord[], r: number): string {
     return new Coord((to.x - from.x) / len,  (to.y - from.y) / len);
   }
 
-  getCompoundLinkSVG(): string{
-    return ``;
-  }
-
+  // Builds an SVG path string representing length markings between two points at a specific angle.
   calculateLengthSVGPath(coord1: Coord, coord2: Coord, angle: number): string {
     let pathData = "";
     if (angle === 90){
@@ -240,6 +236,7 @@ calculateConvexPath(hullPoints: Coord[], r: number): string {
     return pathData;
   }
 
+  // Builds an SVG path string representing an angled arc between two points based on the given angle.
   calculateAngleSVGPath(coord1: Coord, coord2: Coord, angle: number): string {
     let pathData = "";
     let d = Math.sqrt((coord2.x - coord1.x) * (coord2.x - coord1.x) + (coord2.y-coord1.y) * (coord2.y-coord1.y));
@@ -259,11 +256,7 @@ calculateConvexPath(hullPoints: Coord[], r: number): string {
       pathData += `L ${coord1.x}, ${coord1.y} `;
     }
 
-    /*pathData += `Q ${coord1.x + 170} ${(1-r)*coord1.y + r * coord2.y + 15}, ${(1-r)*coord1.x + r * coord2.x} ${(1-r)*coord1.y + r * coord2.y} `; //Draw quadratic curve from end of horizontal to point between Coord1 and Coord2
-    pathData += `M ${coord1.x}, ${coord1.y} `; //Reset to origin
-    pathData += `L ${coord2.x}, ${coord2.y}`; //Draw line from Coord1 to Coord2 */
-    // Q ${(1-r)*coord1.x + r * coord2.x + 150} ${(1-r)*coord1.y + r * coord2.y - 150} for obtuse??
-    return pathData;
+   return pathData;
   }
 
 }

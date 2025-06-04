@@ -1,4 +1,5 @@
 import { Component} from '@angular/core'
+import { AnimationService } from 'src/app/services/animation.service';
 import { InteractionService } from 'src/app/services/interaction.service'
 
 @Component({
@@ -8,7 +9,7 @@ import { InteractionService } from 'src/app/services/interaction.service'
 
 })
 export class AnalysisPanelComponent {
-  constructor(private interactionService: InteractionService){}
+  constructor(private interactionService: InteractionService, private animationService: AnimationService){}
   getSelectedObjectType(): string{
     let obj = this.interactionService.getSelectedObject();
     if(obj == undefined){
@@ -17,7 +18,10 @@ export class AnalysisPanelComponent {
       return obj.type();
     }
   }
-
+  
+  checkInvalid(){
+    return this.animationService.isInvalid();
+  }
   downloadCSV() {
     const table = document.querySelector(".table-auto");
     if (!table) return;

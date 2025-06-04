@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Mechanism } from '../model/mechanism';
 import {BehaviorSubject} from "rxjs";
-import {DecoderService} from "./decoder.service";
-import {Joint, JointType} from "../model/joint";
+import {Joint} from "../model/joint";
 import {Link} from "../model/link";
 import {CompoundLink} from "../model/compound-link";
 import {Trajectory} from "../model/trajectory";
@@ -26,16 +25,18 @@ export class StateService {
   private showIDLabelsSubject = new BehaviorSubject<boolean>(false);
   showIDLabels$ = this.showIDLabelsSubject.asObservable();
 
+  // Toggles the visibility of ID labels on all components.
   toggleShowIDLabels() {
     const currentValue = this.showIDLabelsSubject.value;
     this.showIDLabelsSubject.next(!currentValue);
   }
 
+  // Hides all ID labels by setting the subject to false.
   public hideIDLabels() {
     this.showIDLabelsSubject.next(false);
   }
 
-    private mechanism: Mechanism;// = new Mechanism();
+    private readonly mechanism: Mechanism;// = new Mechanism();
     //Need to use BehaviorSubjects when moving data between unrelated components
     private globalUnits = new BehaviorSubject("Metric (cm)");
     private globalUnitsSuffix = new BehaviorSubject("cm")
@@ -44,11 +45,7 @@ export class StateService {
     private globalActivePanel = new BehaviorSubject("Edit");
 
     private animationbarComponent!: AnimationBarComponent;
-    private currentState: any = {};
-
     private maxUndoSize = 2;
-    private stateSubject = new BehaviorSubject<any>(this.currentState);
-    public state$ = this.stateSubject.asObservable();
     private undoStack: Action[] = [];
     private redoStack: Action[] = [];
 
@@ -207,39 +204,45 @@ export class StateService {
     }
   }
 
+
+  // Stores the reference to the AnimationBarComponent for future use.
   public setAnimationBarComponent(component: AnimationBarComponent): void {
     this.animationbarComponent = component;
   }
 
+  // Retrieves the stored AnimationBarComponent instance.
   public getAnimationBarComponent(): AnimationBarComponent {
     return this.animationbarComponent;
   }
 
-    //todo also load globalUnits, globalUnitsSuffix, globalAngles, globalAnglesSuffix, and globalActivePanel
-    public changeActivePanel(panel: string): void {
-      this.globalActivePanel.next(panel);
-    }
+  // Changes the active panel in the UI to the specified panel name.
+  public changeActivePanel(panel: string): void {
+    this.globalActivePanel.next(panel);
+  }
 
-    public changeUnits (units: string, suffix: string){
-      this.globalUnits.next(units);
-      this.globalUnitsSuffix.next(suffix);
-    }
+  // Updates the global measurement units and their suffix based on user selection.
+  public changeUnits (units: string, suffix: string){
+    this.globalUnits.next(units);
+    this.globalUnitsSuffix.next(suffix);
+  }
 
-    public changeAngles (angles: string, suffix: string){
-      this.globalAngles.next(angles);
-      this.globalAnglesSuffix.next(suffix);
-    }
+  // Updates the global angle units and their suffix based on user selection.
+  public changeAngles (angles: string, suffix: string){
+    this.globalAngles.next(angles);
+    this.globalAnglesSuffix.next(suffix);
+  }
 
-    public getMechanism(): Mechanism {
-        return this.mechanism;
-    }
-    public setMechanism(mechanism: Mechanism) {
-        this.mechanism = mechanism;
-    }
-    public getMechanismObservable(){
-        return this.mechanism._mechanismChange$;
-    }
+  // Returns the current Mechanism instance.
+  public getMechanism(): Mechanism {
+      return this.mechanism;
+  }
 
+  // Subscribes to notifications of Mechanism changes as an observable
+  public getMechanismObservable(){
+      return this.mechanism._mechanismChange$;
+  }
+
+  // Records a new action for undo/redo functionality, merging similar consecutive actions when appropriate.
   public recordAction(action: Action): void {
     if (action.type === "changeJointAngle") {
       const last = this.undoStack[this.undoStack.length - 1];
@@ -263,15 +266,17 @@ export class StateService {
     console.log('Action recorded:', action);
   }
 
-
+  // Returns whether there are actions available to undo.
   public canUndo(): boolean {
       return this.undoStack.length > 0;
     }
 
-    public canRedo(): boolean {
-      return this.redoStack.length > 0;
-    }
+  // Returns whether there are actions available to redo.
+  public canRedo(): boolean {
+    return this.redoStack.length > 0;
+  }
 
+  // Performs the undo operation by reverting the most recent action.
   public undo(): void {
     if (!this.canUndo()) {
       console.log('Nothing to undo');
@@ -286,7 +291,7 @@ export class StateService {
     this.mechanism.notifyChange();
   }
 
-  // Redo an undone action.
+  // Performs the redo operation by reapplying the most recently undone action
   public redo(): void {
     if (!this.canRedo()) {
       console.log('Nothing to redo');
@@ -303,6 +308,7 @@ export class StateService {
 //------------------------------------------------------------------------------------------------------
 //---------------------------------- | REDO | ----------------------------------------------------------
 //------------------------------------------------------------------------------------------------------
+  // Applies an action to the Mechanism (redo logic).
   private applyAction(action: Action): void {
     switch (action.type) {
       case 'addInput':
@@ -426,6 +432,7 @@ export class StateService {
   //---------------------------------------------------------------------------------
   // --------------------------- | UNDO | ------------------------------------------
   //--------------------------------------------------------------------------------
+  // Applies the inverse of an action to the Mechanism (undo logic).
   private applyInverseAction(action: Action): void {
     switch (action.type) {
       case 'addInput':
@@ -586,6 +593,7 @@ export class StateService {
     }
   }
 
+  // Restores a joint from its snapshot data when undoing a deletion.
   private restoreJointFromSnapshot(jointSnapshot: Action['jointData']): void {
     const restoredJoint = new Joint(jointSnapshot!.id, jointSnapshot!.coords.x, jointSnapshot!.coords.y);
     restoredJoint.name = jointSnapshot!.name;

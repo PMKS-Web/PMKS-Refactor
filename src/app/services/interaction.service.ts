@@ -1,19 +1,14 @@
-import {HostListener, Injectable} from '@angular/core';
-import { ContextMenuOption, Interactor } from '../controllers/interactor';
+import {Injectable} from '@angular/core';
+import { Interactor } from '../controllers/interactor';
 import { Coord } from '../model/coord';
 import { ContextMenuService } from './context-menu.service';
 import { ClickCapture, ClickCaptureID } from '../controllers/click-capture/click-capture';
 import { Subject } from 'rxjs';
 import { SvgInteractor } from '../controllers/svg-interactor';
-import { StateService } from './state.service';
 import { MousePosition } from './mouse-position.service';
 import { PanZoomService, ZoomPan } from './pan-zoom.service';
 import { UnitConversionService } from './unit-conversion.service';
 import { BehaviorSubject } from 'rxjs';
-import { Joint } from '../model/joint';
-import { Link } from '../model/link';
-import { JointInteractor } from '../controllers/joint-interactor';
-import { LinkInteractor } from '../controllers/link-interactor';
 
 /*
 This service keeps track of global state for the interaction system, such as which
@@ -45,11 +40,8 @@ export class InteractionService {
     public onDragEndOnce$ = new Subject<boolean>();
 
     private clickCapture: ClickCapture | undefined;
-    private interactors: Interactor[] = [];
-
     constructor(private contextMenuService: ContextMenuService,
-                private stateService: StateService,
-                private panZoomService: PanZoomService,
+              private panZoomService: PanZoomService,
                 private unitConverter: UnitConversionService) {
 
         this.mousePos = {
@@ -116,6 +108,7 @@ export class InteractionService {
 
     }
 
+    // Handles right‐mouse‐button press to select an Interactor and show its context menu.
     public _onMouseRightClick(object: Interactor, event: MouseEvent): void {
         this.mouseMovedAfterDown = false;
 
@@ -138,8 +131,8 @@ export class InteractionService {
 
     }
 
+    // Handles mouse‐button release to end dragging or deselect objects as needed.
     public _onMouseUp(object: Interactor, event: MouseEvent): void {
-
         event.stopPropagation(); // don't let parent components handle this event
 
         // if it was a click, deselect objects that were not clicked on
@@ -205,7 +198,7 @@ export class InteractionService {
             });
         }
     }
-
+    // Records key press events, updates held keys, and notifies selected Interactors.
     public onKeyDown(event: KeyboardEvent): void {
 
         // add key to heldKeys
@@ -229,18 +222,18 @@ export class InteractionService {
 
     }
 
+    // Records key release events and removes keys from the held keys set.
     public onKeyUp(event: KeyboardEvent): void {
-
         // remove key from heldKeys
         if (this.heldKeys.has(event.key)) {
             this.heldKeys.delete(event.key);
         }
-
     }
+
+    // Returns whether the specified key is currently being held down.
     public isPressingKey(key: string): boolean {
         return this.heldKeys.has(key);
     }
-
 
     // registers an interactor to receive mouse events
     public register(interactor: Interactor): void {
@@ -253,61 +246,49 @@ export class InteractionService {
         this.objects = this.objects.filter((obj) => obj !== interactor);
     }
 
+    // Enters “click capture” mode, forwarding the next click event to a ClickCapture object.
     public enterClickCapture(clickCapture: ClickCapture): void {
         this.clickCapture = clickCapture;
     }
 
+    // Retrieves the current ClickCapture instance, if any.
     public getClickCapture(): ClickCapture | undefined {
         return this.clickCapture;
     }
 
+    // Retrieves the ID of the current ClickCapture, if any.
     public getClickCaptureID(): ClickCaptureID | undefined {
         return this.clickCapture?.id;
     }
 
+    // Exits “click capture” mode, cancelling any pending capture.
     public exitClickCapture(): void {
         this.clickCapture = undefined;
     }
 
+    // Returns the Interactor that the mouse is currently hovering over, if any.
     public getHoveringObject(): Interactor | undefined {
         return this.hoveringObject;
     }
 
-    // select and start dragging a given object.
-    // useful ie. for creating and dragging a new node on creation from context menu
-    public startDraggingObject(object: Interactor): void {
-
-        this.selectNewObject(object);
-
-        this.isDragging = true;
-        object._onDragStart();
-    }
-
-    public getObjectDebug(): string[] {
-        return this.objects.map((obj) => obj.toString());
-    }
-
-    public getSelectedDebug(): string[] {
-        return Array.from(this.selected).map((obj) => obj.toString());
-    }
-
-    public getDragging(): boolean {
-        return this.isDragging;
-    }
+    // Returns the current mouse position in screen, SVG, and model coordinates.
     public getMousePos(): MousePosition {
         return this.mousePos;
     }
 
+    // Returns the last selected Interactor, if any.
     public getSelectedObject(): Interactor | undefined {
         return this.lastSelected;
     }
 
+    // Deselects any currently selected Interactor.
     public deselectObject(){
         this.lastSelected=undefined;
     }
 
-  public setSelectedObject(interactor: Interactor): void {
-    this.selectNewObject(interactor);
-  }
+    // Selects the specified Interactor and deselects all others.
+    public setSelectedObject(interactor: Interactor): void {
+      this.selectNewObject(interactor);
+    }
 
 }

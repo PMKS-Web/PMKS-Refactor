@@ -32,6 +32,7 @@ export class ContextMenuService {
         this.options = menuOptions;
     }
 
+    // Hides the context menu and resets its state.
     public hideContextMenu() {
         this.visible = false;
         this.position = { x: 0, y: 0 };
@@ -45,14 +46,17 @@ export class ContextMenuService {
         return this.visible;
     }
 
+    // Retrieves the current X-coordinate for the context menu position.
     public getX(): number {
         return this.position.x;
     }
 
+    // Retrieves the current Y-coordinate for the context menu position.
     public getY(): number {
         return this.position.y;
     }
 
+    // Provides the list of context menu options currently set.
     public getMenuOptions(): ContextMenuOption[] {
         return this.options;
     }
