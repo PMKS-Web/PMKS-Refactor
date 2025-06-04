@@ -72,6 +72,7 @@ import { PositionComponent } from './components/Grid/position/position.component
 import {TrajectoryComponent} from './components/Grid/trajectory/trajectory.component';
 import {NgOptimizedImage} from "@angular/common";
 import { UndoRedoPanelComponent } from './components/ToolBar/undo-redo-panel/undo-redo-panel.component';
+import { NotificationComponent } from './components/Blocks/notification/notification.component';
 
 @NgModule({
   declarations: [
@@ -125,6 +126,7 @@ import { UndoRedoPanelComponent } from './components/ToolBar/undo-redo-panel/und
     PositionComponent,
     TrajectoryComponent,
     UndoRedoPanelComponent,
+    NotificationComponent
   ],
     imports: [
         BrowserModule,

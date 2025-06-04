@@ -3,6 +3,7 @@ import { StateService } from "../../../services/state.service";
 import { UrlGenerationService } from "../../../services/url-generation.service";
 import {EncoderService} from "../../../services/encoder.service";
 import {DecoderService} from "../../../services/decoder.service";
+import { NotificationService } from 'src/app/services/notification.service';
 
 @Component({
     selector: 'app-toolbar',
@@ -11,7 +12,7 @@ import {DecoderService} from "../../../services/decoder.service";
 })
 export class ToolbarComponent {
 
-  constructor(private stateService: StateService) {
+  constructor(private stateService: StateService, private notificationService: NotificationService) {
 
   }
 
@@ -19,7 +20,6 @@ export class ToolbarComponent {
 
   // Sets the currently active tab
   setCurrentTab(clickedPanel: string){
-
       if(clickedPanel==this.selectedPanel) {
         this.selectedPanel = '';
       }
@@ -38,6 +38,7 @@ export class ToolbarComponent {
     //this.setCurrentTab("Share");
     let urlService = new UrlGenerationService(this.stateService);
     urlService.copyURL();
+    this.notificationService.showNotification("Link Copied!");
   }
 
   // Handles sharing functionality by copying the generated URL to the clipboard
