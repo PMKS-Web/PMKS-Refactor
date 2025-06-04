@@ -41,6 +41,19 @@ export class SidenavComponent {
     let editPanel = this.sidePanels[0].children[0];
     let synthPanel = this.sidePanels[0].children[1];
     let analysisPanel = this.sidePanels[0].children[2];
+    
+    //closing the tab after click again
+    if(this.isSelected(clickedTab)){
+      this.tabs[1].selected = false;
+      this.tabs[2].selected = false;
+      this.tabs[0].selected = false;
+      this.hide(synthPanel);
+      this.hide(analysisPanel);
+      this.hide(editPanel);
+      this.stateService.changeActivePanel("Edit");
+      return;
+    }
+    
     // There has to be a better way to do this but I'm on a time crunch
     if (clickedTab === "Edit"){
       if (this.tabs[0].selected && this.generatedCheck){
