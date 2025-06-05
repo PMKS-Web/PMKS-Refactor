@@ -25,6 +25,7 @@
 .label-container {
   display: flex;
   align-items: center;
+  white-space: nowrap;
 }
 .label-help {
   color: #3f51b5;
