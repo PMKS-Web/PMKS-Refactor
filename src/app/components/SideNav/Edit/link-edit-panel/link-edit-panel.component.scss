@@ -102,23 +102,43 @@ button {
   align-items: center;
 }
 
+.label-group {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.input-group {
+  flex-shrink: 0;
+  max-width: 150px;
+}
 
+.input-container .right-aligned {
+  margin-left: 0; 
+}
 
 .label-help {
   color: #3f51b5;
   font-size: 18px;
   vertical-align: middle;
   margin-top: 5px;
+  flex-shrink: 0;
+  margin-left: 5px; 
 }
 
 .label {
   margin: 0px 4px 0px 5px;
   font-size: 16px;
+  flex-shrink: 0;
 }
 
 .input-container {
   display: flex;
   align-items: center;
+  justify-content: space-between; 
+  width: 100%;
+  margin-bottom: 8px;
+  padding-right: 16px;
+  box-sizing: border-box;
 }
 
 .right-aligned {

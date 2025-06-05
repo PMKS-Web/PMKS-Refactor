@@ -1,7 +1,11 @@
 <div class="block-container">
   <div class="label-container">
     <label>{{ dynamicText }}</label>
-    <p class="question-icon" [matTooltip]="explainText" matTooltipPosition="above">?</p>
+    <mat-icon [matTooltip]="explainText" 
+              [matTooltipShowDelay]='1000' 
+              class='label-help'>
+      help_outline
+    </mat-icon>
   </div>
   <div class="button-container">
     <button (click)="executeAction()"> {{graphText}} </button>

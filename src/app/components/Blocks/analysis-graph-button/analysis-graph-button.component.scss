@@ -25,8 +25,16 @@
 .label-container {
   display: flex;
   align-items: center;
+  white-space: nowrap;
 }
-
+.label-help {
+  color: #3f51b5;
+  font-size: 18px;
+  vertical-align: middle;
+  margin-top: 5px;
+  flex-shrink: 0;
+  margin-left: 5px; 
+}
 
 .button-container {
   display: flex;
@@ -44,15 +52,6 @@ button {
 button:hover{
   background-color: #3f51b5;
   color: white;
-}
-
-.question-icon {
-  font-size: 18px;
-  color: gray;
-  cursor: pointer;
-  position: relative; /* Position relative for tooltip positioning */
-  margin-top: 1px;
-  margin-bottom: 1px;
 }
 
 
