@@ -147,33 +147,37 @@
       </collapsible-subsection>
 
       <!-- MASS SETTINGS -->
-      <collapsible-subsection titleLabel='Mass Settings' [expanded]="sectionExpanded['LMass']"
-                              (opened)="sectionExpanded['LMass'] = true" (closed)="sectionExpanded['LMass'] = false">
-        <div class="input-container">
-          <span class="label" style="margin-left: 11px;">Link Mass</span>
-          <mat-icon id="linkMassTooltip"
-                    matTooltip="Enter tooltip here" [matTooltipShowDelay]='1000'
-                    class='label-help'
-          >help_outline
-          </mat-icon>
-          <single-input-block class="right-aligned" [showIcon]="false" unit1="kg"></single-input-block>
-        </div>
-        <div class="input-container">
-          <span class="label" style="margin-left: 11px;">Link Mass</span>
-          <mat-icon id="linkMass2Tooltip"
-                    matTooltip="Enter tooltip here" [matTooltipShowDelay]='1000'
-                    class='label-help'
-          >help_outline
-          </mat-icon>
-          <single-input-block class="right-aligned" [showIcon]="false"  unit1="kg"></single-input-block>
-        </div>
-        <dual-input-block
-          label1="X" label2="Y"
-          unit1="" unit2=""
-          tooltip="Enter tooltip here">
-          Center of Mass Position
-        </dual-input-block>
-      </collapsible-subsection>
+<collapsible-subsection titleLabel='Mass Settings' [expanded]="sectionExpanded['LMass']"
+ (opened)="sectionExpanded['LMass'] = true" (closed)="sectionExpanded['LMass'] = false">
+  
+ <div class="input-container">
+  <div class="label-group">
+    <span class="label">Link Mass</span>
+    <mat-icon id="linkMassTooltip" matTooltip="Enter tooltip here" [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon>
+  </div>
+  <div class="input-group">
+    <single-input-block class="right-aligned" [showIcon]="false" unit1="kg"></single-input-block>
+  </div>
+</div>
+  
+<div class="input-container">
+  <div class="label-group">
+    <span class="label">Link Mass</span>
+    <mat-icon id="linkMass2Tooltip" matTooltip="Enter tooltip here" [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon>
+  </div>
+  <div class="input-group">
+    <single-input-block class="right-aligned" [showIcon]="false" unit1="kg"></single-input-block>
+  </div>
+</div>
+  
+  <dual-input-block
+    label1="X" label2="Y"
+    unit1="" unit2=""
+    tooltip="Enter tooltip here">
+    Center of Mass Position
+  </dual-input-block>
+  
+</collapsible-subsection>
     </div>
   </div>
 </div>
