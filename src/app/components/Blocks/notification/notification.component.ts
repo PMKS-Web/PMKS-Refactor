@@ -23,10 +23,6 @@ export class NotificationComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  closeNotification(id: string): void {
-    this.notificationService.removeNotification(id);
-  }
-
   trackByFn(index: number, item: Notification): string {
     return item.id;
   }
