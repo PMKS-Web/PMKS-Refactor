@@ -26,46 +26,47 @@
 .template {
   background-color: white;
   border-top: 5px solid #3F51B5;
-  //height: 75px;
-  display: flex; /* Use flexbox to ensure content fills the space */
-  //align-items: end; __<<ngM2ThemingMigrationEscapedComment6>>__
-  justify-content: end; /* Horizontally center content */
+  display: flex;
+  justify-content: end;
   flex-direction: column;
   box-shadow: 0px 0px 3px #263037;
   cursor: pointer;
-  //If the card  is hovered, hide the static image of the GIF
+  position: relative; // Add this to establish positioning context
+  
+  // If the card is hovered, hide the static image of the GIF
   &:hover .img {
     opacity: 0;
-    //Animate the change to opacity
+    // Animate the change to opacity
     transition: opacity 0.3s ease-in-out;
   }
+  
   .img {
-    position:absolute;
+    position: absolute;
     opacity: 1;
-    //transform: translateY(-5%);
-    //z-index: 16;
   }
-
-  img{
+  
+  img {
     width: 15vw;
   }
-
+  
   button {
     position: absolute;
-    margin: 10px;
+    bottom: 10px;    // Distance from bottom
+    right: 10px;     // Distance from right
     width: 30px;
-    color:  #3F51B5;
+    color: #3F51B5;
     background-color: #e8eaf6;
     border-radius: 20px;
     padding: 5px 10px;
     cursor: pointer;
     border-color: transparent;
     text-align: center;
-    transform: translate(325%,0);
-  }
-  button:hover{
-    background-color: #3f51b5;
-    color: white;
+    // Remove the transform property entirely
+    
+    &:hover {
+      background-color: #3f51b5;
+      color: white;
+    }
   }
 }
 
