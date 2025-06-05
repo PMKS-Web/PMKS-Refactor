@@ -25,8 +25,8 @@ export class NotificationService {
 
     const currentNotifications = this.notificationsSubject.value;
     this.notificationsSubject.next([...currentNotifications, notification]);
-    const fadeOutDurationMS = 5000;
-    // Start fade out after 9.7 seconds, then remove after 10 seconds
+    
+    const fadeOutDurationMS = 2500;
     setTimeout(() => {
       this.startFadeOut(notification.id);
     }, fadeOutDurationMS - 400);
@@ -44,7 +44,7 @@ export class NotificationService {
     this.notificationsSubject.next(updatedNotifications);
   }
 
-  removeNotification(id: string): void {
+  private removeNotification(id: string): void {
     const currentNotifications = this.notificationsSubject.value;
     const filteredNotifications = currentNotifications.filter(n => n.id !== id);
     this.notificationsSubject.next(filteredNotifications);

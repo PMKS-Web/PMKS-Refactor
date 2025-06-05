@@ -5,11 +5,5 @@
         [class.fade-in]="!notification.fadingOut"
         [class.fade-out]="notification.fadingOut">
         {{ notification.message }}
-        <button 
-          class="close-btn" 
-          (click)="closeNotification(notification.id)"
-          aria-label="Close notification">
-          ×
-        </button>
       </div>
     </div>
