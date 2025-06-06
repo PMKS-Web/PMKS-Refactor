@@ -88,7 +88,7 @@
         />
     }
 
-    @if(isHovered() || isSelected()) {
+    @if(isHovered() || isSelected() || showIDLabels) {
     <!-- Joint name -->
     <svg:text class = "joint-name"
         [attr.x]="getX()-getRadius()*2"

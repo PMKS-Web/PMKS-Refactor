@@ -1,7 +1,7 @@
 <svg:g appInteractable xmlns:svg="s" [interactor]="getInteractor()">
   <path [attr.d]="getDrawnPath()" [attr.fill]="getColor()" [attr.fill-opacity]=0.7 [attr.stroke]="getStrokeColor()" [attr.stroke-width]=7></path>
   <image *ngIf="getLocked()" xlink:href='../../../assets/icons/lock.svg' [attr.x]="getLockPositionX()-27.5" [attr.y]="getLockPositionY()-27.5" [attr.width]="55" [attr.height]="55"></image>
-  @if(isHovered() || isSelected() || showIDLabels) {
+  @if(isHovered() || isSelected()) {
     <!--Display Length-->
     <path [attr.d]="getLeftLineSVG()" stroke="black" stroke-width="3" ></path>
     <path [attr.d]="getRightLineSVG()" stroke="black" stroke-width="3" ></path>
@@ -21,7 +21,7 @@
 <!--    <path [attr.d]="getLowerBoundSVG()" stroke="black" stroke-width="3"></path>-->
 
 
-
+    <!-- Angle -->
     <text class="link-name" [attr.x]="getAngleTextPosX()" [attr.y]="getAngleTextPosY()" alignment-baseline="middle" text-anchor="middle">{{getAngle()}}{{unitsAngle}}</text>
 
     <!--Display Name-->
@@ -29,7 +29,14 @@
       <tspan [attr.x]="getCOMX()" dy="1.5em">{{this.link.name}}</tspan>
     </text>
   }
+  @else if (showIDLabels) {
+    <!-- Display Name -->
+    <text class="link-name" [attr.x]="getCOMX()" [attr.y]="getCOMY()" alignment-baseline="middle" text-anchor="middle">
+      <tspan [attr.x]="getCOMX()" dy="0.3em">{{this.link.name}}</tspan>
+    </text>
+  }
 </svg:g>
+
 
 <!--marker-end="url(#arrowhead)"-->
 
