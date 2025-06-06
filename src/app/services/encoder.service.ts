@@ -244,7 +244,7 @@ export class EncoderService {
    * Note: On decoding, you'll need to reverse these transformations.
    */
     
-  private compressionReplacer(key: string, value: any): any {
+  private compressionReplacer(key: string, value: any): any { //DO NOT REMOVE KEY
     if (typeof value === "boolean") {
       return value ? "y" : "n";
     }
