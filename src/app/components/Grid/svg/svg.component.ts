@@ -11,6 +11,7 @@ import {AnimationService} from "../../../services/animation.service";
 import {Subscription} from "rxjs";
 import { Mechanism } from 'src/app/model/mechanism';
 import { Joint } from 'src/app/model/joint';
+import { NotificationService } from 'src/app/services/notification.service';
 
 @Component({
   selector: 'app-svg',
@@ -25,7 +26,7 @@ export class SvgComponent extends AbstractInteractiveComponent {
   angles: string = "Degree (º)";
 
   constructor(public override interactionService: InteractionService,
-    private stateService: StateService, private panZoomService: PanZoomService, private unitConversionService: UnitConversionService,
+    private stateService: StateService, private panZoomService: PanZoomService, private notificationService: NotificationService,
               private animationService: AnimationService) {
 
     super(interactionService);
@@ -43,7 +44,7 @@ export class SvgComponent extends AbstractInteractiveComponent {
       this.panZoomService._onWindowResize(event);
   }
   override registerInteractor(): Interactor {
-    let interactor = new SvgInteractor(this.stateService,this.interactionService, this.panZoomService);
+    let interactor = new SvgInteractor(this.stateService,this.interactionService, this.panZoomService, this.notificationService);
 
     interactor.onKeyDown$.subscribe((event) => {
       if (event.key === "s") {

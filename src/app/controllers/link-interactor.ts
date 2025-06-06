@@ -8,6 +8,7 @@ import { CreateLinkFromLinkCapture } from "./click-capture/create-link-from-link
 import { CreateForceFromLinkCapture } from "./click-capture/create-force-from-link-capture";
 import { ContextMenuOption, Interactor } from "./interactor";
 import type {JointSnapshot, LinkSnapshot} from "../components/ToolBar/undo-redo-panel/action";
+import { NotificationService } from "../services/notification.service";
 
 
 /*
@@ -19,8 +20,10 @@ export class LinkInteractor extends Interactor {
   private activePanel = "Edit";
   private linkStartPositions = new Map<number, Coord>();
 
-  constructor(public link: Link, private stateService: StateService,
-              private interactionService: InteractionService) {
+  constructor(public link: Link, 
+              private stateService: StateService,
+              private interactionService: InteractionService,
+              private notificationService: NotificationService) {
     super(true, true);
 
     this.onDragStart$.subscribe(() => {
@@ -80,6 +83,10 @@ export class LinkInteractor extends Interactor {
     public override specifyContextMenu(): ContextMenuOption[] {
 
         let availableContext: ContextMenuOption[] = [];
+        if (this.stateService.getCurrentActivePanel === "Synthesis"){
+          this.notificationService.showNotification("Cannot edit in the Synthesis mode! Switch to Edit mode to edit.");
+          return availableContext;
+        }
         const mechanism: Mechanism = this.stateService.getMechanism();
         let modelPosAtRightClick = this.getMousePos().model;
         if (this.activePanel === "Edit") {

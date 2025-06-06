@@ -5,6 +5,7 @@ import { CompoundLink } from "../model/compound-link";
 import { Mechanism } from "../model/mechanism";
 import { StateService } from "../services/state.service";
 import { ContextMenuOption, Interactor } from "./interactor";
+import { NotificationService } from "../services/notification.service";
 
 /*
 This interactor defines the following behaviors:
@@ -16,7 +17,7 @@ export class CompoundLinkInteractor extends Interactor {
     private jointsStartPosModel: Map<number, Coord> = new Map();
 
 
-    constructor(public compoundLink: CompoundLink, private stateService: StateService) {
+    constructor(public compoundLink: CompoundLink, private stateService: StateService, private notificationService: NotificationService) {
         super(true, true);
 
         this.onDragStart$.subscribe(() => {
@@ -54,6 +55,10 @@ export class CompoundLinkInteractor extends Interactor {
     public override specifyContextMenu(): ContextMenuOption[] {
 
         let availableContext: ContextMenuOption[] = [];
+        if (this.stateService.getCurrentActivePanel === "Synthesis"){
+          this.notificationService.showNotification("Cannot edit in the Synthesis mode! Switch to Edit mode to edit.");
+          return availableContext;
+        }
         const mechanism: Mechanism = this.stateService.getMechanism();
         let modelPosAtRightClick = this.getMousePos().model;
         availableContext.push(
