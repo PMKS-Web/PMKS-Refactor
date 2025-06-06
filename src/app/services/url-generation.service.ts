@@ -19,6 +19,7 @@ export class UrlGenerationService {
   get generateUrl(): string {
     const encoder = new EncoderService(this.stateService);
     const encodedMechanism: string = encoder.encodeForURL();
+    console.log(encodedMechanism);
     let currentUrl: string = window.location.href;
     if (!currentUrl.endsWith("/")) { currentUrl = currentUrl.substring(currentUrl.length - 1); }
     return currentUrl + "?data=" + encodedMechanism;
@@ -43,6 +44,7 @@ export class UrlGenerationService {
     console.log('copyURL');
     let url = this.generateUrl; //todo TEST
     this.copyToClipboard(url);
+    
     console.log('Mechanism URL copied. If you make additional changes, copy the URL again.');
   }
 }
