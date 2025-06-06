@@ -248,10 +248,8 @@ export class EncoderService {
     if (typeof value === "boolean") {
       return value ? "y" : "n";
     }
-    if (typeof value === "number") {
-      if (Number.isInteger(value)) {
+    if (typeof value === "number" && Number.isInteger(value)) {
         return value.toString(16);
-      }
     }
     return value;
   }
