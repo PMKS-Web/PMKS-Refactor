@@ -52,9 +52,14 @@ export class AnimationBarComponent implements OnInit{
   resetView() {
     this.panZoomService.resetView();
   }
-
+  showingIDLabels = false;
   showIDLabels() {
+    this.showingIDLabels = !this.showingIDLabels;
     this.stateService.toggleShowIDLabels();
+  }
+
+  get currentIDLabelIcon() {
+    return this.showingIDLabels ? './assets/icons/abc_cross.png' : './assets/icons/abc.png';
   }
 
   ngOnInit() {
