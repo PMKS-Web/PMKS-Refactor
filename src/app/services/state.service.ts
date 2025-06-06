@@ -49,7 +49,7 @@ export class StateService {
     private undoStack: Action[] = [];
     private redoStack: Action[] = [];
 
-  globalUnitsCurrent = this.globalUnits.asObservable();
+    globalUnitsCurrent = this.globalUnits.asObservable();
     globalUSuffixCurrent = this.globalUnitsSuffix.asObservable();
     globalAnglesCurrent = this.globalAngles.asObservable();
     globalASuffixCurrent = this.globalAnglesSuffix.asObservable();
