@@ -42,13 +42,17 @@
                         >help_outline
                       </mat-icon>
 
-                    <!-- Lock Icon with Click Handler -->
+                    <!-- Lock Icon with Click Handler --> <!--here is where you can hover on the lock sign and the notification will pop up, recent change starting at line 52 -->
                       <img ngSrc="assets/icons/lock.svg"
                            alt="lock icon"
                            class="lock-icon"
                            (click)="toggleLengthLock()"
                            [class.locked]="isLengthLocked"
-                           height="24" width="24">
+                           height="24" width="24"
+                           matTooltip="Links are locked on the grid, but you can change the length of the coupler links from the input section in the synthesis panel."
+                           [matTooltipShowDelay]='1000'
+                           class='label-help'
+                           [matTooltipDisabled]='disabled'>
 
                     <!--class="right-aligned" for below-->
                       <single-input-block
@@ -58,9 +62,7 @@
                             [showIcon]="false">
                       </single-input-block>
 
-                    <div class="notification-message" *ngIf="showLockMessage">
-                      Links are locked on the grid, but you can change the length of the coupler links from the input section in the synthesis panel.
-                    </div>
+
 
                   </div>
 
