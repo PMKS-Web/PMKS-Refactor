@@ -6,25 +6,27 @@ import { StateService } from "../services/state.service";
 import { CreateLinkFromJointCapture } from "./click-capture/create-link-from-joint-capture";
 import { ContextMenuOption, Interactor } from "./interactor";
 import {Action} from "../components/ToolBar/undo-redo-panel/action";
+import { NotificationService } from "../services/notification.service";
 /*
 This interactor defines the following behaviors:
 - Dragging the joint moves it
 */
 
 export class JointInteractor extends Interactor {
-  private activePanel = "Edit";
+  private activePanel = this.stateService.getCurrentActivePanel;
   private _isDraggable: boolean = true;
   private jointStartCoords: Coord | null = null;
 
   constructor(public joint: Joint,
               private stateService: StateService,
-              private interactionService: InteractionService) {
+              private interactionService: InteractionService,
+              private notificationService: NotificationService) {
 
     super(true, true);
 
 
     this.onDragStart$.subscribe(() => {
-      if ((!this.joint.locked || this.activePanel === "Edit") && this._isDraggable) {
+      if ((!this.joint.locked || this.activePanel === "Edit") && this._isDraggable && this.joint.id >= 0) {
         this.jointStartCoords = this.joint.coords.clone();
       }
     });
@@ -67,7 +69,12 @@ export class JointInteractor extends Interactor {
     public override specifyContextMenu(): ContextMenuOption[] {
 
         let availableContext: ContextMenuOption[] = [];
+        
         let mechanism: Mechanism = this.stateService.getMechanism();
+        if (this.stateService.getCurrentActivePanel === "Synthesis"){
+          this.notificationService.showNotification("Cannot edit in the Synthesis mode! Switch to Edit mode to edit.");
+          return availableContext;
+        }
         if (this.activePanel === "Edit") {
           availableContext.push(
             {

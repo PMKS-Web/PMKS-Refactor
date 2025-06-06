@@ -25,16 +25,17 @@ export class Joint {
         this._id = id;
         // changed name to be the same as ID instead of blank
         if (this.id <= -1){
-          this._name = "Reference Point";
+            this._name = "Reference Point";
+            this.locked = true;
         }
         else {
-          this._name = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".charAt(Math.abs(id) % 52);
+            this._name = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".charAt(Math.abs(id) % 52);
         }
         this._type = JointType.Revolute;
-        this._angle = 0;
-        this._isGrounded = false;
+        this._angle = 0;        
         this._isInput = false;
         this._isWelded = false;
+        this._isGrounded = false;
         this._inputSpeed = 0;
         this._parentLocked = false;
         this._inputSpeed = 10;
