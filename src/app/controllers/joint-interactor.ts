@@ -319,10 +319,6 @@ export class JointInteractor extends Interactor {
     const capture = new CreateLinkFromJointCapture(this.joint, this.interactionService);
     // ── after ──
     capture.onClick$.subscribe(mousePos => {
-      console.log("ID: " + this.joint.id);
-      if(this.joint.id <= 0){
-        return;
-      }
       const mech = this.stateService.getMechanism();
 
       // make the link (and possibly a new joint)

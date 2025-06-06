@@ -94,7 +94,7 @@ export class InteractionService {
         if (event.button !== 0) return; // only handle left click. should not be called on right click/context menu
         if(object instanceof JointInteractor){
             const joint = object as JointInteractor;
-            if (joint.joint.id <= 0){
+            if (joint.joint.id < 0){
                 return;
             }
         }
