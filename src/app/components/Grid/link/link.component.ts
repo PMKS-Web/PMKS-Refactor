@@ -11,6 +11,7 @@ import {ColorService} from 'src/app/services/color.service';
 import {SVGPathService} from 'src/app/services/svg-path.service';
 import {UnitConversionService} from "src/app/services/unit-conversion.service";
 import {Subscription} from "rxjs";
+import { NotificationService } from 'src/app/services/notification.service';
 
 @Component({
   selector: '[app-link]',
@@ -35,7 +36,7 @@ export class LinkComponent extends AbstractInteractiveComponent implements After
   constructor(
     public override interactionService: InteractionService,
     private stateService: StateService,
-    private colorService: ColorService,
+    private notificationService: NotificationService,
     private svgPathService: SVGPathService,
     private unitConversionService: UnitConversionService,
     private cdr: ChangeDetectorRef
@@ -44,7 +45,7 @@ export class LinkComponent extends AbstractInteractiveComponent implements After
   }
 
   override registerInteractor(): Interactor {
-    return new LinkInteractor(this.link, this.stateService, this.interactionService);
+    return new LinkInteractor(this.link, this.stateService, this.interactionService, this.notificationService);
   }
 
   override ngOnInit() {

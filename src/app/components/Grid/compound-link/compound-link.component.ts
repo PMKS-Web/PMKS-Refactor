@@ -9,6 +9,7 @@ import { CompoundLinkInteractor } from 'src/app/controllers/compound-link-intera
 import { ColorService } from 'src/app/services/color.service';
 import { SVGPathService } from 'src/app/services/svg-path.service';
 import { UnitConversionService } from 'src/app/services/unit-conversion.service';
+import { NotificationService } from 'src/app/services/notification.service';
 
 @Component({
   selector: '[app-compound-link]',
@@ -22,12 +23,13 @@ export class CompoundLinkComponent extends AbstractInteractiveComponent {
 				private stateService: StateService,
 				private colorService: ColorService,
 				private svgPathService: SVGPathService,
-        private unitConversionService: UnitConversionService) {
+        private unitConversionService: UnitConversionService,
+        private notificationService: NotificationService) {
     super(interactionService);
   }
 
   override registerInteractor(): Interactor {
-    return new CompoundLinkInteractor(this.compoundLink, this.stateService);
+    return new CompoundLinkInteractor(this.compoundLink, this.stateService, this.notificationService);
   }
 
   getColor():string{
