@@ -9,6 +9,7 @@ import { MousePosition } from './mouse-position.service';
 import { PanZoomService, ZoomPan } from './pan-zoom.service';
 import { UnitConversionService } from './unit-conversion.service';
 import { BehaviorSubject } from 'rxjs';
+import { JointInteractor } from '../controllers/joint-interactor';
 
 /*
 This service keeps track of global state for the interaction system, such as which
@@ -91,7 +92,12 @@ export class InteractionService {
         }
 
         if (event.button !== 0) return; // only handle left click. should not be called on right click/context menu
-
+        if(object instanceof JointInteractor){
+            const joint = object as JointInteractor;
+            if (joint.joint.id <= 0){
+                return;
+            }
+        }
         // hide any context menus
         this.contextMenuService.hideContextMenu();
 
