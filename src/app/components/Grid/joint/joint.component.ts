@@ -18,7 +18,15 @@ import {Subscription} from "rxjs";
 export class JointComponent extends AbstractInteractiveComponent {
 
   @Input() joint!: Joint;
-
+  showIDLabelsSubscription: Subscription = new Subscription();
+  showIDLabels: boolean = false;
+  override ngOnInit(): void {
+    this.showIDLabelsSubscription = this.stateService.showIDLabels$.subscribe((show) => { this.showIDLabels = show; });
+    super.ngOnInit();
+  }
+  override ngOnDestroy(): void {
+    this.showIDLabelsSubscription.unsubscribe();
+  }
 
   constructor(public override interactionService: InteractionService,
     private stateService: StateService,

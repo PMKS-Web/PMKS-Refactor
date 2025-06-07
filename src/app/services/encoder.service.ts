@@ -99,8 +99,10 @@ export class EncoderService {
   public encodeForURL(): string {
     try {
       const compactData = this.compactMechanismData(this.mechanism);
+      console.log("Data: ");
       console.log(compactData);
       const jsonData = JSON.stringify(compactData, this.compressionReplacer);
+      console.log(jsonData);
       let compressedjsonData = jsonData
         .replaceAll('","',"~")
         .replaceAll(',',"_")
@@ -235,31 +237,22 @@ export class EncoderService {
       ])
     };
   }
-
-
-
-
   /**
    * A custom replacer for JSON.stringify that converts numbers to hexadecimal strings
    * and booleans to y/n
    *
    * Note: On decoding, you'll need to reverse these transformations.
    */
-  private compressionReplacer(value: any): any {
+    
+  private compressionReplacer(key: string, value: any): any { //DO NOT REMOVE KEY
     if (typeof value === "boolean") {
-      return value ? "y" : "n"
+      return value ? "y" : "n";
     }
-    if (Number.isInteger(Number(value))) {
-      return value.toString(16);
+    if (typeof value === "number" && Number.isInteger(value)) {
+        return value.toString(16);
     }
-    if ((Number(value))% 1 !== 0) {
-      return value;
-    }
-      //console.log("im a string: ", value)
-      return value.toString();
-    }
-
-
+    return value;
+  }
 
   /**
    * If the field contains a comma, newline, or quotes, the field is wrapped in quotes
