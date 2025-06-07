@@ -106,7 +106,14 @@ For any queries, you can reach out to the development team at gr-pmksplus@wpi.ed
 PMKS+ is based on PMKS, developed by Prof. Matthew I. Campbell, Professor, Mechanical Engineering, Oregon State University.
 
 ### Contributors
-
+- David Peterson (CS '28)
+- Randy Gomez (CS '28)
+- Jeremy Bornstein (CS '25)
+- Jagruti Chitte (CS '25)
+- Gabriel Curet-Irizarry (CS '25)
+- Javier DeLeon (CS '25)
+- Matthew Gatta (CS '25)
+- Sebastian Gurgol (CS '25)
 - Jessica M. Rhodes (BS/MS RBE '25)
 - Ansel Chang (CS '25)
 - Jacob Adamsky (CS' 24)
