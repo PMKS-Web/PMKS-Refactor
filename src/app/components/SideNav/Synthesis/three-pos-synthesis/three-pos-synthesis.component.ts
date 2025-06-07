@@ -15,6 +15,7 @@ import { Coord } from 'src/app/model/coord';
 import { ChangeDetectorRef } from '@angular/core';
 import {PositionSolverService} from "../../../../services/kinematic-solver.service";
 import {Position} from "../../../../model/position";
+import { NotificationService } from 'src/app/services/notification.service';
 
 
 interface CoordinatePosition {
@@ -108,7 +109,7 @@ export class ThreePosSynthesis{
 
 
 
-  constructor(private stateService: StateService, private interactionService: InteractionService, private cdr: ChangeDetectorRef, private positionSolver: PositionSolverService) {
+  constructor(private stateService: StateService, private interactionService: InteractionService, private cdr: ChangeDetectorRef, private positionSolver: PositionSolverService, private notificationService: NotificationService) {
     this.mechanism = this.stateService.getMechanism();
   }
   setReference(r: string) {
@@ -353,7 +354,8 @@ isSixBarGenerated(): boolean {
       const linkInteractor = new LinkInteractor(
         inputLink,
         this.stateService,
-        this.interactionService
+        this.interactionService,
+        this.notificationService,
       );
       this.interactionService.setSelectedObject(linkInteractor);
       this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
