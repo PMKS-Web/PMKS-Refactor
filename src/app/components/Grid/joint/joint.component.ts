@@ -9,6 +9,7 @@ import { ClickCapture, ClickCaptureID } from 'src/app/controllers/click-capture/
 import { CreateLinkFromJointCapture } from 'src/app/controllers/click-capture/create-link-from-joint-capture';
 import { UnitConversionService } from 'src/app/services/unit-conversion.service';
 import {Subscription} from "rxjs";
+import { NotificationService } from 'src/app/services/notification.service';
 
 @Component({
   selector: '[app-joint]',
@@ -30,12 +31,13 @@ export class JointComponent extends AbstractInteractiveComponent {
 
   constructor(public override interactionService: InteractionService,
     private stateService: StateService,
-    private unitConversionService: UnitConversionService) {
+    private unitConversionService: UnitConversionService,
+    private notificationService: NotificationService) {
     super(interactionService);
   }
 
   override registerInteractor(): Interactor {
-    return new JointInteractor(this.joint, this.stateService, this.interactionService);
+    return new JointInteractor(this.joint, this.stateService, this.interactionService, this.notificationService);
   }
 
   public getX(): number {

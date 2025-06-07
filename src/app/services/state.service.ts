@@ -219,6 +219,9 @@ export class StateService {
   public changeActivePanel(panel: string): void {
     this.globalActivePanel.next(panel);
   }
+  public get getCurrentActivePanel(): string {
+    return this.globalActivePanel.value;
+  }
 
   // Updates the global measurement units and their suffix based on user selection.
   public changeUnits (units: string, suffix: string){

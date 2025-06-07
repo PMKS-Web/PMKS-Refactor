@@ -5,6 +5,7 @@ import { ContextMenuOption, Interactor } from "./interactor";
 import { CreateLinkFromGridCapture} from "./click-capture/create-link-from-grid-capture"
 import { PanZoomService } from "../services/pan-zoom.service";
 import type { JointSnapshot, LinkSnapshot } from "../components/ToolBar/undo-redo-panel/action";
+import { NotificationService } from "../services/notification.service";
 
 
 /*
@@ -18,7 +19,8 @@ export class SvgInteractor extends Interactor {
 
   constructor(private stateService: StateService,
               private interactionService: InteractionService,
-              private panZoomService: PanZoomService) {
+              private panZoomService: PanZoomService,
+              private notificationService: NotificationService) {
               super(true, true);
 
     this.onDragStart$.subscribe(() => {this.lastSVGPosition = this.getMousePos().screen;
@@ -37,7 +39,11 @@ export class SvgInteractor extends Interactor {
     this.stateService.getMechanism();
     let modelPosAtRightClick = this.interactionService.getMousePos().model;
     let availableContext: ContextMenuOption[] = [];
-      if (this.activePanel === "Edit") {
+    if (this.stateService.getCurrentActivePanel === "Synthesis"){
+          this.notificationService.showNotification("Cannot edit in the Synthesis mode! Switch to Edit mode to edit.");
+          return availableContext;
+    }
+    if (this.activePanel === "Edit") {
         availableContext.push({
           icon: "assets/contextMenuIcons/addLink.svg",
           label: "Create Link",
@@ -46,9 +52,9 @@ export class SvgInteractor extends Interactor {
           },
           disabled: false
         });
-      }
+    }
 
-      return availableContext;
+    return availableContext;
   }
 
   // Begins the process of adding a new link between joints via a capture interaction
