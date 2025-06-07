@@ -19,7 +19,7 @@ export class AnalysisPanelComponent {
     }
   }
   
-  checkInvalid(){
+  get invalid(){
     return this.animationService.isInvalid();
   }
   downloadCSV() {

@@ -26,14 +26,14 @@ export class JointInteractor extends Interactor {
 
 
     this.onDragStart$.subscribe(() => {
-      if ((!this.joint.locked || this.activePanel === "Edit") && this._isDraggable && this.joint.id >= 0) {
+      if ((!this.joint.locked || this.activePanel === "Edit" || this.activePanel === "Anylysis") && this._isDraggable && this.joint.id >= 0) {
         this.jointStartCoords = this.joint.coords.clone();
       }
     });
 
 
     this.onDrag$.subscribe(() => {
-      if ((!this.joint.locked || this.activePanel === "Edit") && this._isDraggable && this.jointStartCoords) {
+      if ((!this.joint.locked || this.activePanel === "Edit" || this.activePanel === "Anylysis") && this._isDraggable && this.jointStartCoords) {
         const newPos = this.jointStartCoords.clone().add(this.dragOffsetInModel!);
         this.stateService.getMechanism().setJointCoord(this.joint.id, newPos);
       }
@@ -73,9 +73,8 @@ export class JointInteractor extends Interactor {
         let mechanism: Mechanism = this.stateService.getMechanism();
         if (this.stateService.getCurrentActivePanel === "Synthesis"){
           this.notificationService.showNotification("Cannot edit in the Synthesis mode! Switch to Edit mode to edit.");
-          return availableContext;
         }
-        if (this.activePanel === "Edit") {
+        if (this.stateService.getCurrentActivePanel === "Edit") {
           availableContext.push(
             {
               icon: "assets/contextMenuIcons/addLink.svg",
