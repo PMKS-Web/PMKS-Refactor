@@ -8,3 +8,10 @@ updates:
       prefix: "ci(deps):"
     labels:
       - "auto-deps"
+    groups:
+      angular:
+        patterns:
+          - "@angular/*"
+          - "@angular-devkit/*"
+          - "rxjs"
+          - "zone.js"
