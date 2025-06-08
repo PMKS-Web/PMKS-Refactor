@@ -40,7 +40,7 @@
     "@angular/fire": "^18.0.1",
     "@types/chart.js": "^2.9.41",
     "@types/d3": "^7.4.3",
-    "@types/d3-scale": "^4.0.8",
+    "@types/d3-scale": "^4.0.9",
     "@types/d3-selection": "^3.0.10",
     "@types/d3-shape": "^3.1.6",
     "@types/jasmine": "~4.3.0",
