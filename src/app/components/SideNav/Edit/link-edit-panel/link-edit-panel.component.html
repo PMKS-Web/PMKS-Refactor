@@ -48,7 +48,7 @@
           <!-- Link length and angle input -->
           <div class="length-angle-block">
             <!--Label on its own line -->
-            <div class="la-label">Link Length and Angle</div>
+            <div class="la-label" style ="margin-left: 12px;"> Link Length and Angle </div>
 
             <!--Inputs side-by-side -->
             <div class="length-angle-row">
@@ -149,7 +149,7 @@
       <!-- MASS SETTINGS -->
 <collapsible-subsection titleLabel='Mass Settings' [expanded]="sectionExpanded['LMass']"
  (opened)="sectionExpanded['LMass'] = true" (closed)="sectionExpanded['LMass'] = false">
-  
+
  <div class="input-container">
   <div class="label-group">
     <span class="label">Link Mass</span>
@@ -159,7 +159,7 @@
     <single-input-block class="right-aligned" [showIcon]="false" unit1="kg"></single-input-block>
   </div>
 </div>
-  
+
 <div class="input-container">
   <div class="label-group">
     <span class="label">Link Mass</span>
@@ -169,14 +169,14 @@
     <single-input-block class="right-aligned" [showIcon]="false" unit1="kg"></single-input-block>
   </div>
 </div>
-  
+
   <dual-input-block
     label1="X" label2="Y"
     unit1="" unit2=""
     tooltip="Enter tooltip here">
     Center of Mass Position
   </dual-input-block>
-  
+
 </collapsible-subsection>
     </div>
   </div>
