@@ -1,9 +1,25 @@
-    <div class="notification-container">
-      <div 
-        *ngFor="let notification of notifications; trackBy: trackByFn"
-        class="notification"
-        [class.fade-in]="!notification.fadingOut"
-        [class.fade-out]="notification.fadingOut">
-        {{ notification.message }}
-      </div>
-    </div>
+<!-- Regular notifications at top -->
+<div class="notification-container">
+  <div
+    *ngFor="let notification of notifications; trackBy: trackByFn"
+    class="notification"
+    [class.fade-in]="!notification.fadingOut"
+    [class.fade-out]="notification.fadingOut">
+    {{ notification.message }}
+  </div>
+</div>
+
+<!-- Warning notification centered -->
+<div class="warning-overlay" *ngIf="warningNotification">
+  <div 
+    class="warning-notification"
+    [class.fade-in]="!warningNotification.fadingOut">
+    <span class="warning-message">{{ warningNotification.message }}</span>
+    <button 
+      class="close-btn"
+      (click)="onCloseWarning()"
+      aria-label="Close warning">
+      ×
+    </button>
+  </div>
+</div>
