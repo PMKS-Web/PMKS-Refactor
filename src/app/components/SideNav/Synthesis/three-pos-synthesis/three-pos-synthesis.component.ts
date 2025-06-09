@@ -910,13 +910,13 @@ setPosYCoord(y: number, posNum: number){
 getPosXCoord(posNum: number): number{
     if(posNum==1) return this.getReferenceJoint(this.position1 as Position)._coords.x;
     else if(posNum==2) return this.getReferenceJoint(this.position2 as Position)._coords.x;
-    return this.getReferenceJoint(this.position2 as Position)._coords.x;
+    return this.getReferenceJoint(this.position3 as Position)._coords.x;
 }
 
 getPosYCoord(posNum: number): number{
   if(posNum==1) return this.getReferenceJoint(this.position1 as Position)._coords.y;
   else if(posNum==2) return this.getReferenceJoint(this.position2 as Position)._coords.y;
-  return this.getReferenceJoint(this.position2 as Position)._coords.y;
+  return this.getReferenceJoint(this.position3 as Position)._coords.y;
 }
 
 getPosAngle(posNum: number): number{
@@ -1233,15 +1233,15 @@ verifyMechanismPath() {
     this.cdr.detectChanges();
   }
 
-getEndPointCoords(positionIndex: number, coordType: 'x0' | 'y0' | 'x1' | 'y1'): number {
-    // Validate position index
-    if (positionIndex < 1 || positionIndex > 3) {
-        console.error("Invalid position index. It must be 1, 2, or 3.");
-        return 0; // Default value in case of invalid index
-    }
-
-    const index = positionIndex - 1; // Convert 1-based index to 0-based
-    return this.twoPointPositions[index][coordType];
+getEndPointXCoords(positionIndex: number, jointIndex: number) {
+  if(positionIndex==1) return this.position1?.getJoints()[jointIndex]._coords.x;
+  else if(positionIndex==2) return this.position2?.getJoints()[jointIndex]._coords.x;
+  return this.position3?.getJoints()[jointIndex]._coords.x;
+}
+getEndPointYCoords(positionIndex: number, jointIndex: number) {
+  if(positionIndex==1) return this.position1?.getJoints()[jointIndex]._coords.y;
+  else if(positionIndex==2) return this.position2?.getJoints()[jointIndex]._coords.y;
+  return this.position3?.getJoints()[jointIndex]._coords.y;
 }
 
 // Helper to update joint positions based on center and reference type
