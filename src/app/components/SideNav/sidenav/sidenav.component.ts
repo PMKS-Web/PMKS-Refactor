@@ -1,5 +1,6 @@
 import { Component} from '@angular/core'
 import {StateService} from "../../../services/state.service";
+import { NotificationService } from 'src/app/services/notification.service';
 
 interface Tab {
     selected: boolean,
@@ -28,7 +29,7 @@ export class SidenavComponent {
   sidePanels = document.getElementsByClassName('app-panel-container');
 
 
-  constructor(private stateService: StateService){
+  constructor(private stateService: StateService, private notificationService: NotificationService){
   }
 
   // Called when synthesis panel emits a generated state
@@ -36,7 +37,7 @@ export class SidenavComponent {
     this.generatedCheck = changeTo;
   }
 
-  // Toggles visibility of a panel when a tab is clicked
+  // Toggles visibility of a panel when a tab is clicked/*  */
   togglePanel(clickedTab: string): void {
     let editPanel = this.sidePanels[0].children[0];
     let synthPanel = this.sidePanels[0].children[1];
@@ -57,7 +58,9 @@ export class SidenavComponent {
     // There has to be a better way to do this but I'm on a time crunch
     if (clickedTab === "Edit"){
       if (this.tabs[0].selected && this.generatedCheck){
-        window.alert("Warning: Adding or removing links or joints to the synthesized mechanism will " +
+        // window.alert("Warning: Adding or removing links or joints to the synthesized mechanism will " +
+        //   "cause that synthesis to be voided. The synthesis panel will be reset upon returning to it if you perform any of these actions.");
+           this.notificationService.showWarning("Warning: Adding or removing links or joints to the synthesized mechanism will " +
           "cause that synthesis to be voided. The synthesis panel will be reset upon returning to it if you perform any of these actions.")
       }
       this.tabs[1].selected = true;
