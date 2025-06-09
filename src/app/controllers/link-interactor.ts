@@ -27,6 +27,10 @@ export class LinkInteractor extends Interactor {
     super(true, true);
 
     this.onDragStart$.subscribe(() => {
+      if(this.link.joints.values().next().value?.isGenerated && this.stateService.getCurrentActivePanel === "Synthesis"){
+        this.notificationService.showNotification("Cannot edit in the Synthesis mode! Switch to Edit mode to edit.");
+        return;
+      }
       this.link.joints.forEach((joint: Joint, id: number) => {
         this.linkStartPositions.set(id, joint.coords.clone());
       })

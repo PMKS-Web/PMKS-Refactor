@@ -322,6 +322,8 @@ isSixBarGenerated(): boolean {
         lastGround = this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1].getJoints()[1];
         this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
       }
+      this.mechanism.setMechanismGenerated();
+      
 
       //adds the grounded joints and input
 
