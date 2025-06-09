@@ -96,7 +96,7 @@
             <div *ngFor="let joint of getLinkComponents()">
               <div class="xy-block">
                 <!-- label on its own line -->
-                <label class="xy-label">Joint {{ joint.name }}</label>
+                <label class="xy-label" style ="margin-left: 12px;">Joint {{ joint.name }}</label>
 
                 <!-- side by side X & Y -->
                 <div class="xy-row">
@@ -130,6 +130,38 @@
         </div>
       </collapsible-subsection>
 
+      <!-- MASS SETTINGS -->
+<collapsible-subsection titleLabel='Mass Settings' [expanded]="sectionExpanded['LMass']"
+ (opened)="sectionExpanded['LMass'] = true" (closed)="sectionExpanded['LMass'] = false">
+
+ <div class="input-container">
+  <div class="label-group">
+    <span class="label" style ="margin-left: 12px;">Link Mass</span>
+    <mat-icon id="linkMassTooltip" matTooltip="Enter tooltip here" [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon>
+  </div>
+  <div class="input-group">
+    <single-input-block class="right-aligned" [showIcon]="false" unit1="kg"></single-input-block>
+  </div>
+</div>
+
+<div class="input-container">
+  <div class="label-group">
+    <span class="label"  style ="margin-left: 12px;">Link Mass</span>
+    <mat-icon id="linkMass2Tooltip" matTooltip="Enter tooltip here" [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon>
+  </div>
+  <div class="input-group">
+    <single-input-block class="right-aligned" [showIcon]="false" unit1="kg"></single-input-block>
+  </div>
+</div>
+
+  <dual-input-block
+    label1="X" label2="Y"
+    unit1="" unit2=""
+    tooltip="Enter tooltip here">
+    Center of Mass Position
+  </dual-input-block>
+
+</collapsible-subsection>
       <!-- VISUAL SETTINGS -->
       <collapsible-subsection titleLabel='Visual Settings' [expanded]="sectionExpanded['LVisual']"
                               (opened)="sectionExpanded['LVisual'] = true" (closed)="sectionExpanded['LVisual'] = false">
@@ -146,38 +178,6 @@
         </div>
       </collapsible-subsection>
 
-      <!-- MASS SETTINGS -->
-<collapsible-subsection titleLabel='Mass Settings' [expanded]="sectionExpanded['LMass']"
- (opened)="sectionExpanded['LMass'] = true" (closed)="sectionExpanded['LMass'] = false">
-
- <div class="input-container">
-  <div class="label-group">
-    <span class="label">Link Mass</span>
-    <mat-icon id="linkMassTooltip" matTooltip="Enter tooltip here" [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon>
-  </div>
-  <div class="input-group">
-    <single-input-block class="right-aligned" [showIcon]="false" unit1="kg"></single-input-block>
-  </div>
-</div>
-
-<div class="input-container">
-  <div class="label-group">
-    <span class="label">Link Mass</span>
-    <mat-icon id="linkMass2Tooltip" matTooltip="Enter tooltip here" [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon>
-  </div>
-  <div class="input-group">
-    <single-input-block class="right-aligned" [showIcon]="false" unit1="kg"></single-input-block>
-  </div>
-</div>
-
-  <dual-input-block
-    label1="X" label2="Y"
-    unit1="" unit2=""
-    tooltip="Enter tooltip here">
-    Center of Mass Position
-  </dual-input-block>
-
-</collapsible-subsection>
     </div>
   </div>
 </div>
