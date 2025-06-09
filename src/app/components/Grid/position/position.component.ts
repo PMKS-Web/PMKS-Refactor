@@ -51,7 +51,7 @@ export class PositionComponent extends AbstractInteractiveComponent {
   }
 
   getLocked(): boolean {
-    return this.position.locked;
+    return this.position.locked && this.stateService.getCurrentActivePanel === "Synthesis";
   }
 
   getCOMX(): number {

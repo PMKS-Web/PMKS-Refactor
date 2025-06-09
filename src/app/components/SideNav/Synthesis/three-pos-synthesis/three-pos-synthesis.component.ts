@@ -391,8 +391,15 @@ isSixBarGenerated(): boolean {
       this.position1!.locked = true;
       this.position2!.locked = true;
       this.position3!.locked = true;
-      console.log(this.positionSolver.getAnimationPositions());
-      console.log(this.mechanism);
+      this.position1!._joints.forEach((number)=>{
+          number.generated = true;
+      });
+      this.position2!._joints.forEach((number)=>{
+        number.generated = true;
+      });
+      this.position3!._joints.forEach((number)=>{
+      number.generated = true;
+      });
     }
   }
 
@@ -483,6 +490,7 @@ isSixBarGenerated(): boolean {
     this.cdr.detectChanges();
     this.positionSolver.solvePositions();
     this.verifyMechanismPath();
+    this.mechanism.setMechanismGenerated();
   }
 
   setPositionsColorToDefault() {
