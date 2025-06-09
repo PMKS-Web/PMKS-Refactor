@@ -92,9 +92,11 @@ export class InteractionService {
         }
 
         if (event.button !== 0) return; // only handle left click. should not be called on right click/context menu
+        
         if(object instanceof JointInteractor){
             const joint = object as JointInteractor;
             if (joint.joint.id < 0){
+                console.log("This join is invalid or is a reference point. Cannot be right clicked.");
                 return;
             }
         }
