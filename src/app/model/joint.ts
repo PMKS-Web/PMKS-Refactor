@@ -18,6 +18,7 @@ export class Joint {
     private _parentLocked: boolean;
     private _isHidden: boolean;
     private _isReference: boolean;
+    private _isGenerated: boolean;
 
     constructor(id: number, x: number, y: number);
     constructor(id: number, coord: Coord);
@@ -26,7 +27,6 @@ export class Joint {
         // changed name to be the same as ID instead of blank
         if (this.id <= -1){
             this._name = "Reference Point";
-            this.locked = true;
         }
         else {
             this._name = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".charAt(Math.abs(id) % 52);
@@ -41,6 +41,7 @@ export class Joint {
         this._inputSpeed = 10;
         this._isHidden = false;
         this._isReference = false;
+        this._isGenerated = false;
 
         if(typeof xORCoord === 'number' && y !== undefined)
         {
@@ -95,6 +96,9 @@ export class Joint {
     get isReference(): boolean{
       return this._isReference
     }
+    get isGenerated(): boolean{
+        return this._isGenerated;
+    }
     //----------------------------setters----------------------------
     set name(newName: string){
         this._name = newName;
@@ -121,6 +125,9 @@ export class Joint {
 
     set reference(val: boolean){
       this._isReference = val;
+    }
+    set generated(val: boolean){
+        this._isGenerated = val;
     }
 
     //----------------------------Joint Modification with modifying other variables----------------------------

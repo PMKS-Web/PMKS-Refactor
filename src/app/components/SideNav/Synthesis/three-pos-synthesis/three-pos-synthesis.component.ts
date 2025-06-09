@@ -322,6 +322,8 @@ isSixBarGenerated(): boolean {
         lastGround = this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1].getJoints()[1];
         this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
       }
+      this.mechanism.setMechanismGenerated();
+      
 
       //adds the grounded joints and input
 
@@ -908,21 +910,15 @@ setPosYCoord(y: number, posNum: number){
   }
 
 getPosXCoord(posNum: number): number{
-    if(posNum==1)
-        return this.pos1X;
-    else if(posNum==2)
-        return this.pos2X;
-    else
-        return this.pos3X;
+    if(posNum==1) return this.getReferenceJoint(this.position1 as Position)._coords.x;
+    else if(posNum==2) return this.getReferenceJoint(this.position2 as Position)._coords.x;
+    return this.getReferenceJoint(this.position2 as Position)._coords.x;
 }
 
 getPosYCoord(posNum: number): number{
-    if(posNum==1)
-        return this.pos1Y;
-    else if(posNum==2)
-        return this.pos2Y;
-    else
-        return this.pos3Y;
+  if(posNum==1) return this.getReferenceJoint(this.position1 as Position)._coords.y;
+  else if(posNum==2) return this.getReferenceJoint(this.position2 as Position)._coords.y;
+  return this.getReferenceJoint(this.position2 as Position)._coords.y;
 }
 
 getPosAngle(posNum: number): number{
