@@ -38,7 +38,7 @@ export class ToolbarComponent {
     //this.setCurrentTab("Share");
     let urlService = new UrlGenerationService(this.stateService);
     urlService.copyURL();
-    this.notificationService.showNotification("Link Copied!");
+    this.notificationService.showNotification("Mechanism URL copied. If you make additional changes, copy the URL again.");
   }
 
   // Handles sharing functionality by copying the generated URL to the clipboard
