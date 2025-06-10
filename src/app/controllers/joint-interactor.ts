@@ -25,14 +25,10 @@ export class JointInteractor extends Interactor {
 
 
     this.onDragStart$.subscribe(() => {
-<<<<<<< HEAD
-      if(this.joint.isGenerated && this.stateService.getCurrentActivePanel === "Synthesis"){
-        this.notificationService.showNotification("Cannot edit in the Synthesis mode! Switch to Edit mode to edit.");
-=======
+
       if(this.stateService.getCurrentActivePanel === "Synthesis"){
         if(this.joint.isGenerated) this.notificationService.showNotification("Cannot edit in the Synthesis mode! Switch to Edit mode to edit.");
         else this.notificationService.showNotification("Please change the length and angle from the Synthesis Panel.");
->>>>>>> 02bf74ee28dc4d06fd056e04bbc8b07c6b866466
         return;
       }
       if ((!this.joint.locked || this.stateService.getCurrentActivePanel === "Edit") && this._isDraggable && this.joint.id >= 0) {
@@ -42,11 +38,7 @@ export class JointInteractor extends Interactor {
 
 
     this.onDrag$.subscribe(() => {
-<<<<<<< HEAD
       if ((!this.joint.locked || this.stateService.getCurrentActivePanel === "Edit") && this._isDraggable && this.jointStartCoords) {
-=======
-      if ((!this.joint.locked || this.activePanel === "Edit" || this.activePanel === "Anylysis") && this._isDraggable && this.jointStartCoords) {
->>>>>>> 02bf74ee28dc4d06fd056e04bbc8b07c6b866466
         const newPos = this.jointStartCoords.clone().add(this.dragOffsetInModel!);
         this.stateService.getMechanism().setJointCoord(this.joint.id, newPos);
       }

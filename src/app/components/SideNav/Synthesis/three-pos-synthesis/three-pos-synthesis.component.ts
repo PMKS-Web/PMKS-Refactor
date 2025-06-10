@@ -916,28 +916,6 @@ setPosYCoord(y: number, posNum: number){
       return new Joint(-1 /*Jav here, put this as placeholder id, idk if it needs to be something specific but we will see if something breaks */, new Coord(centerX, centerY));
     }
   }
-
-<<<<<<< HEAD
-getPosXCoord(posNum: number): number{
-    if(posNum==1) return this.getReferenceJoint(this.position1 as Position)._coords.x;
-    else if(posNum==2) return this.getReferenceJoint(this.position2 as Position)._coords.x;
-    return this.getReferenceJoint(this.position2 as Position)._coords.x;
-}
-
-getPosYCoord(posNum: number): number{
-  if(posNum==1) return this.getReferenceJoint(this.position1 as Position)._coords.y;
-  else if(posNum==2) return this.getReferenceJoint(this.position2 as Position)._coords.y;
-  return this.getReferenceJoint(this.position2 as Position)._coords.y;
-}
-
-getPosAngle(posNum: number): number{
-    if(posNum==1)
-        return this.pos1Angle;
-    else if(posNum==2)
-        return this.pos2Angle;
-    else
-        return this.pos3Angle;
-=======
 getPosXCoord(posNum: number){
     if(posNum==1) return this.getReferenceJoint(this.position1 as Position).coords.x.toFixed(3);
     else if(posNum==2) return this.getReferenceJoint(this.position2 as Position).coords.x.toFixed(3);
@@ -956,7 +934,7 @@ getPosAngle(posNum: number){
         return this.pos2Angle.toFixed(3) as unknown as number;
     else
         return this.pos3Angle.toFixed(3) as unknown as number;
->>>>>>> 02bf74ee28dc4d06fd056e04bbc8b07c6b866466
+
 }
 
 
