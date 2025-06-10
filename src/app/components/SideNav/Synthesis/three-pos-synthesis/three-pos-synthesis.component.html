@@ -164,7 +164,7 @@
                (click)="generateFourBar()">
                {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
              </button>
-             <div *ngIf="isFourBarGenerated()">
+             <div *ngIf="position3">
              <button class="removeAll" (click)="removeAllPositions()">
                {{ confirmRemoveAll ? 'Are You Sure?' : 'Remove All Positions' }}
              </button>
