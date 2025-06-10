@@ -24,10 +24,21 @@
   float: left;
   flex-direction: row;
 }
-
+input:disabled {
+  background-color: #f0f0f0;
+  color: #a0a0a0;
+}
 .input-section {
-  margin-right: -20px; /* Adjust the margin as needed */
+  margin-right: -20px;
   margin-bottom: 10px;
+}.input-wrapper {
+  cursor: pointer;
+  display: inline-block; 
+  position: relative;
+}
+
+.input-wrapper input:disabled {
+  pointer-events: none; 
 }
 
 

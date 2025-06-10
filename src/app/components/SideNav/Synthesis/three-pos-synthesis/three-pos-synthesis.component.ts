@@ -235,7 +235,11 @@ export class ThreePosSynthesis{
 }
 
 isFourBarGenerated(): boolean {
+  console.log("well is it? S" + this.fourBarGenerated)
     return this.fourBarGenerated;
+}
+onInputClick(){
+  this.notificationService.showNotification("Clear Current Four-bar so that change link length and positions and regenerate a new four-bar");
 }
 
 isSixBarGenerated(): boolean {

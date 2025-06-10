@@ -55,7 +55,8 @@
                             [input1Value]="2"
                             (input1Change)="setCouplerLength($event)"
                             unit1={{units}}
-                            [showIcon]="false">
+                            [showIcon]="false"
+                            [disabled]="this.fourBarGenerated || this.sixBarGenerated">
                       </single-input-block>
 
                     <div class="notification-message" *ngIf="showLockMessage">
@@ -84,10 +85,8 @@
                       </radio-block>
                   </div>
                </div>
-<!--      </div>-->
-<!--      <div>-->
+
                <div class="position-section">
-<!--                    <hr class="solid">-->
                    <div *ngFor='let i of [1,2,3]' class="position-container">
 
                    <!-- displays each position label, if the position is specified/defined, then the trash icon appears -->
@@ -108,7 +107,6 @@
 
                   <!-- allows the user to enter coordinates and an angle for the position -->
                   <div class='poseData'   *ngIf='this.isPositionDefined(i)'>
-
                         <dual-input-block
                         [input1Value]="getPosXCoord(i)"
                         [input2Value]="getPosYCoord(i)"
@@ -119,7 +117,8 @@
                         label2="Y"
                         unit1={{units}}
                         unit2={{units}}
-                        [showIcon]="false">
+                        [showIcon]="false"
+                        [disabled]="this.isFourBarGenerated()|| this.isSixBarGenerated()">
                   </dual-input-block>
 
                   <single-input-block
@@ -127,7 +126,8 @@
                         (input1Change)="setPositionAngle($event, i)"
                         iconLabel1="assets/icons/angle.svg"
                         unit1={{angles}}
-                        [showIcon]="false">
+                        [showIcon]="false"
+                        [disabled]="this.isFourBarGenerated() || this.isSixBarGenerated()">
                   </single-input-block>
                   </div>
 
@@ -215,7 +215,9 @@
               label2="Y0"
               unit1={{units}}
               unit2={{units}}
-              [showIcon]="false">
+              [showIcon]="false"
+              [disabled]="isFourBarGenerated()">
+
             </dual-input-block>
 
             <dual-input-block
@@ -228,7 +230,8 @@
               label2="Y1"
               unit1={{units}}
               unit2={{units}}
-              [showIcon]="false">
+              [showIcon]="false"
+              [disabled]="isFourBarGenerated()">
             </dual-input-block>
 
           </div>
