@@ -13,7 +13,6 @@ This interactor defines the following behaviors:
 */
 
 export class JointInteractor extends Interactor {
-  private activePanel = this.stateService.getCurrentActivePanel;
   private _isDraggable: boolean = true;
   private jointStartCoords: Coord | null = null;
 
@@ -26,7 +25,12 @@ export class JointInteractor extends Interactor {
 
 
     this.onDragStart$.subscribe(() => {
-      if ((!this.joint.locked || this.activePanel === "Edit" || this.activePanel === "Anylysis") && this._isDraggable && this.joint.id >= 0) {
+      if(this.stateService.getCurrentActivePanel === "Synthesis"){
+        if(this.joint.isGenerated) this.notificationService.showNotification("Cannot edit in the Synthesis mode! Switch to Edit mode to edit.");
+        else this.notificationService.showNotification("Please change the length and angle from the Synthesis Panel.");
+        return;
+      }
+      if ((!this.joint.locked || this.stateService.getCurrentActivePanel === "Edit") && this._isDraggable && this.joint.id >= 0) {
         this.jointStartCoords = this.joint.coords.clone();
       }
     });
