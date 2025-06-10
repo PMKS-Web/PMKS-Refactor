@@ -907,25 +907,24 @@ setPosYCoord(y: number, posNum: number){
     }
   }
 
-getPosXCoord(posNum: number): number{
-    if(posNum==1) return this.getReferenceJoint(this.position1 as Position)._coords.x;
-    else if(posNum==2) return this.getReferenceJoint(this.position2 as Position)._coords.x;
-    return this.getReferenceJoint(this.position3 as Position)._coords.x;
+getPosXCoord(posNum: number){
+    if(posNum==1) return this.getReferenceJoint(this.position1 as Position).coords.x.toFixed(3);
+    else if(posNum==2) return this.getReferenceJoint(this.position2 as Position).coords.x.toFixed(3);
+    return this.getReferenceJoint(this.position3 as Position).coords.x.toFixed(3);
+}
+getPosYCoord(posNum: number){
+  if(posNum==1) return this.getReferenceJoint(this.position1 as Position).coords.y.toFixed(3);
+  else if(posNum==2) return this.getReferenceJoint(this.position2 as Position).coords.y.toFixed(3);
+  return this.getReferenceJoint(this.position3 as Position).coords.y.toFixed(3);
 }
 
-getPosYCoord(posNum: number): number{
-  if(posNum==1) return this.getReferenceJoint(this.position1 as Position)._coords.y;
-  else if(posNum==2) return this.getReferenceJoint(this.position2 as Position)._coords.y;
-  return this.getReferenceJoint(this.position3 as Position)._coords.y;
-}
-
-getPosAngle(posNum: number): number{
+getPosAngle(posNum: number){
     if(posNum==1)
-        return this.pos1Angle;
+        return this.pos1Angle.toFixed(3) as unknown as number;
     else if(posNum==2)
-        return this.pos2Angle;
+        return this.pos2Angle.toFixed(3) as unknown as number;
     else
-        return this.pos3Angle;
+        return this.pos3Angle.toFixed(3) as unknown as number;
 }
 
 
@@ -1234,14 +1233,14 @@ verifyMechanismPath() {
   }
 
 getEndPointXCoords(positionIndex: number, jointIndex: number) {
-  if(positionIndex==1) return this.position1?.getJoints()[jointIndex]._coords.x;
-  else if(positionIndex==2) return this.position2?.getJoints()[jointIndex]._coords.x;
-  return this.position3?.getJoints()[jointIndex]._coords.x;
+  if(positionIndex==1) return this.position1?.getJoints()[jointIndex].coords.x.toFixed(3);
+  else if(positionIndex==2) return this.position2?.getJoints()[jointIndex].coords.x.toFixed(3);
+  return this.position3?.getJoints()[jointIndex].coords.x.toFixed(3);
 }
 getEndPointYCoords(positionIndex: number, jointIndex: number) {
-  if(positionIndex==1) return this.position1?.getJoints()[jointIndex]._coords.y;
-  else if(positionIndex==2) return this.position2?.getJoints()[jointIndex]._coords.y;
-  return this.position3?.getJoints()[jointIndex]._coords.y;
+  if(positionIndex==1) return this.position1?.getJoints()[jointIndex].coords.y.toFixed(3);
+  else if(positionIndex==2) return this.position2?.getJoints()[jointIndex].coords.y.toFixed(3);
+  return this.position3?.getJoints()[jointIndex].coords.y.toFixed(3);
 }
 
 // Helper to update joint positions based on center and reference type
