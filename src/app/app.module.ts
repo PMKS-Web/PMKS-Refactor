@@ -129,7 +129,7 @@ import { NotificationComponent } from './components/Blocks/notification/notifica
     TrajectoryComponent,
     UndoRedoPanelComponent,
     NewTabAlertComponent,
-    NotificationComponent
+    NotificationComponent,
   ],
     imports: [
         BrowserModule,

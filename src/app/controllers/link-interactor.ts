@@ -35,7 +35,6 @@ export class LinkInteractor extends Interactor {
         this.linkStartPositions.set(id, joint.coords.clone());
       })
 
-
     });
     this.onDrag$.subscribe(() => {
       this.linkStartPositions.forEach((startPos, jointID) => {

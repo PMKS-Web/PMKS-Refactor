@@ -391,8 +391,15 @@ isSixBarGenerated(): boolean {
       this.position1!.locked = true;
       this.position2!.locked = true;
       this.position3!.locked = true;
-      console.log(this.positionSolver.getAnimationPositions());
-      console.log(this.mechanism);
+      this.position1!._joints.forEach((number)=>{
+          number.generated = true;
+      });
+      this.position2!._joints.forEach((number)=>{
+        number.generated = true;
+      });
+      this.position3!._joints.forEach((number)=>{
+      number.generated = true;
+      });
     }
   }
 
@@ -483,6 +490,7 @@ isSixBarGenerated(): boolean {
     this.cdr.detectChanges();
     this.positionSolver.solvePositions();
     this.verifyMechanismPath();
+    this.mechanism.setMechanismGenerated();
   }
 
   setPositionsColorToDefault() {
@@ -909,6 +917,7 @@ setPosYCoord(y: number, posNum: number){
     }
   }
 
+<<<<<<< HEAD
 getPosXCoord(posNum: number): number{
     if(posNum==1) return this.getReferenceJoint(this.position1 as Position)._coords.x;
     else if(posNum==2) return this.getReferenceJoint(this.position2 as Position)._coords.x;
@@ -928,6 +937,26 @@ getPosAngle(posNum: number): number{
         return this.pos2Angle;
     else
         return this.pos3Angle;
+=======
+getPosXCoord(posNum: number){
+    if(posNum==1) return this.getReferenceJoint(this.position1 as Position).coords.x.toFixed(3);
+    else if(posNum==2) return this.getReferenceJoint(this.position2 as Position).coords.x.toFixed(3);
+    return this.getReferenceJoint(this.position3 as Position).coords.x.toFixed(3);
+}
+getPosYCoord(posNum: number){
+  if(posNum==1) return this.getReferenceJoint(this.position1 as Position).coords.y.toFixed(3);
+  else if(posNum==2) return this.getReferenceJoint(this.position2 as Position).coords.y.toFixed(3);
+  return this.getReferenceJoint(this.position3 as Position).coords.y.toFixed(3);
+}
+
+getPosAngle(posNum: number){
+    if(posNum==1)
+        return this.pos1Angle.toFixed(3) as unknown as number;
+    else if(posNum==2)
+        return this.pos2Angle.toFixed(3) as unknown as number;
+    else
+        return this.pos3Angle.toFixed(3) as unknown as number;
+>>>>>>> 02bf74ee28dc4d06fd056e04bbc8b07c6b866466
 }
 
 
@@ -1235,15 +1264,15 @@ verifyMechanismPath() {
     this.cdr.detectChanges();
   }
 
-getEndPointCoords(positionIndex: number, coordType: 'x0' | 'y0' | 'x1' | 'y1'): number {
-    // Validate position index
-    if (positionIndex < 1 || positionIndex > 3) {
-        console.error("Invalid position index. It must be 1, 2, or 3.");
-        return 0; // Default value in case of invalid index
-    }
-
-    const index = positionIndex - 1; // Convert 1-based index to 0-based
-    return this.twoPointPositions[index][coordType];
+getEndPointXCoords(positionIndex: number, jointIndex: number) {
+  if(positionIndex==1) return this.position1?.getJoints()[jointIndex].coords.x.toFixed(3);
+  else if(positionIndex==2) return this.position2?.getJoints()[jointIndex].coords.x.toFixed(3);
+  return this.position3?.getJoints()[jointIndex].coords.x.toFixed(3);
+}
+getEndPointYCoords(positionIndex: number, jointIndex: number) {
+  if(positionIndex==1) return this.position1?.getJoints()[jointIndex].coords.y.toFixed(3);
+  else if(positionIndex==2) return this.position2?.getJoints()[jointIndex].coords.y.toFixed(3);
+  return this.position3?.getJoints()[jointIndex].coords.y.toFixed(3);
 }
 
 // Helper to update joint positions based on center and reference type
