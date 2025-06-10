@@ -25,8 +25,9 @@ export class JointInteractor extends Interactor {
 
 
     this.onDragStart$.subscribe(() => {
-      if(this.joint.isGenerated && this.stateService.getCurrentActivePanel === "Synthesis"){
-        this.notificationService.showNotification("Cannot edit in the Synthesis mode! Switch to Edit mode to edit.");
+      if(this.stateService.getCurrentActivePanel === "Synthesis"){
+        if(this.joint.isGenerated) this.notificationService.showNotification("Cannot edit in the Synthesis mode! Switch to Edit mode to edit.");
+        else this.notificationService.showNotification("Please change the length and angle from the Synthesis Panel.");
         return;
       }
       if ((!this.joint.locked || this.stateService.getCurrentActivePanel === "Edit") && this._isDraggable && this.joint.id >= 0) {
