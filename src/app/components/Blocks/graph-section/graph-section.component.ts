@@ -138,7 +138,7 @@ export class GraphSectionComponent implements OnInit, OnChanges, AfterViewInit, 
         }
       },
       plugins: {
-        legend: { display: this.showLegend }
+        legend: { display: false }
       }
     };
   }
