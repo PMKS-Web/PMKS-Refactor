@@ -59,8 +59,7 @@
                             [input1Value]="2"
                             (input1Change)="setCouplerLength($event)"
                             unit1={{units}}
-                            [showIcon]="false"
-                            [disabled]="this.fourBarGenerated || this.sixBarGenerated">
+                            [showIcon]="false">
                       </single-input-block>
 
 
@@ -87,8 +86,10 @@
                       </radio-block>
                   </div>
                </div>
-
+<!--      </div>-->
+<!--      <div>-->
                <div class="position-section">
+<!--                    <hr class="solid">-->
                    <div *ngFor='let i of [1,2,3]' class="position-container">
 
                    <!-- displays each position label, if the position is specified/defined, then the trash icon appears -->
@@ -109,6 +110,7 @@
 
                   <!-- allows the user to enter coordinates and an angle for the position -->
                   <div class='poseData'   *ngIf='this.isPositionDefined(i)'>
+
                         <dual-input-block
                         [input1Value]="getPosXCoord(i)"
                         [input2Value]="getPosYCoord(i)"
@@ -119,8 +121,7 @@
                         label2="Y"
                         unit1={{units}}
                         unit2={{units}}
-                        [showIcon]="false"
-                        [disabled]="this.isFourBarGenerated()|| this.isSixBarGenerated()">
+                        [showIcon]="false">
                   </dual-input-block>
 
                   <single-input-block
@@ -128,8 +129,7 @@
                         (input1Change)="setPositionAngle($event, i)"
                         iconLabel1="assets/icons/angle.svg"
                         unit1={{angles}}
-                        [showIcon]="false"
-                        [disabled]="this.isFourBarGenerated() || this.isSixBarGenerated()">
+                        [showIcon]="false">
                   </single-input-block>
                   </div>
 
@@ -141,9 +141,19 @@
 
  </div>
              </div>
+<!--    <hr class="solid2">-->
              <!-- If all positions are defined you can then generate a four bar or delete all positions-->
 
              <button *ngIf='!this.allPositionsDefined() && !isFourBarGenerated()' class="generateFourBarGrey">Generate Four-Bar</button>
+
+
+             <!--    <div *ngIf='this.allPositionsDefined()' class="definedButtons">-->
+
+<!--      <button *ngIf="isSixBarGenerated()" id="generateFourBarGrey" >Generate Four-Bar</button>-->
+<!--      <button id="removeAll" (click)="removeAllPositions()">Remove All Positions</button>-->
+<!--      <button *ngIf="!isSixBarGenerated()" id="generateFourBar" (click)="generateFourBar()">-->
+<!--        {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}-->
+<!--      </button>-->
 
                <!-- Place Generate Four-Bar first -->
              <button
@@ -163,7 +173,7 @@
                <!-- Generate Six-Bar Button -->
              <div *ngIf="isFourBarGenerated()">
                <button class="generateSixBar" (click)="generateSixBar()">
-                   {{ sixBarGenerated ? 'Clear Six-Bar' : 'Generate Six-Bar' }}
+                   {{ sixBarGenerated ? 'Clear Six-Bar Addition' : 'Generate Six-Bar Addition' }}
                </button>
              </div>
 
@@ -184,13 +194,29 @@
                    </button>
                  </div>
                  <div>
-                   <button class="clearLinkage">
-                     Clear Linkage
+                   <button class="clearLinkage" (click)="clearLinkage()">
+                     Clear six bar Linkage
                    </button>
                  </div>
                </div>
            </div>
   </div>
+
+<!--               &lt;!&ndash; Greyed out button if six-bar is generated &ndash;&gt;-->
+<!--               <button *ngIf="isSixBarGenerated()" id="generateFourBarGrey">Generate Four-Bar</button>-->
+
+      <!-- once a four bar is generated you are able to generate a six bar -->
+<!--      <div *ngIf='isFourBarGenerated()' class="definedButtons">-->
+<!--        <button id="generateSixBar" (click)="generateSixBar()">-->
+<!--          {{ sixBarGenerated ? 'Clear Six-Bar' : 'Generate Six-Bar' }}-->
+<!--        </button>-->
+<!--        <div *ngIf="isSixBarGenerated()" class="definedButtons">-->
+<!--           &lt;!&ndash; {{ buttonLabel }} &ndash;&gt;-->
+<!--        </div>-->
+<!--      </div>-->
+
+
+
 
 
     <!------------------------------ New Panel Design for End Points  ------------------------------------>
@@ -200,54 +226,51 @@
 
         <div class="position-section">
         <!-- Loop for three positions -->
-        <div *ngFor="let index of [1,2,3]" class="position-container">
+        <div *ngFor="let index of [0,1,2]" class="position-container">
           <div class="position-header">
-            <p>Position {{ index}}</p>
+            <p>Position {{ index + 1 }}</p>
             <span class="icons">
-      <mat-icon id="tooltip2" matTooltip="Specify the coordinates for Position {{ index}}" [matTooltipShowDelay]="1000">help_outline</mat-icon>
-      <button class="trash" *ngIf='this.isPositionDefined(index)' (click)="deletePosition(index)">
+      <mat-icon id="tooltip2" matTooltip="Specify the coordinates for Position {{ index + 1 }}" [matTooltipShowDelay]="1000">help_outline</mat-icon>
+      <button class="trash" *ngIf='this.isPositionDefined(index + 1)' (click)="deletePosition(index + 1)">
         <img id="icon" ngSrc="assets/icons/trash.svg" alt="Delete Position" height="18" width="15">
       </button>
     </span>
           </div>
 
           <!-- allows the user to enter coordinates for the end points -->
-          <div class='poseData' *ngIf='this.isPositionDefined(index)'>
+          <div class='poseData' *ngIf='this.isPositionDefined(index + 1)'>
 
             <dual-input-block
-              [input1Value]="getEndPointXCoords(index, 0)"
-              [input2Value]="getEndPointYCoords(index, 0)"
-              (input1Change)="updateEndPointCoords(index,'x0', $event)"
-              (input2Change)="updateEndPointCoords(index,'y0', $event)"
-              tooltip="Change the x0 and y0 values of the first end point of the coupler position {{index}}"
+              [input1Value]="getEndPointCoords(index + 1, 'x0')"
+              [input2Value]="getEndPointCoords(index + 1, 'y0')"
+              (input1Change)="updateEndPointCoords(index + 1, 'x0', $event)"
+              (input2Change)="updateEndPointCoords(index + 1, 'y0', $event)"
+              tooltip="Change the x0 and y0 values of the first end point of the coupler position {{index + 1}}"
               label1="X0"
               label2="Y0"
               unit1={{units}}
               unit2={{units}}
-              [showIcon]="false"
-              [disabled]="isFourBarGenerated()">
-
+              [showIcon]="false">
             </dual-input-block>
 
             <dual-input-block
-              [input1Value]="getEndPointXCoords(index, 1)"
-              [input2Value]="getEndPointYCoords(index, 1)"
-              (input1Change)="updateEndPointCoords(index, 'x1', $event)"
-              (input2Change)="updateEndPointCoords(index, 'y1', $event)"
-              tooltip="Change the x1 and y1 values of the second end point of the coupler position {{index}}"
+              [input1Value]="getEndPointCoords(index + 1, 'x1')"
+              [input2Value]="getEndPointCoords(index + 1, 'y1')"
+              (input1Change)="updateEndPointCoords(index + 1, 'x1', $event)"
+              (input2Change)="updateEndPointCoords(index + 1, 'y1', $event)"
+              tooltip="Change the x1 and y1 values of the second end point of the coupler position {{index + 1}}"
               label1="X1"
               label2="Y1"
               unit1={{units}}
               unit2={{units}}
-              [showIcon]="false"
-              [disabled]="isFourBarGenerated()">
+              [showIcon]="false">
             </dual-input-block>
 
           </div>
 
           <!-- If position has not yet been created and it's the first undefined position, show "specify position" button -->
-          <div class="positionCreateEndPoints" *ngIf="getFirstUndefinedPosition() === index">
-            <button id="specifyEndPoints" (click)="this.specifyPositionEndPoints(index)">Specify Position</button>
+          <div class="positionCreateEndPoints" *ngIf="getFirstUndefinedPosition() === index + 1">
+            <button id="specifyEndPoints" (click)="this.specifyPositionEndPoints(index + 1)">Specify Position</button>
           </div>
         </div>
         </div>
@@ -276,7 +299,7 @@
         <!-- Generate Six-Bar Button -->
         <div *ngIf="isFourBarGenerated()">
           <button class="generateSixBar" (click)="generateSixBar()">
-            {{ sixBarGenerated ? 'Clear Six-Bar' : 'Generate Six-Bar' }}
+            {{ sixBarGenerated ? 'Clear Six-Bar addition' : 'Generate Six-Bar addition' }}
           </button>
         </div>
 
@@ -297,7 +320,7 @@
             </button>
           </div>
           <div>
-            <button class="clearLinkage" >
+            <button class="clearLinkage" (click)="clearLinkage()">
               Clear Linkage
             </button>
           </div>
