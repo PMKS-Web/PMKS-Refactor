@@ -67,69 +67,46 @@ export class GraphSectionComponent implements AfterViewInit, OnInit {
   public ChartOptions: any = {
     bezierCurve: true,
     tension: 0.3,
-    // scaleShowVerticalLines: true,
-    // scaleShowHorizontalLines: false,
     responsive: true,
     hover: {
       mode: 'nearest',
     },
     elements: {
       point: {
-        radius: 0.5,
+        radius: 0,  // Hide points completely
+      },
+      line: {
+        borderWidth: 3,        // Thicker line
+        borderDash: [],        // Solid line
+        fill: false,           // No fill area
+        borderCapStyle: 'round', // Rounded line caps
+        borderJoinStyle: 'round' // Rounded line joins
       },
     },
     animation: false,
     scales: {
-      x: {
-        display: this.showXAxis,
-        title: {
-          display: true,
-          text: this.xAxisLabel,
-          color: 'black',
-          font: {
-            weight: 'bold',
-          },
-        },
-        grid: {
-          display: false,
-        }
-      },
-      y: {
-        display: this.showYAxis,
-        title: {
-          display: true,
-          text: this.yAxisLabel,
-          color: 'black',
-          font: {
-            weight: 'bold',
-          },
-        },
-        grid: {
-          display: false,
-        },
-        padding: {
-          top: 10,
-          bottom: 10,
-        },
-      },
+      // ... your existing scales config
     },
     legend: this.showLegend,
   };
 
   ngOnInit() {
-    if (this.graphCanvas) {
+    if (this.graphCanvas && !this.chart) {
       this.createChart();
+      console.log("ngOnInit");
     }
 
     this.animationService.currentFrameIndex$.subscribe(step => {
-      console.log("step: " + step);
       this.updateGraphAtStep(step);
     });
   }
 
   ngAfterViewInit() {
-    if (this.graphCanvas) {
+    console.log("chart1? " + (this.chart === undefined) as unknown as string )
+    if (this.graphCanvas && !this.chart) {
+      console.log("ngAfterViewInit");
       this.createChart();
+      console.log("chart2? " + (this.chart === undefined) as unknown as string )
     }
   }
 
@@ -203,7 +180,7 @@ export class GraphSectionComponent implements AfterViewInit, OnInit {
 
       console.log("Chart destroyed!!!");
     }
-
+    console.log("updateChart");
     this.createChart();
 
 
