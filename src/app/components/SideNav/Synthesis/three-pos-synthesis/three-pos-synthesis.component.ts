@@ -15,7 +15,6 @@ import { Coord } from 'src/app/model/coord';
 import { ChangeDetectorRef } from '@angular/core';
 import {PositionSolverService} from "../../../../services/kinematic-solver.service";
 import {Position} from "../../../../model/position";
-import { NotificationService } from 'src/app/services/notification.service';
 
 
 interface CoordinatePosition {
@@ -109,7 +108,7 @@ export class ThreePosSynthesis{
 
 
 
-  constructor(private stateService: StateService, private interactionService: InteractionService, private cdr: ChangeDetectorRef, private positionSolver: PositionSolverService, private notificationService: NotificationService) {
+  constructor(private stateService: StateService, private interactionService: InteractionService, private cdr: ChangeDetectorRef, private positionSolver: PositionSolverService) {
     this.mechanism = this.stateService.getMechanism();
   }
   setReference(r: string) {
@@ -235,11 +234,7 @@ export class ThreePosSynthesis{
 }
 
 isFourBarGenerated(): boolean {
-  console.log("well is it? S" + this.fourBarGenerated)
     return this.fourBarGenerated;
-}
-onInputClick(){
-  this.notificationService.showNotification("Clear Current Four-bar so that change link length and positions and regenerate a new four-bar");
 }
 
 isSixBarGenerated(): boolean {
@@ -326,8 +321,6 @@ isSixBarGenerated(): boolean {
         lastGround = this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1].getJoints()[1];
         this.synthedMech.push(this.mechanism.getArrayOfLinks()[this.mechanism.getArrayOfLinks().length - 1]);
       }
-      this.mechanism.setMechanismGenerated();
-      
 
       //adds the grounded joints and input
 
@@ -360,8 +353,7 @@ isSixBarGenerated(): boolean {
       const linkInteractor = new LinkInteractor(
         inputLink,
         this.stateService,
-        this.interactionService,
-        this.notificationService,
+        this.interactionService
       );
       this.interactionService.setSelectedObject(linkInteractor);
       this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
@@ -395,39 +387,38 @@ isSixBarGenerated(): boolean {
       this.position1!.locked = true;
       this.position2!.locked = true;
       this.position3!.locked = true;
-      this.position1!._joints.forEach((number)=>{
-          number.generated = true;
-      });
-      this.position2!._joints.forEach((number)=>{
-        number.generated = true;
-      });
-      this.position3!._joints.forEach((number)=>{
-      number.generated = true;
-      });
+      console.log(this.positionSolver.getAnimationPositions());
+      console.log(this.mechanism);
     }
   }
 
   generateSixBar() {
     this.sixBarGenerated = !this.sixBarGenerated;
     //clear the six-bar
+
     if (!this.sixBarGenerated) {
-      let listOfLinks = this.synthedMech;
+      let listOfLinks = this.synthedMech[4].id;
       console.log(listOfLinks);
-      while (this.synthedMech.length > 0) {
-        let linkId = this.synthedMech[0].id;
+      while (this.synthedMech.length > 4) {
+        let linkId = this.synthedMech[4].id;
         console.log(linkId);
-        this.synthedMech.splice(0, 1);
+        this.synthedMech.splice(4, 1);
         this.mechanism.removeLink(linkId);
+        this.mechanism.removeLink(linkId - 1);
         this.position1!.locked = false;
         this.position2!.locked = false;
         this.position3!.locked = false;
         console.log("LIST OF LINKS AFTER DELETION:")
         console.log(this.mechanism.getArrayOfLinks());
+        this.mechanism.removeJoint(10);
+
       }
+      this.mechanism.removeJoint(10);
       this.setPositionsColorToDefault();
       this.mechanism.clearTrajectories();
       console.log("Six-bar has been cleared");
-      this.fourBarGenerated = false;
+      this.fourBarGenerated = true;
+      this.sixBarGenerated = false;
       this.cdr.detectChanges();
       return;
     }
@@ -494,7 +485,6 @@ isSixBarGenerated(): boolean {
     this.cdr.detectChanges();
     this.positionSolver.solvePositions();
     this.verifyMechanismPath();
-    this.mechanism.setMechanismGenerated();
   }
 
   setPositionsColorToDefault() {
@@ -920,25 +910,32 @@ setPosYCoord(y: number, posNum: number){
       return new Joint(-1 /*Jav here, put this as placeholder id, idk if it needs to be something specific but we will see if something breaks */, new Coord(centerX, centerY));
     }
   }
-getPosXCoord(posNum: number){
-    if(posNum==1) return this.getReferenceJoint(this.position1 as Position).coords.x.toFixed(3);
-    else if(posNum==2) return this.getReferenceJoint(this.position2 as Position).coords.x.toFixed(3);
-    return this.getReferenceJoint(this.position3 as Position).coords.x.toFixed(3);
-}
-getPosYCoord(posNum: number){
-  if(posNum==1) return this.getReferenceJoint(this.position1 as Position).coords.y.toFixed(3);
-  else if(posNum==2) return this.getReferenceJoint(this.position2 as Position).coords.y.toFixed(3);
-  return this.getReferenceJoint(this.position3 as Position).coords.y.toFixed(3);
-}
 
-getPosAngle(posNum: number){
+getPosXCoord(posNum: number): number{
     if(posNum==1)
-        return this.pos1Angle.toFixed(3) as unknown as number;
+        return this.pos1X;
     else if(posNum==2)
-        return this.pos2Angle.toFixed(3) as unknown as number;
+        return this.pos2X;
     else
-        return this.pos3Angle.toFixed(3) as unknown as number;
+        return this.pos3X;
+}
 
+getPosYCoord(posNum: number): number{
+    if(posNum==1)
+        return this.pos1Y;
+    else if(posNum==2)
+        return this.pos2Y;
+    else
+        return this.pos3Y;
+}
+
+getPosAngle(posNum: number): number{
+    if(posNum==1)
+        return this.pos1Angle;
+    else if(posNum==2)
+        return this.pos2Angle;
+    else
+        return this.pos3Angle;
 }
 
 
@@ -988,23 +985,25 @@ allPositionsDefined(): boolean {
   confirmRemoveAll: boolean = false;
 
   removeAllPositions() {
-    if (!this.confirmRemoveAll) {
-      this.confirmRemoveAll = true;
-      setTimeout(() => this.confirmRemoveAll = false, 3000);
-    } else {
-      if (this.fourBarGenerated){
-        this.fourBarGenerated = false;
+
+      if (!this.confirmRemoveAll) {
+        this.confirmRemoveAll = true;
+        setTimeout(() => this.confirmRemoveAll = false, 3000);
+      } else {
+        if (this.fourBarGenerated) {
+          this.fourBarGenerated = false;
+        }
+        if (this.sixBarGenerated) {
+          this.fourBarGenerated = false;
+          this.sixBarGenerated = false;
+        }
+        this.synthedMech = [];
+        this.confirmRemoveAll = false;
+        this.deletePosition(1);
+        this.deletePosition(2);
+        this.deletePosition(3);
       }
-      if (this.sixBarGenerated){
-        this.fourBarGenerated = false;
-        this.sixBarGenerated = false;
-      }
-      this.synthedMech = [];
-      this.confirmRemoveAll = false;
-      this.deletePosition(1);
-      this.deletePosition(2);
-      this.deletePosition(3);
-    }
+
   }
 
   findIntersectionPoint(pose1_coord1: Coord, pose2_coord1: Coord, pose3_coord1: Coord) {
@@ -1172,6 +1171,7 @@ verifyMechanismPath() {
       }
     }
 
+
     if (inputJoint && groundJoint && otherGroundJoint) {
       console.log("Before Swap:");
       console.log("Input Joint:", inputJoint);
@@ -1200,6 +1200,53 @@ verifyMechanismPath() {
     }
 
     this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
+  }
+  clearLinkage() {
+    //button changes to "clear four bar" when already generated, so remove mechanism
+    if (this.fourBarGenerated) {
+      let listOfLinks = this.synthedMech;
+      console.log(listOfLinks);
+      while (this.synthedMech.length > 0) {
+        let linkId = this.synthedMech[0].id;
+        console.log(linkId);
+        this.synthedMech.splice(0, 1);
+        this.mechanism.removeLink(linkId);
+        this.position1!.locked = false;
+        this.position2!.locked = false;
+        this.position3!.locked = false;
+        console.log("LIST OF LINKS AFTER DELETION:");
+        console.log(this.mechanism.getArrayOfLinks());
+      }
+      this.setPositionsColorToDefault();
+      this.mechanism.clearTrajectories();
+      this.fourBarGenerated = false;
+      this.sixBarGenerated = false;
+      this.synthedMech = [];
+      this.Generated.emit(false);
+    }
+    this.sixBarGenerated = !this.sixBarGenerated;
+    //clear the six-bar
+    if (!this.sixBarGenerated) {
+      let listOfLinks = this.synthedMech;
+      console.log(listOfLinks);
+      while (this.synthedMech.length > 0) {
+        let linkId = this.synthedMech[0].id;
+        console.log(linkId);
+        this.synthedMech.splice(0, 1);
+        this.mechanism.removeLink(linkId);
+        this.position1!.locked = false;
+        this.position2!.locked = false;
+        this.position3!.locked = false;
+        console.log("LIST OF LINKS AFTER DELETION:")
+        console.log(this.mechanism.getArrayOfLinks());
+      }
+      this.setPositionsColorToDefault();
+      this.mechanism.clearTrajectories();
+      console.log("Six-bar has been cleared");
+      this.fourBarGenerated = false;
+      this.cdr.detectChanges();
+      return;
+    }
   }
 
   updateEndPointCoords(positionIndex: number, coordType: 'x0' | 'y0' | 'x1' | 'y1', value: number): void {
@@ -1246,15 +1293,15 @@ verifyMechanismPath() {
     this.cdr.detectChanges();
   }
 
-getEndPointXCoords(positionIndex: number, jointIndex: number) {
-  if(positionIndex==1) return this.position1?.getJoints()[jointIndex].coords.x.toFixed(3);
-  else if(positionIndex==2) return this.position2?.getJoints()[jointIndex].coords.x.toFixed(3);
-  return this.position3?.getJoints()[jointIndex].coords.x.toFixed(3);
-}
-getEndPointYCoords(positionIndex: number, jointIndex: number) {
-  if(positionIndex==1) return this.position1?.getJoints()[jointIndex].coords.y.toFixed(3);
-  else if(positionIndex==2) return this.position2?.getJoints()[jointIndex].coords.y.toFixed(3);
-  return this.position3?.getJoints()[jointIndex].coords.y.toFixed(3);
+getEndPointCoords(positionIndex: number, coordType: 'x0' | 'y0' | 'x1' | 'y1'): number {
+    // Validate position index
+    if (positionIndex < 1 || positionIndex > 3) {
+        console.error("Invalid position index. It must be 1, 2, or 3.");
+        return 0; // Default value in case of invalid index
+    }
+
+    const index = positionIndex - 1; // Convert 1-based index to 0-based
+    return this.twoPointPositions[index][coordType];
 }
 
 // Helper to update joint positions based on center and reference type
