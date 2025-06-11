@@ -4,7 +4,9 @@ import {
   AfterViewInit,
   OnInit,
   ViewChild,
-  ElementRef
+  ElementRef,
+  OnChanges,
+  SimpleChanges
 } from '@angular/core';
 import {
   Chart,
@@ -43,7 +45,7 @@ const verticalLinePlugin: Plugin = {
   templateUrl: './graph-section.component.html',
   styleUrls: ['./graph-section.component.scss']
 })
-export class GraphSectionComponent implements AfterViewInit, OnInit {
+export class GraphSectionComponent implements AfterViewInit, OnInit, OnChanges {
   @Input() inputXData?: any[] = [{ data: [], label: 'X Position' }];
   @Input() inputYData?: any[] = [{ data: [], label: 'Y Position' }];
   @Input() inputLabels?: string[] = [""];
@@ -59,7 +61,9 @@ export class GraphSectionComponent implements AfterViewInit, OnInit {
   @Input() yAxisLabel = '';
 
   public chart!: Chart;
-
+  public showGrid: boolean = false;
+  public showXCurve: boolean = true;  // New property for X curve visibility
+  public showYCurve: boolean = true;  // New property for Y curve visibility
   // public showGrid: boolean = true; // Default: grid ON
 
   constructor(private animationService: AnimationService) {}
@@ -85,28 +89,91 @@ export class GraphSectionComponent implements AfterViewInit, OnInit {
     },
     animation: false,
     scales: {
-      // ... your existing scales config
+      x: {
+        display: true, // Will be set properly in ngOnInit
+        title: {
+          display: true,
+          text: 'Time in Time Steps', // Will be updated in ngOnInit
+          color: 'black',
+          font: {
+            weight: 'bold',
+          },
+        },
+        grid: {
+          display: true,  // Default to showing grid
+        }
+      },
+      y: {
+        display: true, // Will be set properly in ngOnInit
+        title: {
+          display: true,
+          text: '', // Will be updated in ngOnInit
+          color: 'black',
+          font: {
+            weight: 'bold',
+          },
+        },
+        grid: {
+          display: true,  // Default to showing grid
+        },
+        padding: {
+          top: 10,
+          bottom: 10,
+        },
+      },
     },
-    legend: this.showLegend,
+    legend: true, // Will be updated in ngOnInit
   };
+  
+  ngOnChanges(changes: SimpleChanges) {
+    // Only update if chart exists and data inputs have changed
+    if (this.chart && (changes['inputXData'] || changes['inputYData'] || changes['inputLabels'])) {
+      this.updateChartData();
+    }
+  }
+
+  private updateChartData() {
+    if (!this.chart) return;
+    
+    // Update the chart's data directly instead of recreating
+    this.chart.data.labels = this.inputLabels;
+    
+    // Build datasets array based on curve visibility
+    const datasets = [];
+    if (this.showXCurve && this.inputXData) {
+      datasets.push(...this.inputXData);
+    }
+    if (this.showYCurve && this.inputYData) {
+      datasets.push(...this.inputYData);
+    }
+    
+    this.chart.data.datasets = datasets;
+    
+    // Update the chart
+    this.chart.update();
+  }
 
   ngOnInit() {
-    if (this.graphCanvas && !this.chart) {
-      this.createChart();
-      console.log("ngOnInit");
-    }
+    // Update chart options with proper values
+    this.ChartOptions.scales.x.display = this.showXAxis;
+    this.ChartOptions.scales.y.display = this.showYAxis;
+    this.ChartOptions.scales.x.title.text = this.xAxisLabel;
+    this.ChartOptions.scales.y.title.text = this.yAxisLabel;
+    this.ChartOptions.legend = this.showLegend;
 
+    if (this.graphCanvas) {
+      this.createChart();
+    }
+    
     this.animationService.currentFrameIndex$.subscribe(step => {
+      console.log("step: " + step);
       this.updateGraphAtStep(step);
     });
   }
 
   ngAfterViewInit() {
-    console.log("chart1? " + (this.chart === undefined) as unknown as string )
     if (this.graphCanvas && !this.chart) {
-      console.log("ngAfterViewInit");
       this.createChart();
-      console.log("chart2? " + (this.chart === undefined) as unknown as string )
     }
   }
 
@@ -115,23 +182,27 @@ export class GraphSectionComponent implements AfterViewInit, OnInit {
     console.log("Creating chart!");
 
     if (this.inputXData && this.inputYData) {
+      // Build initial datasets based on curve visibility
+      const datasets = [];
+      if (this.showXCurve) {
+        datasets.push(...this.inputXData);
+      }
+      if (this.showYCurve) {
+        datasets.push(...this.inputYData);
+      }
+
       this.chart = new Chart(ctx, {
         type: 'line',
         data: {
           labels: this.inputLabels,
-          datasets: [
-            ...this.inputXData,
-            ...this.inputYData,
-          ]
+          datasets: datasets
         },
         options: {
           ...(this.ChartOptions as ChartOptions),
         },
         plugins: [verticalLinePlugin]
       });
-
     }
-
   }
 
   public updateGraphAtStep(step: number) {
@@ -140,6 +211,17 @@ export class GraphSectionComponent implements AfterViewInit, OnInit {
     this.chart.update();
   }
 
+  // New method to handle X curve toggle
+  public onToggleXCurve(event: any): void {
+    this.showXCurve = event.target.checked;
+    this.updateChartData();
+  }
+
+  // New method to handle Y curve toggle
+  public onToggleYCurve(event: any): void {
+    this.showYCurve = event.target.checked;
+    this.updateChartData();
+  }
 
   downloadCSV() {
     let csvContent = "data:text/csv;charset=utf-8,";
@@ -166,24 +248,11 @@ export class GraphSectionComponent implements AfterViewInit, OnInit {
   }
 
   onToggleGrid(event: any): void {
-    this.ChartOptions.scales.x.grid.display= event.target.checked;
-    this.ChartOptions.scales.y.grid.display= event.target.checked;
-    this.chart.update();
-    this.updateChart();
-  }
-
-  updateChart(): void {
-
-
+    this.showGrid = event.target.checked;
     if (this.chart) {
       this.chart.destroy();
-
-      console.log("Chart destroyed!!!");
+      this.createChart();
     }
-    console.log("updateChart");
-    this.createChart();
-
-
   }
 
   public downloadPNG() {
@@ -192,7 +261,7 @@ export class GraphSectionComponent implements AfterViewInit, OnInit {
 
     // Redraw chart without red line
     this.chart.update();
-    this.updateChart();
+    this.updateChartData();
 
     // Create PNG from canvas
     const originalCanvas = this.chart.canvas;
@@ -211,7 +280,7 @@ export class GraphSectionComponent implements AfterViewInit, OnInit {
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, width, height);
 
-    // 🖼 Draw the chart canvas onto the white canvas
+    // Draw the chart canvas onto the white canvas
     ctx.drawImage(originalCanvas, 0, 0);
 
     // Export to PNG
@@ -226,9 +295,6 @@ export class GraphSectionComponent implements AfterViewInit, OnInit {
     // Restore vertical line and redraw
     Chart.register(verticalLinePlugin);
     this.chart.update();
-    this.updateChart();
-
+    this.updateChartData();
   }
-
-
 }
