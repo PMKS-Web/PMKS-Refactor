@@ -122,6 +122,7 @@ export class GraphSectionComponent implements AfterViewInit, OnInit {
     }
 
     this.animationService.currentFrameIndex$.subscribe(step => {
+      console.log("step: " + step);
       this.updateGraphAtStep(step);
     });
   }

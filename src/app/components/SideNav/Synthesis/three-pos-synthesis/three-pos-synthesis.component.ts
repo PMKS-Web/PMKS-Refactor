@@ -235,7 +235,6 @@ export class ThreePosSynthesis{
 }
 
 isFourBarGenerated(): boolean {
-  console.log("well is it? S" + this.fourBarGenerated)
     return this.fourBarGenerated;
 }
 onInputClick(){

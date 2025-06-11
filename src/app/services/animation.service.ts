@@ -162,6 +162,7 @@ export class AnimationService {
             state.isPaused = true;
             state.currentFrameIndex = 0;
         }
+        this.emitCurrentFrameIndex(0);
     }
 
   // Finds and returns the sub-mechanism index that contains the specified joint ID, or –1 if not found.
