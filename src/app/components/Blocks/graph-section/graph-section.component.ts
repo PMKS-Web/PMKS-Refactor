@@ -62,7 +62,9 @@ export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         console.log('Selection changed!');
-        this.updateChartData(); // Only update when selection changes
+        setTimeout(() => {
+          this.updateChartData();
+        }, 50);
       });
   }
   private syncOverlayCanvas(): void {
