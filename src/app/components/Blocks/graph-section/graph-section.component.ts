@@ -19,27 +19,6 @@ interface ChartDataInput {
   [key: string]: any;
 }
 
-const VERTICAL_LINE_PLUGIN: Plugin = {
-  id: 'verticalLine',
-  beforeDraw: (chart: Chart) => {
-    const currentStep = (chart as any).currentTimeStep;
-    if (typeof currentStep !== 'number') return;
-
-    const { ctx, chartArea, scales: { x } } = chart;
-    const xPos = x.getPixelForValue(currentStep);
-    if (xPos === undefined) return;
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(xPos, chartArea.top);
-    ctx.lineTo(xPos, chartArea.bottom);
-    ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.restore();
-  }
-};
-
 
 @Component({
   selector: 'app-analysis-graph-block',
@@ -120,8 +99,8 @@ export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
       responsive: true,
       animation: false,
       hover: {
-        mode: 'index',       // Show tooltip for all datasets at the hovered index
-        intersect: false     // Do not require an actual intersection with the line
+        mode: 'index',
+        intersect: false    
       },
       interaction: {
         mode: 'index',
@@ -135,7 +114,6 @@ export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
           mode: 'index',
           intersect: false,
           callbacks: {
-            // Optional: customize tooltip label format
             label: (context) => {
               const label = context.dataset.label || '';
               const value = context.formattedValue;
@@ -224,7 +202,7 @@ export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
         datasets: this.chartDatasets
       },
       options: this.chartOptions,
-      plugins: [VERTICAL_LINE_PLUGIN]
+      plugins: [],
     });
   }
 
