@@ -120,7 +120,9 @@ export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
               return `${label}: ${value}`;
             }
           }
-        }
+        },decimation: {
+          enabled: true,
+        },
       },
       elements: {
         point: {
