@@ -5,14 +5,13 @@ import {
   ElementRef,
   OnInit,
   OnDestroy,
-  OnChanges,
-  SimpleChanges,
   AfterViewInit,
   ChangeDetectionStrategy
 } from '@angular/core';
 import { Chart, ChartOptions, Plugin, ChartDataset } from 'chart.js';
 import { Subject, takeUntil } from 'rxjs';
 import { AnimationService } from 'src/app/services/animation.service';
+import { InteractionService } from 'src/app/services/interaction.service';
 
 interface ChartDataInput {
   data: number[];
@@ -22,12 +21,11 @@ interface ChartDataInput {
 
 const VERTICAL_LINE_PLUGIN: Plugin = {
   id: 'verticalLine',
-  afterDatasetsDraw: (chart: Chart) => {
-    const { ctx, scales: { x }, chartArea } = chart;
+  beforeDraw: (chart: Chart) => {
     const currentStep = (chart as any).currentTimeStep;
-    
     if (typeof currentStep !== 'number') return;
-    
+
+    const { ctx, chartArea, scales: { x } } = chart;
     const xPos = x.getPixelForValue(currentStep);
     if (xPos === undefined) return;
 
@@ -42,13 +40,14 @@ const VERTICAL_LINE_PLUGIN: Plugin = {
   }
 };
 
+
 @Component({
   selector: 'app-analysis-graph-block',
   templateUrl: './graph-section.component.html',
   styleUrls: ['./graph-section.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GraphSectionComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
+export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() inputXData: ChartDataInput[] = [{ data: [], label: 'X Position' }];
   @Input() inputYData: ChartDataInput[] = [{ data: [], label: 'Y Position' }];
   @Input() inputLabels: string[] = [];
@@ -62,6 +61,9 @@ export class GraphSectionComponent implements OnInit, OnChanges, AfterViewInit, 
   @Input() yAxisLabel = '';
 
   @ViewChild('graphCanvas', { static: true }) private graphCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('overlayCanvas', { static: true }) private overlayCanvas!: ElementRef<HTMLCanvasElement>;
+  
+
 
   chart?: Chart;
   showGrid = true;
@@ -70,21 +72,35 @@ export class GraphSectionComponent implements OnInit, OnChanges, AfterViewInit, 
   
   private readonly destroy$ = new Subject<void>();
 
-  constructor(private readonly animationService: AnimationService) {}
+  constructor(private readonly animationService: AnimationService, private interactionService: InteractionService) {}
 
   ngOnInit(): void {
     this.subscribeToAnimationService();
+    this.subscribeToInteractionService();
+  }
+  private subscribeToInteractionService(): void {
+    this.interactionService._selectionChange$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        console.log('Selection changed!');
+        this.updateChartData(); // Only update when selection changes
+      });
+  }
+  private syncOverlayCanvas(): void {
+    const chartCanvas = this.graphCanvas.nativeElement;
+    const overlay = this.overlayCanvas.nativeElement;
+  
+    // Match internal canvas resolution
+    overlay.width = chartCanvas.width;
+    overlay.height = chartCanvas.height;
+  
+    // Match CSS size (already done with width: 100%; height: 100%)
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    const dataChanges = ['inputXData', 'inputYData', 'inputLabels'];
-    if (this.chart && dataChanges.some(key => changes[key])) {
-      this.updateChartData();
-    }
-  }
 
   ngAfterViewInit(): void {
     this.createChart();
+    this.syncOverlayCanvas();
   }
 
   ngOnDestroy(): void {
@@ -221,10 +237,24 @@ export class GraphSectionComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   private updateGraphAtStep(step: number): void {
-    if (!this.chart) return;
-
-    (this.chart as any).currentTimeStep = step;
-    this.chart.update('none');
+    if (!this.chart || !this.overlayCanvas) return;
+  
+    const overlay = this.overlayCanvas.nativeElement;
+    const ctx = overlay.getContext('2d');
+    if (!ctx) return;
+  
+    const xScale = this.chart.scales['x'];
+    const xPos = xScale.getPixelForValue(step);
+    if (xPos === undefined) return;
+  
+    ctx.clearRect(0, 0, overlay.width, overlay.height);
+  
+    ctx.beginPath();
+    ctx.moveTo(xPos, this.chart.chartArea.top);
+    ctx.lineTo(xPos, this.chart.chartArea.bottom);
+    ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
   }
 
   onToggleGrid(event: Event): void {
