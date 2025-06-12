@@ -84,7 +84,7 @@
                                       [inputXData]="getGraphData().xData"
                                       [inputYData]="getGraphData().yData"
                                       [inputLabels]="getGraphData().timeLabels"
-                                      [yAxisLabel]="getGraphTypeName(currentGraphType)">
+                                      [yAxisLabel]="getGraphTypeName(currentGraphType)+ ' (' + this.currentGlobalUSuffix + ')'">
             </app-analysis-graph-block>
           </div>
       </ng-container>

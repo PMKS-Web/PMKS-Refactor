@@ -35,7 +35,7 @@
                                       [inputXData]="getGraphData().xData"
                                       [inputYData]="getGraphData().yData"
                                       [inputLabels]="getGraphData().timeLabels"
-                                      [yAxisLabel]="getGraphTypeName(currentGraphType)">
+                                      [yAxisLabel]="getGraphTypeName(currentGraphType) + ' (' + this.currentGlobalUSuffix + ')'">
             </app-analysis-graph-block>
           </div>
         </ng-container>
@@ -54,7 +54,7 @@
                                       [inputXData]="getGraphData().xData"
                                       [inputYData]="getGraphData().yData"
                                       [inputLabels]="getGraphData().timeLabels"
-                                      [yAxisLabel]="getGraphTypeName(currentGraphType)">
+                                      [yAxisLabel]="getGraphTypeName(currentGraphType) + ' (' + this.currentGlobalUSuffix + '/s)'">
             </app-analysis-graph-block>
           </div>
         </ng-container>
@@ -73,7 +73,7 @@
                                       [inputXData]="getGraphData().xData"
                                       [inputYData]="getGraphData().yData"
                                       [inputLabels]="getGraphData().timeLabels"
-                                      [yAxisLabel]="getGraphTypeName(currentGraphType)">
+                                      [yAxisLabel]="getGraphTypeName(currentGraphType) + ' (' + this.currentGlobalUSuffix + '/s²)'">
             </app-analysis-graph-block>
           </div>
         </ng-container>
