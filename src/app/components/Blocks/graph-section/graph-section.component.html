@@ -1,19 +1,30 @@
-<div style="display: flex; flex-direction: column; ">
+<div style="display: flex; flex-direction: column;">
   <!-- Grid Toggle -->
-  <div style="display: flex; justify-content: flex-end; width: 100%;">
-    <label class="switch">
-      <input type="checkbox" (change)="onToggleGrid($event)">
-      <span class="slider round"></span>
-    </label>
-    <span style="font-size: 14px">Show Grid</span>
-  </div>
-
-  <!-- Graph Canvas -->
-  <canvas style="height: 300px; width: 300px;" #graphCanvas></canvas>
-
-  <!-- Download Buttons -->
+ <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;" class="container">
+  <div style="display: flex; gap: 5px; padding-left: 15px;">
+    <div style="display: flex; align-items: center; gap: 2px;">
+        <input type="checkbox" class="boxInput left-box" (input)="toggleX()" checked>
+        <span style="font-size: 14px;">X</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 2px;">
+        <input type="checkbox" class="boxInput right-box" (input)="toggleY()" checked>
+        <span style="font-size: 14px;">Y</span>
+    </div>
+</div>
+     
+     <div style="display: flex; align-items: center; gap: 5px;">
+         <label class="switch">
+             <input type="checkbox" (change)="onToggleGrid($event)" checked>
+             <span class="slider round"></span>
+         </label>
+         <span style="font-size: 14px">Show Grid</span>
+     </div>
+ </div>
+ <!-- Graph Canvas -->
+ <canvas style="height: 300px; width: 300px;" #graphCanvas></canvas>
+ <!-- Download Buttons -->
   <div class="button-group">
     <button (click)="downloadCSV()" class="download-btn">Download CSV</button>
     <button (click)="downloadPNG()" class="download-btn">Download PNG</button>
   </div>
-</div>
+ </div>

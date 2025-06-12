@@ -53,7 +53,7 @@ export class GraphSectionComponent implements OnInit, OnChanges, AfterViewInit, 
   @Input() inputYData: ChartDataInput[] = [{ data: [], label: 'Y Position' }];
   @Input() inputLabels: string[] = [];
   @Input() view: [number, number] = [700, 400];
-  @Input() colorScheme = { domain: ['#5AA454', '#A10A28', '#C7B42C', '#AAAAAA'] };
+  @Input() colorScheme = { domain: ['#d65337', '#4042a3', '#C7B42C', '#AAAAAA'] };
   @Input() gradient = false;
   @Input() showLegend = true;
   @Input() showXAxis = true;
@@ -64,7 +64,9 @@ export class GraphSectionComponent implements OnInit, OnChanges, AfterViewInit, 
   @ViewChild('graphCanvas', { static: true }) private graphCanvas!: ElementRef<HTMLCanvasElement>;
 
   chart?: Chart;
-  showGrid = false;
+  showGrid = true;
+  showXCurve = true;
+  showYCurve = true;
   
   private readonly destroy$ = new Subject<void>();
 
@@ -144,7 +146,29 @@ export class GraphSectionComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   private get chartDatasets(): ChartDataset<'line'>[] {
-    return [...(this.inputXData || []), ...(this.inputYData || [])];
+    const datasets: ChartDataset<'line'>[] = [];
+    
+    // Add X data if enabled - always use first color
+    if (this.showXCurve && this.inputXData) {
+      const xDatasets = this.inputXData.map((dataset, index) => ({
+        ...dataset,
+        borderColor: this.colorScheme.domain[0], 
+        backgroundColor: this.colorScheme.domain[0]
+      }));
+      datasets.push(...xDatasets);
+    }
+    
+    // Add Y data if enabled - always use second color
+    if (this.showYCurve && this.inputYData) {
+      const yDatasets = this.inputYData.map((dataset, index) => ({
+        ...dataset,
+        borderColor: this.colorScheme.domain[1], // Always use second color for Y data
+        backgroundColor: this.colorScheme.domain[1]
+      }));
+      datasets.push(...yDatasets);
+    }
+    
+    return datasets;
   }
 
   private createChart(): void {
@@ -187,6 +211,16 @@ export class GraphSectionComponent implements OnInit, OnChanges, AfterViewInit, 
       this.chart.destroy();
       this.createChart();
     }
+  }
+
+  toggleX(): void {
+    this.showXCurve = !this.showXCurve;
+    this.updateChartData();
+  }
+
+  toggleY(): void {
+    this.showYCurve = !this.showYCurve;
+    this.updateChartData();
   }
 
   downloadCSV(): void {
