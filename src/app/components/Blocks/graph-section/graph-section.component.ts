@@ -103,9 +103,35 @@ export class GraphSectionComponent implements OnInit, OnChanges, AfterViewInit, 
     return {
       responsive: true,
       animation: false,
-      hover: { mode: 'nearest' },
+      hover: {
+        mode: 'index',       // Show tooltip for all datasets at the hovered index
+        intersect: false     // Do not require an actual intersection with the line
+      },
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          display: this.showLegend
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            // Optional: customize tooltip label format
+            label: (context) => {
+              const label = context.dataset.label || '';
+              const value = context.formattedValue;
+              return `${label}: ${value}`;
+            }
+          }
+        }
+      },
       elements: {
-        point: { radius: 0 },
+        point: {
+          radius: 0
+        },
         line: {
           borderWidth: 3,
           borderDash: [],
@@ -113,9 +139,6 @@ export class GraphSectionComponent implements OnInit, OnChanges, AfterViewInit, 
           borderCapStyle: 'round',
           borderJoinStyle: 'round'
         }
-      },
-      interaction: {
-        intersect: false
       },
       scales: {
         x: {
@@ -126,7 +149,9 @@ export class GraphSectionComponent implements OnInit, OnChanges, AfterViewInit, 
             color: 'black',
             font: { weight: 'bold' }
           },
-          grid: { display: this.showGrid }
+          grid: {
+            display: this.showGrid
+          }
         },
         y: {
           display: this.showYAxis,
@@ -136,11 +161,10 @@ export class GraphSectionComponent implements OnInit, OnChanges, AfterViewInit, 
             color: 'black',
             font: { weight: 'bold' }
           },
-          grid: { display: this.showGrid },
+          grid: {
+            display: this.showGrid
+          }
         }
-      },
-      plugins: {
-        legend: { display: false }
       }
     };
   }
