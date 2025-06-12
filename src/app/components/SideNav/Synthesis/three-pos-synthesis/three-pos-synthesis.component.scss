@@ -230,28 +230,6 @@ hr.solid2 {
   background-color: #3F51B5;
 }
 
-.clearLinkage{
-  margin:0 auto;
-  display:inherit;
-  background-color: white;
-  width: 60%;
-  height: 40px;
-  border-radius: 20px;
-  border: 1px solid black;
-  font-weight: bold;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-  margin-top: 3px;
-  margin-bottom: 10px;
-  background-color: #e8eaf6;
-  color: #3F51B5;
-  border: none;
-}
-
-.clearLinkage:hover {
-  color: #e8eaf6;
-  background-color: #3F51B5;
-}
-
 .generateFourBar{
   margin:0 auto;
   display:inherit;
@@ -570,7 +548,7 @@ div.poseData {
 .generateFourBar,
 .generateFourBarGrey,
 .recalc, .recalcGray,
-.inputSwap, .generateSixBar, .clearLinkage {
+.inputSwap, .generateSixBar {
   height: 36px;
   width: 70%;
   font-family: Roboto, "Helvetica Neue", sans-serif;
