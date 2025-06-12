@@ -34,7 +34,8 @@
             <app-analysis-graph-block class="large-graph"
                                       [inputXData]="getGraphData().xData"
                                       [inputYData]="getGraphData().yData"
-                                      [inputLabels]="getGraphData().timeLabels">
+                                      [inputLabels]="getGraphData().timeLabels"
+                                      [yAxisLabel]="getGraphTypeName(currentGraphType)">
             </app-analysis-graph-block>
           </div>
         </ng-container>
@@ -52,7 +53,8 @@
             <app-analysis-graph-block class="large-graph"
                                       [inputXData]="getGraphData().xData"
                                       [inputYData]="getGraphData().yData"
-                                      [inputLabels]="getGraphData().timeLabels">
+                                      [inputLabels]="getGraphData().timeLabels"
+                                      [yAxisLabel]="getGraphTypeName(currentGraphType)">
             </app-analysis-graph-block>
           </div>
         </ng-container>
@@ -70,7 +72,8 @@
             <app-analysis-graph-block class="large-graph"
                                       [inputXData]="getGraphData().xData"
                                       [inputYData]="getGraphData().yData"
-                                      [inputLabels]="getGraphData().timeLabels">
+                                      [inputLabels]="getGraphData().timeLabels"
+                                      [yAxisLabel]="getGraphTypeName(currentGraphType)">
             </app-analysis-graph-block>
           </div>
         </ng-container>

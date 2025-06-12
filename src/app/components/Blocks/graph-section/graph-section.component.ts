@@ -58,8 +58,9 @@ export class GraphSectionComponent implements OnInit, OnChanges, AfterViewInit, 
   @Input() showLegend = true;
   @Input() showXAxis = true;
   @Input() showYAxis = true;
-  @Input() xAxisLabel = 'Time in Time Steps';
   @Input() yAxisLabel = '';
+
+  xAxisLabel = 'Time in Time Steps'; 
 
   @ViewChild('graphCanvas', { static: true }) private graphCanvas!: ElementRef<HTMLCanvasElement>;
 

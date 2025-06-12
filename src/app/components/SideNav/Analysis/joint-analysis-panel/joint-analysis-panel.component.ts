@@ -75,7 +75,6 @@ export class JointAnalysisPanelComponent {
       case GraphType.JointVelocity:
         return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, this.getGraphTypeName(this.currentGraphType));
 
-
       case GraphType.JointAcceleration:
         return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, this.getGraphTypeName(this.currentGraphType));
 
@@ -87,6 +86,7 @@ export class JointAnalysisPanelComponent {
         };
     }
   }
+  
 
   getMechanism(): Mechanism {return this.stateService.getMechanism();}
   getCurrentJoint(){
