@@ -69,6 +69,10 @@ constructor() {
       this.zoomPan.viewBoxY -= dragOffset.y * this.zoomPan.currentZoom;
   }
 
+  public getCurrentZoom(): number {
+    return this.zoomPan.currentZoom;
+  }
+
   // Updates window and viewBox dimensions when the browser window is resized.
   public _onWindowResize(event: UIEvent){
       event.stopPropagation();
@@ -136,5 +140,26 @@ constructor() {
       zoomScale: 1.10
     };
   }
+
+  public setZoom(zoom: number): void {
+    this.zoomPan.currentZoom = zoom;
+    this.zoomPan.viewBoxWidth = this.zoomPan.windowWidth * zoom;
+    this.zoomPan.viewBoxHeight = this.zoomPan.windowHeight * zoom;
+  }
+
+  public getViewBoxX(): number {
+    return this.zoomPan.viewBoxX;
+  }
+
+  public getViewBoxY(): number {
+    return this.zoomPan.viewBoxY;
+  }
+
+  public setPan(x: number, y: number): void {
+    this.zoomPan.viewBoxX = x;
+    this.zoomPan.viewBoxY = y;
+  }
+
+
 
 }

@@ -1,5 +1,7 @@
 import {StateService} from "./state.service";
 import LZString from "lz-string";
+import { PanZoomService } from './pan-zoom.service';
+
 
 /**
  * DecoderService is the reverse of the EncoderService.
@@ -31,8 +33,8 @@ import LZString from "lz-string";
  */
 export class DecoderService {
 
-  constructor() {
-  }
+  constructor(private panZoomService: PanZoomService) {}
+
   /**
    * Decodes an encoded URL string, reconstructs the mechanism data, and passes
    * it to the state service for rebuilding the mechanism.
@@ -41,7 +43,7 @@ export class DecoderService {
    *
    * @param stateService
    */
-  static decodeFromURL(encoded: string, stateService: StateService): any {
+  static decodeFromURL(encoded: string, stateService: StateService, panZoomService: PanZoomService){
     try {
       const decodedJson = LZString.decompressFromEncodedURIComponent(encoded);
       console.log(decodedJson);
@@ -51,6 +53,23 @@ export class DecoderService {
       // Expand the compact data into full objects.
       console.log(compactData);
       const fullData = this.expandMechanismData(compactData);
+
+      if (compactData.z) {
+        const zoom = parseFloat(compactData.z);
+        if (!isNaN(zoom)) {
+          panZoomService.setZoom(zoom);
+        }
+      }
+
+      if (compactData.px && compactData.py) {
+        const panX = parseFloat(compactData.px);
+        const panY = parseFloat(compactData.py);
+        if (!isNaN(panX) && !isNaN(panY)) {
+          panZoomService.setPan(panX, panY);
+        }
+      }
+
+
 
       // Step 3. Pass the reconstructed mechanism data to the state service.
       stateService.reconstructMechanism(fullData);
