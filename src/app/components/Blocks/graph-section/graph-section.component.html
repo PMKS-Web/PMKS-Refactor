@@ -1,25 +1,28 @@
 <div style="display: flex; flex-direction: column;">
-  <!-- Grid Toggle -->
- <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;" class="container">
-  <div style="display: flex; gap: 5px; padding-left: 15px;">
-    <div style="display: flex; align-items: center; gap: 2px;">
-        <input type="checkbox" class="boxInput left-box" (input)="toggleX()" checked>
-        <span style="font-size: 14px;">X</span>
+  <!-- Grid Toggle Row -->
+  <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;" class="container">
+    <!-- Fixed-width container for toggle boxes -->
+    <div style="width: 100px; padding-left: 15px;">
+      <div style="display: flex; gap: 5px;" *ngIf="hasBothDatasets">
+        <div style="display: flex; align-items: center; gap: 2px;">
+          <input type="checkbox" class="boxInput left-box" (input)="toggleX()" checked>
+          <span style="font-size: 14px;">X</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 2px;">
+          <input type="checkbox" class="boxInput right-box" (input)="toggleY()" checked>
+          <span style="font-size: 14px;">Y</span>
+        </div>
+      </div>
     </div>
-    <div style="display: flex; align-items: center; gap: 2px;">
-        <input type="checkbox" class="boxInput right-box" (input)="toggleY()" checked>
-        <span style="font-size: 14px;">Y</span>
+    <!-- Grid toggle always right-aligned -->
+    <div style="display: flex; align-items: center; gap: 5px;">
+      <label class="switch">
+        <input type="checkbox" (change)="onToggleGrid($event)" checked>
+        <span class="slider round"></span>
+      </label>
+      <span style="font-size: 14px">Show Grid</span>
     </div>
-</div>
-     
-     <div style="display: flex; align-items: center; gap: 5px;">
-         <label class="switch">
-             <input type="checkbox" (change)="onToggleGrid($event)" checked>
-             <span class="slider round"></span>
-         </label>
-         <span style="font-size: 14px">Show Grid</span>
-     </div>
- </div>
+  </div>
  <!-- Graph Canvas -->
   
  <div style="position: relative; display: inline-block; width: 300px; height: 300px;">

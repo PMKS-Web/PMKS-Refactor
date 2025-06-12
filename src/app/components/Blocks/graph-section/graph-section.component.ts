@@ -33,7 +33,6 @@ export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() view: [number, number] = [700, 400];
   @Input() colorScheme = { domain: ['#d65337', '#4042a3', '#C7B42C', '#AAAAAA'] };
   @Input() gradient = false;
-  @Input() showLegend = true;
   @Input() showXAxis = true;
   @Input() showYAxis = true;
   @Input() xAxisLabel = 'Time in Time Steps';
@@ -66,6 +65,11 @@ export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
           this.updateChartData();
         }, 50);
       });
+  }
+  get hasBothDatasets(): boolean {
+    const hasXData = this.inputXData?.some(ds => Array.isArray(ds.data) && ds.data.length > 0);
+    const hasYData = this.inputYData?.some(ds => Array.isArray(ds.data) && ds.data.length > 0);
+    return !!hasXData && !!hasYData;
   }
   private syncOverlayCanvas(): void {
     const chartCanvas = this.graphCanvas.nativeElement;
@@ -110,7 +114,7 @@ export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       plugins: {
         legend: {
-          display: this.showLegend
+          display: false
         },
         tooltip: {
           mode: 'index',
