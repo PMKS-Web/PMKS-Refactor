@@ -20,19 +20,19 @@
         <!-- edit, delete,locking buttons -->
         <!-- edit -->
         <button (click)="this.isEditingTitle=true">
-          <img id="edit" ngSrc='assets/icons/edit.svg' style="height: 16px; width: 16px;" height="48" width="48" alt=""/>
+          <img id="edit" ngSrc='assets/icons/edit.svg' style="height: 16px; width: 16px;" matTooltip="Edit Link Title" matTooltipShowDelay='300' height="48" width="48" alt=""/>
         </button>
         <!-- delete -->
         <button (click)="this.deleteLink()">
-          <img id="trash" ngSrc='assets/icons/trash.svg' style="height: 16px; width: 16px;" height="18" width="15" alt=""/>
+          <img id="trash" ngSrc='assets/icons/trash.svg' style="height: 16px; width: 16px;" matTooltip="Delete This Link" matTooltipShowDelay='300' height="18" width="15" alt=""/>
         </button>
         <!-- lock -->
         <button (click)="this.lockLink()">
           <ng-container *ngIf="isLocked; else unlockIcon">
-            <img ngSrc='assets/icons/unlock.svg' style="height: 24px; width: 24px; margin-top: -2.5px;" height="25" width="25" alt=""/>
+            <img ngSrc='assets/icons/unlock.svg' style="height: 24px; width: 24px; margin-top: -2.5px;" matTooltip="Unlock This Link" matTooltipShowDelay='300' height="25" width="25" alt=""/>
           </ng-container>
           <ng-template #unlockIcon>
-            <img ngSrc='assets/icons/lock.svg' style="height: 24px; width: 24px; margin-top: -2.5px;" height="50" width="25" alt=""/>
+            <img ngSrc='assets/icons/lock.svg' style="height: 24px; width: 24px; margin-top: -2.5px;" matTooltip="Lock This Link" matTooltipShowDelay='300' height="50" width="25" alt=""/>
           </ng-template>
         </button>
       </title-block>
