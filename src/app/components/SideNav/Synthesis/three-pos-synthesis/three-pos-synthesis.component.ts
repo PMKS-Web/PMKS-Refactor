@@ -696,17 +696,14 @@ getFirstUndefinedPosition(): number{
     if (index === 1) {
       this.pos1Specified = false;
       this.mechanism.removePosition(this.position1!.id);
-      this.position1 = null;
       this.resetPos(1);
     } else if (index === 2) {
       this.pos2Specified = false;
       this.mechanism.removePosition(this.position2!.id);
-      this.position2 = null;
       this.resetPos(2);
     } else if (index === 3) {
       this.pos3Specified = false;
       this.mechanism.removePosition(this.position3!.id);
-      this.position3 = null;
       this.resetPos(3);
     }
   }
@@ -729,6 +726,7 @@ allPositionsDefined(): boolean {
         this.fourBarGenerated = false;
         this.sixBarGenerated = false;
       }
+      console.log("Hello111")
       this.synthedMech = [];
       this.confirmRemoveAll = false;
       this.deletePosition(1);
