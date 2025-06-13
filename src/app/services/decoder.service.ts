@@ -68,6 +68,10 @@ export class DecoderService {
           panZoomService.setPan(panX, panY);
         }
       }
+      if(compactData.sb){
+        console.log("sixBar: " + compactData.sb)
+        stateService.sixBarGenerated = compactData.sb !== "n";
+      }
 
 
 
@@ -198,6 +202,7 @@ export class DecoderService {
       length: this.convertNumber(row[10]),
       angle: this.convertNumber(row[11])
     }));
+    
 
     return { decodedJoints, decodedLinks, decodedCompoundLinks, decodedTrajectories, decodedForces, decodedPositions };
   }

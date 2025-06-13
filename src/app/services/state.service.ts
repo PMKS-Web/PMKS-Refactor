@@ -55,6 +55,9 @@ export class StateService {
     globalASuffixCurrent = this.globalAnglesSuffix.asObservable();
     globalActivePanelCurrent = this.globalActivePanel.asObservable();
 
+
+    public sixBarGenerated:boolean = false;
+
   constructor() {
     console.log("StateService constructor");
     this.mechanism = new Mechanism();

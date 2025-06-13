@@ -118,6 +118,10 @@ export class ThreePosSynthesis implements OnInit{
         this.pos3Angle = position.angle;
       }
     }));
+    let initialGreenCount = this.mechanism.getArrayOfPositions().filter(position => position.color === 'green').length;
+    if (initialGreenCount > 0) this.fourBarGenerated = true;
+    this.sixBarGenerated = this.stateService.sixBarGenerated;
+    
   }
   setReference(r: string) {
       this.reference = r;
@@ -271,6 +275,7 @@ onInputClick(){
       this.mechanism.clearTrajectories();
       this.fourBarGenerated = false;
       this.sixBarGenerated = false;
+      this.stateService.sixBarGenerated= this.sixBarGenerated;
       this.synthedMech = [];
       this.Generated.emit(false);
     }
@@ -356,6 +361,8 @@ onInputClick(){
 
   generateSixBar() {
     this.sixBarGenerated = !this.sixBarGenerated;
+    this.stateService.sixBarGenerated= this.sixBarGenerated;
+
     //clear the six-bar
     if (!this.sixBarGenerated) {
       let listOfLinks = this.synthedMech;
@@ -725,8 +732,9 @@ allPositionsDefined(): boolean {
       if (this.sixBarGenerated){
         this.fourBarGenerated = false;
         this.sixBarGenerated = false;
+        this.stateService.sixBarGenerated= this.sixBarGenerated;
+
       }
-      console.log("Hello111")
       this.synthedMech = [];
       this.confirmRemoveAll = false;
       this.deletePosition(1);
