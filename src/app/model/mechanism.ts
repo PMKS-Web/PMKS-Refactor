@@ -123,7 +123,8 @@ export class Mechanism {
     // console.log( this._positions);
 
     this.notifyChange();
-    //console.log(this);
+    console.log("this:");
+    console.log(this);
   }
 
   populateTrajectories(positionSolver: PositionSolverService): void {
@@ -938,7 +939,7 @@ export class Mechanism {
 
     //----------------------------GET FUNCTIONS----------------------------
     getJoint(id: number): Joint {
-        return <Joint>this._joints.get(id) || this._joints.get(id);
+        return <Joint> this._joints.get(id) || this._joints.get(id);
     }
 
     getLink(id: number): Link {

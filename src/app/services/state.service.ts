@@ -84,7 +84,7 @@ export class StateService {
                               decodedCompoundLinks:any[],
                               decodedTrajectories:any[],
                               decodedForces:any[],
-                              decodedPositions:any[] } ) : void {
+                              decodedPositions:Position[] } ) : void {
     // A fresh Mechanism
     //this.mechanism = new Mechanism();
 
@@ -163,11 +163,11 @@ export class StateService {
     //Links TODO FORCES IMPLEMENTATION
     if (rawData.decodedPositions) {
       for (const position of rawData.decodedPositions) {
-
-        let jointsArray: Joint[] = position.joints.split("|").map((element: string):Joint => {return this.mechanism.getJoint(Number(element))});
+        const jointsArray = (position.joints as unknown as number[]).map(id => this.mechanism.getJoint(Number(id)));
+        console.log("Joints Array: ");
+        console.log(jointsArray);
 
         let newPosition = new Position(position.id, jointsArray);
-        //link.forces.split("|").forEach((element:number)=> newLink._forces.set()); todo
         newPosition.name = position.name;
         newPosition.mass = position.mass;
         newPosition.angle = Number(position.angle);
@@ -176,6 +176,9 @@ export class StateService {
         newPosition.setReference(position.refPoint);
 
         this.mechanism._addPosition(newPosition);
+        let val1: Coord = Object.values(newPosition._joints)[0];
+        let val2: Coord = Object.values(newPosition._joints)[1];
+        // this.mechanism.addPos(val1,val2 );
       }
     }
 

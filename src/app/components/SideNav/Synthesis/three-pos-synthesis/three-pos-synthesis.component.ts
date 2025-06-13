@@ -237,13 +237,13 @@ export class ThreePosSynthesis{
 isFourBarGenerated(): boolean {
     return this.fourBarGenerated;
 }
+isSixBarGenerated(): boolean {
+  return this.sixBarGenerated;
+}
 onInputClick(){
   this.notificationService.showNotification("Clear Current Four-bar so that change link length and positions and regenerate a new four-bar");
 }
 
-isSixBarGenerated(): boolean {
-    return this.sixBarGenerated;
-  }
   getLastJoint(joints: IterableIterator<Joint>): Joint | undefined{
     let lastJoint: Joint | undefined;
     for (const joint of joints) {
