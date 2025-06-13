@@ -100,6 +100,7 @@ export class Mechanism {
     let jointB = new Joint(this._jointIDCount, coordTwo);
     this._jointIDCount++;
 
+
     //Create pseudo joint for fixed reference point, do not add to maps, default to center
     const centerX = (jointA.coords.x + jointB.coords.x) / 2;
     const centerY = (jointA.coords.y + jointB.coords.y) / 2;
@@ -116,15 +117,8 @@ export class Mechanism {
 
     this._positionIDCount++;
     this._positions.set(position.id, position);
-    // this._linkIDCount++;
-    // this._links.set(position.id, position);
-
-    // console.log("Pos:");
-    // console.log( this._positions);
 
     this.notifyChange();
-    console.log("this:");
-    console.log(this);
   }
 
   populateTrajectories(positionSolver: PositionSolverService): void {
@@ -1038,6 +1032,10 @@ export class Mechanism {
 
     this.notifyChange();
   }
+  clearPositions(){
+    this._positions.clear();
+    this.notifyChange();
+  }
 
  //----------------------------GET FUNCTIONS FOR KINEMATICS----------------------------
     getSubMechanisms(): Array<Map<Joint,RigidBody[]>>{
@@ -1098,6 +1096,7 @@ export class Mechanism {
   public _addPosition(position: Position): void {
     this._positions.set(position.id, position);
     this._positionIDCount++;
+    this._refIdCount--;
   }
 
   public _addTrajectory(trajectory: Trajectory): void {

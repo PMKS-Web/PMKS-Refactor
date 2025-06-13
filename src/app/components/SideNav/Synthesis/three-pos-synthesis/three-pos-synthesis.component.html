@@ -183,11 +183,6 @@
                      Swap Input & Ground
                    </button>
                  </div>
-                 <div>
-                   <button class="clearLinkage">
-                     Clear Linkage
-                   </button>
-                 </div>
                </div>
            </div>
   </div>
@@ -204,11 +199,11 @@
           <div class="position-header">
             <p>Position {{ index}}</p>
             <span class="icons">
-      <mat-icon id="tooltip2" matTooltip="Specify the coordinates for Position {{ index}}" [matTooltipShowDelay]="1000">help_outline</mat-icon>
-      <button class="trash" *ngIf='this.isPositionDefined(index)' (click)="deletePosition(index)">
-        <img id="icon" ngSrc="assets/icons/trash.svg" alt="Delete Position" height="18" width="15">
-      </button>
-    </span>
+              <mat-icon id="tooltip2" matTooltip="Specify the coordinates for Position {{ index}}" [matTooltipShowDelay]="1000">help_outline</mat-icon>
+              <button class="trash" *ngIf='this.isPositionDefined(index)' (click)="deletePosition(index)">
+                <img id="icon" ngSrc="assets/icons/trash.svg" alt="Delete Position" height="18" width="15">
+              </button>
+            </span>
           </div>
 
           <!-- allows the user to enter coordinates for the end points -->
@@ -294,11 +289,6 @@
           <div>
             <button class="inputSwap" (click)="swapInputAndGround()">
               Swap Input & Ground
-            </button>
-          </div>
-          <div>
-            <button class="clearLinkage" >
-              Clear Linkage
             </button>
           </div>
         </div>

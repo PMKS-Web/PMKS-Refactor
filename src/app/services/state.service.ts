@@ -176,9 +176,7 @@ export class StateService {
         newPosition.setReference(position.refPoint);
 
         this.mechanism._addPosition(newPosition);
-        let val1: Coord = Object.values(newPosition._joints)[0];
-        let val2: Coord = Object.values(newPosition._joints)[1];
-        // this.mechanism.addPos(val1,val2 );
+        
       }
     }
 
