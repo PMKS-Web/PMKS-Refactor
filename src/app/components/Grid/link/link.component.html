@@ -1,6 +1,15 @@
 <svg:g appInteractable xmlns:svg="s" [interactor]="getInteractor()">
-  <path [attr.d]="getDrawnPath()" [attr.fill]="getColor()" [attr.fill-opacity]=0.7 [attr.stroke]="getStrokeColor()" [attr.stroke-width]=7></path>
-  <image *ngIf="getLocked()" xlink:href='../../../assets/icons/lock.svg' [attr.x]="getLockPositionX()-27.5" [attr.y]="getLockPositionY()-27.5" [attr.width]="55" [attr.height]="55"></image>
+  <path [attr.d]="getDrawnPath()" [attr.fill]="getColor()" [attr.fill-opacity]=0.7 [attr.stroke]="getStrokeColor()" [attr.stroke-width]=7>
+    
+  </path>
+  
+  <image *ngIf="getLocked()" 
+       xlink:href='../../../assets/icons/lock.svg' 
+       [attr.x]="getLockPosition().x - 25" 
+       [attr.y]="getLockPosition().y - 25" 
+       [attr.width]="55" 
+       [attr.height]="55">
+  </image>
   @if(isHovered() || isSelected()) {
     <!--Display Length-->
     <path [attr.d]="getLeftLineSVG()" stroke="black" stroke-width="3" ></path>
