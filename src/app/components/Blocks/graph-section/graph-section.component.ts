@@ -72,20 +72,20 @@ export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
     return !!hasXData && !!hasYData;
   }
   private syncOverlayCanvas(): void {
+    if (!this.chart) return;
+    
     const chartCanvas = this.graphCanvas.nativeElement;
     const overlay = this.overlayCanvas.nativeElement;
   
-    // Match internal canvas resolution
-    overlay.width = chartCanvas.width;
-    overlay.height = chartCanvas.height;
-  
-    // Match CSS size (already done with width: 100%; height: 100%)
+    // Use the chart's display size, not internal resolution
+    const rect = chartCanvas.getBoundingClientRect();
+    overlay.width = rect.width;
+    overlay.height = rect.height;
   }
 
 
   ngAfterViewInit(): void {
     this.createChart();
-    this.syncOverlayCanvas();
   }
 
   ngOnDestroy(): void {
@@ -212,6 +212,7 @@ export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
       options: this.chartOptions,
       plugins: [],
     });
+    this.syncOverlayCanvas();
   }
 
   private updateChartData(): void {
@@ -220,6 +221,7 @@ export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
     this.chart.data.labels = this.inputLabels;
     this.chart.data.datasets = this.chartDatasets;
     this.chart.update('none');
+    this.syncOverlayCanvas();
   }
 
   private updateGraphAtStep(step: number): void {
