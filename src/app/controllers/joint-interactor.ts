@@ -31,6 +31,10 @@ export class JointInteractor extends Interactor {
         else this.notificationService.showNotification("Please change the length and angle from the Synthesis Panel.");
         return;
       }
+      if(this.stateService.getCurrentActivePanel === "Analysis"){
+        this.notificationService.showNotification("Cannot edit in the Analysis mode! Switch to Edit mode to edit.");
+        return;
+      }
       if ((!this.joint.locked || this.stateService.getCurrentActivePanel === "Edit") && this._isDraggable && this.joint.id >= 0) {
         this.jointStartCoords = this.joint.coords.clone();
       }
@@ -78,6 +82,10 @@ export class JointInteractor extends Interactor {
         let mechanism: Mechanism = this.stateService.getMechanism();
         if (this.stateService.getCurrentActivePanel === "Synthesis"){
           this.notificationService.showNotification("Cannot edit in the Synthesis mode! Switch to Edit mode to edit.");
+        }
+        if (this.stateService.getCurrentActivePanel === "Analysis"){
+          this.notificationService.showNotification("Cannot edit in the Analysis mode! Switch to Edit mode to edit.");
+          return availableContext;
         }
         if (this.stateService.getCurrentActivePanel === "Edit") {
           availableContext.push(

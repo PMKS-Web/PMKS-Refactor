@@ -59,6 +59,10 @@ export class CompoundLinkInteractor extends Interactor {
           this.notificationService.showNotification("Cannot edit in the Synthesis mode! Switch to Edit mode to edit.");
           return availableContext;
         }
+        if (this.stateService.getCurrentActivePanel === "Analysis"){
+            this.notificationService.showNotification("Cannot edit in the Synthesis mode! Switch to Edit mode to edit.");
+            return availableContext;
+          }
         const mechanism: Mechanism = this.stateService.getMechanism();
         let modelPosAtRightClick = this.getMousePos().model;
         availableContext.push(
