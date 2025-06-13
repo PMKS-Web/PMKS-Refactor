@@ -29,10 +29,10 @@
         <!-- lock -->
         <button (click)="this.lockLink()">
           <ng-container *ngIf="isLocked; else unlockIcon">
-            <img ngSrc='assets/icons/unlock.svg' style="height: 16px; width: 16px;" height="24" width="24" alt=""/>
+            <img ngSrc='assets/icons/unlock.svg' style="height: 24px; width: 24px; margin-top: -2.5px;" height="25" width="25" alt=""/>
           </ng-container>
           <ng-template #unlockIcon>
-            <img ngSrc='assets/icons/lock.svg' style="height: 16px; width: 16px;" height="24" width="24" alt=""/>
+            <img ngSrc='assets/icons/lock.svg' style="height: 24px; width: 24px; margin-top: -2.5px;" height="50" width="25" alt=""/>
           </ng-template>
         </button>
       </title-block>
