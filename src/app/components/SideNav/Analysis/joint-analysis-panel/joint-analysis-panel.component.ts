@@ -22,11 +22,15 @@ export enum GraphType {
 export class JointAnalysisPanelComponent {
 
   currentGraphType: GraphType | null = null;
+  currentGlobalUSuffix: any;
 // Make the enum accessible in the template
   constructor(private stateService: StateService,
               private interactorService: InteractionService,
               private analysisSolverService: AnalysisSolveService){
       console.log("joint-analysis-panel.constructor");
+      this.stateService.globalUSuffixCurrent.subscribe(value => {
+        this.currentGlobalUSuffix = value;
+      });
   }
 
   // helper function to open a graph using the graph-button block
@@ -75,7 +79,6 @@ export class JointAnalysisPanelComponent {
       case GraphType.JointVelocity:
         return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, this.getGraphTypeName(this.currentGraphType));
 
-
       case GraphType.JointAcceleration:
         return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, this.getGraphTypeName(this.currentGraphType));
 
@@ -87,6 +90,7 @@ export class JointAnalysisPanelComponent {
         };
     }
   }
+  
 
   getMechanism(): Mechanism {return this.stateService.getMechanism();}
   getCurrentJoint(){

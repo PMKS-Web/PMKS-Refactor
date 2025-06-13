@@ -43,6 +43,10 @@ export class SvgInteractor extends Interactor {
           this.notificationService.showNotification("Cannot edit in the Synthesis mode! Switch to Edit mode to edit.");
           return availableContext;
     }
+    else if((this.stateService.getCurrentActivePanel === "Analysis")){
+      this.notificationService.showNotification("Cannot edit in the Analysis mode! Switch to Edit mode to edit.");
+      return availableContext;
+    }
     if (this.activePanel === "Edit") {
         availableContext.push({
           icon: "assets/contextMenuIcons/addLink.svg",

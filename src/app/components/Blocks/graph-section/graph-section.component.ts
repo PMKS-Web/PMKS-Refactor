@@ -1,256 +1,334 @@
 import {
   Component,
   Input,
-  AfterViewInit,
-  OnInit,
   ViewChild,
-  ElementRef
+  ElementRef,
+  OnInit,
+  OnDestroy,
+  AfterViewInit,
+  ChangeDetectionStrategy
 } from '@angular/core';
-import {
-  Chart,
-  ChartOptions,
-  Plugin
-} from 'chart.js'
-
+import { Chart, ChartOptions, Plugin, ChartDataset } from 'chart.js';
+import { Subject, takeUntil } from 'rxjs';
 import { AnimationService } from 'src/app/services/animation.service';
+import { InteractionService } from 'src/app/services/interaction.service';
 
-// Plugin: draw animated vertical line
-const verticalLinePlugin: Plugin = {
-  id: 'verticalLine',
-  afterDatasetsDraw: (chart: Chart) => {
-    const ctx = chart.ctx;
-    const xScale = chart.scales['x'];
+interface ChartDataInput {
+  data: number[];
+  label: string;
+  [key: string]: any;
+}
 
-    const currentStep = (chart as any).currentTimeStep;
-    if (typeof currentStep !== 'number') return;
-
-    const xPos = xScale.getPixelForValue(currentStep);
-    if (!xPos) return;
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(xPos, chart.chartArea.top);
-    ctx.lineTo(xPos, chart.chartArea.bottom);
-    ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.restore();
-  }
-};
 
 @Component({
   selector: 'app-analysis-graph-block',
   templateUrl: './graph-section.component.html',
-  styleUrls: ['./graph-section.component.scss']
+  styleUrls: ['./graph-section.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GraphSectionComponent implements AfterViewInit, OnInit {
-  @Input() inputXData?: any[] = [{ data: [], label: 'X Position' }];
-  @Input() inputYData?: any[] = [{ data: [], label: 'Y Position' }];
-  @Input() inputLabels?: string[] = [""];
-  @ViewChild('graphCanvas') graphCanvas!: ElementRef;
-
+export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
+  @Input() inputXData: ChartDataInput[] = [{ data: [], label: 'X Position' }];
+  @Input() inputYData: ChartDataInput[] = [{ data: [], label: 'Y Position' }];
+  @Input() inputLabels: string[] = [];
   @Input() view: [number, number] = [700, 400];
-  @Input() colorScheme = { domain: ['#5AA454', '#A10A28', '#C7B42C', '#AAAAAA'] };
+  @Input() colorScheme = { domain: ['#d65337', '#4042a3', '#C7B42C', '#AAAAAA'] };
   @Input() gradient = false;
-  @Input() showLegend = true;
   @Input() showXAxis = true;
   @Input() showYAxis = true;
   @Input() xAxisLabel = 'Time in Time Steps';
   @Input() yAxisLabel = '';
 
-  public chart!: Chart;
+  @ViewChild('graphCanvas', { static: true }) private graphCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('overlayCanvas', { static: true }) private overlayCanvas!: ElementRef<HTMLCanvasElement>;
+  
 
-  // public showGrid: boolean = true; // Default: grid ON
 
-  constructor(private animationService: AnimationService) {}
+  chart?: Chart;
+  showGrid = true;
+  showXCurve = true;
+  showYCurve = true;
+  
+  private readonly destroy$ = new Subject<void>();
 
-  public ChartOptions: any = {
-    bezierCurve: true,
-    tension: 0.3,
-    // scaleShowVerticalLines: true,
-    // scaleShowHorizontalLines: false,
-    responsive: true,
-    hover: {
-      mode: 'nearest',
-    },
-    elements: {
-      point: {
-        radius: 0.5,
+  constructor(private readonly animationService: AnimationService, private interactionService: InteractionService) {}
+
+  ngOnInit(): void {
+    this.subscribeToAnimationService();
+    this.subscribeToInteractionService();
+  }
+  private subscribeToInteractionService(): void {
+    this.interactionService._selectionChange$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        console.log('Selection changed!');
+        setTimeout(() => {
+          this.updateChartData();
+        }, 50);
+      });
+  }
+  get hasBothDatasets(): boolean {
+    const hasXData = this.inputXData?.some(ds => Array.isArray(ds.data) && ds.data.length > 0);
+    const hasYData = this.inputYData?.some(ds => Array.isArray(ds.data) && ds.data.length > 0);
+    return !!hasXData && !!hasYData;
+  }
+  private syncOverlayCanvas(): void {
+    if (!this.chart) return;
+    
+    const chartCanvas = this.graphCanvas.nativeElement;
+    const overlay = this.overlayCanvas.nativeElement;
+  
+    // Use the chart's display size, not internal resolution
+    const rect = chartCanvas.getBoundingClientRect();
+    overlay.width = rect.width;
+    overlay.height = rect.height;
+  }
+
+
+  ngAfterViewInit(): void {
+    this.createChart();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.chart?.destroy();
+  }
+
+  private subscribeToAnimationService(): void {
+    this.animationService.currentFrameIndex$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(step => this.updateGraphAtStep(step));
+  }
+
+  private get chartOptions(): ChartOptions {
+    return {
+      responsive: true,
+      animation: false,
+      hover: {
+        mode: 'index',
+        intersect: false    
       },
-    },
-    animation: false,
-    scales: {
-      x: {
-        display: this.showXAxis,
-        title: {
-          display: true,
-          text: this.xAxisLabel,
-          color: 'black',
-          font: {
-            weight: 'bold',
-          },
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          display: false
         },
-        grid: {
-          display: false,
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            label: (context) => {
+              const label = context.dataset.label || '';
+              const value = context.formattedValue;
+              return `${label}: ${value}`;
+            }
+          }
+        },decimation: {
+          enabled: true,
+        },
+      },
+      elements: {
+        point: {
+          radius: 0
+        },
+        line: {
+          borderWidth: 3,
+          borderDash: [],
+          fill: false,
+          borderCapStyle: 'round',
+          borderJoinStyle: 'round'
         }
       },
-      y: {
-        display: this.showYAxis,
-        title: {
-          display: true,
-          text: this.yAxisLabel,
-          color: 'black',
-          font: {
-            weight: 'bold',
+      scales: {
+        x: {
+          display: this.showXAxis,
+          title: {
+            display: this.showXAxis,
+            text: this.xAxisLabel,
+            color: 'black',
+            font: { weight: 'bold' }
           },
+          grid: {
+            display: this.showGrid
+          }
         },
-        grid: {
-          display: false,
-        },
-        padding: {
-          top: 10,
-          bottom: 10,
-        },
-      },
-    },
-    legend: this.showLegend,
-  };
+        y: {
+          display: this.showYAxis,
+          title: {
+            display: this.showYAxis,
+            text: this.yAxisLabel,
+            color: 'black',
+            font: { weight: 'bold' }
+          },
+          grid: {
+            display: this.showGrid
+          }
+        }
+      }
+    };
+  }
 
-  ngOnInit() {
-    if (this.graphCanvas) {
+  private get chartDatasets(): ChartDataset<'line'>[] {
+    const datasets: ChartDataset<'line'>[] = [];
+    
+    // Add X data if enabled - always use first color
+    if (this.showXCurve && this.inputXData) {
+      const xDatasets = this.inputXData.map((dataset, index) => ({
+        ...dataset,
+        borderColor: this.colorScheme.domain[0], 
+        backgroundColor: this.colorScheme.domain[0]
+      }));
+      datasets.push(...xDatasets);
+    }
+    
+    // Add Y data if enabled - always use second color
+    if (this.showYCurve && this.inputYData) {
+      const yDatasets = this.inputYData.map((dataset, index) => ({
+        ...dataset,
+        borderColor: this.colorScheme.domain[1], // Always use second color for Y data
+        backgroundColor: this.colorScheme.domain[1]
+      }));
+      datasets.push(...yDatasets);
+    }
+    
+    return datasets;
+  }
+
+  private createChart(): void {
+    if (!this.graphCanvas?.nativeElement) return;
+
+    const ctx = this.graphCanvas.nativeElement.getContext('2d');
+    if (!ctx) return;
+
+    this.chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: this.inputLabels,
+        datasets: this.chartDatasets
+      },
+      options: this.chartOptions,
+      plugins: [],
+    });
+    this.syncOverlayCanvas();
+  }
+
+  private updateChartData(): void {
+    if (!this.chart) return;
+
+    this.chart.data.labels = this.inputLabels;
+    this.chart.data.datasets = this.chartDatasets;
+    this.chart.update('none');
+    this.syncOverlayCanvas();
+  }
+
+  private updateGraphAtStep(step: number): void {
+    if (!this.chart || !this.overlayCanvas) return;
+  
+    const overlay = this.overlayCanvas.nativeElement;
+    const ctx = overlay.getContext('2d');
+    if (!ctx) return;
+  
+    const xScale = this.chart.scales['x'];
+    const xPos = xScale.getPixelForValue(step);
+    if (xPos === undefined) return;
+  
+    ctx.clearRect(0, 0, overlay.width, overlay.height);
+  
+    ctx.beginPath();
+    ctx.moveTo(xPos, this.chart.chartArea.top);
+    ctx.lineTo(xPos, this.chart.chartArea.bottom);
+    ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  onToggleGrid(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.showGrid = target.checked;
+    
+    if (this.chart) {
+      this.chart.destroy();
       this.createChart();
     }
+  }
 
-    this.animationService.currentFrameIndex$.subscribe(step => {
-      this.updateGraphAtStep(step);
+  toggleX(): void {
+    this.showXCurve = !this.showXCurve;
+    this.updateChartData();
+  }
+
+  toggleY(): void {
+    this.showYCurve = !this.showYCurve;
+    this.updateChartData();
+  }
+
+  downloadCSV(): void {
+    if (!this.inputLabels?.length || !this.inputXData?.length || !this.inputYData?.length) return;
+
+    const rows = ['Time,X Data,Y Data'];
+    const maxLength = Math.max(
+      this.inputLabels.length,
+      this.inputXData[0]?.data?.length || 0,
+      this.inputYData[0]?.data?.length || 0
+    );
+
+    for (let i = 0; i < maxLength; i++) {
+      const time = this.inputLabels[i] || '';
+      const xData = this.inputXData[0]?.data[i] ?? '';
+      const yData = this.inputYData[0]?.data[i] ?? '';
+      rows.push(`${time},${xData},${yData}`);
+    }
+
+    this.downloadFile(rows.join('\n'), 'graph_data.csv', 'text/csv');
+  }
+
+  downloadPNG(): void {
+    if (!this.chart) return;
+
+    const canvas = this.chart.canvas;
+    const exportCanvas = document.createElement('canvas');
+    const ctx = exportCanvas.getContext('2d');
+    
+    if (!ctx) return;
+
+    exportCanvas.width = canvas.width;
+    exportCanvas.height = canvas.height;
+
+    // White background
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+    
+    // Temporarily hide vertical line
+    const currentStep = (this.chart as any).currentTimeStep;
+    delete (this.chart as any).currentTimeStep;
+    this.chart.update('none');
+
+    // Draw chart
+    ctx.drawImage(canvas, 0, 0);
+
+    // Restore vertical line
+    if (currentStep !== undefined) {
+      (this.chart as any).currentTimeStep = currentStep;
+      this.chart.update('none');
+    }
+
+    // Download
+    exportCanvas.toBlob(blob => {
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        this.downloadFile(url, 'graph.png', 'image/png', true);
+        URL.revokeObjectURL(url);
+      }
     });
   }
 
-  ngAfterViewInit() {
-    if (this.graphCanvas) {
-      this.createChart();
-    }
-  }
-
-  createChart() {
-    const ctx: CanvasRenderingContext2D = this.graphCanvas.nativeElement.getContext('2d');
-    console.log("Creating chart!");
-
-    if (this.inputXData && this.inputYData) {
-      this.chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: this.inputLabels,
-          datasets: [
-            ...this.inputXData,
-            ...this.inputYData,
-          ]
-        },
-        options: {
-          ...(this.ChartOptions as ChartOptions),
-        },
-        plugins: [verticalLinePlugin]
-      });
-
-    }
-
-  }
-
-  public updateGraphAtStep(step: number) {
-    if (!this.chart || !this.inputLabels) return;
-    (this.chart as any).currentTimeStep = step;
-    this.chart.update();
-  }
-
-
-  downloadCSV() {
-    let csvContent = "data:text/csv;charset=utf-8,";
-
-    csvContent += "Time,X Data,Y Data\n";
-
-    if (this.inputLabels && this.inputXData && this.inputYData) {
-      for (let i = 0; i < this.inputLabels.length; i++) {
-        let time = this.inputLabels[i] || "";
-        let xData = this.inputXData[0]?.data[i] ?? "";
-        let yData = this.inputYData[0]?.data[i] ?? "";
-
-        csvContent += `${time},${xData},${yData}\n`;
-      }
-    }
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "graph_data.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-
-  onToggleGrid(event: any): void {
-    this.ChartOptions.scales.x.grid.display= event.target.checked;
-    this.ChartOptions.scales.y.grid.display= event.target.checked;
-    this.chart.update();
-    this.updateChart();
-  }
-
-  updateChart(): void {
-
-
-    if (this.chart) {
-      this.chart.destroy();
-
-      console.log("Chart destroyed!!!");
-    }
-
-    this.createChart();
-
-
-  }
-
-  public downloadPNG() {
-    // Remove the red line temporarily
-    Chart.unregister(verticalLinePlugin);
-
-    // Redraw chart without red line
-    this.chart.update();
-    this.updateChart();
-
-    // Create PNG from canvas
-    const originalCanvas = this.chart.canvas;
-    const width = originalCanvas.width;
-    const height = originalCanvas.height;
-
-    // Create a temporary canvas with white background
-    const exportCanvas = document.createElement('canvas');
-    exportCanvas.width = width;
-    exportCanvas.height = height;
-
-    const ctx = exportCanvas.getContext('2d');
-    if (!ctx) return;
-
-    // Draw white background
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, width, height);
-
-    // 🖼 Draw the chart canvas onto the white canvas
-    ctx.drawImage(originalCanvas, 0, 0);
-
-    // Export to PNG
-    const image = exportCanvas.toDataURL('image/png');
+  private downloadFile(content: string, filename: string, mimeType: string, isBlob = false): void {
     const link = document.createElement('a');
-    link.href = image;
-    link.download = 'graph.png';
-    document.body.appendChild(link);
+    link.href = isBlob ? content : `data:${mimeType};charset=utf-8,${encodeURIComponent(content)}`;
+    link.download = filename;
     link.click();
-    document.body.removeChild(link);
-
-    // Restore vertical line and redraw
-    Chart.register(verticalLinePlugin);
-    this.chart.update();
-    this.updateChart();
-
   }
-
-
 }

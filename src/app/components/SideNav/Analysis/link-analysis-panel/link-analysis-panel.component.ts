@@ -28,10 +28,18 @@ export class LinkAnalysisPanelComponent {
 
   currentGraphType: GraphType | null = null;
   referenceJoint: Joint = this.getCurrentLink().joints.get(0) as Joint;
+  currentGlobalUSuffix: any;
+  currentGlobalAngleSuffix: any;
   constructor(private stateService: StateService, private interactorService: InteractionService,
               private analysisSolverService: AnalysisSolveService){
-      console.log("joint-analysis-panel.constructor");
-  }
+                this.stateService.globalUSuffixCurrent.subscribe(value => {
+                  this.currentGlobalUSuffix = value;
+                });
+                this.stateService.globalASuffixCurrent.subscribe(value => {
+                  this.currentGlobalAngleSuffix = value;
+                });
+
+    }
 
   getMechanism(): Mechanism {return this.stateService.getMechanism();}
   getCurrentLink(){
@@ -75,15 +83,15 @@ export class LinkAnalysisPanelComponent {
       case GraphType.CoMPosition:
         return 'Center of Mass Position';
       case GraphType.CoMVelocity:
-        return 'Center of Mass Velocity';
+        return 'Center of Mass Velocity (' + this.currentGlobalUSuffix + '/s)';
       case GraphType.CoMAcceleration:
-        return 'Center of Mass Acceleration';
+        return 'Center of Mass Acceleration(' + this.currentGlobalUSuffix + '/s²)';
       case GraphType.referenceJointAngle:
-        return 'Reference Joint Angle'
+        return 'Reference Joint Angle(' + this.currentGlobalAngleSuffix + ')'; 
       case GraphType.referenceJointAngularVelocity:
-        return 'Reference Joint Angular Velocity'
+        return 'Reference Joint Angular Velocity(' + this.currentGlobalAngleSuffix + '/s)'; 
       case GraphType.referenceJointAngularAcceleration:
-        return 'Reference Joint Angular Acceleration'
+        return 'Reference Joint Angular Acceleration(' + this.currentGlobalAngleSuffix + '/s²)'; 
       // Add more cases as needed
       default:
         return ''; // Handle unknown cases or add a default value

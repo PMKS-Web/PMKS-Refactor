@@ -15,12 +15,16 @@ This interactor defines the following behaviors:
 export class CompoundLinkInteractor extends Interactor {
 
     private jointsStartPosModel: Map<number, Coord> = new Map();
-
+    private lastNotificationTime = 0;
 
     constructor(public compoundLink: CompoundLink, private stateService: StateService, private notificationService: NotificationService) {
         super(true, true);
 
         this.onDragStart$.subscribe(() => {
+            if(this.stateService.getCurrentActivePanel === "Synthesis"){
+                this.notificationService.showNotification("Cannot edit in the Synthesis mode! Switch to Edit mode to edit.");
+                return;
+              }
             this.compoundLink.links.forEach((link: Link) => {
                 link.joints.forEach((joint: Joint, id: number) => {
                     this.jointsStartPosModel.set(id, joint._coords);
@@ -29,6 +33,14 @@ export class CompoundLinkInteractor extends Interactor {
         });
 
         this.onDrag$.subscribe(() => {
+            if (this.stateService.getCurrentActivePanel === "Analysis") {
+                const now = Date.now();
+                if (now - this.lastNotificationTime >= 3000) { // 3 seconds = 3000ms
+                  this.notificationService.showNotification("Cannot edit in the Analysis mode! Switch to Edit mode to edit.");
+                  this.lastNotificationTime = now;
+                }
+                return;
+              }
             this.jointsStartPosModel.forEach((coord: Coord, jointID: number) => {
                 this.stateService.getMechanism().setJointCoord(jointID, coord.add(this.dragOffsetInModel!))
             });
@@ -59,6 +71,10 @@ export class CompoundLinkInteractor extends Interactor {
           this.notificationService.showNotification("Cannot edit in the Synthesis mode! Switch to Edit mode to edit.");
           return availableContext;
         }
+        if (this.stateService.getCurrentActivePanel === "Analysis"){
+            this.notificationService.showNotification("Cannot edit in the Analysis mode! Switch to Edit mode to edit.");
+            return availableContext;
+          }
         const mechanism: Mechanism = this.stateService.getMechanism();
         let modelPosAtRightClick = this.getMousePos().model;
         availableContext.push(
