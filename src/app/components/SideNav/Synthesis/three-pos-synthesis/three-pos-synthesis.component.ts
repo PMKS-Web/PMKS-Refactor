@@ -409,24 +409,29 @@ isSixBarGenerated(): boolean {
   generateSixBar() {
     this.sixBarGenerated = !this.sixBarGenerated;
     //clear the six-bar
-    if (!this.sixBarGenerated) {
-      let listOfLinks = this.synthedMech;
+     if (!this.sixBarGenerated) {
+      let listOfLinks = this.synthedMech[4].id;
       console.log(listOfLinks);
-      while (this.synthedMech.length > 0) {
-        let linkId = this.synthedMech[0].id;
+      while (this.synthedMech.length > 4) {
+        let linkId = this.synthedMech[4].id;
         console.log(linkId);
-        this.synthedMech.splice(0, 1);
+        this.synthedMech.splice(4, 1);
         this.mechanism.removeLink(linkId);
+        this.mechanism.removeLink(linkId - 1);
         this.position1!.locked = false;
         this.position2!.locked = false;
         this.position3!.locked = false;
         console.log("LIST OF LINKS AFTER DELETION:")
         console.log(this.mechanism.getArrayOfLinks());
+        this.mechanism.removeJoint(10);
+
       }
+      this.mechanism.removeJoint(10);
       this.setPositionsColorToDefault();
       this.mechanism.clearTrajectories();
       console.log("Six-bar has been cleared");
-      this.fourBarGenerated = false;
+      this.fourBarGenerated = true;
+      this.sixBarGenerated = false;
       this.cdr.detectChanges();
       return;
     }
@@ -1199,6 +1204,54 @@ verifyMechanismPath() {
     }
 
     this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
+  }
+  
+  clearLinkage() {
+    //button changes to "clear four bar" when already generated, so remove mechanism
+    if (this.fourBarGenerated) {
+      let listOfLinks = this.synthedMech;
+      console.log(listOfLinks);
+      while (this.synthedMech.length > 0) {
+        let linkId = this.synthedMech[0].id;
+        console.log(linkId);
+        this.synthedMech.splice(0, 1);
+        this.mechanism.removeLink(linkId);
+        this.position1!.locked = false;
+        this.position2!.locked = false;
+        this.position3!.locked = false;
+        console.log("LIST OF LINKS AFTER DELETION:");
+        console.log(this.mechanism.getArrayOfLinks());
+      }
+      this.setPositionsColorToDefault();
+      this.mechanism.clearTrajectories();
+      this.fourBarGenerated = false;
+      this.sixBarGenerated = false;
+      this.synthedMech = [];
+      this.Generated.emit(false);
+    }
+    this.sixBarGenerated = !this.sixBarGenerated;
+    //clear the six-bar
+    if (!this.sixBarGenerated) {
+      let listOfLinks = this.synthedMech;
+      console.log(listOfLinks);
+      while (this.synthedMech.length > 0) {
+        let linkId = this.synthedMech[0].id;
+        console.log(linkId);
+        this.synthedMech.splice(0, 1);
+        this.mechanism.removeLink(linkId);
+        this.position1!.locked = false;
+        this.position2!.locked = false;
+        this.position3!.locked = false;
+        console.log("LIST OF LINKS AFTER DELETION:")
+        console.log(this.mechanism.getArrayOfLinks());
+      }
+      this.setPositionsColorToDefault();
+      this.mechanism.clearTrajectories();
+      console.log("Six-bar has been cleared");
+      this.fourBarGenerated = false;
+      this.cdr.detectChanges();
+      return;
+    }
   }
 
   updateEndPointCoords(positionIndex: number, coordType: 'x0' | 'y0' | 'x1' | 'y1', value: number): void {
