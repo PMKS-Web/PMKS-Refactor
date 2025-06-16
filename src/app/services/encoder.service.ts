@@ -183,7 +183,8 @@ export class EncoderService {
         j.isWelded,
         j.locked,
         j.isHidden,
-        j.isReference
+        j.isReference,
+        j.isGenerated
       ]),
       l: mechanism.getArrayOfLinks().map((l: Link) => [
         l.id,

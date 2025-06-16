@@ -112,6 +112,7 @@ export class StateService {
         newJoint.locked = Boolean(joint.locked);
         newJoint.hidden = Boolean(joint.isHidden);
         newJoint.reference = Boolean(joint.isReference);
+        newJoint.generated = Boolean(joint.isGenerated);
         if(Boolean(joint.isInput)) { newJoint.addInput();}
         newJoint.speed = Number(joint.inputSpeed);
         if (Boolean(!joint.type)) {newJoint.addSlider();}

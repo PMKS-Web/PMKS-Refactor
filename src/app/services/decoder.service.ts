@@ -1,6 +1,7 @@
 import {StateService} from "./state.service";
 import LZString from "lz-string";
 import { PanZoomService } from './pan-zoom.service';
+import { Joint } from "../model/joint";
 
 
 /**
@@ -69,7 +70,6 @@ export class DecoderService {
         }
       }
       if(compactData.sb){
-        console.log("sixBar: " + compactData.sb)
         stateService.sixBarGenerated = compactData.sb !== "n";
       }
 
@@ -130,7 +130,7 @@ export class DecoderService {
    * Converts hex strings to numbers and "1"/"0" strings to booleans.
    */
   private static expandMechanismData(compactData: any): any {
-    const decodedJoints: any[] = (compactData.j || []).map((row: any[]) => ({
+    const decodedJoints: Joint[] = (compactData.j || []).map((row: any[]) => ({
       id: this.convertNumber(row[0]),
       name: row[1],
       x: Number(row[2]),
@@ -143,7 +143,8 @@ export class DecoderService {
       isWelded: this.convertBoolean(row[9]),
       locked: this.convertBoolean(row[10]),
       isHidden: this.convertBoolean(row[11]),
-      isReference: this.convertBoolean(row[12])
+      isReference: this.convertBoolean(row[12]),
+      isGenerated: this.convertBoolean(row[13])
     }));
 
     const decodedLinks: any[] = (compactData.l || []).map((row: any[]) => ({
