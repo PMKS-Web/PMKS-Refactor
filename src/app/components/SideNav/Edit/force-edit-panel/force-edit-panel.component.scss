@@ -1,0 +1,256 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+.scroll-container {
+  max-height: 60vh;
+  overflow: hidden;
+  overflow-y: auto;
+}
+
+.scroll-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+  background: rgba(63, 81, 181, 0.9);
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(63, 81, 181, 0.22);
+}
+
+.scroll-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(63, 81, 181, 0.67);
+}
+
+.scroll-container::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* Firefox Browsers*/
+@supports (-moz-appearance: none) {
+  .scroll-container {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(63, 81, 181, 0.9) #f1f1f1;
+  }
+}
+
+#editForce {
+  background-color: white;
+  border-top: 5px solid #ffc107;
+  border-radius: 3px;
+  box-shadow: 0 9px 5px 0 gray, 0 9px 5px 0 gray, 12px 0 15px -4px gray, -12px 0 15px -4px gray;
+  width: 100%;
+  max-height: calc(90vh - 30px);
+}
+
+.disabled-panel {
+  opacity: 0.5; /* Adjust the opacity to control the greying out effect */
+  pointer-events: none; /* Disable user interactions */
+}
+
+.flex-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.left-aligned {
+  margin-right: auto;
+}
+
+.right-aligned {
+  margin-left: auto;
+}
+
+div.colors {
+  width: 30px;
+  height: 30px;
+  margin: 7px 3px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+p.colors {
+  padding: 0;
+  margin-top: 5px;
+  margin-bottom: 0;
+}
+
+#lengthAndAngle {
+  max-height: 10px;
+  gap: 15px;
+}
+
+.row {
+  display: flex;
+}
+
+button {
+  background-color: white;
+  border: none;
+  height: 25px;
+  width: 25px;
+  text-align: center;
+}
+
+.center {
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center;
+}
+
+.label-group {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.input-group {
+  flex-shrink: 0;
+  max-width: 150px;
+}
+
+.input-container .right-aligned {
+  margin-left: 0;
+}
+
+.label-help {
+  color: #3f51b5;
+  font-size: 18px;
+  vertical-align: middle;
+  margin-top: 5px;
+  flex-shrink: 0;
+  margin-left: 5px;
+}
+
+.label {
+  margin: 0px 4px 0px 5px;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 8px;
+  padding-right: 16px;
+  box-sizing: border-box;
+}
+
+.right-aligned {
+  display: flex;
+  align-items: center;
+}
+
+/* Wrapper for force magnitude+angle section */
+.length-angle-block {
+  margin-bottom: 12px;
+}
+
+.la-label {
+  display: block;
+  font: inherit;
+  color: inherit;
+  margin-bottom: 4px;
+}
+
+.length-angle-row {
+  display: flex;
+  gap: 16px;
+}
+
+/* Individual cell */
+.la-cell {
+  display: flex;
+  align-items: center;
+}
+
+/* Icon next to each input */
+.la-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+}
+
+/* Unit text spacing */
+.la-unit {
+  margin-left: 4px;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.xy-block {
+  margin-bottom: 12px;
+}
+
+.xy-label {
+  display: block;
+  font: inherit;
+  color: inherit;
+  margin-bottom: 4px;
+}
+
+.xy-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.xy-cell {
+  display: flex;
+  align-items: center;
+}
+
+.xy-unit {
+  margin-left: 4px;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.xy-cell input {
+  width: 4.5rem;
+}
+
+/* Toggle container styling */
+.toggle-container {
+  margin-bottom: 12px;
+}
+
+.toggle-label {
+  display: block;
+  font: inherit;
+  color: inherit;
+  margin-bottom: 4px;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  margin-left: 12px;
+}
+::ng-deep .mat-mdc-slide-toggle.mat-mdc-slide-toggle-checked:not(.mat-disabled) .mdc-switch__shadow {
+  background-color: #ffc107;
+}
+::ng-deep .mat-mdc-slide-toggle.mat-mdc-slide-toggle-checked:not(.mat-disabled) .mdc-switch__track::after {
+  background-color: #ffecb3 !important;
+}
+
+::ng-deep .mat-mdc-slide-toggle:not(.mat-mdc-slide-toggle-checked):not(.mat-disabled) .mdc-switch__shadow {
+  background-color: #3f51b5;
+}
+::ng-deep .mat-mdc-slide-toggle:not(.mat-mdc-slide-toggle-checked):not(.mat-disabled) .mdc-switch__track::before {
+  background-color: #c5cae9 !important;
+}
+::ng-deep .mat-mdc-slide-toggle .mdc-switch__icon {
+  display: none;
+}
+
+

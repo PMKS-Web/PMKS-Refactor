@@ -75,6 +75,7 @@ import { UndoRedoPanelComponent } from './components/ToolBar/undo-redo-panel/und
 import { NewTabAlertComponent } from './components/ToolBar/new-tab-alert/new-tab-alert.component';
 import { RouterModule } from '@angular/router';
 import { NotificationComponent } from './components/Blocks/notification/notification.component';
+import { ForceEditPanelComponent } from './components/SideNav/Edit/force-edit-panel/force-edit-panel.component';
 
 @NgModule({
   declarations: [
@@ -130,6 +131,7 @@ import { NotificationComponent } from './components/Blocks/notification/notifica
     UndoRedoPanelComponent,
     NewTabAlertComponent,
     NotificationComponent,
+    ForceEditPanelComponent,
   ],
     imports: [
         BrowserModule,
