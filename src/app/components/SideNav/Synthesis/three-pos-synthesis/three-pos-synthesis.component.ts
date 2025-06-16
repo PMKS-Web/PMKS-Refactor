@@ -118,8 +118,11 @@ export class ThreePosSynthesis implements OnInit{
         this.pos3Angle = position.angle;
       }
     }));
+    this.mechanism.getArrayOfLinks().forEach(link => {
+      if(link.joints.values().next().value?.isGenerated) this.synthedMech.push(link);
+    });
     let initialGreenCount = this.mechanism.getArrayOfPositions().filter(position => position.color === 'green').length;
-    if (initialGreenCount > 0) this.fourBarGenerated = true;
+    if (initialGreenCount > 0 || this.stateService.sixBarGenerated) this.fourBarGenerated = true;
     this.sixBarGenerated = this.stateService.sixBarGenerated;
     
   }
@@ -263,14 +266,6 @@ onInputClick(){
         console.log("LIST OF LINKS AFTER DELETION:");
         console.log(this.mechanism.getArrayOfLinks());
       }
-      /*for (i = 0, len = listOfLinks.length; i < len; i++) {
-        let linkId = listOfLinks[i].id;
-        console.log(linkId);
-        this.synthedMech.splice(i);
-        this.mechanism.removeLink(linkId);
-        console.log("LIST OF LINKS AFTER DELETION:");
-        console.log(this.mechanism.getArrayOfLinks());
-      }*/
       this.setPositionsColorToDefault();
       this.mechanism.clearTrajectories();
       this.fourBarGenerated = false;
@@ -726,14 +721,11 @@ allPositionsDefined(): boolean {
       this.confirmRemoveAll = true;
       setTimeout(() => this.confirmRemoveAll = false, 3000);
     } else {
-      if (this.fourBarGenerated){
-        this.fourBarGenerated = false;
+      if(this.sixBarGenerated){
+        this.generateSixBar();
       }
-      if (this.sixBarGenerated){
-        this.fourBarGenerated = false;
-        this.sixBarGenerated = false;
-        this.stateService.sixBarGenerated= this.sixBarGenerated;
-
+      else if (this.fourBarGenerated){
+        this.generateFourBar(); // this deletes the four bar despite its name
       }
       this.synthedMech = [];
       this.confirmRemoveAll = false;

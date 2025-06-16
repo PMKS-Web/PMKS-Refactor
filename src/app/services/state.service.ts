@@ -117,7 +117,6 @@ export class StateService {
         newJoint.speed = Number(joint.inputSpeed);
         if (Boolean(!joint.type)) {newJoint.addSlider();}
 
-
         this.mechanism._addJoint(newJoint);
       }
       console.log("AFTER JOINTADDS", this.mechanism.getArrayOfJoints())

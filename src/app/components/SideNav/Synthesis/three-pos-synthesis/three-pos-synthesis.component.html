@@ -154,7 +154,7 @@
                (click)="generateFourBar()">
                {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
              </button>
-             <div *ngIf="position3">
+             <div *ngIf="pos1Specified || pos2Specified || pos3Specified">
              <button class="removeAll" (click)="removeAllPositions()">
                {{ confirmRemoveAll ? 'Are You Sure?' : 'Remove All Positions' }}
              </button>
@@ -262,10 +262,11 @@
           {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
         </button>
 
-          <!-- evaluate positions button -->
-          <button class="removeAll" (click)="removeAllPositions()">
-            {{ confirmRemoveAll ? 'Are You Sure?' : 'Remove All Positions' }}
-          </button>
+          <div *ngIf="pos1Specified || pos2Specified || pos3Specified">
+            <button class="removeAll" (click)="removeAllPositions()">
+              {{ confirmRemoveAll ? 'Are You Sure?' : 'Remove All Positions' }}
+           </button>
+          </div>
 
 
         <!-- Generate Six-Bar Button -->
