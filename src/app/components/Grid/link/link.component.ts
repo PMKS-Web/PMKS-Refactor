@@ -8,6 +8,7 @@ import {AbstractInteractiveComponent} from '../abstract-interactive/abstract-int
 import {InteractionService} from 'src/app/services/interaction.service';
 import {LinkInteractor} from 'src/app/controllers/link-interactor';
 import {ColorService} from 'src/app/services/color.service';
+import {AnimationService} from 'src/app/services/animation.service';
 import {SVGPathService} from 'src/app/services/svg-path.service';
 import {UnitConversionService} from "src/app/services/unit-conversion.service";
 import {Subscription} from "rxjs";
@@ -20,6 +21,8 @@ import { NotificationService } from 'src/app/services/notification.service';
 })
 export class LinkComponent extends AbstractInteractiveComponent implements AfterViewInit {
   @Input() link!: Link;
+  @Input() getIsPausedAnimating: boolean = false;
+
   unitSubscription: Subscription = new Subscription();
   angleSubscription: Subscription = new Subscription();
   showIDLabelsSubscription: Subscription = new Subscription();
@@ -304,10 +307,14 @@ export class LinkComponent extends AbstractInteractiveComponent implements After
 
   getAngle(): string {
     return this.link.angle.toString();
+
   }
 
   getName():string {
     return this.link.name + "\nLength: " + this.link.length + "\nAngle: " + this.link.angle;
+  }
+  isAnimating() {
+    return this.animationService.getAnimationState(0)?.isPaused;
   }
 
   getDrawnPath(): string {
@@ -350,4 +357,5 @@ export class LinkComponent extends AbstractInteractiveComponent implements After
 
     return this.svgPathService.calculateAngleSVGPath(allCoords[0], allCoords[1], this.link.angle);
   }
+
 }
