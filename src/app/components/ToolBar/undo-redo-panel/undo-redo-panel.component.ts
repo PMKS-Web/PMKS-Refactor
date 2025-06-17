@@ -1,41 +1,35 @@
 import { Component } from '@angular/core';
 import { StateService } from 'src/app/services/state.service';
 import { InteractionService } from 'src/app/services/interaction.service';
-import {Mechanism} from "../../../model/mechanism";
+import { Mechanism } from '../../../model/mechanism';
 import { NotificationService } from 'src/app/services/notification.service';
 
 @Component({
   selector: 'app-undo-redo-panel',
   templateUrl: './undo-redo-panel.component.html',
-  styleUrls: ['./undo-redo-panel.component.scss']
+  styleUrls: ['./undo-redo-panel.component.scss'],
 })
 export class UndoRedoPanelComponent {
   constructor(
     public stateService: StateService,
     public mechanism: Mechanism,
-    private NotificationService: NotificationService,
+    private NotificationService: NotificationService
   ) {}
 
   // WHEN USER CLICKS UNDO
   onUndo(): void {
-    console.log('Undo button clicked');
-    // Call the undo function from UndoRedoService.
     this.stateService.undo();
     this.mechanism.clearTrajectories();
     this.mechanism.notifyChange();
-    this.NotificationService.showNotification("Undo Called");
-
+    this.NotificationService.showNotification('Undo Called');
   }
 
   //WHEN USER CLICKS REDO
   onRedo(): void {
-    console.log('Redo button clicked');
     this.stateService.redo();
     this.mechanism.clearTrajectories();
     this.mechanism.notifyChange();
-    this.NotificationService.showNotification("Redo Called");
-
-
+    this.NotificationService.showNotification('Redo Called');
   }
 
   protected readonly StateService = StateService;

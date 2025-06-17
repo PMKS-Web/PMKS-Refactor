@@ -10,7 +10,7 @@
   mat-button
   class="toolbar-button arrow"
   (click)="scrollToolbar('left')"
-  [style.display]="showNavArrows ? 'flex' : 'none'">
+  [style.display]="shouldLeftScrollShow() ? 'flex' : 'none'">
   <mat-icon>chevron_left</mat-icon>
 </button>
 
@@ -66,7 +66,7 @@
   mat-button
   class="toolbar-button arrow"
   (click)="scrollToolbar('right')"
-  [style.display]="showNavArrows ? 'flex' : 'none'">
+  [style.display]="shouldRightScrollShow() ? 'flex' : 'none'">
   <mat-icon>chevron_right</mat-icon>
 </button>
 

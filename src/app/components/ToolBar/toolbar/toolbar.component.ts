@@ -50,7 +50,14 @@ export class ToolbarComponent {
   onWindowResize(event: any) {
     this.checkOverflow();
   }
-
+  shouldRightScrollShow() {
+    return (
+      this.showNavArrows && this.currentScrollPosition < this.maxScrollPosition
+    );
+  }
+  shouldLeftScrollShow() {
+    return this.showNavArrows && this.currentScrollPosition > 0;
+  }
   private initializeResizeObserver() {
     if (typeof ResizeObserver !== 'undefined') {
       this.resizeObserver = new ResizeObserver(() => {
@@ -90,16 +97,15 @@ export class ToolbarComponent {
     }
   }
 
-  scrollToolbar(direction: 'left' | 'right' | 'wheel-up' | 'wheel-down') {
+  scrollToolbar(direction: 'left' | 'right') {
     if (!this.showNavArrows) return;
 
-    if (direction === 'left' || direction === 'wheel-up') {
+    if (direction === 'left') {
       this.currentScrollPosition = Math.max(
         0,
         this.currentScrollPosition - this.scrollStep
       );
     } else {
-      // 'right' or 'wheel-down'
       this.currentScrollPosition = Math.min(
         this.maxScrollPosition,
         this.currentScrollPosition + this.scrollStep
@@ -109,14 +115,12 @@ export class ToolbarComponent {
     this.applyScrollPosition();
   }
 
-  // New method to handle mouse wheel events
   onMouseWheelScroll(event: WheelEvent) {
     if (event.deltaY > 0) {
-      this.scrollToolbar('wheel-down');
+      this.scrollToolbar('right');
     } else if (event.deltaY < 0) {
-      this.scrollToolbar('wheel-up');
+      this.scrollToolbar('left');
     }
-    // Prevent default scrolling behavior if you only want this component to scroll horizontally
     event.preventDefault();
   }
 

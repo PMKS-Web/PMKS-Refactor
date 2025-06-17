@@ -21,11 +21,11 @@
 
   .toolbar.toolbar {
     background-color: mat.m2-get-color-from-palette($primary-palette, 100);
-    position: absolute;
+    position: relative;
     top: 0px;
     left: 0px;
     height: 30px;
-    padding: 5px;
+    padding: 9px;
     box-shadow: 0 3px 1px -2px #0003, 0 2px 2px #00000024, 0 1px 5px #0000003f;
     min-width: 300px;
     margin-bottom: 10px;
@@ -50,10 +50,10 @@
 
   .toolbar-button.toolbar-button {
     background-color: mat.m2-get-color-from-palette($primary-palette, 100);
-    margin: 0rem 0.2rem;
+    margin: 0rem 0.1rem;
     height: 30px;
     flex-shrink: 0; // Prevent buttons from shrinking
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
   }
 
   .toolbar-button:hover {
@@ -67,8 +67,8 @@
   color: mat.m2-get-color-from-palette($primary-palette, 700);
   margin: 0 0.1rem;
   height: 30px;
-  width: 28px;
-  min-width: 28px;
+  width: 22px;
+  min-width: 22px;
   padding: 0 !important;
   border-radius: 4px;
   display: flex; // Let Angular override this when [style.display] is used
@@ -96,7 +96,7 @@
     z-index: 200;
     position: relative;
     color: inherit;
-    transform: translateX(5px); //not sure why this is needed but it works.
+    transform: translateX(1px); //not sure why this is needed but it works.
   }
 }
 
