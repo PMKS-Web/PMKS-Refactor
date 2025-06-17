@@ -1,4 +1,3 @@
-
 <mat-toolbar class='toolbar'>
   <img
     class='pmksImage'
@@ -6,79 +5,91 @@
     src='assets/logo.svg'
     onClick='window.location.reload()'
   />
-  <!-- NEW FILE -->
-  <button mat-button class="toolbar-button" onclick="window.open(window.location.origin, '_blank'); logEvent(this.analytics, 'new_file');"
-          matTooltip='Open a new tab with a blank project'
-          matTooltipShowDelay='1000'>
-    <mat-icon>note_add</mat-icon>
-    New
-  </button>
 
-  <!-- OPEN FILE -->
-  <button mat-button class="toolbar-button" (click)="handleLoadFile();"
-          matTooltip='Open a linkage from a file on your device'
-          matTooltipShowDelay='1000'>
-    <mat-icon>file_open</mat-icon>
-    Open
-  </button>
+<button
+  mat-button
+  class="toolbar-button arrow"
+  (click)="scrollToolbar('left')"
+  [style.display]="showNavArrows ? 'flex' : 'none'">
+  <mat-icon>chevron_left</mat-icon>
+</button>
 
-  <!-- TUTORIALS -->
-  <button mat-button class="toolbar-button" (click)="setCurrentTab('Tutorials');"
-          matTooltip='Show the library of available linkages'
-          matTooltipShowDelay='1000'>
-    <mat-icon>ondemand_video</mat-icon>
-    <a style="text-decoration:none; color:black;" href="https://pmks.mech.website/pmks-web-how-to-videos/" target="_blank">Tutorials</a>
-  </button>
+  <div class="toolbar-scroll-container" #toolbarContainer (wheel)="onMouseWheelScroll($event)">
+    <div class="toolbar-buttons-wrapper" #toolbarButtons>
 
-  <!-- TEMPLATES -->
-  <button mat-button class="toolbar-button" (click)="setCurrentTab('Templates');"
-          matTooltip='Show the library of available linkages'
-          matTooltipShowDelay='1000'>
-    <mat-icon>apps</mat-icon>
-    Templates
-  </button>
+      <button mat-button class="toolbar-button" onclick="window.open(window.location.origin, '_blank'); logEvent(this.analytics, 'new_file');"
+        matTooltip='Open a new tab with a blank project'
+        matTooltipShowDelay='1000'>
+        <mat-icon>note_add</mat-icon>
+        New
+      </button>
 
-  <!-- SAVE -->
-  <button mat-button class="toolbar-button" (click)="handleSave();"
-          matTooltip='Save this linkage to your device'
-          matTooltipShowDelay='1000'>
-    <mat-icon>save</mat-icon>
-    Save
-  </button>
+      <button mat-button class="toolbar-button" (click)="handleLoadFile();"
+        matTooltip='Open a linkage from a file on your device'
+        matTooltipShowDelay='1000'>
+        <mat-icon>file_open</mat-icon>
+        Open
+      </button>
 
-  <!-- SHARE -->
-  <button mat-button class="toolbar-button" (click)="handleShare();"
-          matTooltip='Copy a URL to clipboard that contains your linakge'
-          matTooltipShowDelay='1000'>
-    <mat-icon>link</mat-icon>
-    Share Project
-  </button>
+      <button mat-button class="toolbar-button" (click)="setCurrentTab('Tutorials');"
+        matTooltip='Show the library of available linkages'
+        matTooltipShowDelay='1000'>
+        <mat-icon>ondemand_video</mat-icon>
+        <a style="text-decoration:none; color:black;" href="https://pmks.mech.website/pmks-web-how-to-videos/" target="_blank">Tutorials</a>
+      </button>
 
-  <span class="spacer"></span>
+      <button mat-button class="toolbar-button" (click)="setCurrentTab('Templates');"
+        matTooltip='Show the library of available linkages'
+        matTooltipShowDelay='1000'>
+        <mat-icon>apps</mat-icon>
+        Templates
+      </button>
 
-  <!-- UNDO/REDO PANEL -->
+      <button mat-button class="toolbar-button" (click)="handleSave();"
+        matTooltip='Save this linkage to your device'
+        matTooltipShowDelay='1000'>
+        <mat-icon>save</mat-icon>
+        Save
+      </button>
+
+      <button mat-button class="toolbar-button" (click)="handleShare();"
+        matTooltip='Copy a URL to clipboard that contains your linkage'
+        matTooltipShowDelay='1000'>
+        <mat-icon>link</mat-icon>
+        Share Project
+      </button>
+
+    </div>
+  </div>
+
+  <button
+  mat-button
+  class="toolbar-button arrow"
+  (click)="scrollToolbar('right')"
+  [style.display]="showNavArrows ? 'flex' : 'none'">
+  <mat-icon>chevron_right</mat-icon>
+</button>
+
+
   <app-undo-redo-panel></app-undo-redo-panel>
 
-  <!-- SETTINGS -->
   <button mat-button class="toolbar-button" (click)="setCurrentTab('Settings');"
-          matTooltip='Change Linkage Settings'
-          matTooltipShowDelay='1000'>
+    matTooltip='Change Linkage Settings'
+    matTooltipShowDelay='1000'>
     <mat-icon>settings</mat-icon>
     Settings
   </button>
 
-  <!-- FEEDBACK -->
   <button mat-button class="toolbar-button" (click)="setCurrentTab('Feedback');"
-          matTooltip='Send Us Feedback'
-          matTooltipShowDelay='1000'>
+    matTooltip='Send Us Feedback'
+    matTooltipShowDelay='1000'>
     <mat-icon>feedback</mat-icon>
     Feedback
   </button>
 
-
 </mat-toolbar>
+
 <div>
-  <!-- this switch case is responsible for opening and closing each panel -->
   @switch(getSelected()){
     @case (''){
     }
@@ -92,13 +103,10 @@
       <app-tutorials-panel></app-tutorials-panel>
     }
     @case ('Save'){
-
     }
     @case ('Feedback'){
-
     }
     @case ('Share'){
-
     }
   }
 </div>
