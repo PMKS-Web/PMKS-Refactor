@@ -17,13 +17,14 @@ export interface WarningNotification {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class NotificationService {
   private notificationsSubject = new BehaviorSubject<Notification[]>([]);
   public notifications$ = this.notificationsSubject.asObservable();
-  
-  private warningNotificationSubject = new BehaviorSubject<WarningNotification | null>(null);
+
+  private warningNotificationSubject =
+    new BehaviorSubject<WarningNotification | null>(null);
   public warningNotification$ = this.warningNotificationSubject.asObservable();
 
   showNotification(message: string): void {
@@ -31,7 +32,7 @@ export class NotificationService {
       id: this.generateId(),
       message,
       timestamp: Date.now(),
-      fadingOut: false
+      fadingOut: false,
     };
 
     const currentNotifications = this.notificationsSubject.value;
@@ -52,16 +53,16 @@ export class NotificationService {
     this.closeWarning();
 
     const onCloseSubject = new Subject<string>();
-    
+
     const warningNotification: WarningNotification = {
       id: this.generateId(),
       message,
       timestamp: Date.now(),
-      onClose: onCloseSubject
+      onClose: onCloseSubject,
     };
 
     this.warningNotificationSubject.next(warningNotification);
-    
+
     return onCloseSubject;
   }
 
@@ -73,14 +74,14 @@ export class NotificationService {
         currentWarning.onClose.next(currentWarning.id);
         currentWarning.onClose.complete();
       }
-      
+
       this.warningNotificationSubject.next(null);
     }
   }
 
   private startFadeOut(id: string): void {
     const currentNotifications = this.notificationsSubject.value;
-    const updatedNotifications = currentNotifications.map(n =>
+    const updatedNotifications = currentNotifications.map((n) =>
       n.id === id ? { ...n, fadingOut: true } : n
     );
     this.notificationsSubject.next(updatedNotifications);
@@ -88,11 +89,15 @@ export class NotificationService {
 
   removeNotification(id: string): void {
     const currentNotifications = this.notificationsSubject.value;
-    const filteredNotifications = currentNotifications.filter(n => n.id !== id);
+    const filteredNotifications = currentNotifications.filter(
+      (n) => n.id !== id
+    );
     this.notificationsSubject.next(filteredNotifications);
   }
 
   private generateId(): string {
-    return Date.now().toString(36) + "-" + Math.random().toString(36).substr(2, 9);
+    return (
+      Date.now().toString(36) + '-' + Math.random().toString(36).substr(2, 9)
+    );
   }
 }
