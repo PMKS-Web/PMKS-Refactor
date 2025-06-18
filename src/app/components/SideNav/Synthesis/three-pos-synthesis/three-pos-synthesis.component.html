@@ -163,7 +163,7 @@
                <!-- Generate Six-Bar Button -->
              <div *ngIf="isFourBarGenerated()">
                <button class="generateSixBar" (click)="generateSixBar()">
-                   {{ sixBarGenerated ? 'Clear Six-Bar' : 'Generate Six-Bar' }}
+                   {{ sixBarGenerated ? 'Clear Six-Bar addition' : 'Generate Six-Bar addition' }}
                </button>
              </div>
 
@@ -184,8 +184,8 @@
                    </button>
                  </div>
                  <div>
-                   <button class="clearLinkage">
-                     Clear Linkage
+                   <button class="clearLinkage" (click)="clearLinkage()">
+                     Clear Six Bar Linkage
                    </button>
                  </div>
                </div>
@@ -297,8 +297,8 @@
             </button>
           </div>
           <div>
-            <button class="clearLinkage" >
-              Clear Linkage
+            <button class="clearLinkage" (click)="clearLinkage()">
+              Clear Six Bar Linkage
             </button>
           </div>
         </div>
