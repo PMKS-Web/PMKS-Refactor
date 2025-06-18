@@ -154,7 +154,7 @@
                (click)="generateFourBar()">
                {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
              </button>
-             <div *ngIf="position3">
+             <div *ngIf="pos1Specified || pos2Specified || pos3Specified">
              <button class="removeAll" (click)="removeAllPositions()">
                {{ confirmRemoveAll ? 'Are You Sure?' : 'Remove All Positions' }}
              </button>
@@ -204,11 +204,11 @@
           <div class="position-header">
             <p>Position {{ index}}</p>
             <span class="icons">
-      <mat-icon id="tooltip2" matTooltip="Specify the coordinates for Position {{ index}}" [matTooltipShowDelay]="1000">help_outline</mat-icon>
-      <button class="trash" *ngIf='this.isPositionDefined(index)' (click)="deletePosition(index)">
-        <img id="icon" ngSrc="assets/icons/trash.svg" alt="Delete Position" height="18" width="15">
-      </button>
-    </span>
+              <mat-icon id="tooltip2" matTooltip="Specify the coordinates for Position {{ index}}" [matTooltipShowDelay]="1000">help_outline</mat-icon>
+              <button class="trash" *ngIf='this.isPositionDefined(index)' (click)="deletePosition(index)">
+                <img id="icon" ngSrc="assets/icons/trash.svg" alt="Delete Position" height="18" width="15">
+              </button>
+            </span>
           </div>
 
           <!-- allows the user to enter coordinates for the end points -->
@@ -267,10 +267,11 @@
           {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
         </button>
 
-          <!-- evaluate positions button -->
-          <button class="removeAll" (click)="removeAllPositions()">
-            {{ confirmRemoveAll ? 'Are You Sure?' : 'Remove All Positions' }}
-          </button>
+          <div *ngIf="pos1Specified || pos2Specified || pos3Specified">
+            <button class="removeAll" (click)="removeAllPositions()">
+              {{ confirmRemoveAll ? 'Are You Sure?' : 'Remove All Positions' }}
+           </button>
+          </div>
 
 
         <!-- Generate Six-Bar Button -->

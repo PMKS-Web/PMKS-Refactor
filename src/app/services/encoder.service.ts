@@ -183,7 +183,8 @@ export class EncoderService {
         j.isWelded,
         j.locked,
         j.isHidden,
-        j.isReference
+        j.isReference,
+        j.isGenerated
       ]),
       l: mechanism.getArrayOfLinks().map((l: Link) => [
         l.id,
@@ -240,6 +241,7 @@ export class EncoderService {
       z: this.panZoomService.getCurrentZoom().toFixed(2),
       px: this.panZoomService.getViewBoxX().toFixed(2),
       py: this.panZoomService.getViewBoxY().toFixed(2),
+      sb: this.stateService.sixBarGenerated,
     };
   }
   /**
