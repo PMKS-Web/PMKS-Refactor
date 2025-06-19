@@ -1,8 +1,7 @@
-import {StateService} from "./state.service";
-import LZString from "lz-string";
+import { StateService } from './state.service';
+import LZString from 'lz-string';
 import { PanZoomService } from './pan-zoom.service';
-import { Joint } from "../model/joint";
-
+import { Joint } from '../model/joint';
 
 /**
  * DecoderService is the reverse of the EncoderService.
@@ -33,7 +32,6 @@ import { Joint } from "../model/joint";
  * during encoding, along with other compression steps
  */
 export class DecoderService {
-
   constructor(private panZoomService: PanZoomService) {}
 
   /**
@@ -44,41 +42,48 @@ export class DecoderService {
    *
    * @param stateService
    */
-  static decodeFromURL(encoded: string, stateService: StateService, panZoomService: PanZoomService){
+  static decodeFromURL(
+    encoded: string,
+    stateService: StateService,
+    panZoomService: PanZoomService
+  ) {
     try {
       const decodedJson = LZString.decompressFromEncodedURIComponent(encoded);
       console.log(decodedJson);
-      let decompressedJSON = decodedJson.replaceAll('--', '"]_["').replaceAll('RP', 'Reference Point').replaceAll('_', ',').replaceAll('~', '","');
+      let decompressedJSON = decodedJson
+        .replaceAll('--', '"]_["')
+        .replaceAll('RP', 'Reference Point')
+        .replaceAll('_', ',')
+        .replaceAll('~', '","');
       console.log(decompressedJSON);
       const compactData = JSON.parse(decompressedJSON);
       // Expand the compact data into full objects.
       console.log(compactData);
       const fullData = this.expandMechanismData(compactData);
 
-      if (compactData.z) {
-        const zoom = parseFloat(compactData.z);
+      if (compactData.z[0][0]) {
+        const zoom = parseFloat(compactData.z[0][0]);
         if (!isNaN(zoom)) {
           panZoomService.setZoom(zoom);
         }
       }
 
-      if (compactData.px && compactData.py) {
-        const panX = parseFloat(compactData.px);
-        const panY = parseFloat(compactData.py);
+      if (compactData.z[0][1] && compactData.z[0][2]) {
+        const panX = parseFloat(compactData.z[0][1]);
+        const panY = parseFloat(compactData.z[0][2]);
         if (!isNaN(panX) && !isNaN(panY)) {
           panZoomService.setPan(panX, panY);
         }
       }
-      if(compactData.sb){
-        stateService.sixBarGenerated = compactData.sb !== "n";
+      if (compactData.fb[0][0] && compactData.fb[0][1]) {
+        stateService.sixBarGenerated = compactData.fb[0][0] !== 'n';
+        stateService.fourBarGenerated = compactData.fb[0][1] !== 'n';
       }
-
-
 
       // Step 3. Pass the reconstructed mechanism data to the state service.
       stateService.reconstructMechanism(fullData);
     } catch (error) {
-      console.error("Error decoding mechanism data:", error);
+      console.error('Error decoding mechanism data:', error);
     }
   }
 
@@ -95,31 +100,40 @@ export class DecoderService {
       const compactData: { [section: string]: any[][] } = {};
       const lines = csvContent.split(/\r?\n/);
       let currentSection: string | null = null;
+      let skipNextLine = false; // Add this flag
 
       for (const rawLine of lines) {
         const line = rawLine.trim();
+
+        // Skip this line if flagged
+        if (skipNextLine) {
+          skipNextLine = false;
+          continue;
+        }
 
         // Detect section headers like --- j ---
         if (line.startsWith('---') && line.endsWith('---')) {
           currentSection = line.slice(3, -3).trim();
           compactData[currentSection] = [];
+          skipNextLine = true; // Flag to skip the next line
           continue;
         }
+
         // Skip if no section yet or blank line
         if (!currentSection || !line) {
           continue;
         }
+
         // Split by commas; no quotes unescaping if not needed
         const fields = line.split(',');
         compactData[currentSection].push(fields);
       }
+
       //Expand the compact data into a fully built object
       const fullData = this.expandMechanismData(compactData);
-
       // Step 3: Pass to the state service, same as decodeFromURL
       // (Replace reconstructFromUrl with whatever your real method is)
       stateService.reconstructMechanism(fullData);
-
     } catch (error) {
       console.error('Error decoding mechanism CSV:', error);
     }
@@ -144,7 +158,7 @@ export class DecoderService {
       locked: this.convertBoolean(row[10]),
       isHidden: this.convertBoolean(row[11]),
       isReference: this.convertBoolean(row[12]),
-      isGenerated: this.convertBoolean(row[13])
+      isGenerated: this.convertBoolean(row[13]),
     }));
 
     const decodedLinks: any[] = (compactData.l || []).map((row: any[]) => ({
@@ -154,28 +168,32 @@ export class DecoderService {
       color: row[3],
       x: this.convertNumber(row[4]),
       y: this.convertNumber(row[5]),
-      joints: (row[6] as string),
-      forces: (row[7] as string),
+      joints: row[6] as string,
+      forces: row[7] as string,
       locked: this.convertBoolean(row[8]),
       length: this.convertNumber(row[9]),
-      angle: this.convertNumber(row[10])
+      angle: this.convertNumber(row[10]),
     }));
 
-    const decodedCompoundLinks: any[] = (compactData.c || []).map((row: any[]) => ({
-      id: this.convertNumber(row[0]),
-      name: row[1],
-      mass: this.convertNumber(row[2]),
-      x: this.convertNumber(row[3]),
-      y: this.convertNumber(row[4]),
-      links: row[5],
-      lock: this.convertBoolean(row[6])
-    }));
+    const decodedCompoundLinks: any[] = (compactData.c || []).map(
+      (row: any[]) => ({
+        id: this.convertNumber(row[0]),
+        name: row[1],
+        mass: this.convertNumber(row[2]),
+        x: this.convertNumber(row[3]),
+        y: this.convertNumber(row[4]),
+        links: row[5],
+        lock: this.convertBoolean(row[6]),
+      })
+    );
 
-    const decodedTrajectories: any[] = (compactData.t || []).map((row: any[]) => ({
-      id: this.convertNumber(row[0]),
-      x: this.convertNumber(row[1]),
-      y: this.convertNumber(row[2])
-    }));
+    const decodedTrajectories: any[] = (compactData.t || []).map(
+      (row: any[]) => ({
+        id: this.convertNumber(row[0]),
+        x: this.convertNumber(row[1]),
+        y: this.convertNumber(row[2]),
+      })
+    );
 
     const decodedForces: any[] = (compactData.f || []).map((row: any[]) => ({
       id: this.convertNumber(row[0]),
@@ -186,7 +204,7 @@ export class DecoderService {
       endy: this.convertNumber(row[5]),
       magnitude: this.convertNumber(row[6]),
       angle: this.convertNumber(row[7]),
-      frameOfReference: this.convertNumber(row[8])
+      frameOfReference: this.convertNumber(row[8]),
     }));
 
     const decodedPositions: any[] = (compactData.p || []).map((row: any[]) => ({
@@ -196,16 +214,22 @@ export class DecoderService {
       color: row[3],
       x: this.convertNumber(row[4]),
       y: this.convertNumber(row[5]),
-      joints: row[6] ? row[6].split("|") : [],
-      forces: row[7] ? row[7].split("|") : [],
+      joints: row[6] ? row[6].split('|') : [],
+      forces: row[7] ? row[7].split('|') : [],
       locked: this.convertBoolean(row[8]),
       refPoint: row[9],
       length: this.convertNumber(row[10]),
-      angle: this.convertNumber(row[11])
+      angle: this.convertNumber(row[11]),
     }));
-    
 
-    return { decodedJoints, decodedLinks, decodedCompoundLinks, decodedTrajectories, decodedForces, decodedPositions };
+    return {
+      decodedJoints,
+      decodedLinks,
+      decodedCompoundLinks,
+      decodedTrajectories,
+      decodedForces,
+      decodedPositions,
+    };
   }
 
   /**
@@ -214,7 +238,6 @@ export class DecoderService {
    */
   private static convertNumber(value: any): number {
     return parseInt(value, 16);
-
   }
 
   /**
@@ -222,7 +245,7 @@ export class DecoderService {
    */
   private static convertBoolean(value: any): boolean {
     if (typeof value === 'string') {
-      return value === "y";
+      return value === 'y';
     }
     return Boolean(value);
   }
