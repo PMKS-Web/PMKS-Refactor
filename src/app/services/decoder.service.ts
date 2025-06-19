@@ -94,7 +94,11 @@ export class DecoderService {
    * @param csvContent
    * @param stateService
    */
-  static decodeFromCSV(csvContent: string, stateService: StateService): void {
+  static decodeFromCSV(
+    csvContent: string,
+    stateService: StateService,
+    panZoomService: PanZoomService
+  ): void {
     try {
       // Step 1: Parse lines into a 'compactData' structure
       const compactData: { [section: string]: any[][] } = {};
@@ -131,6 +135,24 @@ export class DecoderService {
 
       //Expand the compact data into a fully built object
       const fullData = this.expandMechanismData(compactData);
+      if (compactData['z'][0][0]) {
+        const zoom = parseFloat(compactData['z'][0][0]);
+        if (!isNaN(zoom)) {
+          panZoomService.setZoom(zoom);
+        }
+      }
+
+      if (compactData['z'][0][1] && compactData['z'][0][2]) {
+        const panX = parseFloat(compactData['z'][0][1]);
+        const panY = parseFloat(compactData['z'][0][2]);
+        if (!isNaN(panX) && !isNaN(panY)) {
+          panZoomService.setPan(panX, panY);
+        }
+      }
+      if (compactData['fb'][0][0] && compactData['fb'][0][1]) {
+        stateService.sixBarGenerated = compactData['fb'][0][0] !== 'n';
+        stateService.fourBarGenerated = compactData['fb'][0][1] !== 'n';
+      }
       // Step 3: Pass to the state service, same as decodeFromURL
       // (Replace reconstructFromUrl with whatever your real method is)
       stateService.reconstructMechanism(fullData);
