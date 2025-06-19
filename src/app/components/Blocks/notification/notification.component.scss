@@ -1,3 +1,6 @@
+$pmks-blue: #3949ab;
+$pmks-light-blue: #e8eaf6;
+$pmks-yellow: #ffb300;
 .notification-container {
   position: fixed;
   top: 5%;
@@ -11,7 +14,7 @@
 }
 
 .notification {
-  background: #e8eaf6;
+  background: $pmks-light-blue;
   color: rgb(0, 0, 0);
   padding: 10px 10px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
@@ -22,7 +25,7 @@
   max-width: 600px;
   pointer-events: all;
   position: relative;
-  outline: #3949ab 1.5px solid;
+  outline: $pmks-blue 1.5px solid;
   font-family: Roboto;
   
   // Fade in animation
@@ -62,7 +65,7 @@
 }
 
 .warning-notification .notification-icon {
-  background-color: #ffb300;
+  background-color: $pmks-yellow;
   -webkit-mask: url('/assets/icons/warning.svg') no-repeat center;
   mask: url('/assets/icons/warning.svg') no-repeat center;
   -webkit-mask-size: contain;
@@ -79,7 +82,7 @@
 }
 
 .warning-line {
-  background-color: #ffb300 !important;
+  background-color: $pmks-yellow !important;
 }
 
 .notification-message {
@@ -92,22 +95,22 @@
   background: none;
   border: none;
   color: black;
-  font-size: 24px;
+  font-size: 30px;
   cursor: pointer;
   padding: 0;
   margin-left: 20px;
   margin-right: 8px;
   line-height: 1;
-  opacity: 0.6;
+  opacity: 1;
   transition: opacity 0.2s ease;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   
   &:hover {
-    opacity: 1;
+    opacity: 0.6;
   }
   
   &:focus {
