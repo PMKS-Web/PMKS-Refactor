@@ -75,7 +75,6 @@ export class DecoderService {
           panZoomService.setPan(panX, panY);
         }
       }
-      console.log(compactData.fb[0][0] !== 'n');
       if (compactData.fb && compactData.fb[0][0] && compactData.fb[0][1]) {
         stateService.sixBarGenerated = compactData.fb[0][0] !== 'n';
         stateService.fourBarGenerated = compactData.fb[0][1] !== 'n';

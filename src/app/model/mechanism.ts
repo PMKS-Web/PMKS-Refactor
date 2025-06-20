@@ -85,6 +85,10 @@ export class Mechanism {
     this._links.set(linkA.id, linkA);
     if (!isSynth) {
       this.notifyChange();
+    } else {
+      this._joints.forEach((number) => {
+        number.generated = true;
+      });
     }
     //console.log(this);
   }
@@ -441,6 +445,11 @@ export class Mechanism {
         let linkA = new Link(this._linkIDCount, joint, jointB);
         this._linkIDCount++;
         this._links.set(linkA.id, linkA);
+        if (synthesized) {
+          this._joints.forEach((number) => {
+            number.generated = true;
+          });
+        }
       },
       synthesized
     );

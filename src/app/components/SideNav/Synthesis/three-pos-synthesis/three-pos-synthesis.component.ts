@@ -1,4 +1,11 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  HostListener,
+  OnInit,
+} from '@angular/core';
 import { LinkInteractor } from 'src/app/controllers/link-interactor';
 import { Link } from 'src/app/model/link';
 import { Mechanism } from 'src/app/model/mechanism';
@@ -41,6 +48,7 @@ export class ThreePosSynthesis implements OnInit {
   @Input() tooltip: string = '';
   @Input() input1Value: number = 0;
   @Input() label1: string = 'Length';
+  @Output() input1Change: EventEmitter<number> = new EventEmitter<number>();
   @Output() Generated: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   sectionExpanded: { [key: string]: boolean } = { Basic: false };
@@ -112,11 +120,8 @@ export class ThreePosSynthesis implements OnInit {
       this.cdr.detectChanges();
     });
   }
-
-  private init() {
+  init() {
     this.mechanism.getArrayOfPositions().forEach((position) => {
-      console.log('ID: ' + position.id);
-
       if (position.id === 0) {
         this.position1 = position;
         this.pos1Specified = true;
@@ -130,12 +135,14 @@ export class ThreePosSynthesis implements OnInit {
         this.pos3Specified = true;
         this.pos3Angle = position.angle;
       }
-      console.log(this.pos2Specified);
     });
     this.mechanism.getArrayOfLinks().forEach((link) => {
+      console.log(this.synthedMech);
+      console.log(link.joints.values().next().value);
       if (link.joints.values().next().value?.isGenerated)
         this.synthedMech.push(link);
     });
+
     let initialGreenCount = this.mechanism
       .getArrayOfPositions()
       .filter((position) => position.color === 'green').length;
@@ -161,13 +168,13 @@ export class ThreePosSynthesis implements OnInit {
       this.setPosYCoord(this.getNewCoord(this.position3).y, 3);
     }
   }
-  getXPos() {}
-
   toggleOption(selectedOption: string) {
     this.selectedOption = selectedOption;
   }
   specifyPosition(index: number) {
     let coord1: Coord, coord2: Coord;
+    let posX: number, posY: number;
+
     if (index === 1) {
       coord1 = new Coord(-this.couplerLength / 2, 0);
       coord2 = new Coord(this.couplerLength / 2, 0);
@@ -394,7 +401,6 @@ export class ThreePosSynthesis implements OnInit {
       this.position1!.locked = true;
       this.position2!.locked = true;
       this.position3!.locked = true;
-
       this.position1!._joints.forEach((number) => {
         number.generated = true;
       });
@@ -427,8 +433,6 @@ export class ThreePosSynthesis implements OnInit {
         console.log('LIST OF LINKS AFTER DELETION:');
         console.log(this.mechanism.getArrayOfLinks());
         this.mechanism.removeJoint(10);
-        this.generateFourBar();
-        this.generateFourBar();
       }
       this.mechanism.removeJoint(10);
       this.setPositionsColorToDefault();
