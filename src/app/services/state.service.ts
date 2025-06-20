@@ -78,27 +78,19 @@ export class StateService {
    */
   public reconstructMechanism(rawData: {
     decodedJoints: any[];
-    decodedLinks: any[];
+    decodedLinks: Link[];
     decodedCompoundLinks: any[];
     decodedTrajectories: any[];
-    decodedForces: any[];
+    decodedForces: Force[];
     decodedPositions: Position[];
   }): void {
     // A fresh Mechanism
-    //this.mechanism = new Mechanism();
-
-    console.log(rawData);
-
-    console.log(rawData.decodedJoints);
-    console.log(rawData.decodedLinks);
-    console.log(rawData.decodedCompoundLinks);
-    console.log(rawData.decodedTrajectories);
-    console.log(rawData.decodedForces);
-    console.log(rawData.decodedPositions);
+    this.mechanism.clearLinks();
+    this.mechanism.clearTrajectories();
+    this.mechanism.clearPositions();
 
     //Joints
     if (rawData.decodedJoints) {
-      console.log('BEFORE JOINTADDS', this.mechanism.getArrayOfJoints());
       for (const joint of rawData.decodedJoints) {
         let newJoint = new Joint(joint.id, Number(joint.x), Number(joint.y));
         newJoint.name = joint.name;
@@ -123,28 +115,20 @@ export class StateService {
 
         this.mechanism._addJoint(newJoint);
       }
-      console.log('AFTER JOINTADDS', this.mechanism.getArrayOfJoints());
     }
 
-    //Links TODO FORCES IMPLEMENTATION
     if (rawData.decodedLinks) {
       for (const link of rawData.decodedLinks) {
-        console.log(link.joints);
-
-        let jointsArray: Joint[] = link.joints
+        let jointsArray: Joint[] = (link.joints as unknown as string)
           .split('|')
           .map((element: string): Joint => {
             return this.mechanism.getJoint(Number(element));
           });
-        console.log(link.joints);
         for (const x of jointsArray) {
           console.log(x.id);
         }
-        //if (!link.id) {
         console.log(link, link.id);
-        //}
         let newLink = new Link(link.id, jointsArray);
-        //link.forces.split("|").forEach((element:number)=> newLink._forces.set()); todo
         newLink.name = link.name;
         newLink.mass = link.mass;
         newLink.angle = link.angle;
@@ -176,14 +160,9 @@ export class StateService {
     //Positions
     if (rawData.decodedPositions) {
       for (const position of rawData.decodedPositions) {
-        console.log('Position: ');
-        console.log(position);
         const jointsArray = (position.joints as unknown as number[]).map((id) =>
           this.mechanism.getJoint(Number(id))
         );
-        console.log('Joints Array: ');
-        console.log(jointsArray);
-
         let newPosition = new Position(position.id, jointsArray);
         newPosition.name = position.name;
         newPosition.mass = position.mass;
@@ -273,7 +252,6 @@ export class StateService {
       ) {
         // Update the last action’s newAngle to the newest value
         (last as any).newAngle = (action as any).newAngle;
-        console.log('Merged changeJointAngle into previous action');
         return;
       }
     }

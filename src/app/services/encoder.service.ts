@@ -35,6 +35,7 @@ export class EncoderService {
       'Locked?',
       'Hidden?',
       'Is Reference?',
+      'Is Generated?',
     ],
     l: [
       'Link ID',

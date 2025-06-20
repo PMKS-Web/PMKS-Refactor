@@ -61,21 +61,21 @@ export class DecoderService {
       console.log(compactData);
       const fullData = this.expandMechanismData(compactData);
 
-      if (compactData.z[0][0]) {
+      if (compactData.z && compactData.z[0][0]) {
         const zoom = parseFloat(compactData.z[0][0]);
         if (!isNaN(zoom)) {
           panZoomService.setZoom(zoom);
         }
       }
 
-      if (compactData.z[0][1] && compactData.z[0][2]) {
+      if (compactData.z && compactData.z[0][1] && compactData.z[0][2]) {
         const panX = parseFloat(compactData.z[0][1]);
         const panY = parseFloat(compactData.z[0][2]);
         if (!isNaN(panX) && !isNaN(panY)) {
           panZoomService.setPan(panX, panY);
         }
       }
-      if (compactData.fb[0][0] && compactData.fb[0][1]) {
+      if (compactData.fb && compactData.fb[0][0] && compactData.fb[0][1]) {
         stateService.sixBarGenerated = compactData.fb[0][0] !== 'n';
         stateService.fourBarGenerated = compactData.fb[0][1] !== 'n';
       }
@@ -267,7 +267,7 @@ export class DecoderService {
    */
   private static convertBoolean(value: any): boolean {
     if (typeof value === 'string') {
-      return value === 'y';
+      return value === 'y' || value === 'true';
     }
     return Boolean(value);
   }
