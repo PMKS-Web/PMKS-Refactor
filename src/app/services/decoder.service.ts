@@ -75,6 +75,7 @@ export class DecoderService {
           panZoomService.setPan(panX, panY);
         }
       }
+      console.log(compactData.fb[0][0] !== 'n');
       if (compactData.fb && compactData.fb[0][0] && compactData.fb[0][1]) {
         stateService.sixBarGenerated = compactData.fb[0][0] !== 'n';
         stateService.fourBarGenerated = compactData.fb[0][1] !== 'n';
@@ -134,7 +135,7 @@ export class DecoderService {
       }
 
       //Expand the compact data into a fully built object
-      const fullData = this.expandMechanismData(compactData);
+      const fullData = this.expandMechanismData(compactData, false);
       if (compactData['z'][0][0]) {
         const zoom = parseFloat(compactData['z'][0][0]);
         if (!isNaN(zoom)) {
@@ -150,8 +151,8 @@ export class DecoderService {
         }
       }
       if (compactData['fb'][0][0] && compactData['fb'][0][1]) {
-        stateService.sixBarGenerated = compactData['fb'][0][0] !== 'n';
-        stateService.fourBarGenerated = compactData['fb'][0][1] !== 'n';
+        stateService.sixBarGenerated = compactData['fb'][0][0] === 'true';
+        stateService.fourBarGenerated = compactData['fb'][0][1] === 'true';
       }
       // Step 3: Pass to the state service, same as decodeFromURL
       // (Replace reconstructFromUrl with whatever your real method is)
@@ -165,17 +166,20 @@ export class DecoderService {
    * Expands the compact mechanism data back into full objects.
    * Converts hex strings to numbers and "1"/"0" strings to booleans.
    */
-  private static expandMechanismData(compactData: any): any {
+  private static expandMechanismData(
+    compactData: any,
+    useDecoding: boolean = true
+  ): any {
     const decodedJoints: Joint[] = (compactData.j || []).map((row: any[]) => ({
-      id: this.convertNumber(row[0]),
+      id: this.convertNumber(row[0], useDecoding),
       name: row[1],
       x: Number(row[2]),
       y: Number(row[3]),
-      type: this.convertNumber(row[4]),
-      angle: this.convertNumber(row[5]),
+      type: this.convertNumber(row[4], useDecoding),
+      angle: this.convertNumber(row[5], useDecoding),
       isGrounded: this.convertBoolean(row[6]),
       isInput: this.convertBoolean(row[7]),
-      inputSpeed: this.convertNumber(row[8]),
+      inputSpeed: this.convertNumber(row[8], useDecoding),
       isWelded: this.convertBoolean(row[9]),
       locked: this.convertBoolean(row[10]),
       isHidden: this.convertBoolean(row[11]),
@@ -184,26 +188,26 @@ export class DecoderService {
     }));
 
     const decodedLinks: any[] = (compactData.l || []).map((row: any[]) => ({
-      id: this.convertNumber(row[0]),
+      id: this.convertNumber(row[0], useDecoding),
       name: row[1],
-      mass: this.convertNumber(row[2]),
+      mass: this.convertNumber(row[2], useDecoding),
       color: row[3],
-      x: this.convertNumber(row[4]),
-      y: this.convertNumber(row[5]),
+      x: this.convertNumber(row[4], useDecoding),
+      y: this.convertNumber(row[5], useDecoding),
       joints: row[6] as string,
       forces: row[7] as string,
       locked: this.convertBoolean(row[8]),
-      length: this.convertNumber(row[9]),
-      angle: this.convertNumber(row[10]),
+      length: this.convertNumber(row[9], useDecoding),
+      angle: this.convertNumber(row[10], useDecoding),
     }));
 
     const decodedCompoundLinks: any[] = (compactData.c || []).map(
       (row: any[]) => ({
-        id: this.convertNumber(row[0]),
+        id: this.convertNumber(row[0], useDecoding),
         name: row[1],
-        mass: this.convertNumber(row[2]),
-        x: this.convertNumber(row[3]),
-        y: this.convertNumber(row[4]),
+        mass: this.convertNumber(row[2], useDecoding),
+        x: this.convertNumber(row[3], useDecoding),
+        y: this.convertNumber(row[4], useDecoding),
         links: row[5],
         lock: this.convertBoolean(row[6]),
       })
@@ -211,37 +215,37 @@ export class DecoderService {
 
     const decodedTrajectories: any[] = (compactData.t || []).map(
       (row: any[]) => ({
-        id: this.convertNumber(row[0]),
-        x: this.convertNumber(row[1]),
-        y: this.convertNumber(row[2]),
+        id: this.convertNumber(row[0], useDecoding),
+        x: this.convertNumber(row[1], useDecoding),
+        y: this.convertNumber(row[2], useDecoding),
       })
     );
 
     const decodedForces: any[] = (compactData.f || []).map((row: any[]) => ({
-      id: this.convertNumber(row[0]),
+      id: this.convertNumber(row[0], useDecoding),
       name: row[1],
-      startx: this.convertNumber(row[2]),
-      starty: this.convertNumber(row[3]),
-      endx: this.convertNumber(row[4]),
-      endy: this.convertNumber(row[5]),
-      magnitude: this.convertNumber(row[6]),
-      angle: this.convertNumber(row[7]),
-      frameOfReference: this.convertNumber(row[8]),
+      startx: this.convertNumber(row[2], useDecoding),
+      starty: this.convertNumber(row[3], useDecoding),
+      endx: this.convertNumber(row[4], useDecoding),
+      endy: this.convertNumber(row[5], useDecoding),
+      magnitude: this.convertNumber(row[6], useDecoding),
+      angle: this.convertNumber(row[7], useDecoding),
+      frameOfReference: this.convertNumber(row[8], useDecoding),
     }));
 
     const decodedPositions: any[] = (compactData.p || []).map((row: any[]) => ({
-      id: this.convertNumber(row[0]),
+      id: this.convertNumber(row[0], useDecoding),
       name: row[1],
-      mass: this.convertNumber(row[2]),
+      mass: this.convertNumber(row[2], useDecoding),
       color: row[3],
-      x: this.convertNumber(row[4]),
-      y: this.convertNumber(row[5]),
+      x: this.convertNumber(row[4], useDecoding),
+      y: this.convertNumber(row[5], useDecoding),
       joints: row[6] ? row[6].split('|') : [],
       forces: row[7] ? row[7].split('|') : [],
       locked: this.convertBoolean(row[8]),
       refPoint: row[9],
-      length: this.convertNumber(row[10]),
-      angle: this.convertNumber(row[11]),
+      length: this.convertNumber(row[10], useDecoding),
+      angle: this.convertNumber(row[11], useDecoding),
     }));
 
     return {
@@ -258,8 +262,11 @@ export class DecoderService {
    * Converts a hex string to a number.
    * If the value is not a string, it falls back to a number conversion.
    */
-  private static convertNumber(value: any): number {
-    return parseInt(value, 16);
+  private static convertNumber(
+    value: any,
+    useDecoding: boolean = true
+  ): number {
+    return useDecoding ? parseInt(value, 16) : value;
   }
 
   /**

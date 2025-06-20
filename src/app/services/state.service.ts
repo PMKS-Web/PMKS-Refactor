@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Mechanism } from '../model/mechanism';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { Joint } from '../model/joint';
 import { Link } from '../model/link';
 import { CompoundLink } from '../model/compound-link';
@@ -10,6 +10,8 @@ import { Position } from '../model/position';
 import { Coord } from '../model/coord';
 import { AnimationBarComponent } from '../components/AnimationBar/animationbar/animationbar.component';
 import { Action } from '../components/ToolBar/undo-redo-panel/action';
+import { ThreePosSynthesis } from '../components/SideNav/Synthesis/three-pos-synthesis/three-pos-synthesis.component';
+import { InteractionService } from './interaction.service';
 
 /*
 Stores the global state of the application. This includes the model, global settings, and Pan/Zoom State. This is a singleton service.
@@ -60,6 +62,8 @@ export class StateService {
     console.log('StateService constructor');
     this.mechanism = new Mechanism();
   }
+  private reinitializeSubject = new Subject<void>();
+  public reinitialize$ = this.reinitializeSubject.asObservable();
 
   /**
    * Returns a mechanism that is correctly configured,
@@ -92,7 +96,11 @@ export class StateService {
     //Joints
     if (rawData.decodedJoints) {
       for (const joint of rawData.decodedJoints) {
-        let newJoint = new Joint(joint.id, Number(joint.x), Number(joint.y));
+        let newJoint = new Joint(
+          Number(joint.id),
+          Number(joint.x),
+          Number(joint.y)
+        );
         newJoint.name = joint.name;
         newJoint.angle = joint.angle;
         if (Boolean(joint.isGrounded)) {
@@ -124,6 +132,10 @@ export class StateService {
           .map((element: string): Joint => {
             return this.mechanism.getJoint(Number(element));
           });
+        console.log('JOINTS');
+        console.log(this.mechanism.getArrayOfJoints());
+        console.log(link.joints);
+        console.log(this.mechanism.getJoint(17));
         for (const x of jointsArray) {
           console.log(x.id);
         }
@@ -172,7 +184,9 @@ export class StateService {
         newPosition.setReference(position.refPoint);
 
         this.mechanism._addPosition(newPosition);
+        this.mechanism.setMechanismGenerated;
       }
+      this.reinitializeSubject.next();
     }
 
     //Forces
