@@ -330,7 +330,11 @@ export class ThreePosSynthesis implements OnInit {
           this.mechanism.getArrayOfLinks().length - 1
         ]
       );
-
+      this.synthedMech[this.synthedMech.length - 1]._joints.forEach(
+        (number) => {
+          number.generated = true;
+        }
+      );
       let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
       let lastJoint = this.getLastJoint(joints);
       if (lastJoint !== undefined) {
@@ -339,6 +343,11 @@ export class ThreePosSynthesis implements OnInit {
           this.mechanism.getArrayOfLinks()[
             this.mechanism.getArrayOfLinks().length - 1
           ]
+        );
+        this.synthedMech[this.synthedMech.length - 1]._joints.forEach(
+          (number) => {
+            number.generated = true;
+          }
         );
       }
 
@@ -354,6 +363,11 @@ export class ThreePosSynthesis implements OnInit {
           this.mechanism.getArrayOfLinks()[
             this.mechanism.getArrayOfLinks().length - 1
           ]
+        );
+        this.synthedMech[this.synthedMech.length - 1]._joints.forEach(
+          (number) => {
+            number.generated = true;
+          }
         );
       }
       firstGround.addGround();
