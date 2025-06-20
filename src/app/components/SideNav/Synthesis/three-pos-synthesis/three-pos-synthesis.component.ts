@@ -138,6 +138,7 @@ export class ThreePosSynthesis implements OnInit {
         this.pos3Specified = true;
         this.pos3Angle = position.angle;
       }
+      console.log(this.pos2Specified);
     });
     this.mechanism.getArrayOfLinks().forEach((link) => {
       if (link.joints.values().next().value?.isGenerated)

@@ -175,7 +175,7 @@ export class StateService {
         const jointsArray = (position.joints as unknown as number[]).map((id) =>
           this.mechanism.getJoint(Number(id))
         );
-        let newPosition = new Position(position.id, jointsArray);
+        let newPosition = new Position(Number(position.id), jointsArray);
         newPosition.name = position.name;
         newPosition.mass = position.mass;
         newPosition.angle = Number(position.angle);
