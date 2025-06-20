@@ -1,11 +1,4 @@
-import {
-  Component,
-  Input,
-  Output,
-  EventEmitter,
-  HostListener,
-  OnInit,
-} from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { LinkInteractor } from 'src/app/controllers/link-interactor';
 import { Link } from 'src/app/model/link';
 import { Mechanism } from 'src/app/model/mechanism';
@@ -48,7 +41,6 @@ export class ThreePosSynthesis implements OnInit {
   @Input() tooltip: string = '';
   @Input() input1Value: number = 0;
   @Input() label1: string = 'Length';
-  @Output() input1Change: EventEmitter<number> = new EventEmitter<number>();
   @Output() Generated: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   sectionExpanded: { [key: string]: boolean } = { Basic: false };
@@ -357,7 +349,6 @@ export class ThreePosSynthesis implements OnInit {
           ]
         );
       }
-      this.mechanism.setMechanismGenerated();
       firstGround.addGround();
       firstGround.addInput();
       lastGround!.addGround();
@@ -403,6 +394,7 @@ export class ThreePosSynthesis implements OnInit {
       this.position1!.locked = true;
       this.position2!.locked = true;
       this.position3!.locked = true;
+
       this.position1!._joints.forEach((number) => {
         number.generated = true;
       });
@@ -435,6 +427,8 @@ export class ThreePosSynthesis implements OnInit {
         console.log('LIST OF LINKS AFTER DELETION:');
         console.log(this.mechanism.getArrayOfLinks());
         this.mechanism.removeJoint(10);
+        this.generateFourBar();
+        this.generateFourBar();
       }
       this.mechanism.removeJoint(10);
       this.setPositionsColorToDefault();
@@ -527,7 +521,6 @@ export class ThreePosSynthesis implements OnInit {
     this.cdr.detectChanges();
     this.positionSolver.solvePositions();
     this.verifyMechanismPath();
-    this.mechanism.setMechanismGenerated();
   }
 
   setPositionsColorToDefault() {

@@ -1157,11 +1157,6 @@ export class Mechanism {
   setTrajectory(jointId: number, trajectory: Trajectory): void {
     this._trajectories.set(jointId, trajectory);
   }
-  setMechanismGenerated() {
-    for (const joint of this._joints) {
-      joint[1].generated = true;
-    }
-  }
 
   //----------------------------CLEAR FUNCTIONS----------------------------
   clearTrajectories(): void {

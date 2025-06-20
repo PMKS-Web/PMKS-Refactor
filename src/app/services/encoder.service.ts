@@ -126,6 +126,7 @@ export class EncoderService {
    */
   public exportMechanismDataToCSV(): string {
     const data = this.compactMechanismData(this.mechanism);
+    console.log(data);
     let csvOutput = '';
     // For each section (joints, links, etc.) use its short key.
     for (const section of Object.keys(data)) {
