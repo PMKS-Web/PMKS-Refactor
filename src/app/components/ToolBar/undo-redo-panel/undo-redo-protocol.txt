@@ -39,4 +39,4 @@ const action: Action = {
   oldCoords: { x: prevX, y: prevY },
   newCoords: { x: newX, y: newY }
 };
-stateService.commitAction(action);
+this.stateService.recordAction(action);
