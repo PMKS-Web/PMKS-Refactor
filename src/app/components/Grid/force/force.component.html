@@ -2,7 +2,7 @@
   <circle
     [attr.cx]="getStartX()"
     [attr.cy]="getStartY()"
-    r="10"
+    r="15"
     [attr.fill]="getStrokeColor()"
   ></circle>
 
@@ -12,6 +12,14 @@
     stroke-width="15"
     fill="none"
   ></path>
+  @if (isSelected()) {
+  <path
+    [attr.d]="getLineSVG()"
+    [attr.stroke]="'#ffc107'"
+    stroke-width="5"
+    fill="none"
+  ></path>
+  }
 
   <path [attr.d]="getArrowheadSVG()" [attr.fill]="getStrokeColor()"></path>
 
