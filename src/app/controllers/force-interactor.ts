@@ -1,29 +1,24 @@
 import { Coord } from '../model/coord';
-import { Link } from '../model/link';
-import { Joint } from '../model/joint';
+import { Force } from '../model/force';
 import { Mechanism } from '../model/mechanism';
 import { InteractionService } from '../services/interaction.service';
 import { StateService } from '../services/state.service';
-import { CreateLinkFromLinkCapture } from './click-capture/create-link-from-link-capture';
-import { CreateForceFromLinkCapture } from './click-capture/create-force-from-link-capture';
 import { ContextMenuOption, Interactor } from './interactor';
-import type {
-  JointSnapshot,
-  LinkSnapshot,
-} from '../components/ToolBar/undo-redo-panel/action';
+// import type { ForceSnapshot } from '../components/ToolBar/undo-redo-panel/action';
 import { NotificationService } from '../services/notification.service';
 
 /*
 This interactor defines the following behaviors:
-- Dragging the Link moves it
+- Dragging the Force moves it
 */
 
-export class LinkInteractor extends Interactor {
+export class ForceInteractor extends Interactor {
   private activePanel = 'Edit';
-  private linkStartPositions = new Map<number, Coord>();
+  private forceStartPositions: { start: Coord; end: Coord } | null = null;
   private lastNotificationTime = 0;
+
   constructor(
-    public link: Link,
+    public force: Force,
     private stateService: StateService,
     private interactionService: InteractionService,
     private notificationService: NotificationService
@@ -31,20 +26,20 @@ export class LinkInteractor extends Interactor {
     super(true, true);
 
     this.onDragStart$.subscribe(() => {
-      if (
-        this.link.joints.values().next().value?.isGenerated &&
-        this.stateService.getCurrentActivePanel === 'Synthesis'
-      ) {
+      // Remove the isGenerated check since Force class doesn't have this property
+      if (this.stateService.getCurrentActivePanel === 'Synthesis') {
         this.notificationService.showNotification(
           'Cannot edit in the Synthesis mode! Switch to Edit mode to edit.'
         );
         return;
       }
 
-      this.link.joints.forEach((joint: Joint, id: number) => {
-        this.linkStartPositions.set(id, joint.coords.clone());
-      });
+      this.forceStartPositions = {
+        start: this.force.start.clone(),
+        end: this.force.end.clone(),
+      };
     });
+
     this.onDrag$.subscribe(() => {
       if (this.stateService.getCurrentActivePanel === 'Analysis') {
         const now = Date.now();
@@ -57,51 +52,57 @@ export class LinkInteractor extends Interactor {
         }
         return;
       }
-      this.linkStartPositions.forEach((startPos, jointID) => {
-        const newPos = startPos.clone().add(this.dragOffsetInModel!);
-        this.stateService.getMechanism().setJointCoord(jointID, newPos);
-      });
+
+      if (this.forceStartPositions) {
+        const dragOffset = this.dragOffsetInModel!;
+        this.force.addCoordinates(dragOffset);
+      }
     });
 
-    // On drag end, inside LinkInteractor:
+    // On drag end, inside ForceInteractor:
     this.onDragEnd$.subscribe(() => {
-      //Snapshot the old positions from your Map<number,Coord>
-      const oldPositions = Array.from(this.linkStartPositions.entries()).map(
-        ([jointId, coords]) => ({
-          jointId,
-          coords: { x: coords.x, y: coords.y },
-        })
-      );
+      if (!this.forceStartPositions) return;
 
-      //Snapshot the *new* positions by converting link.joints into an Array
-      const newPositions = Array.from(this.link.joints.values()).map((j) => ({
-        jointId: j.id,
-        coords: { x: j.coords.x, y: j.coords.y },
-      }));
+      //Snapshot the old positions
+      const oldPositions = {
+        start: {
+          x: this.forceStartPositions.start.x,
+          y: this.forceStartPositions.start.y,
+        },
+        end: {
+          x: this.forceStartPositions.end.x,
+          y: this.forceStartPositions.end.y,
+        },
+      };
 
-      const moved = oldPositions.some((oldP) => {
-        const newP = newPositions.find((n) => n.jointId === oldP.jointId)!;
-        return (
-          oldP.coords.x !== newP.coords.x || oldP.coords.y !== newP.coords.y
-        );
-      });
+      //Snapshot the *new* positions
+      const newPositions = {
+        start: { x: this.force.start.x, y: this.force.start.y },
+        end: { x: this.force.end.x, y: this.force.end.y },
+      };
+
+      const moved =
+        oldPositions.start.x !== newPositions.start.x ||
+        oldPositions.start.y !== newPositions.start.y ||
+        oldPositions.end.x !== newPositions.end.x ||
+        oldPositions.end.y !== newPositions.end.y;
 
       if (moved) {
-        this.stateService.recordAction({
-          type: 'moveLink',
-          linkId: this.link.id,
-          oldJointPositions: oldPositions,
-          newJointPositions: newPositions,
-        });
+        // this.stateService.recordAction({
+        //   type: 'moveForce',
+        //   forceId: this.force.id,
+        //   oldPositions: oldPositions,
+        //   newPositions: newPositions,
+        // });
       }
 
-      this.linkStartPositions.clear();
+      this.forceStartPositions = null;
       this.stateService.getMechanism().notifyChange();
     });
   }
 
   /**
-   * Determines what options should be shown for the context menu when right clicking on a Link
+   * Determines what options should be shown for the context menu when right clicking on a Force
    *
    * @returns
    */
@@ -119,177 +120,45 @@ export class LinkInteractor extends Interactor {
       );
       return availableContext;
     }
+
     const mechanism: Mechanism = this.stateService.getMechanism();
-    let modelPosAtRightClick = this.getMousePos().model;
+
     if (this.activePanel === 'Edit') {
       availableContext.push(
         {
-          icon: 'assets/contextMenuIcons/addLink.svg',
-          label: 'Attach Link',
+          icon: 'assets/contextMenuIcons/lock.svg', // Forces don't appear to have a locked property
+          label: 'Lock Force',
           action: () => {
-            const start = modelPosAtRightClick;
-            const capture = new CreateLinkFromLinkCapture(
-              this.link,
-              start,
-              this.interactionService
+            // Note: Force class doesn't have a locked property in the provided definition
+            // You may need to add this property to the Force class
+            console.log(
+              'Lock/unlock functionality not implemented - no locked property on Force'
             );
-
-            capture.onClick$.subscribe((end) => {
-              const mech = this.stateService.getMechanism();
-
-              // 1) before splitting, snapshot IDs
-              const beforeLinkIds = mech.getArrayOfLinks().map((l) => l.id);
-              const beforeJointIds = mech.getArrayOfJoints().map((j) => j.id);
-
-              mech.addLinkToLink(this.link.id, start, end);
-
-              const allLinks = mech.getArrayOfLinks().map((l) => l.id);
-              const newLinkId = allLinks.find(
-                (id) => !beforeLinkIds.includes(id)
-              )!;
-
-              const allJoints = mech.getArrayOfJoints().map((j) => j.id);
-              const newJointIds = allJoints.filter(
-                (id) => !beforeJointIds.includes(id)
-              );
-
-              this.stateService.recordAction({
-                type: 'addLinkToLink',
-                parentLinkId: this.link.id,
-                start,
-                end,
-                newLinkId,
-                newJointIds,
-              });
-
-              const extraJointsData = newJointIds.map((id) => {
-                const j = mech.getJoint(id)!;
-                return {
-                  id: j.id,
-                  coords: { x: j.coords.x, y: j.coords.y },
-                  name: j.name,
-                  type: j.type,
-                  angle: j.angle,
-                  isGrounded: j.isGrounded,
-                  isWelded: j.isWelded,
-                  isInput: j.isInput,
-                  inputSpeed: j.speed,
-                  locked: j.locked,
-                  isHidden: j.hidden,
-                  isReference: j.reference,
-                };
-              });
-
-              const attachJointId = extraJointsData.find(
-                (js) => js.coords.x === start.x && js.coords.y === start.y
-              )!.id;
-
-              this.stateService.recordAction({
-                type: 'addLinkToLink',
-                parentLinkId: this.link.id,
-                start: start,
-                end: end,
-                attachJointId: attachJointId,
-              });
-
-              mech.notifyChange();
-            });
-
-            this.interactionService.enterClickCapture(capture);
           },
-          disabled: false,
-        },
-
-        {
-          icon: 'assets/contextMenuIcons/addTracer.svg',
-          label: 'Attach Tracer Point',
-          action: () => {
-            // snapshot existing joint‐IDs
-            const beforeIds = Array.from(this.link.joints.keys());
-
-            // add the tracer
-            this.stateService
-              .getMechanism()
-              .addJointToLink(this.link.id, modelPosAtRightClick);
-
-            // find exactly which joint is new
-            const afterIds = Array.from(this.link.joints.keys());
-            const newId = afterIds.find((id) => !beforeIds.includes(id))!;
-            const newJoint = this.link.joints.get(newId)!;
-
-            // recordAction with a real jointId
-            this.stateService.recordAction({
-              type: 'addTracer',
-              linkTracerData: {
-                linkId: this.link.id,
-                jointId: newId,
-                coords: { x: newJoint.coords.x, y: newJoint.coords.y },
-              },
-            });
-
-            this.stateService.getMechanism().notifyChange();
-          },
-
-          disabled: false,
-        },
-
-        {
-          icon: 'assets/contextMenuIcons/addForce.svg',
-          label: 'Attach Force',
-          action: () => {
-            this.enterAddForceCaptureMode(modelPosAtRightClick);
-          },
-          disabled: false,
-        },
-        {
-          icon: this.link.locked
-            ? 'assets/contextMenuIcons/unlock.svg'
-            : 'assets/contextMenuIcons/lock.svg',
-          label: this.link.locked ? 'Unlock Link' : 'Lock Link',
-          action: () => {
-            this.link.locked = !this.link.locked;
-          },
-          disabled: false,
+          disabled: true, // Disabled since locked property doesn't exist
         },
         {
           icon: 'assets/contextMenuIcons/trash.svg',
-          label: 'Delete Link',
+          label: 'Delete Force',
           action: () => {
-            this.stateService.getMechanism();
-            const linkData: LinkSnapshot = {
-              id: this.link.id,
-              jointIds: Array.from(this.link.joints.values()).map((j) => j.id),
-              name: this.link.name,
-              mass: this.link.mass,
-              angle: this.link.angle,
-              locked: this.link.locked,
-              color: this.link.color,
-            };
+            //TODO Force Snapshot
+            // const forceData: ForceSnapshot = {
+            //   id: this.force.id,
+            //   name: this.force.name,
+            //   start: { x: this.force.start.x, y: this.force.start.y },
+            //   end: { x: this.force.end.x, y: this.force.end.y },
+            //   magnitude: this.force.magnitude,
+            //   angle: this.force.angle,
+            //   frameOfReference: this.force.frameOfReference,
+            //   parentLinkId: this.force.parentLink.id,
+            // };
 
-            const extraJointsData: JointSnapshot[] = Array.from(
-              this.link.joints.values()
-            ).map((j) => ({
-              id: j.id,
-              coords: { x: j.coords.x, y: j.coords.y },
-              name: j.name,
-              type: j.type,
-              angle: j.angle,
-              isGrounded: j.isGrounded,
-              isWelded: j.isWelded,
-              isInput: j.isInput,
-              inputSpeed: j.speed,
-              locked: j.locked,
-              isHidden: j.hidden,
-              isReference: j.reference,
-            }));
+            // this.stateService.recordAction({
+            //   type: 'deleteForce',
+            //   forceData,
+            // });
 
-            this.stateService.recordAction({
-              type: 'deleteLink',
-              linkData,
-              extraJointsData,
-            });
-
-            mechanism.removeLink(this.link.id);
+            mechanism.removeForce(this.force.id);
             this.stateService.getMechanism().notifyChange();
           },
           disabled: false,
@@ -300,34 +169,18 @@ export class LinkInteractor extends Interactor {
     return availableContext;
   }
 
-  // Starts the click-capture interaction to add a force to this link
-  private enterAddForceCaptureMode(modelPosAtRightClick: Coord): void {
-    const capture = new CreateForceFromLinkCapture(
-      this.link,
-      modelPosAtRightClick,
-      this.interactionService
-    );
-    capture.onClick$.subscribe((mousePos) => {
-      this.stateService
-        .getMechanism()
-        .addForceToLink(this.link.id, modelPosAtRightClick, mousePos);
-      this.stateService.getMechanism().notifyChange();
-    });
-    this.interactionService.enterClickCapture(capture);
+  // Returns the force associated with this interactor
+  public getForce(): Force {
+    return this.force;
   }
 
-  // Returns the link associated with this interactor
-  public getLink(): Link {
-    return this.link;
-  }
-
-  // Returns a string representation of this LinkInteractor
+  // Returns a string representation of this ForceInteractor
   public override toString(): string {
-    return 'LinkInteractor(' + this.link.name + ')';
+    return 'ForceInteractor(' + this.force.name + ')';
   }
 
   // Returns the type identifier for this interactor
   public override type(): string {
-    return 'LinkInteractor';
+    return 'ForceInteractor';
   }
 }

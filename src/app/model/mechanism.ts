@@ -764,6 +764,7 @@ export class Mechanism {
       this._forceIDCount++;
       this._forces.set(forceA.id, forceA);
       link.addForce(forceA);
+      console.log('forceAdded! num: ' + this._forceIDCount);
     });
   }
   /**

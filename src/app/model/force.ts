@@ -15,7 +15,7 @@ export class Force {
   private _angle: number;
   private _frameOfReference: ForceFrame;
   private _parentLink: Link;
-  private _color: String;
+  private _color: string;
   private linkColorOptions = [
     '#727FD5',
     '#2F3E9F',
@@ -59,6 +59,9 @@ export class Force {
 
   get angle(): number {
     return this._angle;
+  }
+  get color(): string {
+    return this._color;
   }
 
   get frameOfReference(): ForceFrame {

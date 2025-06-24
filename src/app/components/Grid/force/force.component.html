@@ -1,0 +1,73 @@
+<svg:g appInteractable xmlns:svg="s" [interactor]="getInteractor()">
+  <path
+    [attr.d]="getForceLineSVG()"
+    [attr.stroke]="getStrokeColor()"
+    [attr.stroke-width]="3"
+    fill="none"
+    [attr.marker-end]="'url(#force-arrowhead-' + force.id + ')'"
+  ></path>
+
+  <defs>
+    <marker
+      [attr.id]="'force-arrowhead-' + force.id"
+      viewBox="0 0 15 8"
+      refX="15"
+      refY="4"
+      markerWidth="8"
+      markerHeight="8"
+      orient="auto"
+    >
+      <path
+        d="M0,0 L15,4 L0,8 Z"
+        [attr.fill]="getStrokeColor()"
+        [attr.stroke]="getStrokeColor()"
+        stroke-width="1"
+      />
+    </marker>
+  </defs>
+
+  <image
+    *ngIf="false"
+    xlink:href="../../../assets/icons/lock.svg"
+    [attr.x]="getMidPointX() - 12.5"
+    [attr.y]="getMidPointY() - 12.5"
+    [attr.width]="25"
+    [attr.height]="25"
+  ></image>
+
+  @if (isHovered() || isSelected()) {
+  <text
+    class="force-label"
+    [attr.x]="getMagnitudeLabelX()"
+    [attr.y]="getMagnitudeLabelY()"
+    alignment-baseline="middle"
+    text-anchor="middle"
+  >
+    {{ getMagnitude() }}
+  </text>
+
+  <text
+    class="force-name"
+    [attr.x]="getMidPointX()"
+    [attr.y]="getMidPointY() - 30"
+    alignment-baseline="middle"
+    text-anchor="middle"
+  >
+    <tspan [attr.x]="getMidPointX()" dy="0em">{{ force.name }}</tspan>
+    <tspan [attr.x]="getMidPointX()" dy="1.2em">{{ getAngle() }}</tspan>
+    <tspan [attr.x]="getMidPointX()" dy="1.2em">
+      {{ getParentLinkName() }}
+    </tspan>
+  </text>
+  } @else if (showIDLabels) {
+  <text
+    class="force-id-label"
+    [attr.x]="getMidPointX()"
+    [attr.y]="getMidPointY() - 15"
+    alignment-baseline="middle"
+    text-anchor="middle"
+  >
+    {{ force.name }}
+  </text>
+  }
+</svg:g>
