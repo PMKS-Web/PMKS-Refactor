@@ -34,7 +34,7 @@ export class Force {
     this._frameOfReference = ForceFrame.Global;
     this._angle = this.calculateAngle();
     this._parentLink = parent;
-    this._color = '';
+    this._color = this.linkColorOptions[1];
   }
   //getters
   get id(): number {
@@ -148,6 +148,8 @@ export class Force {
 
   setColor(index: number) {
     this._color = this.linkColorOptions[index];
-    console.log(this._color);
+  }
+  getColorIndex(): number {
+    return this.linkColorOptions.indexOf(this._color);
   }
 }

@@ -134,15 +134,18 @@ export class ForceComponent
     return (startCoord.y + endCoord.y) / 2;
   }
 
-  // Get the force vector line as SVG path
-  getForceLineSVG(): string {
-    const startCoord = this.unitConversionService.modelCoordToSVGCoord(
-      this.force.start
-    );
-    const endCoord = this.unitConversionService.modelCoordToSVGCoord(
-      this.force.end
-    );
-    return `M${startCoord.x},${startCoord.y} L${endCoord.x},${endCoord.y}`;
+  getLineSVG(): string {
+    const dx: number = this.getEndX() - this.getStartX();
+    const dy = this.getEndY() - this.getStartY();
+    const length = Math.sqrt(dx * dx + dy * dy);
+
+    const shortenBy = 24;
+    const ratio = (length - shortenBy) / length;
+
+    const newEndX = this.getStartX() + dx * ratio;
+    const newEndY = this.getStartY() + dy * ratio;
+
+    return `M${this.getStartX()},${this.getStartY()} L${newEndX},${newEndY}`;
   }
 
   // Get the arrowhead path for the force vector
@@ -166,8 +169,8 @@ export class ForceComponent
     const unitY = dy / length;
 
     // Arrowhead size
-    const arrowLength = 15;
-    const arrowWidth = 8;
+    const arrowLength = 40;
+    const arrowWidth = 20;
 
     // Calculate arrowhead points
     const arrowX1 = endCoord.x - arrowLength * unitX - arrowWidth * unitY;
@@ -227,8 +230,16 @@ export class ForceComponent
 
   // Get the stroke color based on selection/hover state
   getStrokeColor(): string {
+    console.log(
+      'color: ' +
+        this.getColor() +
+        ' : ' +
+        this.force.color +
+        ' : ' +
+        this.force.id
+    );
     if (this.getInteractor().isSelected) {
-      return '#FFCA28'; // Selected color
+      return this.force.color; // Selected color
     } else if (this.isHovered()) {
       return '#FFECB3'; // Hover color
     }
@@ -274,15 +285,6 @@ export class ForceComponent
     const dx = this.force.end.x - this.force.start.x;
     const dy = this.force.end.y - this.force.start.y;
     return Math.sqrt(dx * dx + dy * dy);
-  }
-
-  // Get component forces (if needed for display)
-  getXComponent(): number {
-    return this.force.calculateXComp();
-  }
-
-  getYComponent(): number {
-    return this.force.calculateYComp();
   }
 
   // Get the force vector scaled by magnitude for visual representation

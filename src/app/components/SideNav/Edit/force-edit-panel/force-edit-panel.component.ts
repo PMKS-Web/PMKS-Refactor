@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { ForceInteractor } from 'src/app/controllers/force-interactor';
 import { Coord } from 'src/app/model/coord';
 import { Force } from 'src/app/model/force';
 import { Joint } from 'src/app/model/joint';
@@ -26,7 +27,7 @@ export class ForceEditPanelComponent {
     FVisual: false,
   };
   isEditingTitle: boolean = false;
-  selectedIndex: number = this.getColorIndex();
+  selectedIndex: number = this.getSelectedObject().getColorIndex();
   //icon paths for dual button for addFracer and addForce
   public addTracerIconPath: string = 'assets/icons/addTracer.svg';
   public addForceIconPath: string = 'assets/icons/addForce.svg';
@@ -44,18 +45,13 @@ export class ForceEditPanelComponent {
     private colorService: ColorService
   ) {}
 
+  //helper function to access current selected object (will always be a link here)
   getSelectedObject(): Force {
-    // let force = this.interactionService.getSelectedObject() as ForceInteractor;
-    // return force.getForce();
-    return new Force(
-      0,
-      new Coord(0, 0),
-      new Coord(0, 0),
-      new Link(0, new Joint(0, 0, 0), new Joint(0, 0, 0))
-    );
+    let link = this.interactionService.getSelectedObject() as ForceInteractor;
+    return link.getForce();
   }
   getColorIndex(): number {
-    return this.colorService.getLinkColorIndex(this.getSelectedObject().id);
+    return this.selectedIndex;
   }
   //Returns the name of the selected Link
   getForceName(): string {

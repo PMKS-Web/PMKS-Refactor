@@ -1,30 +1,19 @@
 <svg:g appInteractable xmlns:svg="s" [interactor]="getInteractor()">
+  <circle
+    [attr.cx]="getStartX()"
+    [attr.cy]="getStartY()"
+    r="10"
+    [attr.fill]="getStrokeColor()"
+  ></circle>
+
   <path
-    [attr.d]="getForceLineSVG()"
+    [attr.d]="getLineSVG()"
     [attr.stroke]="getStrokeColor()"
-    [attr.stroke-width]="3"
+    stroke-width="15"
     fill="none"
-    [attr.marker-end]="'url(#force-arrowhead-' + force.id + ')'"
   ></path>
 
-  <defs>
-    <marker
-      [attr.id]="'force-arrowhead-' + force.id"
-      viewBox="0 0 15 8"
-      refX="15"
-      refY="4"
-      markerWidth="8"
-      markerHeight="8"
-      orient="auto"
-    >
-      <path
-        d="M0,0 L15,4 L0,8 Z"
-        [attr.fill]="getStrokeColor()"
-        [attr.stroke]="getStrokeColor()"
-        stroke-width="1"
-      />
-    </marker>
-  </defs>
+  <path [attr.d]="getArrowheadSVG()" [attr.fill]="getStrokeColor()"></path>
 
   <image
     *ngIf="false"
