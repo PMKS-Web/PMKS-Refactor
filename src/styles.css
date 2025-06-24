@@ -1,13 +1,19 @@
 /* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
 
-:root{
-    --white-background: #ffffff;
-    --light-primary: #002962;
-    --light-accent: #fdc500;
-    --light-warning: #a0001c;
+:root {
+  --white-background: #ffffff;
+  --light-primary: #002962;
+  --light-accent: #fdc500;
+  --light-warning: #a0001c;
 }
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
@@ -17,53 +23,57 @@ input::-webkit-inner-spin-button {
 }
 
 /* Firefox */
-input[type=number] {
+input[type="number"] {
   -moz-appearance: textfield;
 }
 
-  input {
-    width: 40%;
-    border: none;
-    border-bottom: 1px solid rgba(0,0,0, 75%);
-    background-color: rgba(63,81,181, 10%);
-    border-radius: 3px 3px 0 0;
-    height: 25px;
-    /*padding-left: 10px!important;*/
+input {
+  width: 40%;
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 75%);
+  background-color: rgba(63, 81, 181, 10%);
+  border-radius: 3px 3px 0 0;
+  height: 25px;
+  /*padding-left: 10px!important;*/
+}
 
-  }
+p {
+  margin-left: 6px;
+}
 
-  p {
-    margin-left: 6px;
-  }
+.subtitle {
+  display: flex;
+  font-family: Roboto;
+  font-weight: 400;
+  line-height: 18px;
+  letter-spacing: 0.25px;
+  color: grey;
+  font-size: 14px;
+  margin: 5px 5px 6px 10px;
+}
 
-  .subtitle {
-    display: flex;
-    font-family: Roboto;
-    font-weight: 400;
-    line-height: 18px;
-    letter-spacing: .25px;
-    color: grey;
-    font-size: 14px;
-    margin: 5px 5px 6px 10px;
-  }
+title-block {
+  font-size: 20px;
+  font-weight: 500;
+}
 
-  title-block {
-    font-size: 20px;
-    font-weight: 500;
-  }
+#title-description {
+  font-size: 14px;
+  color: #0009;
+  font-weight: 400;
+}
 
-  #title-description{
-    font-size: 14px;
-    color: #0009;
-    font-weight: 400;
-  }
+div.app-panel-container,
+div.app-synthesis-panel-container {
+  width: 300px;
+}
 
-  div.app-panel-container, div.app-synthesis-panel-container {
-    width:300px;
-  }
-
-  p, label, input, dual-input-block, single-input-block {
-    color: #263037;
-    /*padding-right: 12px!important;*/
-    /*padding-left: 5px !important;*/
-  }
+p,
+label,
+input,
+dual-input-block,
+single-input-block {
+  color: #263037;
+  /*padding-right: 12px!important;*/
+  /*padding-left: 5px !important;*/
+}

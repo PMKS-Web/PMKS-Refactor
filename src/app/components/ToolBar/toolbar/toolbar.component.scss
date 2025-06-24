@@ -1,12 +1,12 @@
-@use 'sass:map';
-@use '@angular/material' as mat;
+@use "sass:map";
+@use "@angular/material" as mat;
 
 @mixin css($theme) {
   // Get the color config from the theme.
   $color-config: mat.m2-get-color-config($theme);
   // Get the primary color palette from the color-config.
-  $primary-palette: map.get($color-config, 'primary');
-  $accent-palette: map.get($color-config, 'accent');
+  $primary-palette: map.get($color-config, "primary");
+  $accent-palette: map.get($color-config, "accent");
   $typography-config: mat.m2-get-typography-config($theme);
   $background: map.get($theme, background);
   $foreground: map.get($theme, foreground);
@@ -34,13 +34,13 @@
     overflow: hidden;
   }
 
-.toolbar-scroll-container {
-  display: flex;
-  overflow: hidden;
-  flex: 1; 
-  min-width: 0;
-  position: relative;
-}
+  .toolbar-scroll-container {
+    display: flex;
+    overflow: hidden;
+    flex: 1;
+    min-width: 0;
+    position: relative;
+  }
 
   .toolbar-buttons-wrapper {
     display: flex;
@@ -61,48 +61,22 @@
     transition-duration: 0.3s;
   }
 
-    
-.toolbar-button.arrow {
-  background-color: mat.m2-get-color-from-palette($primary-palette, 100);
-  color: mat.m2-get-color-from-palette($primary-palette, 700);
-  margin: 0 0.1rem;
-  height: 30px;
-  width: 22px;
-  min-width: 22px;
-  padding: 0 !important;
-  border-radius: 4px;
-  display: flex; // Let Angular override this when [style.display] is used
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  overflow: visible;
-  z-index: 100;
-  position: relative;
-  transition: background-color 0.3s ease;
-  box-shadow: none;
+  .toolbar-button.arrow {
+    width: 30px;
+    min-width: 22px;
+    padding: 0 !important;
+    transition: background-color 0.3s ease;
+    &:hover {
+      background-color: mat.m2-get-color-from-palette($primary-palette, 50);
+    }
 
-  &:hover {
-    background-color: mat.m2-get-color-from-palette($primary-palette, 50);
+    mat-icon {
+      font-size: 24px !important;
+      height: 24px !important;
+      width: 24px !important;
+      transform: translateX(3px); //not sure why this is needed but it works.
+    }
   }
-
-  mat-icon {
-    font-size: 20px !important;
-    height: 20px !important;
-    width: 20px !important;
-    line-height: 1 !important;
-    display: inline-block;
-    visibility: visible;
-    opacity: 1;
-    z-index: 200;
-    position: relative;
-    color: inherit;
-    transform: translateX(1px); //not sure why this is needed but it works.
-  }
-}
-
-.spacer {
-  flex: 1 1;
-}
 
   // Responsive behavior
   @media (max-width: 768px) {
@@ -115,7 +89,7 @@
     .toolbar.toolbar {
       min-width: 100%;
     }
-    
+
     .toolbar-scroll-container {
       max-width: calc(100% - 180px);
     }
