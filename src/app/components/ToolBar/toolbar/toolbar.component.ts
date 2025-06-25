@@ -5,6 +5,7 @@ import {EncoderService} from "../../../services/encoder.service";
 import {DecoderService} from "../../../services/decoder.service";
 import { NotificationService } from 'src/app/services/notification.service';
 import { PanZoomService } from "../../../services/pan-zoom.service";
+import {FeedbackPanelComponent} from "../feedback-panel/feedback-panel.component";
 
 @Component({
     selector: 'app-toolbar',
