@@ -17,6 +17,11 @@ export class ForceInteractor extends Interactor {
   private forceStartPositions: { start: Coord; end: Coord } | null = null;
   private lastNotificationTime = 0;
 
+  // Add these new properties for handle dragging
+  public isDraggingHandle: boolean = false;
+  public handleDragType: 'start' | 'end' | null = null;
+  private originalHandlePosition: Coord | null = null;
+
   constructor(
     public force: Force,
     private stateService: StateService,
@@ -26,7 +31,6 @@ export class ForceInteractor extends Interactor {
     super(true, true);
 
     this.onDragStart$.subscribe(() => {
-      // Remove the isGenerated check since Force class doesn't have this property
       if (this.stateService.getCurrentActivePanel === 'Synthesis') {
         this.notificationService.showNotification(
           'Cannot edit in the Synthesis mode! Switch to Edit mode to edit.'
@@ -34,17 +38,25 @@ export class ForceInteractor extends Interactor {
         return;
       }
 
+      // Store original positions for both whole-force and handle dragging
       this.forceStartPositions = {
         start: this.force.start.clone(),
         end: this.force.end.clone(),
       };
+
+      // If dragging a handle, store the original handle position
+      if (this.isDraggingHandle && this.handleDragType) {
+        this.originalHandlePosition =
+          this.handleDragType === 'start'
+            ? this.force.start.clone()
+            : this.force.end.clone();
+      }
     });
 
     this.onDrag$.subscribe(() => {
       if (this.stateService.getCurrentActivePanel === 'Analysis') {
         const now = Date.now();
         if (now - this.lastNotificationTime >= 3000) {
-          // 3 seconds = 3000ms
           this.notificationService.showNotification(
             'Cannot edit in the Analysis mode! Switch to Edit mode to edit.'
           );
@@ -53,17 +65,19 @@ export class ForceInteractor extends Interactor {
         return;
       }
 
-      if (this.forceStartPositions) {
+      // Handle dragging logic
+      if (this.isDraggingHandle && this.handleDragType) {
+        this.handleHandleDrag();
+      } else if (this.forceStartPositions) {
+        // Original whole-force dragging logic
         const dragOffset = this.dragOffsetInModel!;
         this.force.addCoordinates(dragOffset);
       }
     });
 
-    // On drag end, inside ForceInteractor:
     this.onDragEnd$.subscribe(() => {
       if (!this.forceStartPositions) return;
 
-      //Snapshot the old positions
       const oldPositions = {
         start: {
           x: this.forceStartPositions.start.x,
@@ -75,7 +89,6 @@ export class ForceInteractor extends Interactor {
         },
       };
 
-      //Snapshot the *new* positions
       const newPositions = {
         start: { x: this.force.start.x, y: this.force.start.y },
         end: { x: this.force.end.x, y: this.force.end.y },
@@ -88,17 +101,50 @@ export class ForceInteractor extends Interactor {
         oldPositions.end.y !== newPositions.end.y;
 
       if (moved) {
+        // Record action for undo/redo
         // this.stateService.recordAction({
-        //   type: 'moveForce',
+        //   type: this.isDraggingHandle ? 'moveForceHandle' : 'moveForce',
         //   forceId: this.force.id,
         //   oldPositions: oldPositions,
         //   newPositions: newPositions,
+        //   handleType: this.handleDragType
         // });
       }
 
+      // Clean up dragging state
       this.forceStartPositions = null;
+      this.isDraggingHandle = false;
+      this.handleDragType = null;
+      this.originalHandlePosition = null;
+
       this.stateService.getMechanism().notifyChange();
     });
+  }
+
+  // New method to handle individual handle dragging
+  private handleHandleDrag(): void {
+    if (!this.handleDragType || !this.originalHandlePosition) return;
+
+    const mousePos = this.interactionService.getMousePos();
+
+    if (this.handleDragType === 'start') {
+      // Move only the start point
+      this.force.start.x = mousePos.model.x;
+      this.force.start.y = mousePos.model.y;
+    } else if (this.handleDragType === 'end') {
+      // Move only the end point
+      this.force.end.x = mousePos.model.x;
+      this.force.end.y = mousePos.model.y;
+    }
+
+    // Update force properties that depend on start/end positions
+    this.force.updateFromEndpoints(); // You may need to add this method to Force class
+  }
+
+  // Method to initiate handle dragging
+  public startHandleDragging(type: 'start' | 'end'): void {
+    this.isDraggingHandle = true;
+    this.handleDragType = type;
   }
 
   /**

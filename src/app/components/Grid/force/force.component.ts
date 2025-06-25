@@ -21,6 +21,7 @@ import { Subscription } from 'rxjs';
 import { NotificationService } from 'src/app/services/notification.service';
 import { ForceInteractor } from 'src/app/controllers/force-interactor';
 import { Force } from 'src/app/model/force';
+import { PanZoomService } from 'src/app/services/pan-zoom.service';
 
 @Component({
   selector: '[app-force]',
@@ -46,7 +47,8 @@ export class ForceComponent
     private notificationService: NotificationService,
     private svgPathService: SVGPathService,
     private unitConversionService: UnitConversionService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private panZoomService: PanZoomService
   ) {
     super(interactionService);
   }
@@ -286,7 +288,19 @@ export class ForceComponent
     const dy = this.force.end.y - this.force.start.y;
     return Math.sqrt(dx * dx + dy * dy);
   }
+  getLineEndCoord(): Coord {
+    const dx: number = this.getEndX() - this.getStartX();
+    const dy = this.getEndY() - this.getStartY();
+    const length = Math.sqrt(dx * dx + dy * dy);
 
+    const shortenBy = 40;
+    const ratio = (length - shortenBy) / length;
+
+    const x = this.getStartX() + dx * ratio;
+    const y = this.getStartY() + dy * ratio;
+
+    return new Coord(x, y);
+  }
   // Get the force vector scaled by magnitude for visual representation
   getScaledForceVector(): string {
     const startCoord = this.unitConversionService.modelCoordToSVGCoord(
@@ -330,5 +344,82 @@ export class ForceComponent
     const arrowY2 = endY - arrowLength * unitY - arrowWidth * unitX;
 
     return `M${endX},${endY} L${arrowX1},${arrowY1} L${arrowX2},${arrowY2} Z`;
+  }
+  private isDragging = false;
+  private dragType: 'start' | 'end' | null = null;
+  private readonly MODEL_TO_SVG_SCALE = 200.0;
+
+  onStartHandleMouseDown(event: MouseEvent): void {
+    event.preventDefault();
+    this.startDragging('start', event);
+  }
+
+  onEndHandleMouseDown(event: MouseEvent): void {
+    event.preventDefault();
+    this.startDragging('end', event);
+  }
+
+  private startDragging(type: 'start' | 'end', event: MouseEvent): void {
+    event.preventDefault();
+    // IMPORTANT: Don't call stopPropagation() - let InteractionDirective handle it
+
+    // const forceInteractor = this.interactor as ForceInteractor;
+    // forceInteractor.startHandleDragging('start');
+
+    // this.interactionService.setSelectedObject(forceInteractor);
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  onMouseMove(event: MouseEvent): void {
+    if (!this.isDragging || !this.dragType) return;
+
+    const svgElement = document.querySelector('svg'); // Adjust selector as needed
+    if (!svgElement) return;
+
+    const rect = svgElement.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+
+    // Get current zoom/pan from your service
+    const currentZoomPan = this.panZoomService.getZoomPan(); // or however you access it
+
+    // Convert mouse coordinates to SVG coordinates
+    const svgX = currentZoomPan.viewBoxX + mouseX * currentZoomPan.currentZoom;
+    const svgY = currentZoomPan.viewBoxY + mouseY * currentZoomPan.currentZoom;
+
+    // Convert SVG coordinates to model coordinates
+    const modelX = svgX / this.MODEL_TO_SVG_SCALE;
+    const modelY = -svgY / this.MODEL_TO_SVG_SCALE;
+
+    const modelCoord = new Coord(modelX, modelY);
+
+    if (this.dragType === 'start') {
+      this.force.start = modelCoord;
+    } else if (this.dragType === 'end') {
+      this.force.end = modelCoord;
+    }
+
+    // Recalculate force properties (magnitude, angle, etc.)
+    this.updateForceProperties();
+    this.cdr.detectChanges();
+  }
+
+  @HostListener('document:mouseup', ['$event'])
+  onMouseUp(event: MouseEvent): void {
+    if (this.isDragging) {
+      this.isDragging = false;
+      this.dragType = null;
+      // Optionally notify state service of changes
+      // this.stateService.updateForce(this.force);
+    }
+  }
+
+  private updateForceProperties(): void {
+    // Recalculate magnitude and angle based on new start/end positions
+    const dx = this.force.end.x - this.force.start.x;
+    const dy = this.force.end.y - this.force.start.y;
+
+    this.force.magnitude = Math.sqrt(dx * dx + dy * dy);
+    this.force.angle = Math.atan2(dy, dx) * (180 / Math.PI);
   }
 }

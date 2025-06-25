@@ -152,4 +152,10 @@ export class Force {
   getColorIndex(): number {
     return this.linkColorOptions.indexOf(this._color);
   }
+  public updateFromEndpoints(): void {
+    const dx = this.end.x - this.start.x;
+    const dy = this.end.y - this.start.y;
+    this.magnitude = Math.sqrt(dx * dx + dy * dy);
+    this.angle = Math.atan2(dy, dx) * (180 / Math.PI);
+  }
 }
