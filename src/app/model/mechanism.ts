@@ -761,6 +761,7 @@ export class Mechanism {
   addForceToLink(linkID: number, startCoord: Coord, endCoord: Coord) {
     this.executeLinkAction(linkID, (link) => {
       let forceA = new Force(this._forceIDCount, startCoord, endCoord, link);
+      forceA.name = 'F' + this.toSubscript(this._forceIDCount.toString());
       this._forceIDCount++;
       this._forces.set(forceA.id, forceA);
       link.addForce(forceA);
@@ -943,7 +944,6 @@ export class Mechanism {
     }
     action(force);
     this.notifyChange();
-    //console.log(this);
   }
 
   /**
@@ -1038,6 +1038,30 @@ export class Mechanism {
 
   //----------------------------HELPER FUNCTIONS----------------------------
 
+  toSubscript(num: number | string): string {
+    const subscriptMap: Record<string, string> = {
+      '0': '₀',
+      '1': '₁',
+      '2': '₂',
+      '3': '₃',
+      '4': '₄',
+      '5': '₅',
+      '6': '₆',
+      '7': '₇',
+      '8': '₈',
+      '9': '₉',
+      '-': '₋',
+      '+': '₊',
+      '=': '₌',
+      '(': '₍',
+      ')': '₎',
+    };
+
+    return String(num)
+      .split('')
+      .map((char) => subscriptMap[char] || char)
+      .join('');
+  }
   getConnectedLinksForJoint(joint: Joint): Link[] {
     let connectedLinks: Link[] = [];
     for (let link of this._links.values()) {

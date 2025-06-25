@@ -45,7 +45,6 @@ export class ForceComponent
     public override interactionService: InteractionService,
     private stateService: StateService,
     private notificationService: NotificationService,
-    private svgPathService: SVGPathService,
     private unitConversionService: UnitConversionService,
     private cdr: ChangeDetectorRef,
     private panZoomService: PanZoomService
@@ -63,11 +62,6 @@ export class ForceComponent
   }
 
   override ngOnInit() {
-    this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe(
-      (units) => {
-        this.units = units;
-      }
-    );
     this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe(
       (angles) => {
         this.unitsAngle = angles;
@@ -148,6 +142,9 @@ export class ForceComponent
     const newEndY = this.getStartY() + dy * ratio;
 
     return `M${this.getStartX()},${this.getStartY()} L${newEndX},${newEndY}`;
+  }
+  getSelectionLineSVG(): string {
+    return `M${this.getStartX()},${this.getStartY()} L${this.getEndX()},${this.getEndY()}`;
   }
 
   // Get the arrowhead path for the force vector
@@ -232,14 +229,6 @@ export class ForceComponent
 
   // Get the stroke color based on selection/hover state
   getStrokeColor(): string {
-    console.log(
-      'color: ' +
-        this.getColor() +
-        ' : ' +
-        this.force.color +
-        ' : ' +
-        this.force.id
-    );
     if (this.getInteractor().isSelected) {
       return this.force.color; // Selected color
     } else if (this.isHovered()) {
@@ -247,18 +236,12 @@ export class ForceComponent
     }
     return this.getColor();
   }
-
-  // Get the force magnitude as a string
   getMagnitude(): string {
-    return this.force.magnitude.toString() + ' ' + this.units;
+    return this.force.magnitude.toFixed(3).toString() + ' ' + this.units;
   }
-
-  // Get the force angle as a string
   getAngle(): string {
-    return this.force.angle.toString() + this.unitsAngle;
+    return this.force.angle.toFixed(3).toString() + this.unitsAngle;
   }
-
-  // Get the force name and details for tooltips
   getName(): string {
     return (
       this.force.name +
@@ -271,18 +254,12 @@ export class ForceComponent
       this.unitsAngle
     );
   }
-
-  // Get the frame of reference as a string
   getFrameOfReference(): string {
     return this.force.frameOfReference === 0 ? 'Local' : 'Global';
   }
-
-  // Get the parent link name
   getParentLinkName(): string {
     return this.force.parentLink.name;
   }
-
-  // Calculate the length of the force vector
   getVectorLength(): number {
     const dx = this.force.end.x - this.force.start.x;
     const dy = this.force.end.y - this.force.start.y;
@@ -293,7 +270,7 @@ export class ForceComponent
     const dy = this.getEndY() - this.getStartY();
     const length = Math.sqrt(dx * dx + dy * dy);
 
-    const shortenBy = 40;
+    const shortenBy = 0;
     const ratio = (length - shortenBy) / length;
 
     const x = this.getStartX() + dx * ratio;
@@ -301,17 +278,13 @@ export class ForceComponent
 
     return new Coord(x, y);
   }
-  // Get the force vector scaled by magnitude for visual representation
   getScaledForceVector(): string {
     const startCoord = this.unitConversionService.modelCoordToSVGCoord(
       this.force.start
     );
-
-    // Scale the vector based on magnitude (you may want to adjust this scaling factor)
     const scaleFactor = 20; // pixels per unit of force
     const vectorLength = this.force.magnitude * scaleFactor;
 
-    // Calculate end point based on angle
     const angleRad = (this.force.angle * Math.PI) / 180;
     const endX = startCoord.x + vectorLength * Math.cos(angleRad);
     const endY = startCoord.y - vectorLength * Math.sin(angleRad); // Negative because SVG Y increases downward
@@ -319,7 +292,6 @@ export class ForceComponent
     return `M${startCoord.x},${startCoord.y} L${endX},${endY}`;
   }
 
-  // Get the scaled arrowhead for the force vector
   getScaledArrowheadSVG(): string {
     const startCoord = this.unitConversionService.modelCoordToSVGCoord(
       this.force.start
@@ -351,22 +323,20 @@ export class ForceComponent
 
   onStartHandleMouseDown(event: MouseEvent): void {
     event.preventDefault();
-    this.startDragging('start', event);
+    const forceInteractor = this.getInteractor() as ForceInteractor;
+    forceInteractor.startHandleDragging('start');
+
+    this.interactionService.setSelectedObject(forceInteractor);
   }
 
   onEndHandleMouseDown(event: MouseEvent): void {
     event.preventDefault();
-    this.startDragging('end', event);
+    const forceInteractor = this.getInteractor() as ForceInteractor;
+    forceInteractor.startHandleDragging('end');
+    this.interactionService.setSelectedObject(forceInteractor);
   }
-
   private startDragging(type: 'start' | 'end', event: MouseEvent): void {
     event.preventDefault();
-    // IMPORTANT: Don't call stopPropagation() - let InteractionDirective handle it
-
-    // const forceInteractor = this.interactor as ForceInteractor;
-    // forceInteractor.startHandleDragging('start');
-
-    // this.interactionService.setSelectedObject(forceInteractor);
   }
 
   @HostListener('document:mousemove', ['$event'])
@@ -380,14 +350,11 @@ export class ForceComponent
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
 
-    // Get current zoom/pan from your service
     const currentZoomPan = this.panZoomService.getZoomPan(); // or however you access it
 
-    // Convert mouse coordinates to SVG coordinates
     const svgX = currentZoomPan.viewBoxX + mouseX * currentZoomPan.currentZoom;
     const svgY = currentZoomPan.viewBoxY + mouseY * currentZoomPan.currentZoom;
 
-    // Convert SVG coordinates to model coordinates
     const modelX = svgX / this.MODEL_TO_SVG_SCALE;
     const modelY = -svgY / this.MODEL_TO_SVG_SCALE;
 
@@ -398,8 +365,6 @@ export class ForceComponent
     } else if (this.dragType === 'end') {
       this.force.end = modelCoord;
     }
-
-    // Recalculate force properties (magnitude, angle, etc.)
     this.updateForceProperties();
     this.cdr.detectChanges();
   }
@@ -409,8 +374,6 @@ export class ForceComponent
     if (this.isDragging) {
       this.isDragging = false;
       this.dragType = null;
-      // Optionally notify state service of changes
-      // this.stateService.updateForce(this.force);
     }
   }
 
