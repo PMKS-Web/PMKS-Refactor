@@ -17,11 +17,11 @@ export class UndoRedoPanelComponent {
   ) {}
   @HostListener('document:keydown', ['$event'])
   handleKeyDown(event: KeyboardEvent) {
-    if (event.ctrlKey && event.key === 'z') {
+    if (event.ctrlKey && event.key === 'z' && this.stateService.canUndo()) {
       event.preventDefault();
       this.onUndo();
     }
-    if (event.ctrlKey && event.key === 'y') {
+    if (event.ctrlKey && event.key === 'y' && this.stateService.canRedo()) {
       event.preventDefault();
       this.onRedo();
     }

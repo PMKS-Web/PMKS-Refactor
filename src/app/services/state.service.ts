@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Mechanism } from '../model/mechanism';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { Joint } from '../model/joint';
 import { Link } from '../model/link';
 import { CompoundLink } from '../model/compound-link';
@@ -22,6 +22,14 @@ Handles syncing client with server state, and undo/redo.
 export class StateService {
   private showIDLabelsSubject = new BehaviorSubject<boolean>(false);
   showIDLabels$ = this.showIDLabelsSubject.asObservable();
+  /**These generateBarSubjects need to be here because
+   * the logic is all in the component and not in a
+   * service, eventually it should be refactored.
+   */
+  private generateFourBarSubject = new Subject<void>();
+  private generateSixBarSubject = new Subject<void>();
+  generateFourBar$ = this.generateFourBarSubject.asObservable();
+  generateSixBar$ = this.generateSixBarSubject.asObservable();
 
   // Toggles the visibility of ID labels on all components.
   toggleShowIDLabels() {
@@ -369,6 +377,12 @@ export class StateService {
           this.mechanism.removeWeld(action.jointId);
         }
         break;
+      case 'generateFourBar':
+        this.generateFourBarSubject.next();
+        break;
+      case 'generateSixBar':
+        this.generateSixBarSubject.next();
+        break;
       case 'deleteJoint':
         if (action.jointId !== undefined) {
           this.mechanism.removeJoint(action.jointId);
@@ -478,6 +492,12 @@ export class StateService {
         if (action.jointId !== undefined) {
           this.mechanism.addGround(action.jointId);
         }
+        break;
+      case 'generateFourBar':
+        this.generateFourBarSubject.next();
+        break;
+      case 'generateSixBar':
+        this.generateSixBarSubject.next();
         break;
       case 'addSlider':
         if (action.jointId !== undefined) {

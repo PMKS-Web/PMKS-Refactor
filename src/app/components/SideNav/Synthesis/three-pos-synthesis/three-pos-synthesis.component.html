@@ -151,7 +151,7 @@
                [class.generateFourBarGrey]="isSixBarGenerated()"
                [class.generateFourBar]="!isSixBarGenerated()"
                [disabled]="isSixBarGenerated()"
-               (click)="generateFourBar()">
+               (click)="generateFourBar(); recordFourBarWrapper()">
                {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
              </button>
              <div *ngIf="pos1Specified || pos2Specified || pos3Specified">
@@ -162,7 +162,7 @@
 
                <!-- Generate Six-Bar Button -->
              <div *ngIf="isFourBarGenerated()">
-               <button class="generateSixBar" (click)="generateSixBar()">
+               <button class="generateSixBar" (click)="generateSixBar();recordSixBarWrapper()">
                    {{ sixBarGenerated ? 'Clear Six-Bar addition' : 'Generate Six-Bar addition' }}
                </button>
              </div>
@@ -253,7 +253,6 @@
         </div>
 
 
-
         <!-- Action Buttons -->
         <button *ngIf='!this.allPositionsDefined() && !isFourBarGenerated()' class="generateFourBarGrey">Generate Four-Bar</button>
 
@@ -263,7 +262,7 @@
           [class.generateFourBarGrey]="isSixBarGenerated()"
           [class.generateFourBar]="!isSixBarGenerated()"
           [disabled]="isSixBarGenerated()"
-          (click)="generateFourBar()">
+          (click)="generateFourBar(); recordFourBarWrapper(); ">
           {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
         </button>
 
@@ -276,7 +275,7 @@
 
         <!-- Generate Six-Bar Button -->
         <div *ngIf="isFourBarGenerated()">
-          <button class="generateSixBar" (click)="generateSixBar()">
+          <button class="generateSixBar" (click)="generateSixBar();recordSixBarWrapper()">
             {{ sixBarGenerated ? 'Clear Six-Bar' : 'Generate Six-Bar' }}
           </button>
         </div>
