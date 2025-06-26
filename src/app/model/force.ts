@@ -38,57 +38,6 @@ export class Force {
     this._color = this.linkColorOptions[1];
     this._positionAlongLink = this.calculatePositionAlongLink();
   }
-  calculatePositionAlongLink(): number {
-    const linkStart: Coord = this._parentLink.getJoints()[0]._coords;
-    const linkEnd: Coord = this._parentLink.getJoints()[1]._coords;
-    const forceStart = this._start;
-
-    // Calculate the total link length
-    const linkLength = Math.sqrt(
-      Math.pow(linkEnd.x - linkStart.x, 2) +
-        Math.pow(linkEnd.y - linkStart.y, 2)
-    );
-
-    // Calculate distance from link start to force start
-    const forceDistance = Math.sqrt(
-      Math.pow(forceStart.x - linkStart.x, 2) +
-        Math.pow(forceStart.y - linkStart.y, 2)
-    );
-
-    // Return ratio (0 = at start joint, 1 = at end joint)
-    return linkLength === 0 ? 0 : forceDistance / linkLength;
-  }
-
-  setStart(forceStart: Coord): Coord {
-    const linkStart: Coord = this._parentLink.getJoints()[0]._coords;
-    const linkEnd: Coord = this._parentLink.getJoints()[1]._coords; // Fixed: should be [1] for end
-
-    const linkVector = {
-      x: linkEnd.x - linkStart.x,
-      y: linkEnd.y - linkStart.y,
-    };
-    const toForceVector = {
-      x: forceStart.x - linkStart.x,
-      y: forceStart.y - linkStart.y,
-    };
-    const linkLengthSquared =
-      linkVector.x * linkVector.x + linkVector.y * linkVector.y;
-
-    if (linkLengthSquared === 0) return { ...linkStart } as Coord;
-
-    const t = Math.max(
-      0,
-      Math.min(
-        1,
-        (toForceVector.x * linkVector.x + toForceVector.y * linkVector.y) /
-          linkLengthSquared
-      )
-    );
-    return new Coord(
-      linkStart.x + t * linkVector.x,
-      linkStart.y + t * linkVector.y
-    );
-  }
 
   get id(): number {
     return this._id;
@@ -208,5 +157,69 @@ export class Force {
     const dy = this.end.y - this.start.y;
     this.magnitude = Math.sqrt(dx * dx + dy * dy);
     this.angle = Math.atan2(dy, dx) * (180 / Math.PI);
+  }
+  updatePosition() {
+    const startJoint = this._parentLink.getJoints()[0]._coords;
+    const endJoint = this._parentLink.getJoints()[1]._coords;
+
+    const relativePos = this._positionAlongLink;
+
+    const newCenter = new Coord(
+      startJoint.x + relativePos * (endJoint.x - startJoint.x),
+      startJoint.y + relativePos * (endJoint.y - startJoint.y)
+    );
+
+    this.start = newCenter;
+  }
+  calculatePositionAlongLink(): number {
+    const linkStart: Coord = this._parentLink.getJoints()[0]._coords;
+    const linkEnd: Coord = this._parentLink.getJoints()[1]._coords;
+    const forceStart = this._start;
+
+    // Calculate the total link length
+    const linkLength = Math.sqrt(
+      Math.pow(linkEnd.x - linkStart.x, 2) +
+        Math.pow(linkEnd.y - linkStart.y, 2)
+    );
+
+    // Calculate distance from link start to force start
+    const forceDistance = Math.sqrt(
+      Math.pow(forceStart.x - linkStart.x, 2) +
+        Math.pow(forceStart.y - linkStart.y, 2)
+    );
+
+    // Return ratio (0 = at start joint, 1 = at end joint)
+    return linkLength === 0 ? 0 : forceDistance / linkLength;
+  }
+
+  setStart(forceStart: Coord): Coord {
+    const linkStart: Coord = this._parentLink.getJoints()[0]._coords;
+    const linkEnd: Coord = this._parentLink.getJoints()[1]._coords; // Fixed: should be [1] for end
+
+    const linkVector = {
+      x: linkEnd.x - linkStart.x,
+      y: linkEnd.y - linkStart.y,
+    };
+    const toForceVector = {
+      x: forceStart.x - linkStart.x,
+      y: forceStart.y - linkStart.y,
+    };
+    const linkLengthSquared =
+      linkVector.x * linkVector.x + linkVector.y * linkVector.y;
+
+    if (linkLengthSquared === 0) return { ...linkStart } as Coord;
+
+    const t = Math.max(
+      0,
+      Math.min(
+        1,
+        (toForceVector.x * linkVector.x + toForceVector.y * linkVector.y) /
+          linkLengthSquared
+      )
+    );
+    return new Coord(
+      linkStart.x + t * linkVector.x,
+      linkStart.y + t * linkVector.y
+    );
   }
 }
