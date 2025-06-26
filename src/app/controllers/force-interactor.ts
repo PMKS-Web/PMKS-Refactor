@@ -37,10 +37,9 @@ export class ForceInteractor extends Interactor {
         );
         return;
       }
-
       // Store original positions for both whole-force and handle dragging
       this.forceStartPositions = {
-        start: this.force.start.clone(),
+        start: new Coord(this.force.start.x, this.force.start.y),
         end: this.force.end.clone(),
       };
 
@@ -48,7 +47,7 @@ export class ForceInteractor extends Interactor {
       if (this.isDraggingHandle && this.handleDragType) {
         this.originalHandlePosition =
           this.handleDragType === 'start'
-            ? this.force.start.clone()
+            ? new Coord(this.force.start.x, this.force.start.y)
             : this.force.end.clone();
       }
     });
@@ -68,10 +67,6 @@ export class ForceInteractor extends Interactor {
       // Handle dragging logic
       if (this.isDraggingHandle && this.handleDragType) {
         this.handleHandleDrag();
-      } else if (this.forceStartPositions) {
-        // Original whole-force dragging logic
-        const dragOffset = this.dragOffsetInModel!;
-        this.force.addCoordinates(dragOffset);
       }
     });
 
@@ -129,8 +124,7 @@ export class ForceInteractor extends Interactor {
 
     if (this.handleDragType === 'start') {
       // Move only the start point
-      this.force.start.x = mousePos.model.x;
-      this.force.start.y = mousePos.model.y;
+      this.force.start = mousePos.model;
     } else if (this.handleDragType === 'end') {
       // Move only the end point
       this.force.end.x = mousePos.model.x;

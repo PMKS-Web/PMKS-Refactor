@@ -16,6 +16,7 @@ export class Force {
   private _frameOfReference: ForceFrame;
   private _parentLink: Link;
   private _color: string;
+  private _positionAlongLink: number;
   private linkColorOptions = [
     '#727FD5',
     '#2F3E9F',
@@ -27,16 +28,68 @@ export class Force {
 
   constructor(id: number, start: Coord, end: Coord, parent: Link) {
     this._id = id;
+    this._parentLink = parent;
     this._name = '';
     this._magnitude = 1;
-    this._start = new Coord(start.x, start.y);
+    this._start = this.setStart(start);
     this._end = new Coord(end.x, end.y);
     this._frameOfReference = ForceFrame.Global;
     this._angle = this.calculateAngle();
-    this._parentLink = parent;
     this._color = this.linkColorOptions[1];
+    this._positionAlongLink = this.calculatePositionAlongLink();
   }
-  //getters
+  calculatePositionAlongLink(): number {
+    const linkStart: Coord = this._parentLink.getJoints()[0]._coords;
+    const linkEnd: Coord = this._parentLink.getJoints()[1]._coords;
+    const forceStart = this._start;
+
+    // Calculate the total link length
+    const linkLength = Math.sqrt(
+      Math.pow(linkEnd.x - linkStart.x, 2) +
+        Math.pow(linkEnd.y - linkStart.y, 2)
+    );
+
+    // Calculate distance from link start to force start
+    const forceDistance = Math.sqrt(
+      Math.pow(forceStart.x - linkStart.x, 2) +
+        Math.pow(forceStart.y - linkStart.y, 2)
+    );
+
+    // Return ratio (0 = at start joint, 1 = at end joint)
+    return linkLength === 0 ? 0 : forceDistance / linkLength;
+  }
+
+  setStart(forceStart: Coord): Coord {
+    const linkStart: Coord = this._parentLink.getJoints()[0]._coords;
+    const linkEnd: Coord = this._parentLink.getJoints()[1]._coords; // Fixed: should be [1] for end
+
+    const linkVector = {
+      x: linkEnd.x - linkStart.x,
+      y: linkEnd.y - linkStart.y,
+    };
+    const toForceVector = {
+      x: forceStart.x - linkStart.x,
+      y: forceStart.y - linkStart.y,
+    };
+    const linkLengthSquared =
+      linkVector.x * linkVector.x + linkVector.y * linkVector.y;
+
+    if (linkLengthSquared === 0) return { ...linkStart } as Coord;
+
+    const t = Math.max(
+      0,
+      Math.min(
+        1,
+        (toForceVector.x * linkVector.x + toForceVector.y * linkVector.y) /
+          linkLengthSquared
+      )
+    );
+    return new Coord(
+      linkStart.x + t * linkVector.x,
+      linkStart.y + t * linkVector.y
+    );
+  }
+
   get id(): number {
     return this._id;
   }
@@ -76,7 +129,7 @@ export class Force {
   }
 
   set start(value: Coord) {
-    this._start = value;
+    this._start = this.setStart(value);
   }
 
   set end(value: Coord) {
@@ -106,7 +159,6 @@ export class Force {
     }
   }
 
-  //TODO implement secondary information calculations and modifications
   calculateAngle(): number {
     const deltaX = this._end.x - this._start.x;
     const deltaY = this._end.y - this._start.y;
@@ -127,12 +179,8 @@ export class Force {
   setXComp(newXComp: number) {}
   setYComp(newYComp: number) {}
   addCoordinates(coord: Coord) {
-    this._start.add(coord);
-    this._end.add(coord);
-  }
-  setCoordinates(newStartCoord: Coord, newEndCoord: Coord) {
-    this._start = newStartCoord;
-    this._end = newEndCoord;
+    this.start = this._start.add(coord);
+    // this.end = this._end.add(coord);
   }
 
   clone(): Force {

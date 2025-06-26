@@ -430,7 +430,8 @@ export class Link implements RigidBody {
     }
     for (const forceID of this._forces.keys()) {
       const force = this._forces.get(forceID)!;
-      force.setCoordinates(force.start.add(coord), force.end.add(coord));
+      force.start = force.start.add(coord);
+      force.end = force.end.add(coord);
     }
   }
 
