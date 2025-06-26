@@ -108,7 +108,10 @@ export class Force {
 
   //TODO implement secondary information calculations and modifications
   calculateAngle(): number {
-    return 0;
+    const deltaX = this._end.x - this._start.x;
+    const deltaY = this._end.y - this._start.y;
+    const rad: number = Math.atan2(deltaY, deltaX);
+    return rad * (180 / Math.PI);
   }
 
   calculateXComp(): number {
