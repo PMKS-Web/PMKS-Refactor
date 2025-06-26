@@ -112,11 +112,11 @@ export class Force {
   }
 
   calculateXComp(): number {
-    return 0;
+    return Math.cos((Math.PI * this.angle) / 180) * this.magnitude;
   }
 
   calculateYComp(): number {
-    return 0;
+    return Math.sin((Math.PI * this.angle) / 180) * this.magnitude;
   }
 
   switchForceDirection() {}

@@ -87,7 +87,7 @@
                 <label>X</label>
                 <input
                   type="number"
-                  [value]="pendingForceX ?? roundToThree(getForceX())"
+                  [value]="pendingForceX ?? getForceX()"
                   (input)="pendingForceX = $any($event.target).valueAsNumber"
                   (keydown.enter)="confirmForceX()"
                 />
@@ -97,7 +97,7 @@
                 <label>Y</label>
                 <input
                   type="number"
-                  [value]="pendingForceY ?? roundToThree(getForceY())"
+                  [value]="pendingForceY ?? getForceY()"
                   (input)="pendingForceY = $any($event.target).valueAsNumber"
                   (keydown.enter)="confirmForceY()"
                 />

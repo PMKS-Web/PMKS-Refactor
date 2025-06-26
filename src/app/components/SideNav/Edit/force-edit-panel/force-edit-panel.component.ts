@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Action } from 'rxjs/internal/scheduler/Action';
 import { ForceInteractor } from 'src/app/controllers/force-interactor';
 import { Coord } from 'src/app/model/coord';
 import { Force } from 'src/app/model/force';
@@ -34,8 +35,8 @@ export class ForceEditPanelComponent {
   public pendingForceMagnitude?: number;
   public pendingForceAngle?: number;
   /** Buffers for component edits */
-  public pendingForceX: number = 0;
-  public pendingForceY: number = 0;
+  public pendingForceX?: number;
+  public pendingForceY?: number;
   units: string = 'cm';
   angles: string = 'º';
   isGlobalCoordinates: boolean = true;
@@ -100,7 +101,6 @@ export class ForceEditPanelComponent {
       this.pendingForceMagnitude = undefined;
       return;
     }
-
     // Record exactly one undo entry
     this.stateService.recordAction({
       type: 'changeForceMagnitude',
@@ -184,14 +184,10 @@ export class ForceEditPanelComponent {
     this.getSelectedObject().setColor(newColor);
     this.selectedIndex = newColor;
   }
-  //round to 3 decimals :-)
-  roundToThree(round: number): number {
-    return parseFloat(round.toFixed(3));
-  }
   getForceX() {
-    return this.getSelectedObject().calculateXComp();
+    return this.getSelectedObject().calculateXComp().toFixed(3);
   }
   getForceY() {
-    return this.getSelectedObject().calculateYComp();
+    return this.getSelectedObject().calculateYComp().toFixed(3);
   }
 }
