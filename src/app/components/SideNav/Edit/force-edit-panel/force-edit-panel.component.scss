@@ -152,19 +152,20 @@ button {
 
 /* Wrapper for force magnitude+angle section */
 .length-angle-block {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+  margin-left: 10px;
 }
 
 .la-label {
   display: block;
   font: inherit;
   color: inherit;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
 }
 
 .length-angle-row {
   display: flex;
-  gap: 16px;
+  gap: 15px;
 }
 
 /* Individual cell */
@@ -177,18 +178,20 @@ button {
 .la-icon {
   width: 16px;
   height: 16px;
-  margin-right: 4px;
+  margin-right: 5px;
+  margin-left: 5px;
 }
 
 /* Unit text spacing */
 .la-unit {
-  margin-left: 4px;
+  margin-left: 5px;
   font-size: 0.9em;
-  color: #666;
+  color: #000000;
 }
 
 .xy-block {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+  margin-left: 10px;
 }
 
 .xy-label {
@@ -202,17 +205,19 @@ button {
   display: flex;
   align-items: center;
   gap: 16px;
+  margin-left: 10;
 }
 
 .xy-cell {
   display: flex;
   align-items: center;
+  color: #000000;
 }
 
 .xy-unit {
   margin-left: 4px;
   font-size: 0.9em;
-  color: #666;
+  color: black;
 }
 
 .xy-cell input {

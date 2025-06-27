@@ -48,7 +48,7 @@
           <!-- Magnitude and Angle input -->
           <div class="length-angle-block">
             <!-- Label on its own line -->
-            <div class="la-label" style="margin-left: 12px;">Force Magnitude and Angle</div>
+            <div class="la-label" >Force Magnitude and Angle</div>
 
             <!-- Inputs side-by-side -->
             <div class="length-angle-row">
@@ -76,35 +76,37 @@
             </div>
           </div>
 
-          <!-- Force Components -->
-          <div class="xy-block">
-            <!-- label on its own line -->
-            <label class="xy-label" style="margin-left: 12px;">Force Components</label>
+                    <!-- Components -->
+          <div class="length-angle-block">
+            <!-- Label on its own line -->
+            <div class="la-label" >Force Components</div>
 
-            <!-- side by side X & Y -->
-            <div class="xy-row">
-              <div class="xy-cell">
-                <label>X</label>
+            <!-- Inputs side-by-side -->
+            <div class="length-angle-row">
+              <div class="la-cell">
+                X
                 <input
                   type="number"
                   [value]="pendingForceX ?? getForceX()"
                   (input)="pendingForceX = $any($event.target).valueAsNumber"
                   (keydown.enter)="confirmForceX()"
                 />
-                <span class="xy-unit">N</span>
+                <span class="la-unit">N</span>
               </div>
-              <div class="xy-cell">
-                <label>Y</label>
+
+              <div class="la-cell">
+                Y
                 <input
                   type="number"
                   [value]="pendingForceY ?? getForceY()"
-                  (input)="pendingForceY = $any($event.target).valueAsNumber"
+                  (input)="pendingForceY= $any($event.target).valueAsNumber"
                   (keydown.enter)="confirmForceY()"
                 />
-                <span class="xy-unit">N</span>
+                <span class="la-unit">N</span>
               </div>
             </div>
           </div>
+
         </div>
       </collapsible-subsection>
 

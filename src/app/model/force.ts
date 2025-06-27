@@ -30,13 +30,14 @@ export class Force {
     this._id = id;
     this._parentLink = parent;
     this._name = '';
-    this._magnitude = 1;
+
     this._start = this.setStart(start);
     this._end = new Coord(end.x, end.y);
     this._frameOfReference = ForceFrame.Global;
     this._angle = this.calculateAngle();
     this._color = this.linkColorOptions[1];
     this._positionAlongLink = this.calculatePositionAlongLink();
+    this._magnitude = start.getDistanceTo(end);
   }
 
   get id(): number {
@@ -122,6 +123,9 @@ export class Force {
   calculateYComp(): number {
     return Math.sin((Math.PI * this.angle) / 180) * this.magnitude;
   }
+  setPosAlongLink() {
+    this._positionAlongLink = this.calculatePositionAlongLink(); //calculateAngle()
+  }
 
   switchForceDirection() {}
   setForceAngle() {}
@@ -157,19 +161,25 @@ export class Force {
     const dy = this.end.y - this.start.y;
     this.magnitude = Math.sqrt(dx * dx + dy * dy);
     this.angle = Math.atan2(dy, dx) * (180 / Math.PI);
+    this.setPosAlongLink();
   }
   updatePosition() {
     const startJoint = this._parentLink.getJoints()[0]._coords;
     const endJoint = this._parentLink.getJoints()[1]._coords;
-
     const relativePos = this._positionAlongLink;
-
     const newCenter = new Coord(
       startJoint.x + relativePos * (endJoint.x - startJoint.x),
       startJoint.y + relativePos * (endJoint.y - startJoint.y)
     );
 
+    // Update start position
     this.start = newCenter;
+
+    // Calculate new end position maintaining distance and angle
+    this.end = new Coord(
+      this.start.x + this.magnitude * Math.cos((Math.PI * this.angle) / 180),
+      this.start.y + this.magnitude * Math.sin((Math.PI * this.angle) / 180)
+    );
   }
   calculatePositionAlongLink(): number {
     const linkStart: Coord = this._parentLink.getJoints()[0]._coords;
