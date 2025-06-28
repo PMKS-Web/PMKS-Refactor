@@ -112,8 +112,8 @@
                         <dual-input-block
                         [input1Value]="getPosXCoord(i)"
                         [input2Value]="getPosYCoord(i)"
-                        (input1Change)="setPosXCoord($event, i)"
-                        (input2Change)="setPosYCoord($event, i)"
+                        (input1Change)= "recordXCoord(i); setPosXCoord($event, i)"
+                        (input2Change)="recordYCoord();setPosYCoord($event, i)"
                         tooltip="Change the x and y values of the reference point of the coupler position {{i}}"
                         label1="X"
                         label2="Y"
@@ -125,7 +125,7 @@
 
                   <single-input-block
                         [input1Value]="getPosAngle(i)"
-                        (input1Change)="setPositionAngle($event, i)"
+                        (input1Change)="recordPosAngle(); setPositionAngle($event, i)"
                         iconLabel1="assets/icons/angle.svg"
                         unit1={{angles}}
                         [showIcon]="false"
