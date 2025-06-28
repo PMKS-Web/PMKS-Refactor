@@ -103,7 +103,7 @@ export class ThreePosSynthesis implements OnInit{
   }
   ngOnInit(): void {
     this.mechanism.getArrayOfPositions().forEach((position => {
-      
+
       if(position.id === 0){
         this.position1 = position;
         this.pos1Specified = true;
@@ -124,7 +124,7 @@ export class ThreePosSynthesis implements OnInit{
     let initialGreenCount = this.mechanism.getArrayOfPositions().filter(position => position.color === 'green').length;
     if (initialGreenCount > 0 || this.stateService.sixBarGenerated) this.fourBarGenerated = true;
     this.sixBarGenerated = this.stateService.sixBarGenerated;
-    
+
   }
   setReference(r: string) {
       this.reference = r;
@@ -154,33 +154,33 @@ export class ThreePosSynthesis implements OnInit{
   specifyPosition(index: number) {
     let coord1: Coord, coord2: Coord;
     let posX: number, posY: number;
-    
+
     if (index === 1) {
       coord1 = new Coord(-this.couplerLength / 2, 0);
       coord2 = new Coord(this.couplerLength / 2, 0);
-      
+
       this.pos1Specified = true;
       this.mechanism.addPos(coord1, coord2);
       const positions = this.mechanism.getArrayOfPositions();
       this.position1 = positions[positions.length - 1];
       this.position1.name = "Position 1";
       this.position1.setReference(this.reference); // Only set reference for the new position
-      
+
     } else if (index === 2) {
       coord1 = new Coord(-this.couplerLength / 2 - (1.5 * this.couplerLength), 0);
       coord2 = new Coord(this.couplerLength / 2 - (1.5 * this.couplerLength), 0);
-      
+
       this.pos2Specified = true;
       this.mechanism.addPos(coord1, coord2);
       const positions = this.mechanism.getArrayOfPositions();
       this.position2 = positions[positions.length - 1];
       this.position2.name = "Position 2";
       this.position2.setReference(this.reference); // Only set reference for the new position
-      
+
     } else if (index === 3) {
       coord1 = new Coord(- this.couplerLength / 2 + (1.5 * this.couplerLength), 0);
       coord2 = new Coord(this.couplerLength / 2+ (1.5 * this.couplerLength), 0);
-      
+
       this.pos3Specified = true;
       this.mechanism.addPos(coord1, coord2);
       const positions = this.mechanism.getArrayOfPositions();
@@ -522,34 +522,31 @@ setCouplerLength(x: number){
 setPosXCoord(x: number, posNum: number) {
   const positions = [this.position1, this.position2, this.position3];
   const position = positions[posNum - 1];
-  
+
   if (!position) {
     throw new Error(`Invalid position number: ${posNum}`);
   }
-  
+
   const [backJoint, frontJoint, midJoint] = position.getJoints();
   let distanceMoved: number;
-  
+
   switch (this.reference) {
     case "Center":
       const centerCoord = this.getNewCoord(position);
       distanceMoved = x - centerCoord.x;
       break;
-      
     case "Back":
       distanceMoved = x - backJoint.coords.x;
       backJoint.setCoordinates(new Coord(x, backJoint.coords.y));
       break;
-      
     case "Front":
       distanceMoved = x - frontJoint.coords.x;
       frontJoint.setCoordinates(new Coord(x, frontJoint.coords.y));
       break;
-      
     default:
       throw new Error(`Invalid reference: ${this.reference}`);
   }
-  
+
   // Apply movement to all joints (except the reference joint which is already set)
   if (this.reference === "Center" || this.reference === "Back") {
     if (this.reference === "Center") {
@@ -566,34 +563,34 @@ setPosXCoord(x: number, posNum: number) {
 setPosYCoord(y: number, posNum: number) {
   const positions = [this.position1, this.position2, this.position3];
   const position = positions[posNum - 1];
-  
+
   if (!position) {
     throw new Error(`Invalid position number: ${posNum}`);
   }
-  
+
   const [backJoint, frontJoint, midJoint] = position.getJoints();
   let distanceMoved: number;
-  
+
   switch (this.reference) {
     case "Center":
       const centerCoord = this.getNewCoord(position);
       distanceMoved = y - centerCoord.y;
       break;
-      
+
     case "Back":
       distanceMoved = y - backJoint.coords.y;
       backJoint.setCoordinates(new Coord(backJoint.coords.x, y));
       break;
-      
+
     case "Front":
       distanceMoved = y - frontJoint.coords.y;
       frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y));
       break;
-      
+
     default:
       throw new Error(`Invalid reference: ${this.reference}`);
   }
-  
+
   if (this.reference === "Center" || this.reference === "Back") {
     if (this.reference === "Center") {
       backJoint.setCoordinates(new Coord(backJoint.coords.x, backJoint.coords.y + distanceMoved));
@@ -674,7 +671,40 @@ getPosAngle(posNum: number){
         return this.pos3Angle.toFixed(3) as unknown as number;
 
 }
+  recordXCoord(index: number) {
+    this.stateService.recordAction({
+      type: 'i',
+    });
+    this.stateService.recordAction({
+      type: 'input1Value',
+    });
+  }
+  recordYCoord() {
 
+    this.stateService.recordAction({
+      type: 'getPosYCoord',
+    });
+    this.stateService.recordAction({
+      type: 'input2Value',
+    });
+    this.stateService.recordAction({
+      type: 'input2Change',
+    });
+  }
+  recordPosAngle() {
+    this.stateService.recordAction({
+      type: 'getPosAngle'
+    });
+    this.stateService.recordAction({
+      type: 'input1Value',
+    });
+    this.stateService.recordAction({
+      type: 'input1Change',
+    });
+    this.stateService.recordAction({
+      type: 'radians',
+    });
+  }
 
 isPositionDefined(index: number): boolean {
     if(index==1){
@@ -923,7 +953,7 @@ verifyMechanismPath() {
 
     this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
   }
-  
+
   clearLinkage() {
     //button changes to "clear four bar" when already generated, so remove mechanism
     if (this.fourBarGenerated) {
