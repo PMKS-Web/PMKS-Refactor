@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Mechanism } from '../model/mechanism';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { Joint } from '../model/joint';
 import { Link } from '../model/link';
 import { CompoundLink } from '../model/compound-link';
@@ -22,6 +22,16 @@ Handles syncing client with server state, and undo/redo.
 export class StateService {
   private showIDLabelsSubject = new BehaviorSubject<boolean>(false);
   showIDLabels$ = this.showIDLabelsSubject.asObservable();
+
+  private getPosXCoordSubject = new Subject<void>();
+  private getPosYCoordSubject = new Subject<void>();
+
+  setPosXCoord = this.getPosXCoordSubject.asObservable();
+  setPosYCoord = this.getPosYCoordSubject.asObservable();
+
+  private getPosAngleSubject = new Subject<void>();
+  setPositionAngle = this.getPosAngleSubject.asObservable();
+
 
   // Toggles the visibility of ID labels on all components.
   toggleShowIDLabels() {
@@ -268,6 +278,7 @@ export class StateService {
         last.type === action.type &&
         last.linkId === action.linkId &&
         last.jointId === action.jointId
+
       ) {
         // Update the last action’s newAngle to the newest value
         (last as any).newAngle = (action as any).newAngle;
@@ -368,6 +379,18 @@ export class StateService {
         if (action.jointId !== undefined) {
           this.mechanism.removeWeld(action.jointId);
         }
+        break;
+      case 'setPosXCoord':
+        this.getPosXCoordSubject.next();
+        break;
+      case 'setPosYCoord':
+        this.getPosYCoordSubject.next();
+        break;
+      case 'getPosAngle':
+        this.getPosAngleSubject.next();
+        break;
+      case 'setPosAngle':
+        this.getPosAngleSubject.next();
         break;
       case 'deleteJoint':
         if (action.jointId !== undefined) {
@@ -478,6 +501,18 @@ export class StateService {
         if (action.jointId !== undefined) {
           this.mechanism.addGround(action.jointId);
         }
+        break;
+      case 'setPosXCoord':
+        this.getPosXCoordSubject.next();
+        break;
+      case 'setPosYCoord':
+        this.getPosYCoordSubject.next();
+        break;
+      case 'getPosAngle':
+        this.getPosAngleSubject.next();
+        break;
+      case 'setPosAngle':
+        this.getPosAngleSubject.next();
         break;
       case 'addSlider':
         if (action.jointId !== undefined) {
