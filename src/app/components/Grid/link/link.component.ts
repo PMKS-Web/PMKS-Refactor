@@ -67,6 +67,10 @@ export class LinkComponent
       this.notificationService
     );
   }
+  hoverState: LinkHoverState = {
+    isHoveringLength: false,
+    isHoveringAngle: false,
+  };
 
   override ngOnInit() {
     this.unitSubscription = this.stateService.globalUSuffixCurrent.subscribe(
@@ -85,9 +89,7 @@ export class LinkComponent
       }
     );
     this.linkHoverService.hoverState$.subscribe((state) => {
-      if (this.isSelected()) {
-        this.hoverState = state;
-      }
+      this.hoverState = state;
     });
     super.ngOnInit();
   }
@@ -422,8 +424,4 @@ export class LinkComponent
       this.link.angle
     );
   }
-  hoverState: LinkHoverState = {
-    isHoveringLength: false,
-    isHoveringAngle: false,
-  };
 }

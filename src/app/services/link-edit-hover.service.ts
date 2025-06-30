@@ -3,7 +3,7 @@ import { BehaviorSubject } from 'rxjs';
 export interface LinkHoverState {
   isHoveringLength: boolean;
   isHoveringAngle: boolean;
-  linkId?: string;
+  linkId?: number;
 }
 @Injectable({
   providedIn: 'root',
@@ -18,7 +18,7 @@ export class LinkEditHoverService {
 
   hoverState$ = this.hoverState.asObservable();
 
-  setLengthHover(isHovering: boolean, linkId?: string) {
+  setLengthHover(isHovering: boolean, linkId?: number) {
     this.hoverState.next({
       ...this.hoverState.value,
       isHoveringLength: isHovering,
@@ -26,7 +26,7 @@ export class LinkEditHoverService {
     });
   }
 
-  setAngleHover(isHovering: boolean, linkId?: string) {
+  setAngleHover(isHovering: boolean, linkId?: number) {
     this.hoverState.next({
       ...this.hoverState.value,
       isHoveringAngle: isHovering,

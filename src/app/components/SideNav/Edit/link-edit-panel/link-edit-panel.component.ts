@@ -158,11 +158,17 @@ export class LinkEditPanelComponent implements OnDestroy {
   }
 
   onLengthHover(isHovering: boolean) {
-    this.linkHoverService.setLengthHover(isHovering);
+    this.linkHoverService.setLengthHover(
+      isHovering,
+      this.getSelectedObject().id
+    );
   }
 
   onAngleHover(isHovering: boolean) {
-    this.linkHoverService.setAngleHover(isHovering);
+    this.linkHoverService.setAngleHover(
+      isHovering,
+      this.getSelectedObject().id
+    );
   }
   //helper function to access current selected object (will always be a link here)
   getSelectedObject(): Link {
