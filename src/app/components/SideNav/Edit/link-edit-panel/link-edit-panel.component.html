@@ -20,19 +20,19 @@
         <!-- edit, delete,locking buttons -->
         <!-- edit -->
         <button (click)="this.isEditingTitle=true">
-          <img id="edit" ngSrc='assets/icons/edit.svg' style="height: 16px; width: 16px;" matTooltip="Edit Link Title" matTooltipShowDelay='300' height="48" width="48" alt=""/>
+          <img id="edit" ngSrc='assets/icons/edit.svg' style="height: 16px; width: 16px;" height="48" width="48" alt=""/>
         </button>
         <!-- delete -->
         <button (click)="this.deleteLink()">
-          <img id="trash" ngSrc='assets/icons/trash.svg' style="height: 16px; width: 16px;" matTooltip="Delete This Link" matTooltipShowDelay='300' height="18" width="15" alt=""/>
+          <img id="trash" ngSrc='assets/icons/trash.svg' style="height: 16px; width: 16px;" height="18" width="15" alt=""/>
         </button>
         <!-- lock -->
         <button (click)="this.lockLink()">
           <ng-container *ngIf="isLocked; else unlockIcon">
-            <img ngSrc='assets/icons/unlock.svg' style="height: 24px; width: 24px; margin-top: -2.5px;" matTooltip="Unlock This Link" matTooltipShowDelay='300' height="25" width="25" alt=""/>
+            <img ngSrc='assets/icons/unlock.svg' style="height: 16px; width: 16px;" height="24" width="24" alt=""/>
           </ng-container>
           <ng-template #unlockIcon>
-            <img ngSrc='assets/icons/lock.svg' style="height: 24px; width: 24px; margin-top: -2.5px;" matTooltip="Lock This Link" matTooltipShowDelay='300' height="50" width="25" alt=""/>
+            <img ngSrc='assets/icons/lock.svg' style="height: 16px; width: 16px;" height="24" width="24" alt=""/>
           </ng-template>
         </button>
       </title-block>
@@ -48,11 +48,11 @@
           <!-- Link length and angle input -->
           <div class="length-angle-block">
             <!--Label on its own line -->
-            <div class="la-label" style ="margin-left: 12px;"> Link Length and Angle </div>
+            <div class="la-label" style ="margin-left: 12px; margin-bottom: 16px;"> Link Length and Angle </div>
 
             <!--Inputs side-by-side -->
-            <div class="length-angle-row">
-              <div class="la-cell">
+            <div class="length-angle-row" style ="margin-bottom: 5px;">
+              <div class="la-cell" style ="margin-left: 12px;">
                 <img ngSrc="assets/icons/length.svg" class="la-icon" alt="length" height="15" width="12"/>
                 <input
                   type="number"
@@ -96,13 +96,13 @@
             <div *ngFor="let joint of getLinkComponents()">
               <div class="xy-block">
                 <!-- label on its own line -->
-                <label class="xy-label" style ="margin-left: 12px;">Joint {{ joint.name }}</label>
+                <label class="xy-label" style ="margin-left: 12px; margin-bottom: 10px;">Joint {{joint.name}} </label>
 
                 <!-- side by side X & Y -->
                 <div class="xy-row">
                   <div class="xy-cell">
-                    <label>X</label>
-                    <input
+                    <label style ="margin-left: 12px;">X</label>
+                    <input style ="margin-left: 3px;"
                       type="number"
                       [value]="pendingCompX[joint.id] ?? roundToThree(joint.coords.x)"
                       (input)="pendingCompX[joint.id] = $any($event.target).valueAsNumber"
@@ -113,7 +113,7 @@
                   </div>
                   <div class="xy-cell">
                     <label>Y</label>
-                    <input
+                    <input style ="margin-left: 3px;"
                       type="number"
                       [value]="pendingCompY[joint.id] ?? roundToThree(joint.coords.y)"
                       (input)="pendingCompY[joint.id] = $any($event.target).valueAsNumber"
@@ -134,20 +134,22 @@
 <collapsible-subsection titleLabel='Mass Settings' [expanded]="sectionExpanded['LMass']"
  (opened)="sectionExpanded['LMass'] = true" (closed)="sectionExpanded['LMass'] = false">
 
- <div class="input-container">
+ <div class="input-container" style ="margin-top: 0px;">
   <div class="label-group">
-    <span class="label" style ="margin-left: 12px;">Link Mass</span>
-    <mat-icon id="linkMassTooltip" matTooltip="Enter tooltip here" [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon>
+    <span class="label" style ="margin-left: 12px; margin-top: -12px" >Link Mass</span>
+    <mat-icon id="linkMassTooltip"  matTooltip="Enter tooltip here" [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon>
   </div>
   <div class="input-group">
-    <single-input-block class="right-aligned" [showIcon]="false" unit1="kg"></single-input-block>
+    <single-input-block class="right-aligned"  [showIcon]="false" unit1="kg" style ="margin-left: 6px; margin-top: -10px" ></single-input-block>
   </div>
 </div>
 
+
+
   <dual-input-block
-    label1="X" label2="Y"
+    label1="X  " label2="Y  "
     unit1="" unit2=""
-    tooltip="Enter tooltip here">
+    tooltip="Enter tooltip here" style ="margin-left: 2px; margin-top: -20px; margin-bottom: 5px">
     Center of Mass Position
   </dual-input-block>
 
