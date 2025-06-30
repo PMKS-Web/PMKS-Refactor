@@ -15,8 +15,11 @@
     [attr.width]="55"
     [attr.height]="55"
   ></image>
+
   @if(isHovered() || isSelected()) {
+
   <!--Display Length-->
+  @if (this.hoverState.isHoveringLength) {
   <path [attr.d]="getLeftLineSVG()" stroke="black" stroke-width="3"></path>
   <path [attr.d]="getRightLineSVG()" stroke="black" stroke-width="3"></path>
   <text
@@ -28,8 +31,10 @@
   >
     {{ getLength() }}
   </text>
+  }
 
   <!--Display Angle-->
+  @if (this.hoverState.isHoveringAngle) {
   <path
     [attr.d]="getAngleSVG()"
     stroke="black"
@@ -48,6 +53,8 @@
   >
     {{ getAngle() }}{{ unitsAngle }}
   </text>
+
+  }
 
   <!--Display Name-->
   <text
