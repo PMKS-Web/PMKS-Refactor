@@ -7,10 +7,12 @@ import { Force } from "../model/force";
 import { Position } from "../model/position";
 import { StateService } from "./state.service";
 import LZString from 'lz-string';
+import { PanZoomService } from './pan-zoom.service';
 
 export class EncoderService {
 
-  constructor(private stateService: StateService) {
+  constructor(private stateService: StateService,
+              private panZoomService: PanZoomService) {
   }
 
   // Retrieves the current Mechanism instance from the StateService.
@@ -181,7 +183,8 @@ export class EncoderService {
         j.isWelded,
         j.locked,
         j.isHidden,
-        j.isReference
+        j.isReference,
+        j.isGenerated
       ]),
       l: mechanism.getArrayOfLinks().map((l: Link) => [
         l.id,
@@ -234,7 +237,11 @@ export class EncoderService {
         p.refPoint,
         p.length,
         p.angle
-      ])
+      ]),
+      z: this.panZoomService.getCurrentZoom().toFixed(2),
+      px: this.panZoomService.getViewBoxX().toFixed(2),
+      py: this.panZoomService.getViewBoxY().toFixed(2),
+      sb: this.stateService.sixBarGenerated,
     };
   }
   /**
@@ -243,7 +250,7 @@ export class EncoderService {
    *
    * Note: On decoding, you'll need to reverse these transformations.
    */
-    
+
   private compressionReplacer(key: string, value: any): any { //DO NOT REMOVE KEY
     if (typeof value === "boolean") {
       return value ? "y" : "n";

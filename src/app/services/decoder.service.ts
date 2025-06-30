@@ -1,5 +1,8 @@
 import {StateService} from "./state.service";
 import LZString from "lz-string";
+import { PanZoomService } from './pan-zoom.service';
+import { Joint } from "../model/joint";
+
 
 /**
  * DecoderService is the reverse of the EncoderService.
@@ -31,8 +34,8 @@ import LZString from "lz-string";
  */
 export class DecoderService {
 
-  constructor() {
-  }
+  constructor(private panZoomService: PanZoomService) {}
+
   /**
    * Decodes an encoded URL string, reconstructs the mechanism data, and passes
    * it to the state service for rebuilding the mechanism.
@@ -41,7 +44,7 @@ export class DecoderService {
    *
    * @param stateService
    */
-  static decodeFromURL(encoded: string, stateService: StateService): any {
+  static decodeFromURL(encoded: string, stateService: StateService, panZoomService: PanZoomService){
     try {
       const decodedJson = LZString.decompressFromEncodedURIComponent(encoded);
       console.log(decodedJson);
@@ -51,6 +54,26 @@ export class DecoderService {
       // Expand the compact data into full objects.
       console.log(compactData);
       const fullData = this.expandMechanismData(compactData);
+
+      if (compactData.z) {
+        const zoom = parseFloat(compactData.z);
+        if (!isNaN(zoom)) {
+          panZoomService.setZoom(zoom);
+        }
+      }
+
+      if (compactData.px && compactData.py) {
+        const panX = parseFloat(compactData.px);
+        const panY = parseFloat(compactData.py);
+        if (!isNaN(panX) && !isNaN(panY)) {
+          panZoomService.setPan(panX, panY);
+        }
+      }
+      if(compactData.sb){
+        stateService.sixBarGenerated = compactData.sb !== "n";
+      }
+
+
 
       // Step 3. Pass the reconstructed mechanism data to the state service.
       stateService.reconstructMechanism(fullData);
@@ -107,7 +130,7 @@ export class DecoderService {
    * Converts hex strings to numbers and "1"/"0" strings to booleans.
    */
   private static expandMechanismData(compactData: any): any {
-    const decodedJoints: any[] = (compactData.j || []).map((row: any[]) => ({
+    const decodedJoints: Joint[] = (compactData.j || []).map((row: any[]) => ({
       id: this.convertNumber(row[0]),
       name: row[1],
       x: Number(row[2]),
@@ -120,7 +143,8 @@ export class DecoderService {
       isWelded: this.convertBoolean(row[9]),
       locked: this.convertBoolean(row[10]),
       isHidden: this.convertBoolean(row[11]),
-      isReference: this.convertBoolean(row[12])
+      isReference: this.convertBoolean(row[12]),
+      isGenerated: this.convertBoolean(row[13])
     }));
 
     const decodedLinks: any[] = (compactData.l || []).map((row: any[]) => ({
@@ -179,6 +203,7 @@ export class DecoderService {
       length: this.convertNumber(row[10]),
       angle: this.convertNumber(row[11])
     }));
+    
 
     return { decodedJoints, decodedLinks, decodedCompoundLinks, decodedTrajectories, decodedForces, decodedPositions };
   }

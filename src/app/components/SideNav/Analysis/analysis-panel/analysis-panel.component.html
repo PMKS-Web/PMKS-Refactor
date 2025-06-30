@@ -1,18 +1,34 @@
 <div class="app-analysis-panel-container">
-  @switch (getSelectedObjectType()){
-    @case('JointInteractor'){
-      <app-joint-analysis-panel></app-joint-analysis-panel>
+  @if (!this.invalid) {
+    @switch (getSelectedObjectType()){
+      @case('JointInteractor'){
+        <app-joint-analysis-panel></app-joint-analysis-panel>
+      }
+      @case('LinkInteractor'){
+        <app-link-analysis-panel></app-link-analysis-panel>
+      }
+      @case('CompoundLinkInteractor'){
+        <app-compound-link-analysis-panel></app-compound-link-analysis-panel>
+      }
+      @case('ForceInteractor'){
+        <p>Force Selected</p>
+      }
+      @default {
+      <div id="default-view">
+        <div class="scroll-container">
+          <title-block 
+            class="title" 
+            alwaysShown 
+            description="No link or joint selected. Please select one to show its properties">
+            <div style="margin-right: 9.8em;">Analysis</div>
+          </title-block>
+        </div>
+      </div>  
+      }
+
     }
-    @case('LinkInteractor'){
-      <app-link-analysis-panel></app-link-analysis-panel>
-    }
-    @case('CompoundLinkInteractor'){
-      <app-compound-link-analysis-panel></app-compound-link-analysis-panel>
-    }
-    @case('ForceInteractor'){
-      <p>Force Selected</p>
-    }
-    @default(){
+  }
+    @else(){
 
       <div id="default-view">
   <div class="scroll-container">
@@ -76,7 +92,7 @@
         <panel-section-collapsible
           [warning]='true'
           [expanded]='false'
-          [hidden]="this.checkInvalid()"
+          [hidden]="this.invalid"
           #panel2Ref 
         >
           <title-block class="title" alwaysShown icon='expand_more'>
@@ -206,7 +222,6 @@
       </div>
       </div>
     }
-  }
 <!--  <div id="import-export">-->
 <!--    <p>Use this panel to import and export kinematic data!</p>-->
 <!--    <import-data></import-data>-->

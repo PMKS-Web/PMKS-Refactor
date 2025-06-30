@@ -44,7 +44,21 @@ input[matinput][type=number] {
   color: #a0a0a0;
   cursor: not-allowed;
 }
+input:disabled {
+  background-color: #f0f0f0;
+  color: #a0a0a0;
+  cursor: not-allowed;
+}
 
+.input-wrapper {
+  cursor: pointer;
+  display: inline-block; 
+  position: relative;
+}
+
+.input-wrapper input:disabled {
+  pointer-events: none; 
+}
 .Edit-Specific {
   margin-left: 15px;
 }

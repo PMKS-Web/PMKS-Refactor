@@ -20,19 +20,19 @@
         <!-- edit, delete,locking buttons -->
         <!-- edit -->
         <button (click)="this.isEditingTitle=true">
-          <img id="edit" ngSrc='assets/icons/edit.svg' style="height: 16px; width: 16px;" height="48" width="48" alt=""/>
+          <img id="edit" ngSrc='assets/icons/edit.svg' style="height: 16px; width: 16px;" matTooltip="Edit Link Title" matTooltipShowDelay='300' height="48" width="48" alt=""/>
         </button>
         <!-- delete -->
         <button (click)="this.deleteLink()">
-          <img id="trash" ngSrc='assets/icons/trash.svg' style="height: 16px; width: 16px;" height="18" width="15" alt=""/>
+          <img id="trash" ngSrc='assets/icons/trash.svg' style="height: 16px; width: 16px;" matTooltip="Delete This Link" matTooltipShowDelay='300' height="18" width="15" alt=""/>
         </button>
         <!-- lock -->
         <button (click)="this.lockLink()">
           <ng-container *ngIf="isLocked; else unlockIcon">
-            <img ngSrc='assets/icons/unlock.svg' style="height: 16px; width: 16px;" height="24" width="24" alt=""/>
+            <img ngSrc='assets/icons/unlock.svg' style="height: 24px; width: 24px; margin-top: -2.5px;" matTooltip="Unlock This Link" matTooltipShowDelay='300' height="25" width="25" alt=""/>
           </ng-container>
           <ng-template #unlockIcon>
-            <img ngSrc='assets/icons/lock.svg' style="height: 16px; width: 16px;" height="24" width="24" alt=""/>
+            <img ngSrc='assets/icons/lock.svg' style="height: 24px; width: 24px; margin-top: -2.5px;" matTooltip="Lock This Link" matTooltipShowDelay='300' height="50" width="25" alt=""/>
           </ng-template>
         </button>
       </title-block>
@@ -138,16 +138,6 @@
   <div class="label-group">
     <span class="label" style ="margin-left: 12px;">Link Mass</span>
     <mat-icon id="linkMassTooltip" matTooltip="Enter tooltip here" [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon>
-  </div>
-  <div class="input-group">
-    <single-input-block class="right-aligned" [showIcon]="false" unit1="kg"></single-input-block>
-  </div>
-</div>
-
-<div class="input-container">
-  <div class="label-group">
-    <span class="label"  style ="margin-left: 12px;">Link Mass</span>
-    <mat-icon id="linkMass2Tooltip" matTooltip="Enter tooltip here" [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon>
   </div>
   <div class="input-group">
     <single-input-block class="right-aligned" [showIcon]="false" unit1="kg"></single-input-block>

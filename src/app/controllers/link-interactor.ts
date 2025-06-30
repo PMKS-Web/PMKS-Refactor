@@ -19,7 +19,7 @@ This interactor defines the following behaviors:
 export class LinkInteractor extends Interactor {
   private activePanel = "Edit";
   private linkStartPositions = new Map<number, Coord>();
-
+  private lastNotificationTime = 0;
   constructor(public link: Link, 
               private stateService: StateService,
               private interactionService: InteractionService,
@@ -27,13 +27,25 @@ export class LinkInteractor extends Interactor {
     super(true, true);
 
     this.onDragStart$.subscribe(() => {
+      if(this.link.joints.values().next().value?.isGenerated && this.stateService.getCurrentActivePanel === "Synthesis"){
+        this.notificationService.showNotification("Cannot edit in the Synthesis mode! Switch to Edit mode to edit.");
+        return;
+      }
+
       this.link.joints.forEach((joint: Joint, id: number) => {
         this.linkStartPositions.set(id, joint.coords.clone());
       })
 
-
     });
     this.onDrag$.subscribe(() => {
+      if (this.stateService.getCurrentActivePanel === "Analysis") {
+        const now = Date.now();
+        if (now - this.lastNotificationTime >= 3000) { // 3 seconds = 3000ms
+          this.notificationService.showNotification("Cannot edit in the Analysis mode! Switch to Edit mode to edit.");
+          this.lastNotificationTime = now;
+        }
+        return;
+      }
       this.linkStartPositions.forEach((startPos, jointID) => {
         const newPos = startPos.clone().add(this.dragOffsetInModel!);
         this.stateService.getMechanism().setJointCoord(jointID, newPos);
@@ -85,6 +97,10 @@ export class LinkInteractor extends Interactor {
         let availableContext: ContextMenuOption[] = [];
         if (this.stateService.getCurrentActivePanel === "Synthesis"){
           this.notificationService.showNotification("Cannot edit in the Synthesis mode! Switch to Edit mode to edit.");
+          return availableContext;
+        }
+        if (this.stateService.getCurrentActivePanel === "Analysis"){
+          this.notificationService.showNotification("Cannot edit in the Analysis mode! Switch to Edit mode to edit.");
           return availableContext;
         }
         const mechanism: Mechanism = this.stateService.getMechanism();
