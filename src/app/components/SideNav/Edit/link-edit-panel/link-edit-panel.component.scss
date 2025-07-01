@@ -2,7 +2,7 @@
 @use '@angular/material' as mat;
 
 .scroll-container {
-  max-height: 60vh;
+  max-height: none;
   overflow:hidden;
   overflow-y:auto;
 }
