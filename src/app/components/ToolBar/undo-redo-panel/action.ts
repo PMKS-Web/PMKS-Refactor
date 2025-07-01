@@ -19,6 +19,9 @@ export interface Action {
   linkTracerData?: LinkTracerSnapshot;
   linkForceData?: LinkForceSnapshot;
 
+  oldJointPos?: JointSnapshot[];
+  newJointPos?: JointSnapshot[];
+
   oldJointPositions?: Array<{
     jointId: number;
     coords: { x: number; y: number };
@@ -43,6 +46,11 @@ export interface Action {
   newDistance?: number;
   oldAngle?: number;
   newAngle?: number;
+
+  axis?:    'x' | 'y';
+  posNum?:  number;
+  oldValue?: number;
+  newValue?: number;
 
 
 }
@@ -96,4 +104,6 @@ export interface LinkForceSnapshot {
   start: { x: number; y: number };
   end:   { x: number; y: number };
 }
+
+
 

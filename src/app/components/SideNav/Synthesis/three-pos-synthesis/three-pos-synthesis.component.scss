@@ -1048,6 +1048,40 @@ span.icons {
   color: #ffffff;
 }
 
+.xy-block {
+  margin-bottom: 12px;
+  margin-left: 10px;
+}
+
+.xy-label {
+  display: block;
+  font: inherit;
+  color: inherit;
+  margin-bottom: 4px;
+}
+
+.xy-row {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.xy-cell {
+  display: flex;
+  align-items: center;
+  margin-left: 4px;
+}
+
+.xy-unit {
+  margin-left: 4px;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.xy-cell input {
+  width: 3rem;
+}
+
 
 
 

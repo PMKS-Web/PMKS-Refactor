@@ -25,7 +25,7 @@ export class jointEditPanelComponent {
   isEditingTitle: boolean = false;
   units: string = "cm";
   angles: string = "º";
-  constructor(private stateService: StateService, private interactorService: InteractionService) {
+  constructor(private stateService: StateService, private interactionService: InteractionService) {
     console.log("joint-edit-panel.constructor");
 
   }
@@ -39,8 +39,8 @@ export class jointEditPanelComponent {
 
     const joint   = this.getCurrentJoint();
     const oldX    = this.getJointXCoord();
-    const oldY    = joint.coords.y;              // grab the *current* Y too
-    const newY    = oldY;                        // Y stays the same in an X‑only edit
+    const oldY    = joint.coords.y;
+    const newY    = oldY;
 
     if (Math.abs(oldX - newX) < 1e-6) {
       this.pendingX = undefined;
@@ -66,7 +66,7 @@ export class jointEditPanelComponent {
     if (newY == null) return;
 
     const joint   = this.getCurrentJoint();
-    const oldX    = joint.coords.x;             // X stays the same in a Y‑only edit
+    const oldX    = joint.coords.x;
     const oldY    = this.getJointYCoord();
 
     if (Math.abs(oldY - newY) < 1e-6) {
@@ -123,7 +123,7 @@ export class jointEditPanelComponent {
 
   // Returns the currently selected joint object
   getCurrentJoint() {
-    let currentJointInteractor = this.interactorService.getSelectedObject();
+    let currentJointInteractor = this.interactionService.getSelectedObject();
 
     if (currentJointInteractor) {
       currentJointInteractor.draggable = !(currentJointInteractor as JointInteractor).getJoint().locked;
@@ -206,7 +206,7 @@ export class jointEditPanelComponent {
   // Deletes the currently selected joint
   deleteJoint() {
     this.getMechanism().removeJoint(this.getCurrentJoint().id);
-    this.interactorService.deselectObject();
+    this.interactionService.deselectObject();
   }
 
   // Returns whether the joint is locked

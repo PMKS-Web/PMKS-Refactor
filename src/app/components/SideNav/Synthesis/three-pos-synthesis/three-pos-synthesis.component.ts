@@ -17,7 +17,7 @@ import { ChangeDetectorRef } from '@angular/core';
 import {PositionSolverService} from "../../../../services/kinematic-solver.service";
 import {Position} from "../../../../model/position";
 import { NotificationService } from 'src/app/services/notification.service';
-
+import { Subscription } from 'rxjs';
 
 interface CoordinatePosition {
   x0: number;
@@ -95,13 +95,41 @@ export class ThreePosSynthesis implements OnInit{
   // Flags to control placeholder visibility
   placeholderFlags : { [key: number]: { x0: boolean; y0: boolean; x1: boolean; y1: boolean } } = {};
   private readonly mechanism: Mechanism;
+  private subs = new Subscription();
+
 
 
 
   constructor(private stateService: StateService, private interactionService: InteractionService, private cdr: ChangeDetectorRef, private positionSolver: PositionSolverService, private notificationService: NotificationService) {
     this.mechanism = this.stateService.getMechanism();
   }
+
+  public pendingX?: number;
+  public pendingY?: number;
+
   ngOnInit(): void {
+
+    this.subs.add(
+      this.stateService.getPosXCoordSubject
+        .subscribe(({ posNum, value }) => {
+          this.setPosXCoord(value, posNum);
+          this.pendingX = undefined;
+          this.cdr.detectChanges();
+        })
+    );
+
+
+    this.subs.add(
+      this.stateService.getPosYCoordSubject
+        .subscribe(({ posNum, value }) => {
+          this.setPosYCoord(value, posNum);
+          this.pendingY = undefined;
+          this.cdr.detectChanges();
+        })
+    );
+
+
+
     this.mechanism.getArrayOfPositions().forEach((position => {
 
       if(position.id === 0){
@@ -126,6 +154,11 @@ export class ThreePosSynthesis implements OnInit{
     this.sixBarGenerated = this.stateService.sixBarGenerated;
 
   }
+
+  ngOnDestroy() {
+    this.subs.unsubscribe();
+  }
+
   setReference(r: string) {
       this.reference = r;
       if (this.position1){
@@ -671,26 +704,60 @@ getPosAngle(posNum: number){
         return this.pos3Angle.toFixed(3) as unknown as number;
 
 }
-  recordXCoord(index: number) {
-    this.stateService.recordAction({
-      type: 'i',
-    });
-    this.stateService.recordAction({
-      type: 'input1Value',
-    });
-  }
-  recordYCoord() {
+
+
+
+
+  confirmPosX(index: number, newX: number): void {
+
+    const positions = [ this.position1!, this.position2!, this.position3! ];
+    const pos       = positions[index - 1];
+    const joint     = this.getReferenceJoint(pos);
+
+    const oldX = +this.getPosXCoord(index);
+
 
     this.stateService.recordAction({
-      type: 'getPosYCoord',
+      type:     'setSynthCoord',
+      axis:     'x',
+      posNum:   index,
+      oldValue: oldX,
+      newValue: newX
     });
-    this.stateService.recordAction({
-      type: 'input2Value',
-    });
-    this.stateService.recordAction({
-      type: 'input2Change',
-    });
+
+
+    this.setPosXCoord(newX, index);
+    this.getMechanism().notifyChange();
+
+
+    this.pendingX = undefined;
   }
+
+  confirmPosY(index: number, newY: number): void {
+
+    const positions = [ this.position1!, this.position2!, this.position3! ];
+    const pos       = positions[index - 1];
+    const joint     = this.getReferenceJoint(pos);
+
+    const oldY = +this.getPosYCoord(index);
+
+
+    this.stateService.recordAction({
+      type:     'setSynthCoord',
+      axis:     'y',
+      posNum:   index,
+      oldValue: oldY,
+      newValue: newY
+    });
+
+
+    this.setPosYCoord(newY, index);
+    this.getMechanism().notifyChange();
+
+
+    this.pendingY = undefined;
+  }
+
   recordPosAngle() {
     this.stateService.recordAction({
       type: 'getPosAngle'
@@ -1078,4 +1145,6 @@ getEndPointYCoords(positionIndex: number, jointIndex: number) {
       midJoint.setCoordinates(new Coord(centerX - dx, centerY - dy));
     }
   }
+
+  getMechanism(): Mechanism { return this.stateService.getMechanism(); }
 }

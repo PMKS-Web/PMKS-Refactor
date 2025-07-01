@@ -109,21 +109,36 @@
 
                   <!-- allows the user to enter coordinates and an angle for the position -->
                   <div class='poseData'   *ngIf='this.isPositionDefined(i)'>
-                        <dual-input-block
-                        [input1Value]="getPosXCoord(i)"
-                        [input2Value]="getPosYCoord(i)"
-                        (input1Change)= "recordXCoord(i); setPosXCoord($event, i)"
-                        (input2Change)="recordYCoord();setPosYCoord($event, i)"
-                        tooltip="Change the x and y values of the reference point of the coupler position {{i}}"
-                        label1="X"
-                        label2="Y"
-                        unit1={{units}}
-                        unit2={{units}}
-                        [showIcon]="false"
-                        [disabled]="this.isFourBarGenerated()|| this.isSixBarGenerated()">
-                  </dual-input-block>
+                    <div class="xy-block">
+                      <label class="xy-label">X &amp; Y</label>
+                      <div class="xy-row">
+                        <div class="xy-cell">
+                          <label>X</label>
+                          <input
+                            type="number"
+                            [value]="getPosXCoord(i)"
+                            (input)="pendingX = $any($event.target).valueAsNumber"
+                            (keydown.enter)="confirmPosX(i, pendingX!)"
+                            [disabled]="isFourBarGenerated()"
+                          />
+                          <span class="xy-unit">{{ units }}</span>
+                        </div>
+                        <div class="xy-cell">
+                          <label>Y</label>
+                          <input
+                            type="number"
+                            [value]="getPosYCoord(i)"
+                            (input)="pendingY = $any($event.target).valueAsNumber"
+                            (keydown.enter)="confirmPosY(i, pendingY!)"
+                            [disabled]="isFourBarGenerated()"
+                          />
+                          <span class="xy-unit">{{ units }}</span>
+                        </div>
+                      </div>
+                    </div>
 
-                  <single-input-block
+
+                    <single-input-block
                         [input1Value]="getPosAngle(i)"
                         (input1Change)="recordPosAngle(); setPositionAngle($event, i)"
                         iconLabel1="assets/icons/angle.svg"

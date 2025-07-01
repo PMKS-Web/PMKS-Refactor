@@ -23,8 +23,8 @@ export class StateService {
   private showIDLabelsSubject = new BehaviorSubject<boolean>(false);
   showIDLabels$ = this.showIDLabelsSubject.asObservable();
 
-  private getPosXCoordSubject = new Subject<void>();
-  private getPosYCoordSubject = new Subject<void>();
+  getPosXCoordSubject = new Subject<{posNum:number,value:number}>();
+  getPosYCoordSubject = new Subject<{posNum:number,value:number}>();
 
   setPosXCoord = this.getPosXCoordSubject.asObservable();
   setPosYCoord = this.getPosYCoordSubject.asObservable();
@@ -381,11 +381,19 @@ export class StateService {
         }
         break;
       case 'setPosXCoord':
-        this.getPosXCoordSubject.next();
+        this.getPosXCoordSubject.next({
+          posNum: action.posNum!,
+          value:  action.newCoords!.x
+        });
         break;
+
       case 'setPosYCoord':
-        this.getPosYCoordSubject.next();
+        this.getPosYCoordSubject.next({
+          posNum: action.posNum!,
+          value:  action.newCoords!.y
+        });
         break;
+
       case 'getPosAngle':
         this.getPosAngleSubject.next();
         break;
@@ -471,6 +479,21 @@ export class StateService {
         link.setAngle(ca.newAngle!, joint);
         break;
       }
+      case 'setSynthCoord':
+        if (action.axis === 'x') {
+          // redo the X edit
+          this.getPosXCoordSubject.next!({
+            posNum: action.posNum!,
+            value:  action.newValue!
+          });
+        } else {
+          // redo the Y edit
+          this.getPosYCoordSubject.next!({
+            posNum: action.posNum!,
+            value:  action.newValue!
+          });
+        }
+        break;
 
       default:
         console.error('No inverse defined for action type:', action.type);
@@ -503,11 +526,18 @@ export class StateService {
         }
         break;
       case 'setPosXCoord':
-        this.getPosXCoordSubject.next();
+        this.getPosXCoordSubject.next({
+          posNum: action.posNum!,
+          value:  action.oldCoords!.x
+        });
         break;
       case 'setPosYCoord':
-        this.getPosYCoordSubject.next();
+        this.getPosYCoordSubject.next({
+          posNum: action.posNum!,
+          value:  action.oldCoords!.y
+        });
         break;
+
       case 'getPosAngle':
         this.getPosAngleSubject.next();
         break;
@@ -652,6 +682,21 @@ export class StateService {
         link.setAngle(ca.oldAngle!, joint);
         break;
       }
+      case 'setSynthCoord':
+        if (action.axis === 'x') {
+          // undo the X edit
+          this.getPosXCoordSubject.next!({
+            posNum: action.posNum!,
+            value:  action.oldValue!
+          });
+        } else {
+          // undo the Y edit
+          this.getPosYCoordSubject.next!({
+            posNum: action.posNum!,
+            value:  action.oldValue!
+          });
+        }
+        break;
       default:
         console.error('No inverse defined for action type:', action.type);
     }
@@ -676,4 +721,7 @@ export class StateService {
     restoredJoint.reference = jointSnapshot!.isReference;
     this.mechanism._addJoint(restoredJoint);
   }
+
+
+
 }
