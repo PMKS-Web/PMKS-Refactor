@@ -318,6 +318,8 @@ export class ThreePosSynthesis implements OnInit {
         this.position3!.getJoints()[1]._coords
       );
       this.fourBarGenerated = !this.fourBarGenerated;
+      this.stateService.fourBarGenerated = this.fourBarGenerated;
+
       this.Generated.emit(this.fourBarGenerated);
       this.cdr.detectChanges();
 
@@ -454,6 +456,8 @@ export class ThreePosSynthesis implements OnInit {
       console.log('Six-bar has been cleared');
       this.fourBarGenerated = true;
       this.sixBarGenerated = false;
+      this.stateService.sixBarGenerated = this.sixBarGenerated;
+      this.stateService.fourBarGenerated = this.fourBarGenerated;
       this.cdr.detectChanges();
       return;
     }
@@ -1118,7 +1122,9 @@ export class ThreePosSynthesis implements OnInit {
       this.setPositionsColorToDefault();
       this.mechanism.clearTrajectories();
       this.fourBarGenerated = false;
+      this.stateService.fourBarGenerated = this.fourBarGenerated;
       this.sixBarGenerated = false;
+      this.stateService.sixBarGenerated = this.sixBarGenerated;
       this.synthedMech = [];
       this.Generated.emit(false);
     }
@@ -1142,6 +1148,7 @@ export class ThreePosSynthesis implements OnInit {
       this.mechanism.clearTrajectories();
       console.log('Six-bar has been cleared');
       this.fourBarGenerated = false;
+      this.stateService.fourBarGenerated = this.fourBarGenerated;
       this.cdr.detectChanges();
       return;
     }
