@@ -52,317 +52,387 @@ export class ThreePosSynthesis implements OnInit {
   @Output() input1Change: EventEmitter<number> = new EventEmitter<number>();
   @Output() Generated: EventEmitter<boolean> = new EventEmitter<boolean>();
 
-sectionExpanded: { [key: string]: boolean } = { Basic: false };
-  reference: string = 'Center';
-  couplerLength: number = 2;
-  pos1Angle: number = 0;
-  pos1Specified: boolean = false;
-  pos2Angle: number = 0;
-  pos2Specified: boolean = false;
-  pos3Angle: number = 0;
-  pos3Specified: boolean = false;
-  position1: Position | null = null;
-  position2: Position | null = null;
-  position3: Position | null = null;
-  position2LengthErr: lengthErrRecentPoint = {
-    x1: false,
-    y1: false,
-    x2: false,
-    y2: false,
-  };
-  position3LengthErr: lengthErrRecentPoint = {
-    x1: false,
-    y1: false,
-    x2: false,
-    y2: false,
-  }; //To be used with End Points system, True if position x has a different length than position 1
-  fourBarGenerated: boolean = false;
-  sixBarGenerated: boolean = false;
-  recalcNeeded = false;
-  units: string = 'cm';
-  angles: string = 'º';
-  panel: string = 'Synthesis';
-  synthedMech: Link[] = [];
-  selectedOption: string = 'xy-angle';
-  distance: number = 0;
-  angle: number = 0;
-  // New array for two-point mode, using the Position interface
-  twoPointPositions: CoordinatePosition[] = [
-    { x0: -1, y0: 0, x1: 1, y1: 0, defined: false },
-    { x0: -3.5, y0: 0, x1: -1.5, y1: 0, defined: false },
-    { x0: 1.5, y0: 0, x1: 3.5, y1: 0, defined: false },
-  ];
-  isLengthLocked: boolean = false;
-  showLockMessage: boolean = false; // Controls the visibility of the message
-  positionLocks: PositionLock[] = [
-    { isLocked: false, lockedLength: 2 }, // Position 1
-    { isLocked: false, lockedLength: 2 }, // Position 2
-    { isLocked: false, lockedLength: 2 }, // Position 3
-  ];
-  // Flags to control placeholder visibility
-  placeholderFlags: {
-    [key: number]: { x0: boolean; y0: boolean; x1: boolean; y1: boolean };
-  } = {};
-  private readonly mechanism: Mechanism;
+  sectionExpanded: { [key: string]: boolean } = { Basic: false };
+  reference: string = 'Center';
+  couplerLength: number = 2;
+  pos1Angle: number = 0;
+  pos1Specified: boolean = false;
+  pos2Angle: number = 0;
+  pos2Specified: boolean = false;
+  pos3Angle: number = 0;
+  pos3Specified: boolean = false;
+  position1: Position | null = null;
+  position2: Position | null = null;
+  position3: Position | null = null;
+  position2LengthErr: lengthErrRecentPoint = {
+    x1: false,
+    y1: false,
+    x2: false,
+    y2: false,
+  };
+  position3LengthErr: lengthErrRecentPoint = {
+    x1: false,
+    y1: false,
+    x2: false,
+    y2: false,
+  }; //To be used with End Points system, True if position x has a different length than position 1
+  fourBarGenerated: boolean = false;
+  sixBarGenerated: boolean = false;
+  recalcNeeded = false;
+  units: string = 'cm';
+  angles: string = 'º';
+  panel: string = 'Synthesis';
+  synthedMech: Link[] = [];
+  selectedOption: string = 'xy-angle';
+  distance: number = 0;
+  angle: number = 0;
+  // New array for two-point mode, using the Position interface
+  twoPointPositions: CoordinatePosition[] = [
+    { x0: -1, y0: 0, x1: 1, y1: 0, defined: false },
+    { x0: -3.5, y0: 0, x1: -1.5, y1: 0, defined: false },
+    { x0: 1.5, y0: 0, x1: 3.5, y1: 0, defined: false },
+  ];
+  isLengthLocked: boolean = false;
+  showLockMessage: boolean = false; // Controls the visibility of the message
+  positionLocks: PositionLock[] = [
+    { isLocked: false, lockedLength: 2 }, // Position 1
+    { isLocked: false, lockedLength: 2 }, // Position 2
+    { isLocked: false, lockedLength: 2 }, // Position 3
+  ];
+  // Flags to control placeholder visibility
+  placeholderFlags: {
+    [key: number]: { x0: boolean; y0: boolean; x1: boolean; y1: boolean };
+  } = {};
+  private readonly mechanism: Mechanism;
 
-  constructor(
-    private stateService: StateService,
-    private interactionService: InteractionService,
-    private cdr: ChangeDetectorRef,
-    private positionSolver: PositionSolverService,
-    private notificationService: NotificationService
-  ) {
-    this.mechanism = this.stateService.getMechanism();
-  }
-  ngOnInit(): void {
-    this.init();
-    this.stateService.reinitialize$.subscribe(() => {
-      this.init();
-      this.cdr.detectChanges();
-    });
-    this.stateService.generateFourBar$.subscribe(() => {
-      this.generateFourBar();
-    });
-    this.stateService.generateSixBar$.subscribe(() => {
-      this.generateSixBar();
-    });
-  }
-  init() {
-    this.mechanism.getArrayOfPositions().forEach((position) => {
-      if (position.id === 0) {
-        this.position1 = position;
-        this.pos1Specified = true;
-        this.pos1Angle = position.angle;
-      } else if (position.id === 1) {
-        this.position2 = position;
-        this.pos2Specified = true;
-        this.pos2Angle = position.angle;
-      } else if (position.id === 2) {
-        this.position3 = position;
-        this.pos3Specified = true;
-        this.pos3Angle = position.angle;
-      }
-    });
-    this.mechanism.getArrayOfLinks().forEach((link) => {
-      if (link.joints.values().next().value?.isGenerated)
-        this.synthedMech.push(link);
-    });
-    let initialGreenCount = this.mechanism
-      .getArrayOfPositions()
-      .filter((position) => position.color === 'green').length;
-    if (initialGreenCount > 0 || this.stateService.sixBarGenerated)
-      this.fourBarGenerated = true;
-    this.sixBarGenerated = this.stateService.sixBarGenerated;
-  }
-  setReference(r: string) {
-    this.reference = r;
-    if (this.position1) {
-      this.position1.setReference(this.reference);
-      this.setPosXCoord(this.getNewCoord(this.position1).x, 1);
-      this.setPosYCoord(this.getNewCoord(this.position1).y, 1);
-    }
-    if (this.position2) {
-      this.position2.setReference(this.reference);
-      this.setPosXCoord(this.getNewCoord(this.position2).x, 2);
-      this.setPosYCoord(this.getNewCoord(this.position2).y, 2);
-    }
-    if (this.position3) {
-      this.position3.setReference(this.reference);
-      this.setPosXCoord(this.getNewCoord(this.position3).x, 3);
-      this.setPosYCoord(this.getNewCoord(this.position3).y, 3);
-    }
-  }
-  toggleOption(selectedOption: string) {
-    this.selectedOption = selectedOption;
-  }
-  specifyPosition(index: number) {
-    let coord1: Coord, coord2: Coord;
-    let posX: number, posY: number;
+  constructor(
+    private stateService: StateService,
+    private interactionService: InteractionService,
+    private cdr: ChangeDetectorRef,
+    private positionSolver: PositionSolverService,
+    private notificationService: NotificationService
+  ) {
+    this.mechanism = this.stateService.getMechanism();
+  }
+  ngOnInit(): void {
+    this.init();
+    this.stateService.reinitialize$.subscribe(() => {
+      this.init();
+      this.cdr.detectChanges();
+    });
+    this.stateService.generateFourBar$.subscribe(() => {
+      this.generateFourBar();
+    });
+    this.stateService.generateSixBar$.subscribe(() => {
+      this.generateSixBar();
+    });
+  }
+  init() {
+    this.mechanism.getArrayOfPositions().forEach((position) => {
+      if (position.id === 0) {
+        this.position1 = position;
+        this.pos1Specified = true;
+        this.pos1Angle = position.angle;
+      } else if (position.id === 1) {
+        this.position2 = position;
+        this.pos2Specified = true;
+        this.pos2Angle = position.angle;
+      } else if (position.id === 2) {
+        this.position3 = position;
+        this.pos3Specified = true;
+        this.pos3Angle = position.angle;
+      }
+    });
+    this.mechanism.getArrayOfLinks().forEach((link) => {
+      if (link.joints.values().next().value?.isGenerated)
+        this.synthedMech.push(link);
+    });
+    let initialGreenCount = this.mechanism
+      .getArrayOfPositions()
+      .filter((position) => position.color === 'green').length;
+    if (initialGreenCount > 0 || this.stateService.sixBarGenerated)
+      this.fourBarGenerated = true;
+    this.sixBarGenerated = this.stateService.sixBarGenerated;
+  }
+  setReference(r: string) {
+    this.reference = r;
+    if (this.position1) {
+      this.position1.setReference(this.reference);
+      this.setPosXCoord(this.getNewCoord(this.position1).x, 1);
+      this.setPosYCoord(this.getNewCoord(this.position1).y, 1);
+    }
+    if (this.position2) {
+      this.position2.setReference(this.reference);
+      this.setPosXCoord(this.getNewCoord(this.position2).x, 2);
+      this.setPosYCoord(this.getNewCoord(this.position2).y, 2);
+    }
+    if (this.position3) {
+      this.position3.setReference(this.reference);
+      this.setPosXCoord(this.getNewCoord(this.position3).x, 3);
+      this.setPosYCoord(this.getNewCoord(this.position3).y, 3);
+    }
+  }
+  toggleOption(selectedOption: string) {
+    this.selectedOption = selectedOption;
+  }
+  specifyPosition(index: number) {
+    let coord1: Coord, coord2: Coord;
+    let posX: number, posY: number;
 
-    if (index === 1) {
-      coord1 = new Coord(-this.couplerLength / 2, 0);
-      coord2 = new Coord(this.couplerLength / 2, 0);
+    if (index === 1) {
+      coord1 = new Coord(-this.couplerLength / 2, 0);
+      coord2 = new Coord(this.couplerLength / 2, 0);
 
-      this.pos1Specified = true;
-      this.mechanism.addPos(coord1, coord2);
-      const positions = this.mechanism.getArrayOfPositions();
-      this.position1 = positions[positions.length - 1];
-      this.position1.name = 'Position 1';
-      this.position1.setReference(this.reference); // Only set reference for the new position
-    } else if (index === 2) {
-      coord1 = new Coord(-this.couplerLength / 2 - 1.5 * this.couplerLength, 0);
-      coord2 = new Coord(this.couplerLength / 2 - 1.5 * this.couplerLength, 0);
+      this.pos1Specified = true;
+      this.mechanism.addPos(coord1, coord2);
+      const positions = this.mechanism.getArrayOfPositions();
+      this.position1 = positions[positions.length - 1];
+      this.position1.name = 'Position 1';
+      this.position1.setReference(this.reference); // Only set reference for the new position
+    } else if (index === 2) {
+      coord1 = new Coord(-this.couplerLength / 2 - 1.5 * this.couplerLength, 0);
+      coord2 = new Coord(this.couplerLength / 2 - 1.5 * this.couplerLength, 0);
 
-      this.pos2Specified = true;
-      this.mechanism.addPos(coord1, coord2);
-      const positions = this.mechanism.getArrayOfPositions();
-      this.position2 = positions[positions.length - 1];
-      this.position2.name = 'Position 2';
-      this.position2.setReference(this.reference); // Only set reference for the new position
-    } else if (index === 3) {
-      coord1 = new Coord(-this.couplerLength / 2 + 1.5 * this.couplerLength, 0);
-      coord2 = new Coord(this.couplerLength / 2 + 1.5 * this.couplerLength, 0);
+      this.pos2Specified = true;
+      this.mechanism.addPos(coord1, coord2);
+      const positions = this.mechanism.getArrayOfPositions();
+      this.position2 = positions[positions.length - 1];
+      this.position2.name = 'Position 2';
+      this.position2.setReference(this.reference); // Only set reference for the new position
+    } else if (index === 3) {
+      coord1 = new Coord(-this.couplerLength / 2 + 1.5 * this.couplerLength, 0);
+      coord2 = new Coord(this.couplerLength / 2 + 1.5 * this.couplerLength, 0);
 
-      this.pos3Specified = true;
-      this.mechanism.addPos(coord1, coord2);
-      const positions = this.mechanism.getArrayOfPositions();
-      this.position3 = positions[positions.length - 1];
-      this.position3.name = 'Position 3';
-      this.position3.setReference(this.reference); // Only set reference for the new position
-    }
-  }
+      this.pos3Specified = true;
+      this.mechanism.addPos(coord1, coord2);
+      const positions = this.mechanism.getArrayOfPositions();
+      this.position3 = positions[positions.length - 1];
+      this.position3.name = 'Position 3';
+      this.position3.setReference(this.reference); // Only set reference for the new position
+    }
+  }
 
-  getNewCoord(position: Position): Coord {
-    let joint: Joint;
-    if (this.reference === 'Back') {
-      joint = position.getJoints()[0]; // First joint for "Back"
-    } else if (this.reference === 'Front') {
-      joint = position.getJoints()[1]; // Second joint for "Front"
-    } else if (this.reference === 'Center') {
-      joint = position.getJoints()[2];
-    } else {
-      // Default to "Back" if reference is not recognized
-      joint = position.getJoints()[0];
-    }
-    return new Coord(joint.coords.x, joint.coords.y);
-  }
+  getNewCoord(position: Position): Coord {
+    let joint: Joint;
+    if (this.reference === 'Back') {
+      joint = position.getJoints()[0]; // First joint for "Back"
+    } else if (this.reference === 'Front') {
+      joint = position.getJoints()[1]; // Second joint for "Front"
+    } else if (this.reference === 'Center') {
+      joint = position.getJoints()[2];
+    } else {
+      // Default to "Back" if reference is not recognized
+      joint = position.getJoints()[0];
+    }
+    return new Coord(joint.coords.x, joint.coords.y);
+  }
 
-  resetPos(pos: number) {
-    if (pos == 1) {
-      this.pos1Angle = 0;
-      this.position1!.angle = 0;
-      this.twoPointPositions[0] = {
-        x0: -1,
-        y0: 0,
-        x1: 1,
-        y1: 0,
-        defined: false,
-      };
-    } else if (pos == 2) {
-      this.pos2Angle = 0;
-      this.position2!.angle = 0;
-      this.twoPointPositions[1] = {
-        x0: -3.5,
-        y0: 0,
-        x1: -1.5,
-        y1: 0,
-        defined: false,
-      };
-      this.position2LengthErr = { x1: false, y1: false, x2: false, y2: false };
-    } else {
-      this.pos3Angle = 0;
-      this.position3!.angle = 0;
-      this.twoPointPositions[2] = {
-        x0: 1.5,
-        y0: 0,
-        x1: 3.5,
-        y1: 0,
-        defined: false,
-      };
-      this.position3LengthErr = { x1: false, y1: false, x2: false, y2: false };
-    }
-  }
+  resetPos(pos: number) {
+    if (pos == 1) {
+      this.pos1Angle = 0;
+      this.position1!.angle = 0;
+      this.twoPointPositions[0] = {
+        x0: -1,
+        y0: 0,
+        x1: 1,
+        y1: 0,
+        defined: false,
+      };
+    } else if (pos == 2) {
+      this.pos2Angle = 0;
+      this.position2!.angle = 0;
+      this.twoPointPositions[1] = {
+        x0: -3.5,
+        y0: 0,
+        x1: -1.5,
+        y1: 0,
+        defined: false,
+      };
+      this.position2LengthErr = { x1: false, y1: false, x2: false, y2: false };
+    } else {
+      this.pos3Angle = 0;
+      this.position3!.angle = 0;
+      this.twoPointPositions[2] = {
+        x0: 1.5,
+        y0: 0,
+        x1: 3.5,
+        y1: 0,
+        defined: false,
+      };
+      this.position3LengthErr = { x1: false, y1: false, x2: false, y2: false };
+    }
+  }
 
-  isFourBarGenerated(): boolean {
-    return this.fourBarGenerated;
-  }
-  isSixBarGenerated(): boolean {
-    return this.sixBarGenerated;
-  }
-  onInputClick() {
-    this.notificationService.showNotification(
-      'Clear Current Four-bar so that change link length and positions and regenerate a new four-bar'
-    );
-  }
+  isFourBarGenerated(): boolean {
+    return this.fourBarGenerated;
+  }
+  isSixBarGenerated(): boolean {
+    return this.sixBarGenerated;
+  }
+  onInputClick() {
+    this.notificationService.showNotification(
+      'Clear Current Four-bar so that change link length and positions and regenerate a new four-bar'
+    );
+  }
 
-  getLastJoint(joints: IterableIterator<Joint>): Joint | undefined {
-    let lastJoint: Joint | undefined;
-    for (const joint of joints) {
-      lastJoint = joint;
-    }
-    if (lastJoint !== undefined) {
-      return lastJoint;
-    } else return undefined;
-  }
+  getLastJoint(joints: IterableIterator<Joint>): Joint | undefined {
+    let lastJoint: Joint | undefined;
+    for (const joint of joints) {
+      lastJoint = joint;
+    }
+    if (lastJoint !== undefined) {
+      return lastJoint;
+    } else return undefined;
+  }
 
-  generateFourBar() {
-    //button changes to "clear four bar" when already generated, so remove mechanism
-    if (this.fourBarGenerated) {
-      let listOfLinks = this.synthedMech;
-      while (this.synthedMech.length > 0) {
-        let linkId = this.synthedMech[0].id;
-        this.synthedMech.splice(0, 1);
-        this.mechanism.removeLink(linkId);
-        this.position1!.locked = false;
-        this.position2!.locked = false;
-        this.position3!.locked = false;
-      }
-      this.setPositionsColorToDefault();
-      this.mechanism.clearTrajectories();
-      this.fourBarGenerated = false;
-      this.sixBarGenerated = false;
-      this.stateService.sixBarGenerated = this.sixBarGenerated;
-      this.synthedMech = [];
-      this.Generated.emit(false);
-    } else {
-      let firstPoint = this.findIntersectionPoint(
-        this.position1!.getJoints()[0]._coords,
-        this.position2!.getJoints()[0]._coords,
-        this.position3!.getJoints()[0]._coords
-      );
-      let secondPoint = this.position1!.getJoints()[0]._coords;
-      let thirdPoint = this.position1!.getJoints()[1]._coords;
-      let fourthPoint = this.findIntersectionPoint2(
-        this.position1!.getJoints()[1]._coords,
-        this.position2!.getJoints()[1]._coords,
-        this.position3!.getJoints()[1]._coords
-      );
-      this.fourBarGenerated = !this.fourBarGenerated;
-      this.stateService.fourBarGenerated = this.fourBarGenerated;
+  generateFourBar() {
+    //button changes to "clear four bar" when already generated, so remove mechanism
+    if (this.fourBarGenerated) {
+      let listOfLinks = this.synthedMech;
+      while (this.synthedMech.length > 0) {
+        let linkId = this.synthedMech[0].id;
+        this.synthedMech.splice(0, 1);
+        this.mechanism.removeLink(linkId);
+        this.position1!.locked = false;
+        this.position2!.locked = false;
+        this.position3!.locked = false;
+      }
+      this.setPositionsColorToDefault();
+      this.mechanism.clearTrajectories();
+      this.fourBarGenerated = false;
+      this.sixBarGenerated = false;
+      this.stateService.sixBarGenerated = this.sixBarGenerated;
+      this.synthedMech = [];
+      this.Generated.emit(false);
+    } else {
+      let firstPoint = this.findIntersectionPoint(
+        this.position1!.getJoints()[0]._coords,
+        this.position2!.getJoints()[0]._coords,
+        this.position3!.getJoints()[0]._coords
+      );
+      let secondPoint = this.position1!.getJoints()[0]._coords;
+      let thirdPoint = this.position1!.getJoints()[1]._coords;
+      let fourthPoint = this.findIntersectionPoint2(
+        this.position1!.getJoints()[1]._coords,
+        this.position2!.getJoints()[1]._coords,
+        this.position3!.getJoints()[1]._coords
+      );
+      this.fourBarGenerated = !this.fourBarGenerated;
+      this.stateService.fourBarGenerated = this.fourBarGenerated;
 
-      this.Generated.emit(this.fourBarGenerated);
-      this.cdr.detectChanges();
+      this.Generated.emit(this.fourBarGenerated);
+      this.cdr.detectChanges();
 
-      this.mechanism.addLink(firstPoint, secondPoint, true);
-      let firstGround = this.mechanism
-        .getArrayOfLinks()
-        [this.mechanism.getArrayOfLinks().length - 1].getJoints()[0];
-      this.synthedMech.push(
-        this.mechanism.getArrayOfLinks()[
-          this.mechanism.getArrayOfLinks().length - 1
-        ]
-      );
-      this.synthedMech[this.synthedMech.length - 1]._joints.forEach(
-        (number) => {
-          number.generated = true;
-        }
-      );
-      let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
-      let lastJoint = this.getLastJoint(joints);
-      if (lastJoint !== undefined) {
-        this.mechanism.addLinkToJoint(lastJoint.id, thirdPoint, true);
-        this.synthedMech.push(
-          this.mechanism.getArrayOfLinks()[
-            this.mechanism.getArrayOfLinks().length - 1
-          ]
-        );
-        this.synthedMech[this.synthedMech.length - 1]._joints.forEach(
-          (number) => {
-            number.generated = true;
-          }
-        );
-      }
+      this.mechanism.addLink(firstPoint, secondPoint, true);
+      let firstGround = this.mechanism
+        .getArrayOfLinks()
+        [this.mechanism.getArrayOfLinks().length - 1].getJoints()[0];
+      this.synthedMech.push(
+        this.mechanism.getArrayOfLinks()[
+          this.mechanism.getArrayOfLinks().length - 1
+        ]
+      );
+      this.synthedMech[this.synthedMech.length - 1]._joints.forEach(
+        (number) => {
+          number.generated = true;
+        }
+      );
+      let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
+      let lastJoint = this.getLastJoint(joints);
+      if (lastJoint !== undefined) {
+        this.mechanism.addLinkToJoint(lastJoint.id, thirdPoint, true);
+        this.synthedMech.push(
+          this.mechanism.getArrayOfLinks()[
+            this.mechanism.getArrayOfLinks().length - 1
+          ]
+        );
+        this.synthedMech[this.synthedMech.length - 1]._joints.forEach(
+          (number) => {
+            number.generated = true;
+          }
+        );
+      }
 
-      joints = this.mechanism.getJoints(); //updates list of all joints
-      lastJoint = this.getLastJoint(joints);
-      let lastGround;
-      if (lastJoint !== undefined) {
-        this.mechanism.addLinkToJoint(lastJoint.id, fourthPoint, true);
-        lastGround = this.mechanism
-          .getArrayOfLinks()
-          [this.mechanism.getArrayOfLinks().length - 1].getJoints()[1];
-        this.synthedMech.push(
-          this.mechanism.get
+      joints = this.mechanism.getJoints(); //updates list of all joints
+      lastJoint = this.getLastJoint(joints);
+      let lastGround;
+      if (lastJoint !== undefined) {
+        this.mechanism.addLinkToJoint(lastJoint.id, fourthPoint, true);
+        lastGround = this.mechanism
+          .getArrayOfLinks()
+          [this.mechanism.getArrayOfLinks().length - 1].getJoints()[1];
+        this.synthedMech.push(
+          this.mechanism.getArrayOfLinks()[
+            this.mechanism.getArrayOfLinks().length - 1
+          ]
+        );
+        this.synthedMech[this.synthedMech.length - 1]._joints.forEach(
+          (number) => {
+            number.generated = true;
+          }
+        );
+      }
+      firstGround.addGround();
+      firstGround.addInput();
+      lastGround!.addGround();
+      this.positionSolver.solvePositions();
+      this.verifyMechanismPath();
+
+      const inputLink = this.synthedMech[0];
+      const linkInteractor = new LinkInteractor(
+        inputLink,
+        this.stateService,
+        this.interactionService,
+        this.notificationService
+      );
+      this.interactionService.setSelectedObject(linkInteractor);
+      this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
+
+      let initialGreenCount = this.mechanism
+        .getArrayOfPositions()
+        .filter((position) => position.color === 'green').length;
+
+      if (initialGreenCount < 3) {
+        //since is not the best we check the other input joint, to see of that gives better result
+        firstGround.removeInput();
+        firstGround.addGround();
+        lastGround!.addInput();
+
+        this.positionSolver.solvePositions();
+        this.verifyMechanismPath();
+        let alternativeGreenCount = this.mechanism
+          .getArrayOfPositions()
+          .filter((position) => position.color === 'green').length;
+
+        if (initialGreenCount >= alternativeGreenCount) {
+          //go back to initial conf
+          firstGround.addInput();
+          lastGround!.removeInput();
+          lastGround!.addGround();
+        }
+      }
+
+      this.positionSolver.solvePositions();
+      this.verifyMechanismPath();
+      this.position1!.locked = true;
+      this.position2!.locked = true;
+      this.position3!.locked = true;
+    }
+  }
+
+  generateSixBar() {
+    this.sixBarGenerated = !this.sixBarGenerated;
+    this.stateService.sixBarGenerated = this.sixBarGenerated;
+
+    //clear the six-bar
+    if (!this.sixBarGenerated) {
+      let listOfLinks = this.synthedMech[4].id;
+      while (this.synthedMech.length > 4) {
+        let linkId = this.synthedMech[4].id;
+        this.synthedMech.splice(4, 1);
+        this.mechanism.removeLink(linkId);
+        this.mechanism.removeLink(linkId - 1);
+
         this.position1!.locked = false;
         this.position2!.locked = false;
         this.position3!.locked = false;
