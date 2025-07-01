@@ -211,6 +211,7 @@ export class StateService {
         this.mechanism._addTrajectory(newTrajectory);
       }
     }
+    this.getMechanism().notifyChange();
   }
 
   // Stores the reference to the AnimationBarComponent for future use.
