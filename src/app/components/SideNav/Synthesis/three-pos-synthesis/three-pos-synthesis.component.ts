@@ -17,6 +17,7 @@ import { ChangeDetectorRef } from '@angular/core';
 import { PositionSolverService } from '../../../../services/kinematic-solver.service';
 import { Position } from '../../../../model/position';
 import { NotificationService } from 'src/app/services/notification.service';
+import { Action } from 'rxjs/internal/scheduler/Action';
 
 interface CoordinatePosition {
   x0: number;
@@ -119,6 +120,12 @@ export class ThreePosSynthesis implements OnInit {
       this.init();
       this.cdr.detectChanges();
     });
+    this.stateService.generateFourBar$.subscribe(() => {
+      this.generateFourBar();
+    });
+    this.stateService.generateSixBar$.subscribe(() => {
+      this.generateSixBar();
+    });
   }
   init() {
     this.mechanism.getArrayOfPositions().forEach((position) => {
@@ -137,12 +144,9 @@ export class ThreePosSynthesis implements OnInit {
       }
     });
     this.mechanism.getArrayOfLinks().forEach((link) => {
-      console.log(this.synthedMech);
-      console.log(link.joints.values().next().value);
       if (link.joints.values().next().value?.isGenerated)
         this.synthedMech.push(link);
     });
-
     let initialGreenCount = this.mechanism
       .getArrayOfPositions()
       .filter((position) => position.color === 'green').length;
@@ -285,17 +289,13 @@ export class ThreePosSynthesis implements OnInit {
     //button changes to "clear four bar" when already generated, so remove mechanism
     if (this.fourBarGenerated) {
       let listOfLinks = this.synthedMech;
-      console.log(listOfLinks);
       while (this.synthedMech.length > 0) {
         let linkId = this.synthedMech[0].id;
-        console.log(linkId);
         this.synthedMech.splice(0, 1);
         this.mechanism.removeLink(linkId);
         this.position1!.locked = false;
         this.position2!.locked = false;
         this.position3!.locked = false;
-        console.log('LIST OF LINKS AFTER DELETION:');
-        console.log(this.mechanism.getArrayOfLinks());
       }
       this.setPositionsColorToDefault();
       this.mechanism.clearTrajectories();
@@ -427,13 +427,12 @@ export class ThreePosSynthesis implements OnInit {
     //clear the six-bar
     if (!this.sixBarGenerated) {
       let listOfLinks = this.synthedMech[4].id;
-      console.log(listOfLinks);
       while (this.synthedMech.length > 4) {
         let linkId = this.synthedMech[4].id;
-        console.log(linkId);
         this.synthedMech.splice(4, 1);
         this.mechanism.removeLink(linkId);
         this.mechanism.removeLink(linkId - 1);
+
         this.position1!.locked = false;
         this.position2!.locked = false;
         this.position3!.locked = false;
@@ -869,6 +868,16 @@ export class ThreePosSynthesis implements OnInit {
 
   confirmRemoveAll: boolean = false;
 
+  recordFourBarWrapper() {
+    this.stateService.recordAction({
+      type: 'generateFourBar',
+    });
+  }
+  recordSixBarWrapper() {
+    this.stateService.recordAction({
+      type: 'generateSixBar',
+    });
+  }
   removeAllPositions() {
     if (!this.confirmRemoveAll) {
       this.confirmRemoveAll = true;
