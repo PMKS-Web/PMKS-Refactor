@@ -114,6 +114,13 @@ export class ThreePosSynthesis implements OnInit {
     this.mechanism = this.stateService.getMechanism();
   }
   ngOnInit(): void {
+    this.init();
+    this.stateService.reinitialize$.subscribe(() => {
+      this.init();
+      this.cdr.detectChanges();
+    });
+  }
+  init() {
     this.mechanism.getArrayOfPositions().forEach((position) => {
       if (position.id === 0) {
         this.position1 = position;
@@ -130,16 +137,17 @@ export class ThreePosSynthesis implements OnInit {
       }
     });
     this.mechanism.getArrayOfLinks().forEach((link) => {
+      console.log(this.synthedMech);
+      console.log(link.joints.values().next().value);
       if (link.joints.values().next().value?.isGenerated)
         this.synthedMech.push(link);
     });
+
     let initialGreenCount = this.mechanism
       .getArrayOfPositions()
       .filter((position) => position.color === 'green').length;
-    if (initialGreenCount > 0 || this.stateService.sixBarGenerated) {
+    if (initialGreenCount > 0 || this.stateService.sixBarGenerated)
       this.fourBarGenerated = true;
-      this.stateService.fourBarGenerated = this.fourBarGenerated;
-    }
     this.sixBarGenerated = this.stateService.sixBarGenerated;
   }
   setReference(r: string) {
@@ -160,8 +168,6 @@ export class ThreePosSynthesis implements OnInit {
       this.setPosYCoord(this.getNewCoord(this.position3).y, 3);
     }
   }
-  getXPos() {}
-
   toggleOption(selectedOption: string) {
     this.selectedOption = selectedOption;
   }
@@ -296,7 +302,6 @@ export class ThreePosSynthesis implements OnInit {
       this.fourBarGenerated = false;
       this.sixBarGenerated = false;
       this.stateService.sixBarGenerated = this.sixBarGenerated;
-      this.stateService.fourBarGenerated = this.fourBarGenerated;
       this.synthedMech = [];
       this.Generated.emit(false);
     } else {
@@ -327,7 +332,11 @@ export class ThreePosSynthesis implements OnInit {
           this.mechanism.getArrayOfLinks().length - 1
         ]
       );
-
+      this.synthedMech[this.synthedMech.length - 1]._joints.forEach(
+        (number) => {
+          number.generated = true;
+        }
+      );
       let joints = this.mechanism.getJoints(); //makes a list of all the joints in the mechanism
       let lastJoint = this.getLastJoint(joints);
       if (lastJoint !== undefined) {
@@ -336,6 +345,11 @@ export class ThreePosSynthesis implements OnInit {
           this.mechanism.getArrayOfLinks()[
             this.mechanism.getArrayOfLinks().length - 1
           ]
+        );
+        this.synthedMech[this.synthedMech.length - 1]._joints.forEach(
+          (number) => {
+            number.generated = true;
+          }
         );
       }
 
@@ -351,6 +365,11 @@ export class ThreePosSynthesis implements OnInit {
           this.mechanism.getArrayOfLinks()[
             this.mechanism.getArrayOfLinks().length - 1
           ]
+        );
+        this.synthedMech[this.synthedMech.length - 1]._joints.forEach(
+          (number) => {
+            number.generated = true;
+          }
         );
       }
       firstGround.addGround();
@@ -398,6 +417,15 @@ export class ThreePosSynthesis implements OnInit {
       this.position1!.locked = true;
       this.position2!.locked = true;
       this.position3!.locked = true;
+      this.position1!._joints.forEach((number) => {
+        number.generated = true;
+      });
+      this.position2!._joints.forEach((number) => {
+        number.generated = true;
+      });
+      this.position3!._joints.forEach((number) => {
+        number.generated = true;
+      });
     }
   }
 

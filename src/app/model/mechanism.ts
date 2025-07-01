@@ -70,13 +70,11 @@ export class Mechanism {
       isSynth = synthesized;
     }
     let jointA = new Joint(this._jointIDCount, coordOne);
+    console.log(coordOne.x);
+    console.log(coordOne.y);
     this._jointIDCount++;
     let jointB = new Joint(this._jointIDCount, coordTwo);
     this._jointIDCount++;
-    if (synthesized) {
-      jointA.generated = true;
-      jointB.generated = true;
-    }
     this._joints.set(jointA.id, jointA);
     this._joints.set(jointB.id, jointB);
     let linkA = new Link(this._linkIDCount, [jointA, jointB]);
@@ -87,6 +85,7 @@ export class Mechanism {
     this._links.set(linkA.id, linkA);
     if (!isSynth) {
       this.notifyChange();
+    } else {
     }
     //console.log(this);
   }
@@ -434,7 +433,6 @@ export class Mechanism {
         if (typeof coordOneORJointID !== 'number') {
           jointB = new Joint(this._jointIDCount, coordOneORJointID);
           this._jointIDCount++;
-          jointB.generated = true;
         } else if (this._joints.has(coordOneORJointID)) {
           jointB = this._joints.get(coordOneORJointID)!;
         } else {
@@ -697,21 +695,21 @@ export class Mechanism {
     });
   }
 
-  /**
-   * attaches a tracer point(effectively a joint) to an existing position
-   *
-   * @param {number} posID
-   * @param {Coord} coord
-   * @memberof Mechanism
-   */
-  addJointToPosition(posID: number, coord: Coord) {
-    this.executePositionAction(posID, (position) => {
-      let jointA = new Joint(this._jointIDCount, coord);
-      this._jointIDCount++;
-      this._joints.set(jointA.id, jointA);
-      position.addTracer(jointA);
-    });
-  }
+  //   /**
+  //    * attaches a tracer point(effectively a joint) to an existing position
+  //    *
+  //    * @param {number} posID
+  //    * @param {Coord} coord
+  //    * @memberof Mechanism
+  //    */
+  //   addJointToPosition(posID: number, coord: Coord) {
+  //     this.executePositionAction(posID, position => {
+  //       let jointA = new Joint(this._jointIDCount, coord);
+  //       this._jointIDCount++;
+  //       this._joints.set(jointA.id, jointA);
+  //       position.addTracer(jointA);
+  //     });
+  //   }
 
   /**
    * attaches a new link to another link at a point along the existing link which is not a joint.
