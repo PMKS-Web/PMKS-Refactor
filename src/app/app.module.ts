@@ -10,7 +10,6 @@ import { MatIconModule} from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
 
-
 /* Component Imports */
 import { InteractionDirective } from 'src/app/controllers/directives/interaction-directive';
 import { AppComponent } from './app.component';
@@ -75,6 +74,8 @@ import { UndoRedoPanelComponent } from './components/ToolBar/undo-redo-panel/und
 import { NewTabAlertComponent } from './components/ToolBar/new-tab-alert/new-tab-alert.component';
 import { RouterModule } from '@angular/router';
 import { NotificationComponent } from './components/Blocks/notification/notification.component';
+import { FeedbackPanelComponent } from './components/ToolBar/feedback-panel/feedback-panel.component';
+
 
 @NgModule({
   declarations: [
@@ -132,6 +133,7 @@ import { NotificationComponent } from './components/Blocks/notification/notifica
     NotificationComponent,
   ],
     imports: [
+        FeedbackPanelComponent,
         BrowserModule,
         MatMenuModule,
         BrowserAnimationsModule,
@@ -153,7 +155,7 @@ import { NotificationComponent } from './components/Blocks/notification/notifica
         MatSliderModule,
         NgOptimizedImage,
         RouterModule.forRoot([]),
-        
+
     ],
   providers: [],
   exports: [
