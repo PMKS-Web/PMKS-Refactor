@@ -1,60 +1,93 @@
 <svg:g appInteractable xmlns:svg="s" [interactor]="getInteractor()">
   <!-- Main force line -->
-  <circle [attr.cx]="getStartX()" [attr.cy]="getStartY()" r="15" [attr.fill]="getStrokeColor()"></circle>
-  <path [attr.d]="getLineSVG()" [attr.stroke]="getStrokeColor()" stroke-width="15" fill="none"></path>
+  <circle
+    [attr.cx]="getStartX()"
+    [attr.cy]="getStartY()"
+    r="15"
+    [attr.fill]="getStrokeColor()"
+  ></circle>
+  <path
+    [attr.d]="getLineSVG()"
+    [attr.stroke]="getStrokeColor()"
+    stroke-width="15"
+    fill="none"
+  ></path>
   <!-- Arrow head-->
   <path [attr.d]="getArrowheadSVG()" [attr.fill]="getStrokeColor()"></path>
   <!-- Yellow Selected Line -->
-    @if (isSelected()) {
-    <path [attr.d]="getSelectionLineSVG()" [attr.stroke]="'#ffc107'" stroke-width="3.5" fill="none"></path>
+  @if (isSelected()) {
+  <path
+    [attr.d]="getSelectionLineSVG()"
+    [attr.stroke]="'#ffc107'"
+    stroke-width="3.5"
+    fill="none"
+  ></path>
   }
-  
+
   <!-- Grabbable box at start point -->
   @if (isSelected() || isHovered()) {
-    <rect 
-      [attr.x]="getStartX() - 8" 
-      [attr.y]="getStartY() - 8" 
-      width="16" 
-      height="16" 
-      fill="rgba(255, 193, 7, 0.8)" 
-      stroke="#ffc107" 
-      stroke-width="2"
-      class="force-handle start-handle"
-      (mousedown)="onStartHandleMouseDown($event)"
-      style="cursor: grab;">
-    </rect>
+  <rect
+    [attr.x]="getStartX() - 8"
+    [attr.y]="getStartY() - 8"
+    width="16"
+    height="16"
+    fill="rgba(255, 193, 7, 0.8)"
+    stroke="#ffc107"
+    stroke-width="2"
+    class="force-handle start-handle"
+    (mousedown)="onStartHandleMouseDown($event)"
+    style="cursor: grab"
+  ></rect>
   }
-  
+
   <!-- Grabbable box at end point -->
   @if (isSelected() || isHovered()) {
-    <rect 
-      [attr.x]="getLineEndCoord().x - 8" 
-      [attr.y]="getLineEndCoord().y - 8"
-      width="16" 
-      height="16" 
-      fill="rgba(255, 193, 7, 0.8)" 
-      stroke="#ffc107" 
-      stroke-width="2"
-      class="force-handle end-handle"
-      (mousedown)="onEndHandleMouseDown($event)"
-      style="cursor: grab;">
-    </rect>
+  <rect
+    [attr.x]="getLineEndCoord().x - 8"
+    [attr.y]="getLineEndCoord().y - 8"
+    width="16"
+    height="16"
+    fill="rgba(255, 193, 7, 0.8)"
+    stroke="#ffc107"
+    stroke-width="2"
+    class="force-handle end-handle"
+    (mousedown)="onEndHandleMouseDown($event)"
+    style="cursor: grab"
+  ></rect>
   }
 
   <!-- Existing labels and other elements -->
   <!-- <image *ngIf="false" xlink:href="../../../assets/icons/lock.svg" [attr.x]="getMidPointX() - 12.5" [attr.y]="getMidPointY() - 12.5" [attr.width]="25" [attr.height]="25"></image> -->
-  
+
   @if (isHovered() || isSelected()) {
-    <text class="force-label" [attr.x]="getMagnitudeLabelX()" [attr.y]="getMagnitudeLabelY()" alignment-baseline="middle" text-anchor="middle">
-      {{ getMagnitude() }}
-    </text>
-    <text class="force-name" [attr.x]="getMidPointX()" [attr.y]="getMidPointY() - 30" alignment-baseline="middle" text-anchor="middle">
-      <tspan [attr.x]="getMidPointX()" dy="0em">{{ force.name }}</tspan>
-      <!-- <tspan [attr.x]="getMidPointX()" dy="1.2em">{{ getAngle() }}</tspan> -->
-    </text>
+  <text
+    class="force-label"
+    [attr.x]="getMagnitudeLabelX()"
+    [attr.y]="getMagnitudeLabelY()"
+    alignment-baseline="middle"
+    text-anchor="middle"
+  >
+    {{ getMagnitude() }}
+  </text>
+  <text
+    class="force-name"
+    [attr.x]="getMidPointX()"
+    [attr.y]="getMidPointY() - 30"
+    alignment-baseline="middle"
+    text-anchor="middle"
+  >
+    <tspan [attr.x]="getMidPointX()" dy="0em">{{ force.name }}</tspan>
+    <!-- <tspan [attr.x]="getMidPointX()" dy="1.2em">{{ getAngle() }}</tspan> -->
+  </text>
   } @else if (showIDLabels) {
-        <text class="force-name" [attr.x]="getMidPointX()" [attr.y]="getMidPointY() - 30" alignment-baseline="middle" text-anchor="middle">
-      <tspan [attr.x]="getMidPointX()" dy="0em">{{ force.name }}</tspan>
-    </text>
+  <text
+    class="force-name"
+    [attr.x]="getMidPointX()"
+    [attr.y]="getMidPointY() - 30"
+    alignment-baseline="middle"
+    text-anchor="middle"
+  >
+    <tspan [attr.x]="getMidPointX()" dy="0em">{{ force.name }}</tspan>
+  </text>
   }
 </svg:g>
