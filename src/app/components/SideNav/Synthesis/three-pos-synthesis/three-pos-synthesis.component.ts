@@ -353,7 +353,6 @@ export class ThreePosSynthesis implements OnInit {
           ]
         );
       }
-      this.mechanism.setMechanismGenerated();
       firstGround.addGround();
       firstGround.addInput();
       lastGround!.addGround();
@@ -399,15 +398,6 @@ export class ThreePosSynthesis implements OnInit {
       this.position1!.locked = true;
       this.position2!.locked = true;
       this.position3!.locked = true;
-      this.position1!._joints.forEach((number) => {
-        number.generated = true;
-      });
-      this.position2!._joints.forEach((number) => {
-        number.generated = true;
-      });
-      this.position3!._joints.forEach((number) => {
-        number.generated = true;
-      });
     }
   }
 
@@ -525,7 +515,6 @@ export class ThreePosSynthesis implements OnInit {
     this.cdr.detectChanges();
     this.positionSolver.solvePositions();
     this.verifyMechanismPath();
-    this.mechanism.setMechanismGenerated();
   }
 
   setPositionsColorToDefault() {
