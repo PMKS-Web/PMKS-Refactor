@@ -116,14 +116,8 @@ export class Mechanism {
 
     this._positionIDCount++;
     this._positions.set(position.id, position);
-    // this._linkIDCount++;
-    // this._links.set(position.id, position);
-
-    // console.log("Pos:");
-    // console.log( this._positions);
 
     this.notifyChange();
-    //console.log(this);
   }
 
   populateTrajectories(positionSolver: PositionSolverService): void {
@@ -701,9 +695,9 @@ export class Mechanism {
   }
 
   /**
-   * attaches a tracer point(effectively a joint) to an existing position
+   * attaches a tracer point(effectively a joint) to a an existing link.
    *
-   * @param {number} posID
+   * @param {number} linkID
    * @param {Coord} coord
    * @memberof Mechanism
    */
@@ -1188,11 +1182,6 @@ export class Mechanism {
   setTrajectory(jointId: number, trajectory: Trajectory): void {
     this._trajectories.set(jointId, trajectory);
   }
-  setMechanismGenerated() {
-    for (const joint of this._joints) {
-      joint[1].generated = true;
-    }
-  }
 
   //----------------------------CLEAR FUNCTIONS----------------------------
   clearTrajectories(): void {
@@ -1209,6 +1198,10 @@ export class Mechanism {
     this._compoundLinks.clear();
     this._compoundLinkIDCount = 0;
 
+    this.notifyChange();
+  }
+  clearPositions() {
+    this._positions.clear();
     this.notifyChange();
   }
 
@@ -1272,6 +1265,7 @@ export class Mechanism {
   public _addPosition(position: Position): void {
     this._positions.set(position.id, position);
     this._positionIDCount++;
+    this._refIdCount--;
   }
 
   public _addTrajectory(trajectory: Trajectory): void {

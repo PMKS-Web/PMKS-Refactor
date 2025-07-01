@@ -185,27 +185,16 @@ export class LinkComponent
     return new Coord(0, y).y;
   }
 
-  //Following two functions are used to set the X and Y coordinates of the lock SVG to be between the center and the rightmost joint
-  getLockPositionX(): number {
-    let x1 = this.getCOMX();
+  //Following function is used to set the X and Y coordinates of the lock SVG to be between the center and the rightmost joint
+  getLockPosition(): Coord {
+    let x1 = this.link.getJoints()[0].coords.x;
     let x2 = this.link.getJoints()[1].coords.x;
-    let y1 = this.getCOMY();
+    let y1 = this.link.getJoints()[0].coords.y;
     let y2 = this.link.getJoints()[1].coords.y;
-    let x = (x1 + x2) / 2;
-    let y = (y1 + y2) / 2;
+    let x = x1 + (2 / 3) * (x2 - x1);
+    let y = y1 + (2 / 3) * (y2 - y1);
 
-    return this.unitConversionService.modelCoordToSVGCoord(new Coord(x, y)).x;
-  }
-
-  getLockPositionY(): number {
-    let x1 = this.getCOMX();
-    let x2 = this.link.getJoints()[1].coords.x;
-    let y1 = this.getCOMY();
-    let y2 = this.link.getJoints()[1].coords.y;
-    let x = (x1 + x2) / 2;
-    let y = (y1 + y2) / 2;
-
-    return this.unitConversionService.modelCoordToSVGCoord(new Coord(x, y)).y;
+    return this.unitConversionService.modelCoordToSVGCoord(new Coord(x, y));
   }
 
   getMidPointX(): number {
