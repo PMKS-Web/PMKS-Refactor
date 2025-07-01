@@ -417,15 +417,6 @@ export class ThreePosSynthesis implements OnInit {
       this.position1!.locked = true;
       this.position2!.locked = true;
       this.position3!.locked = true;
-      this.position1!._joints.forEach((number) => {
-        number.generated = true;
-      });
-      this.position2!._joints.forEach((number) => {
-        number.generated = true;
-      });
-      this.position3!._joints.forEach((number) => {
-        number.generated = true;
-      });
     }
   }
 
