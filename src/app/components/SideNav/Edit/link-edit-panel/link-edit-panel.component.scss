@@ -1,10 +1,10 @@
-@use 'sass:map';
-@use '@angular/material' as mat;
+@use "sass:map";
+@use "@angular/material" as mat;
 
 .scroll-container {
-  max-height: 60vh;
-  overflow:hidden;
-  overflow-y:auto;
+  max-height: 83vh;
+  overflow: hidden;
+  overflow-y: auto;
 }
 .scroll-container::-webkit-scrollbar {
   width: 8px;
@@ -33,9 +33,10 @@
   background-color: white;
   border-top: 5px solid #ffc107;
   border-radius: 3px;
-  box-shadow: 0 9px 5px 0 gray, 0 9px 5px 0 gray, 12px 0 15px -4px gray, -12px 0 15px -4px gray;
-  width:100%;
-  max-height:calc(90vh - 30px);;
+  box-shadow: 0 9px 5px 0 gray, 0 9px 5px 0 gray, 12px 0 15px -4px gray,
+    -12px 0 15px -4px gray;
+  width: 100%;
+  max-height: calc(90vh - 10px);
   //overflow-y:scroll;
 }
 
@@ -49,7 +50,6 @@
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-start;
-
 }
 
 .left-aligned {
@@ -74,7 +74,7 @@ div.colors {
 }
 
 p.colors {
-  padding:0;
+  padding: 0;
   margin-top: 5px;
   margin-bottom: 0;
 }
@@ -113,7 +113,7 @@ button {
 }
 
 .input-container .right-aligned {
-  margin-left: 0; 
+  margin-left: 0;
 }
 
 .label-help {
@@ -122,7 +122,7 @@ button {
   vertical-align: middle;
   margin-top: 5px;
   flex-shrink: 0;
-  margin-left: 5px; 
+  margin-left: 5px;
 }
 
 .label {
@@ -134,7 +134,7 @@ button {
 .input-container {
   display: flex;
   align-items: center;
-  justify-content: space-between; 
+  justify-content: space-between;
   width: 100%;
   margin-bottom: 8px;
   padding-right: 16px;
@@ -145,7 +145,6 @@ button {
   display: flex;
   align-items: center;
 }
-
 
 /* Wrapper for link length+angle section */
 .length-angle-block {
@@ -184,8 +183,6 @@ button {
   color: #666;
 }
 
-
-
 .xy-block {
   margin-bottom: 12px;
 }
@@ -217,5 +214,3 @@ button {
 .xy-cell input {
   width: 4.5rem;
 }
-
-
