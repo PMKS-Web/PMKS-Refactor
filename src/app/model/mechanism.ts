@@ -85,7 +85,6 @@ export class Mechanism {
     this._links.set(linkA.id, linkA);
     if (!isSynth) {
       this.notifyChange();
-    } else {
     }
     //console.log(this);
   }
@@ -695,21 +694,21 @@ export class Mechanism {
     });
   }
 
-  //   /**
-  //    * attaches a tracer point(effectively a joint) to an existing position
-  //    *
-  //    * @param {number} posID
-  //    * @param {Coord} coord
-  //    * @memberof Mechanism
-  //    */
-  //   addJointToPosition(posID: number, coord: Coord) {
-  //     this.executePositionAction(posID, position => {
-  //       let jointA = new Joint(this._jointIDCount, coord);
-  //       this._jointIDCount++;
-  //       this._joints.set(jointA.id, jointA);
-  //       position.addTracer(jointA);
-  //     });
-  //   }
+  /**
+   * attaches a tracer point(effectively a joint) to a an existing link.
+   *
+   * @param {number} linkID
+   * @param {Coord} coord
+   * @memberof Mechanism
+   */
+  addJointToPosition(posID: number, coord: Coord) {
+    this.executePositionAction(posID, (position) => {
+      let jointA = new Joint(this._jointIDCount, coord);
+      this._jointIDCount++;
+      this._joints.set(jointA.id, jointA);
+      position.addTracer(jointA);
+    });
+  }
 
   /**
    * attaches a new link to another link at a point along the existing link which is not a joint.
@@ -755,10 +754,12 @@ export class Mechanism {
    */
   addForceToLink(linkID: number, startCoord: Coord, endCoord: Coord) {
     this.executeLinkAction(linkID, (link) => {
-      let forceA = new Force(this._forceIDCount, startCoord, endCoord);
+      let forceA = new Force(this._forceIDCount, startCoord, endCoord, link);
+      forceA.name = 'F' + this.toSubscript(this._forceIDCount.toString());
       this._forceIDCount++;
       this._forces.set(forceA.id, forceA);
       link.addForce(forceA);
+      console.log('forceAdded! num: ' + this._forceIDCount);
     });
   }
   /**
@@ -937,7 +938,6 @@ export class Mechanism {
     }
     action(force);
     this.notifyChange();
-    //console.log(this);
   }
 
   /**
@@ -1007,7 +1007,7 @@ export class Mechanism {
    * @memberof Mechanism
    */
   setForceXComp(forceID: number, newXComp: number) {
-    this.executeForceAction(forceID, (force) => force.setXComp());
+    this.executeForceAction(forceID, (force) => force.setXComp(newXComp));
   }
   /**
    *Sets the y component(not be confused with individual coordinates) of a force given its ID by changing its end coordinate.
@@ -1032,6 +1032,30 @@ export class Mechanism {
 
   //----------------------------HELPER FUNCTIONS----------------------------
 
+  toSubscript(num: number | string): string {
+    const subscriptMap: Record<string, string> = {
+      '0': '₀',
+      '1': '₁',
+      '2': '₂',
+      '3': '₃',
+      '4': '₄',
+      '5': '₅',
+      '6': '₆',
+      '7': '₇',
+      '8': '₈',
+      '9': '₉',
+      '-': '₋',
+      '+': '₊',
+      '=': '₌',
+      '(': '₍',
+      ')': '₎',
+    };
+
+    return String(num)
+      .split('')
+      .map((char) => subscriptMap[char] || char)
+      .join('');
+  }
   getConnectedLinksForJoint(joint: Joint): Link[] {
     let connectedLinks: Link[] = [];
     for (let link of this._links.values()) {

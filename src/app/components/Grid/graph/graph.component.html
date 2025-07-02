@@ -1,9 +1,11 @@
-
 <!-- Draw new line if in new component click capture mode -->
 <ng-container *ngIf="isCreatingComponent()">
-    <svg:g app-create-new-comp-line [start]="getNewCompLineStart()" [end]="getNewCompLineEnd()" />
+  <svg:g
+    app-create-new-comp-line
+    [start]="getNewCompLineStart()"
+    [end]="getNewCompLineEnd()"
+  />
 </ng-container>
-
 
 <!-- Iterate through joints,links,compoundlinks, and forces and display them in the template. Draw links then joints-->
 <ng-container *ngFor="let trajectory of getTrajectories()">
@@ -11,17 +13,15 @@
 </ng-container>
 
 <ng-container *ngFor="let link of getLinks()">
-    <svg:g app-link [link]="link" />
+  <svg:g app-link [link]="link" />
 </ng-container>
 
 <ng-container class="Positions" *ngFor="let position of getPositions()">
-  <svg:g app-position [position]="position" [isHidden]="hidePosition"/>
+  <svg:g app-position [position]="position" [isHidden]="hidePosition" />
 </ng-container>
 
-
-
 <ng-container *ngFor="let compoundLink of getCompoundLinks()">
-    <svg:g app-compound-link [compoundLink]="compoundLink" />
+  <svg:g app-compound-link [compoundLink]="compoundLink" />
 </ng-container>
 <!--
 <ng-container *ngFor="let force of getForces()">
@@ -29,6 +29,9 @@
 </ng-container>
 -->
 <ng-container *ngFor="let joint of getJoints()">
-    <svg:g app-joint [joint]="joint" />
+  <svg:g app-joint [joint]="joint" />
 </ng-container>
 
+<ng-container *ngFor="let force of getForces()">
+  <svg:g app-force [force]="force" />
+</ng-container>
