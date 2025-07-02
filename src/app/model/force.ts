@@ -132,8 +132,14 @@ export class Force {
   setXComp(newXComp: number) {}
   setYComp(newYComp: number) {}
   addCoordinates(coord: Coord) {
-    this.start = this._start.add(coord);
-    // this.end = this._end.add(coord);
+    this._start = this._start.clone().add(coord);
+    this._end = this._end.clone().add(coord);
+  }
+  setStartCoordinate(coord: Coord) {
+    this._start = coord.clone();
+  }
+  setEndCoordinate(coord: Coord) {
+    this._end = coord.clone();
   }
 
   clone(): Force {
@@ -164,22 +170,20 @@ export class Force {
     this.setPosAlongLink();
   }
   updatePosition() {
-    const startJoint = this._parentLink.getJoints()[0]._coords;
-    const endJoint = this._parentLink.getJoints()[1]._coords;
-    const relativePos = this._positionAlongLink;
-    const newCenter = new Coord(
-      startJoint.x + relativePos * (endJoint.x - startJoint.x),
-      startJoint.y + relativePos * (endJoint.y - startJoint.y)
-    );
-
-    // Update start position
-    this.start = newCenter;
-
-    // Calculate new end position maintaining distance and angle
-    this.end = new Coord(
-      this.start.x + this.magnitude * Math.cos((Math.PI * this.angle) / 180),
-      this.start.y + this.magnitude * Math.sin((Math.PI * this.angle) / 180)
-    );
+    // const startJoint = this._parentLink.getJoints()[0]._coords;
+    // const endJoint = this._parentLink.getJoints()[1]._coords;
+    // const relativePos = this._positionAlongLink;
+    // const newCenter = new Coord(
+    //   startJoint.x + relativePos * (endJoint.x - startJoint.x),
+    //   startJoint.y + relativePos * (endJoint.y - startJoint.y)
+    // );
+    // // Update start position
+    // this.start = newCenter;
+    // // Calculate new end position maintaining distance and angle
+    // this.end = new Coord(
+    //   this.start.x + this.magnitude * Math.cos((Math.PI * this.angle) / 180),
+    //   this.start.y + this.magnitude * Math.sin((Math.PI * this.angle) / 180)
+    // );
   }
   calculatePositionAlongLink(): number {
     const linkStart: Coord = this._parentLink.getJoints()[0]._coords;

@@ -116,7 +116,6 @@ export class ForceInteractor extends Interactor {
     });
   }
 
-  // New method to handle individual handle dragging
   private handleHandleDrag(): void {
     if (!this.handleDragType || !this.originalHandlePosition) return;
 
@@ -132,7 +131,7 @@ export class ForceInteractor extends Interactor {
     }
 
     // Update force properties that depend on start/end positions
-    this.force.updateFromEndpoints(); // You may need to add this method to Force class
+    this.force.updateFromEndpoints();
   }
 
   // Method to initiate handle dragging

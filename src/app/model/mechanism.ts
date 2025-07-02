@@ -1020,6 +1020,28 @@ export class Mechanism {
     this.executeForceAction(forceID, (force) => force.setYComp(newYComp));
   }
   /**
+   *Sets the start coordinate of a force given its ID by changing its start coordinate.
+   *
+   * @param {number} forceID
+   * @param {number} newYComp
+   * @memberof Mechanism
+   */
+  setForceStart(forceID: number, newStart: Coord) {
+    this.executeForceAction(forceID, (force) =>
+      force.setStartCoordinate(newStart)
+    );
+  }
+  /**
+   *Sets the end coordinate of a force given its ID by changing its end coordinate.
+   *
+   * @param {number} forceID
+   * @param {number} newYComp
+   * @memberof Mechanism
+   */
+  setForceEnd(forceID: number, newEnd: Coord) {
+    this.executeForceAction(forceID, (force) => force.setEndCoordinate(newEnd));
+  }
+  /**
    * Sets the angle of a force relative to the x axis while maintaining its length given its ID.
    *
    * @param {number} forceID
