@@ -34,7 +34,7 @@
           (closed)="graphExpanded['basicBasic'] = false"
           >
           <div id="jointPositions" class="xy-block">
-            <label class="xy-label">Input X and Y positions</label>
+            <label class="xy-label" style ="margin-left: 3px; margin-bottom: 10px;margin-top: 5px">Input X and Y positions</label>
             <div class="xy-row">
               <!-- X position input -->
               <div class="xy-cell">
@@ -77,7 +77,7 @@
                 <ng-container *ngIf="getCurrentJoint().name !== joint.name">
                   <div class="distance-angle-block">
                     <!-- LABEL -->
-                    <div class="dar-label">
+                    <div class="dar-label" style ="margin-left: 12px; margin-bottom: 10px;margin-top: 5px">
                       Joint {{ getCurrentJoint().name }} to Joint {{ joint.name }}
                     </div>
 

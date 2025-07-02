@@ -2,7 +2,7 @@
 @use '@angular/material' as mat;
 
 .scroll-container {
-  max-height: 60vh;
+  max-height: none;
   overflow:hidden;
   overflow-y:auto;
 }
@@ -82,6 +82,7 @@ p.colors {
 #lengthAndAngle {
   max-height: 10px;
   gap: 15px;
+
 }
 
 .row {
@@ -113,32 +114,36 @@ button {
 }
 
 .input-container .right-aligned {
-  margin-left: 0; 
+  margin-left: 0;
+  margin-bottom: 10px;
 }
 
 .label-help {
   color: #3f51b5;
   font-size: 18px;
   vertical-align: middle;
-  margin-top: 5px;
   flex-shrink: 0;
-  margin-left: 5px; 
+  margin-left: 5px;
+  margin-bottom: 14px;
 }
 
 .label {
   margin: 0px 4px 0px 5px;
   font-size: 16px;
   flex-shrink: 0;
+  margin-bottom: 10px;
+
 }
 
 .input-container {
   display: flex;
   align-items: center;
-  justify-content: space-between; 
+  justify-content: space-between;
   width: 100%;
   margin-bottom: 8px;
-  padding-right: 16px;
+  padding-right: 100px;
   box-sizing: border-box;
+  margin-top: 10px;
 }
 
 .right-aligned {
@@ -150,6 +155,7 @@ button {
 /* Wrapper for link length+angle section */
 .length-angle-block {
   margin-bottom: 12px;
+  margin-top: 5px;
 }
 
 .la-label {
@@ -157,11 +163,13 @@ button {
   font: inherit;
   color: inherit;
   margin-bottom: 4px;
+  margin-top: 5px;
 }
 
 .length-angle-row {
   display: flex;
   gap: 16px;
+  margin-top: 5px;
 }
 
 /* Individual cell */
@@ -181,13 +189,14 @@ button {
 .la-unit {
   margin-left: 4px;
   font-size: 0.9em;
-  color: #666;
+  color: #000000;
 }
 
 
 
 .xy-block {
   margin-bottom: 12px;
+  margin-top: 5px;
 }
 
 .xy-label {
@@ -195,6 +204,7 @@ button {
   font: inherit;
   color: inherit;
   margin-bottom: 4px;
+
 }
 
 .xy-row {
@@ -211,11 +221,11 @@ button {
 .xy-unit {
   margin-left: 4px;
   font-size: 0.9em;
-  color: #666;
+  color: #000000;
 }
 
 .xy-cell input {
-  width: 4.5rem;
+  width: 3.5rem;
 }
 
 
