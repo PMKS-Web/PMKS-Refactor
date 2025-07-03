@@ -173,9 +173,9 @@ export class Link implements RigidBody {
   // Adds a force to the link
   addForce(newForce: Force) {
     this._forces.set(newForce.id, newForce);
-    this.getJoints().forEach((joint) => {
-      joint.addObserver(() => newForce.updatePosition());
-    });
+    // this.getJoints().forEach((joint) => {
+    //   joint.addObserver(() => newForce.updatePosition());
+    // });
   }
 
   //Removes a force from a link

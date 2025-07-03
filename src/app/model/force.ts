@@ -1,4 +1,5 @@
 import { Coord } from './coord';
+import { Joint } from './joint';
 import { Link } from './link';
 
 export enum ForceFrame {
@@ -16,7 +17,6 @@ export class Force {
   private _frameOfReference: ForceFrame;
   private _parentLink: Link;
   private _color: string;
-  private _positionAlongLink: number;
   private linkColorOptions = [
     '#727FD5',
     '#2F3E9F',
@@ -30,13 +30,11 @@ export class Force {
     this._id = id;
     this._parentLink = parent;
     this._name = '';
-
-    this._start = this.setStart(start);
+    this._start = this.calculatePositionInLink(start);
     this._end = new Coord(end.x, end.y);
     this._frameOfReference = ForceFrame.Global;
     this._angle = this.calculateAngle();
     this._color = this.linkColorOptions[1];
-    this._positionAlongLink = this.calculatePositionAlongLink();
     this._magnitude = start.getDistanceTo(end);
   }
 
@@ -79,7 +77,7 @@ export class Force {
   }
 
   set start(value: Coord) {
-    this._start = this.setStart(value);
+    this._start = this.calculatePositionInLink(value);
   }
 
   set end(value: Coord) {
@@ -91,7 +89,7 @@ export class Force {
   }
 
   set angle(value: number) {
-    this._angle = value; //calculateAngle()
+    this._angle = value;
   }
 
   set frameOfReference(frame: ForceFrame) {
@@ -124,7 +122,7 @@ export class Force {
     return Math.sin((Math.PI * this.angle) / 180) * this.magnitude;
   }
   setPosAlongLink() {
-    this._positionAlongLink = this.calculatePositionAlongLink(); //calculateAngle()
+    this._start = this.calculatePositionInLink(this._start);
   }
 
   switchForceDirection() {}
@@ -167,73 +165,136 @@ export class Force {
     const dy = this.end.y - this.start.y;
     this.magnitude = Math.sqrt(dx * dx + dy * dy);
     this.angle = Math.atan2(dy, dx) * (180 / Math.PI);
-    this.setPosAlongLink();
   }
-  updatePosition() {
-    // const startJoint = this._parentLink.getJoints()[0]._coords;
-    // const endJoint = this._parentLink.getJoints()[1]._coords;
-    // const relativePos = this._positionAlongLink;
-    // const newCenter = new Coord(
-    //   startJoint.x + relativePos * (endJoint.x - startJoint.x),
-    //   startJoint.y + relativePos * (endJoint.y - startJoint.y)
-    // );
-    // // Update start position
-    // this.start = newCenter;
-    // // Calculate new end position maintaining distance and angle
-    // this.end = new Coord(
-    //   this.start.x + this.magnitude * Math.cos((Math.PI * this.angle) / 180),
-    //   this.start.y + this.magnitude * Math.sin((Math.PI * this.angle) / 180)
-    // );
+  calculatePositionInLink(value: Coord): Coord {
+    const joints: Joint[] = this._parentLink.getJoints();
+    const polygonPoints: Coord[] = joints.map((joint) => joint._coords);
+    const convexHull = this.computeConvexHull(polygonPoints);
+    if (
+      polygonPoints.length > 2 &&
+      this.isPointInsideConvexPolygon(value, convexHull)
+    ) {
+      return value;
+    }
+
+    return this.findClosestPointOnPolygonBoundary(value, convexHull);
   }
-  calculatePositionAlongLink(): number {
-    const linkStart: Coord = this._parentLink.getJoints()[0]._coords;
-    const linkEnd: Coord = this._parentLink.getJoints()[1]._coords;
-    const forceStart = this._start;
+  // Graham Scan Algorithm
+  computeConvexHull(coords: Coord[]): Coord[] {
+    // Find the point with the lowest y-coordinate, break ties by lowest x-coordinate
+    let startPoint = coords[0];
+    for (const point of coords) {
+      if (
+        point.y < startPoint.y ||
+        (point.y === startPoint.y && point.x < startPoint.x)
+      ) {
+        startPoint = point;
+      }
+    }
 
-    // Calculate the total link length
-    const linkLength = Math.sqrt(
-      Math.pow(linkEnd.x - linkStart.x, 2) +
-        Math.pow(linkEnd.y - linkStart.y, 2)
-    );
+    // Sort the coords by polar angle with the startPoint
+    coords.sort((a, b) => {
+      const angleA = Math.atan2(a.y - startPoint.y, a.x - startPoint.x);
+      const angleB = Math.atan2(b.y - startPoint.y, b.x - startPoint.x);
+      return angleA - angleB;
+    });
 
-    // Calculate distance from link start to force start
-    const forceDistance = Math.sqrt(
-      Math.pow(forceStart.x - linkStart.x, 2) +
-        Math.pow(forceStart.y - linkStart.y, 2)
-    );
+    // Initialize the convex hull with the start point
+    const hull = [startPoint];
+    // Process the sorted coords
+    for (const point of coords) {
+      while (
+        hull.length >= 2 &&
+        !this.isCounterClockwise(
+          hull[hull.length - 2],
+          hull[hull.length - 1],
+          point
+        )
+      ) {
+        // Pop the last point from the hull if we're not making a counter-clockwise turn
+        hull.pop();
+      }
+      hull.push(point);
+    }
+    return hull;
+  }
+  isCounterClockwise(c1: Coord, c2: Coord, c3: Coord): boolean {
+    const crossProduct =
+      (c2.x - c1.x) * (c3.y - c1.y) - (c2.y - c1.y) * (c3.x - c1.x);
+    return crossProduct > 0; // if cross product is positive, the coords are counter-clockwise
+  }
+  isPointInsideConvexPolygon(point: Coord, polygon: Coord[]): boolean {
+    const n = polygon.length;
+    if (n < 3) return false;
+    let sign = 0;
 
-    // Return ratio (0 = at start joint, 1 = at end joint)
-    return linkLength === 0 ? 0 : forceDistance / linkLength;
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n;
+      const cross = this.crossProduct(polygon[i], polygon[j], point);
+
+      if (cross !== 0) {
+        if (sign === 0) {
+          sign = cross > 0 ? 1 : -1;
+        } else if ((cross > 0 ? 1 : -1) !== sign) {
+          return false; // Point is on different sides of edges
+        }
+      }
+    }
+
+    return true;
+  }
+  crossProduct(p1: Coord, p2: Coord, p3: Coord): number {
+    return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
   }
 
-  setStart(forceStart: Coord): Coord {
-    const linkStart: Coord = this._parentLink.getJoints()[0]._coords;
-    const linkEnd: Coord = this._parentLink.getJoints()[1]._coords; // Fixed: should be [1] for end
+  private findClosestPointOnPolygonBoundary(
+    point: Coord,
+    polygonPoints: Coord[]
+  ): Coord {
+    let closestPoint = polygonPoints[0].clone();
+    let minDistance = point.getDistanceTo(closestPoint);
 
-    const linkVector = {
-      x: linkEnd.x - linkStart.x,
-      y: linkEnd.y - linkStart.y,
-    };
-    const toForceVector = {
-      x: forceStart.x - linkStart.x,
-      y: forceStart.y - linkStart.y,
-    };
-    const linkLengthSquared =
-      linkVector.x * linkVector.x + linkVector.y * linkVector.y;
+    const n = polygonPoints.length;
 
-    if (linkLengthSquared === 0) return { ...linkStart } as Coord;
+    // Check each edge of the polygon
+    for (let i = 0; i < n; i++) {
+      const edgeStart = polygonPoints[i];
+      const edgeEnd = polygonPoints[(i + 1) % n];
 
+      const closestOnEdge = this.findClosestPointOnLineSegment(
+        point,
+        edgeStart,
+        edgeEnd
+      );
+      const distance = point.getDistanceTo(closestOnEdge);
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestPoint = closestOnEdge;
+      }
+    }
+
+    return closestPoint;
+  }
+
+  private findClosestPointOnLineSegment(
+    point: Coord,
+    lineStart: Coord,
+    lineEnd: Coord
+  ): Coord {
+    const lineVector = lineEnd.subtract(lineStart);
+    const pointVector = point.subtract(lineStart);
+
+    const lineLengthSquared =
+      lineVector.x * lineVector.x + lineVector.y * lineVector.y;
     const t = Math.max(
       0,
       Math.min(
         1,
-        (toForceVector.x * linkVector.x + toForceVector.y * linkVector.y) /
-          linkLengthSquared
+        (pointVector.x * lineVector.x + pointVector.y * lineVector.y) /
+          lineLengthSquared
       )
     );
-    return new Coord(
-      linkStart.x + t * linkVector.x,
-      linkStart.y + t * linkVector.y
-    );
+    return lineStart.add(lineVector.scale(t));
   }
 }
