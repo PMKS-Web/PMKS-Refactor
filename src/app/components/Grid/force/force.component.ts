@@ -22,6 +22,7 @@ import { NotificationService } from 'src/app/services/notification.service';
 import { ForceInteractor } from 'src/app/controllers/force-interactor';
 import { Force } from 'src/app/model/force';
 import { PanZoomService } from 'src/app/services/pan-zoom.service';
+import { AnimationService } from 'src/app/services/animation.service';
 
 @Component({
   selector: '[app-force]',
@@ -36,6 +37,7 @@ export class ForceComponent
   unitSubscription: Subscription = new Subscription();
   angleSubscription: Subscription = new Subscription();
   showIDLabelsSubscription: Subscription = new Subscription();
+  animationProgressSubscription: Subscription = new Subscription();
   showIDLabels: boolean = false;
   units: string = 'N'; // Force units
   unitsAngle: string = 'º';
@@ -47,7 +49,8 @@ export class ForceComponent
     private notificationService: NotificationService,
     private unitConversionService: UnitConversionService,
     private cdr: ChangeDetectorRef,
-    private panZoomService: PanZoomService
+    private panZoomService: PanZoomService,
+    private animationService: AnimationService
   ) {
     super(interactionService);
   }
@@ -72,6 +75,10 @@ export class ForceComponent
         this.showIDLabels = show;
       }
     );
+    this.animationProgressSubscription =
+      this.animationService.animationProgress$.subscribe((progress: number) => {
+        console.log(progress);
+      });
     super.ngOnInit();
   }
 

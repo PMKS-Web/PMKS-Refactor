@@ -36,6 +36,9 @@ export class AnimationService {
     this.invaldMechanism = true;
     this.positionSolver.getKinematicsObservable().subscribe(() => {
       this.initializeAnimations();
+      console.log('anim states');
+      console.log(this.animationStates);
+      console.log(this.stateService.getMechanism().getJoint(0)._coords.x);
     });
   }
 

@@ -179,7 +179,7 @@ export class Force {
 
     return this.findClosestPointOnPolygonBoundary(value, convexHull);
   }
-  // Graham Scan Algorithm
+  // Graham Scan Algorithm (Stolen from svg-path.service.ts)
   computeConvexHull(coords: Coord[]): Coord[] {
     // Find the point with the lowest y-coordinate, break ties by lowest x-coordinate
     let startPoint = coords[0];
@@ -205,11 +205,11 @@ export class Force {
     for (const point of coords) {
       while (
         hull.length >= 2 &&
-        !this.isCounterClockwise(
+        this.crossProduct(
           hull[hull.length - 2],
           hull[hull.length - 1],
           point
-        )
+        ) <= 0
       ) {
         // Pop the last point from the hull if we're not making a counter-clockwise turn
         hull.pop();
@@ -217,11 +217,6 @@ export class Force {
       hull.push(point);
     }
     return hull;
-  }
-  isCounterClockwise(c1: Coord, c2: Coord, c3: Coord): boolean {
-    const crossProduct =
-      (c2.x - c1.x) * (c3.y - c1.y) - (c2.y - c1.y) * (c3.x - c1.x);
-    return crossProduct > 0; // if cross product is positive, the coords are counter-clockwise
   }
   isPointInsideConvexPolygon(point: Coord, polygon: Coord[]): boolean {
     const n = polygon.length;
