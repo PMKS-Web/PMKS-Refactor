@@ -5,6 +5,7 @@ import {JointInteractor} from "src/app/controllers/joint-interactor"
 import {Mechanism} from "src/app/model/mechanism";
 import {Joint} from "src/app/model/joint";
 import {Link} from "src/app/model/link";
+import {UndoRedoService} from "src/app/services/undo-redo.service";
 
 @Component({
   selector: 'app-joint-edit-panel',
@@ -25,7 +26,7 @@ export class jointEditPanelComponent {
   isEditingTitle: boolean = false;
   units: string = "cm";
   angles: string = "º";
-  constructor(private stateService: StateService, private interactorService: InteractionService) {
+  constructor(private undoRedoService: UndoRedoService, private stateService: StateService, private interactorService: InteractionService) {
     console.log("joint-edit-panel.constructor");
 
   }
@@ -47,7 +48,7 @@ export class jointEditPanelComponent {
       return;
     }
 
-    this.stateService.recordAction({
+    this.undoRedoService.recordAction({
       type:      "setJoint",
       jointId:   joint.id,
       oldCoords: { x: oldX, y: oldY },
@@ -74,7 +75,7 @@ export class jointEditPanelComponent {
       return;
     }
 
-    this.stateService.recordAction({
+    this.undoRedoService.recordAction({
       type:      "setJoint",
       jointId:   joint.id,
       oldCoords: { x: oldX, y: oldY },
@@ -106,7 +107,7 @@ export class jointEditPanelComponent {
     // only record if it really changed
     if (Math.abs(oldAngle - newAngle) < 1e-3) { return; }
 
-    this.stateService.recordAction({
+    this.undoRedoService.recordAction({
       type:     "changeJointAngle",
       linkId:   link.id,
       jointId:  current.id,
@@ -152,7 +153,7 @@ export class jointEditPanelComponent {
     const oldCoords = { x: joint.coords.x, y: joint.coords.y };
     const newCoords = { x: xCoordInput,     y: oldCoords.y };
     if (newCoords.x !== oldCoords.x) {
-      this.stateService.recordAction({
+      this.undoRedoService.recordAction({
         type: "setJoint",
         jointId: joint.id,
         oldCoords,
@@ -172,7 +173,7 @@ export class jointEditPanelComponent {
     const newCoords = { x: oldCoords.x,   y: yCoordInput };
 
     if (newCoords.y !== oldCoords.y) {
-      this.stateService.recordAction({
+      this.undoRedoService.recordAction({
         type: "setJoint",
         jointId: joint.id,
         oldCoords,
@@ -238,7 +239,7 @@ export class jointEditPanelComponent {
 
       // only record if truly different
       if (Math.abs(oldAngle - newAngle) > 1e-6) {
-        this.stateService.recordAction({
+        this.undoRedoService.recordAction({
           type:      "changeJointAngle",
           linkId:    link.id,
           jointId:   a.id,
@@ -267,7 +268,7 @@ export class jointEditPanelComponent {
 
       // only record if it really changed
       if (Math.abs(oldDistance - newDistance) > 1e-6) {
-        this.stateService.recordAction({
+        this.undoRedoService.recordAction({
           type:        "changeJointDistance",
           linkId:      link.id,
           jointId:     a.id,

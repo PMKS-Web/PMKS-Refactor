@@ -6,6 +6,7 @@ import { InteractionService } from 'src/app/services/interaction.service';
 import { StateService } from 'src/app/services/state.service';
 import { Joint } from 'src/app/model/joint';
 import { ColorService } from 'src/app/services/color.service';
+import {UndoRedoService } from 'src/app/services/undo-redo.service';
 
 
 @Component({
@@ -41,7 +42,7 @@ export class LinkEditPanelComponent{
   angles: string = "º";
 
 
-    constructor(private stateService: StateService, private interactionService: InteractionService, private colorService: ColorService){
+    constructor(private undoRedoService: UndoRedoService, private stateService: StateService, private interactionService: InteractionService, private colorService: ColorService){
 
     }
 
@@ -59,7 +60,7 @@ export class LinkEditPanelComponent{
     }
 
     // record one undo entry
-    this.stateService.recordAction({
+    this.undoRedoService.recordAction({
       type:      "setJoint",
       jointId:   jointId,
       oldCoords: { x: oldX,           y: joint.coords.y },
@@ -86,7 +87,7 @@ export class LinkEditPanelComponent{
       return;
     }
 
-    this.stateService.recordAction({
+    this.undoRedoService.recordAction({
       type:      "setJoint",
       jointId:   jointId,
       oldCoords: { x: joint.coords.x, y: oldY },
@@ -113,7 +114,7 @@ export class LinkEditPanelComponent{
     }
 
     // Record exactly one undo entry
-    this.stateService.recordAction({
+    this.undoRedoService.recordAction({
       type:        "changeJointDistance",
       linkId:      link.id,
       // Use whichever joint anchors your link-length
@@ -142,7 +143,7 @@ export class LinkEditPanelComponent{
       return;
     }
 
-    this.stateService.recordAction({
+    this.undoRedoService.recordAction({
       type:     "changeJointAngle",
       linkId:   link.id,
       jointId:  link.joints.keys().next().value,

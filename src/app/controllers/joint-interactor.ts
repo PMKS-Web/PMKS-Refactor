@@ -7,6 +7,8 @@ import { CreateLinkFromJointCapture } from './click-capture/create-link-from-joi
 import { ContextMenuOption, Interactor } from './interactor';
 import { Action } from '../components/ToolBar/undo-redo-panel/action';
 import { NotificationService } from '../services/notification.service';
+import { UndoRedoService } from '../services/undo-redo.service';
+
 /*
 This interactor defines the following behaviors:
 - Dragging the joint moves it
@@ -21,7 +23,8 @@ export class JointInteractor extends Interactor {
     public joint: Joint,
     private stateService: StateService,
     private interactionService: InteractionService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private undoRedoService: UndoRedoService
   ) {
     super(true, true);
 
@@ -80,7 +83,7 @@ export class JointInteractor extends Interactor {
         const newPos = this.joint.coords.clone();
 
         if (oldPos.x !== newPos.x || oldPos.y !== newPos.y) {
-          this.stateService.recordAction({
+          this.undoRedoService.recordAction({
             type: 'moveJoint',
             jointId: this.joint.id,
             oldCoords: { x: oldPos.x, y: oldPos.y },
@@ -133,7 +136,7 @@ export class JointInteractor extends Interactor {
               jointId: this.joint.id,
             };
 
-            this.stateService.recordAction(actionObj);
+            this.undoRedoService.recordAction(actionObj);
 
             mechanism.removeInput(this.joint.id);
           },
@@ -149,7 +152,7 @@ export class JointInteractor extends Interactor {
               jointId: this.joint.id,
             };
 
-            this.stateService.recordAction(actionObj);
+            this.undoRedoService.recordAction(actionObj);
 
             mechanism.addInput(this.joint.id);
           },
@@ -166,7 +169,7 @@ export class JointInteractor extends Interactor {
               type: 'removeGround',
               jointId: this.joint.id,
             };
-            this.stateService.recordAction(actionObj);
+            this.undoRedoService.recordAction(actionObj);
             mechanism.removeGround(this.joint.id);
           },
           disabled: !mechanism.canRemoveGround(this.joint),
@@ -181,7 +184,7 @@ export class JointInteractor extends Interactor {
               jointId: this.joint.id,
             };
 
-            this.stateService.recordAction(actionObj);
+            this.undoRedoService.recordAction(actionObj);
 
             mechanism.addGround(this.joint.id);
           },
@@ -198,7 +201,7 @@ export class JointInteractor extends Interactor {
               type: 'removeSlider',
               jointId: this.joint.id,
             };
-            this.stateService.recordAction(actionObj);
+            this.undoRedoService.recordAction(actionObj);
 
             mechanism.removeSlider(this.joint.id);
             mechanism.removeGround(this.joint.id);
@@ -214,7 +217,7 @@ export class JointInteractor extends Interactor {
               type: 'addSlider',
               jointId: this.joint.id,
             };
-            this.stateService.recordAction(actionObj);
+            this.undoRedoService.recordAction(actionObj);
 
             mechanism.addSlider(this.joint.id);
             mechanism.removeGround(this.joint.id);
@@ -232,7 +235,7 @@ export class JointInteractor extends Interactor {
               type: 'removeWeld',
               jointId: this.joint.id,
             };
-            this.stateService.recordAction(actionObj);
+            this.undoRedoService.recordAction(actionObj);
             mechanism.removeWeld(this.joint.id);
           },
           disabled: !mechanism.canRemoveWeld(this.joint),
@@ -246,7 +249,7 @@ export class JointInteractor extends Interactor {
               type: 'addWeld',
               jointId: this.joint.id,
             };
-            this.stateService.recordAction(actionObj);
+            this.undoRedoService.recordAction(actionObj);
             mechanism.addWeld(this.joint.id);
           },
           disabled: !mechanism.canAddWeld(this.joint),
@@ -326,7 +329,7 @@ export class JointInteractor extends Interactor {
             extraJointsData: extraJointsSnapshots,
           };
 
-          this.stateService.recordAction(actionObj);
+          this.undoRedoService.recordAction(actionObj);
         },
         disabled: false,
       });
@@ -379,7 +382,7 @@ export class JointInteractor extends Interactor {
       }
 
       //record both link + any new joint
-      this.stateService.recordAction({
+      this.undoRedoService.recordAction({
         type: 'addLink',
         linkData: {
           id: created.id,

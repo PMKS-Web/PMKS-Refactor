@@ -9,7 +9,7 @@ import { CreateForceFromLinkCapture } from "./click-capture/create-force-from-li
 import { ContextMenuOption, Interactor } from "./interactor";
 import type {JointSnapshot, LinkSnapshot} from "../components/ToolBar/undo-redo-panel/action";
 import { NotificationService } from "../services/notification.service";
-
+import { UndoRedoService } from "../services/undo-redo.service";
 
 /*
 This interactor defines the following behaviors:
@@ -20,10 +20,12 @@ export class LinkInteractor extends Interactor {
   private activePanel = "Edit";
   private linkStartPositions = new Map<number, Coord>();
   private lastNotificationTime = 0;
-  constructor(public link: Link, 
+  constructor(public link: Link,
               private stateService: StateService,
               private interactionService: InteractionService,
-              private notificationService: NotificationService) {
+              private notificationService: NotificationService,
+              private undoRedoService: UndoRedoService
+  ) {
     super(true, true);
 
     this.onDragStart$.subscribe(() => {
@@ -71,7 +73,7 @@ export class LinkInteractor extends Interactor {
       });
 
       if (moved) {
-        this.stateService.recordAction({
+        this.undoRedoService.recordAction({
           type: 'moveLink',
           linkId: this.link.id,
           oldJointPositions: oldPositions,
@@ -131,7 +133,7 @@ export class LinkInteractor extends Interactor {
                   const allJoints   = mech.getArrayOfJoints().map(j => j.id);
                   const newJointIds = allJoints.filter(id => !beforeJointIds.includes(id));
 
-                  this.stateService.recordAction({
+                  this.undoRedoService.recordAction({
                     type:          'addLinkToLink',
                     parentLinkId:  this.link.id,
                     start,
@@ -162,7 +164,7 @@ export class LinkInteractor extends Interactor {
                     js.coords.x === start.x && js.coords.y === start.y
                   )!.id;
 
-                  this.stateService.recordAction({
+                  this.undoRedoService.recordAction({
                     type:             'addLinkToLink',
                     parentLinkId:   this.link.id,
                     start:          start,
@@ -197,7 +199,7 @@ export class LinkInteractor extends Interactor {
                 const newJoint = this.link.joints.get(newId)!;
 
                 // recordAction with a real jointId
-                this.stateService.recordAction({
+                this.undoRedoService.recordAction({
                   type: 'addTracer',
                   linkTracerData: {
                     linkId: this.link.id,
@@ -263,7 +265,7 @@ export class LinkInteractor extends Interactor {
                     isReference:j.reference
                   }));
 
-                this.stateService.recordAction({
+                this.undoRedoService.recordAction({
                   type:            "deleteLink",
                   linkData,
                   extraJointsData

@@ -12,6 +12,7 @@ import {SVGPathService} from 'src/app/services/svg-path.service';
 import {UnitConversionService} from "src/app/services/unit-conversion.service";
 import {Subscription} from "rxjs";
 import { NotificationService } from 'src/app/services/notification.service';
+import {UndoRedoService} from 'src/app/services/undo-redo.service';
 
 @Component({
   selector: '[app-link]',
@@ -39,13 +40,14 @@ export class LinkComponent extends AbstractInteractiveComponent implements After
     private notificationService: NotificationService,
     private svgPathService: SVGPathService,
     private unitConversionService: UnitConversionService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private undoRedoService: UndoRedoService
   ) {
     super(interactionService);
   }
 
   override registerInteractor(): Interactor {
-    return new LinkInteractor(this.link, this.stateService, this.interactionService, this.notificationService);
+    return new LinkInteractor(this.link, this.stateService, this.interactionService, this.notificationService, this.undoRedoService);
   }
 
   override ngOnInit() {
@@ -155,7 +157,7 @@ export class LinkComponent extends AbstractInteractiveComponent implements After
     let y2 = this.link.getJoints()[1].coords.y;
     let x = x1 + (2/3) * (x2 - x1);
     let y = y1 + (2/3) * (y2 - y1);
-    
+
     return this.unitConversionService.modelCoordToSVGCoord(new Coord(x, y));
   }
 
