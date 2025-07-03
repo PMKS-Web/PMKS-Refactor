@@ -19,10 +19,11 @@ export class FeedbackPanelComponent {
   sendBrowserInfo = true;
   sendProject = true;
   isSending       = false;
+  userEmail     = '';
 
-  private readonly PUBLIC_KEY   = 'iMSBjQt9hHdRwxdWh';
-  private readonly SERVICE_ID   = 'service_s7g1ljp';
-  private readonly TEMPLATE_ID  = 'template_xjc8mma';
+  private readonly PUBLIC_KEY   = 'Zt9zocAWwnjuoRu4k';
+  private readonly SERVICE_ID   = 'service_u764c3j';
+  private readonly TEMPLATE_ID  = 'template_jwey1mq';
 
   constructor(private toolbar: ToolbarComponent) {
     emailjs.init(this.PUBLIC_KEY);
@@ -34,6 +35,11 @@ export class FeedbackPanelComponent {
       return;
     }
 
+    // require email if they asked for a response
+    if (this.wantsResponse && !this.userEmail.trim()) {
+      return alert('Please enter your email if you want a response.');
+    }
+
     this.isSending = true;
 
 
@@ -41,7 +47,8 @@ export class FeedbackPanelComponent {
       user_message:   this.message,
       wants_response: this.wantsResponse,
       browser_info:   this.sendBrowserInfo ? navigator.userAgent : 'omitted',
-      project_dump:   this.sendProject     ? '...data...' : 'omitted'
+      project_dump:   this.sendProject     ? '...data...' : 'omitted',
+      email:          this.userEmail
     };
 
     emailjs

@@ -2,6 +2,9 @@
 import { EncoderService } from './encoder.service';
 import { StateService } from './state.service';
 import {PanZoomService} from "./pan-zoom.service";
+import {Injectable} from "@angular/core";
+
+@Injectable({ providedIn: 'root' })
 
 export class UrlGenerationService {
 
