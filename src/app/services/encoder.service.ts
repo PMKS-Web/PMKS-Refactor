@@ -8,11 +8,13 @@ import { Position } from '../model/position';
 import { StateService } from './state.service';
 import LZString from 'lz-string';
 import { PanZoomService } from './pan-zoom.service';
+import { UndoRedoService } from './undo-redo.service';
 
 export class EncoderService {
   constructor(
     private stateService: StateService,
-    private panZoomService: PanZoomService
+    private panZoomService: PanZoomService,
+    private undoRedoService: UndoRedoService
   ) {}
 
   // Retrieves the current Mechanism instance from the StateService.
@@ -91,6 +93,8 @@ export class EncoderService {
     ],
     z: ['Zoom', 'Pan X', 'Pan Y'],
     fb: ['sixBarGenerated', 'fourBarGenerated'],
+    u: ['undoStack'],
+    r: ['redoStack'],
   };
 
   /**
@@ -265,6 +269,12 @@ export class EncoderService {
       fb: [
         [this.stateService.sixBarGenerated, this.stateService.fourBarGenerated],
       ],
+      u: this.undoRedoService
+        .getUndoStack()
+        .map(action => ({ ...action })),
+      r: this.undoRedoService
+        .getRedoStack()
+        .map(action => ({ ...action })),
     };
   }
   /**

@@ -87,6 +87,28 @@ export class UndoRedoService {
     console.log('Redo performed for action:', action);
     this.mechanism.notifyChange();
   }
+
+  public getUndoStack(): Action[] {
+    return [...this.undoStack];
+  }
+  public getRedoStack(): Action[] {
+    return [...this.redoStack];
+  }
+
+  public clearStacks(): void {
+    this.undoStack = [];
+    this.redoStack = [];
+  }
+
+  public restoreStacks(
+    undoStack: Action[],
+    redoStack: Action[]
+  ): void {
+    this.undoStack = [...undoStack];
+    this.redoStack = [...redoStack];
+  }
+
+
   //------------------------------------------------------------------------------------------------------
   //---------------------------------- | REDO | ----------------------------------------------------------
   //------------------------------------------------------------------------------------------------------

@@ -6,6 +6,7 @@ import { DecoderService } from '../../../services/decoder.service';
 import { NotificationService } from 'src/app/services/notification.service';
 import { PanZoomService } from "../../../services/pan-zoom.service";
 import {FeedbackPanelComponent} from "../feedback-panel/feedback-panel.component";
+import { UndoRedoService } from '../../../services/undo-redo.service';
 
 
 @Component({
@@ -17,7 +18,8 @@ export class ToolbarComponent {
   constructor(
     private stateService: StateService,
     private notificationService: NotificationService,
-    private panZoomService: PanZoomService
+    private panZoomService: PanZoomService,
+    private undoRedoService: UndoRedoService
   ) {}
 
   selectedPanel: string = '';
@@ -41,7 +43,8 @@ export class ToolbarComponent {
     //this.setCurrentTab("Share");
     let urlService = new UrlGenerationService(
       this.stateService,
-      this.panZoomService
+      this.panZoomService,
+      this.undoRedoService
     );
     urlService.copyURL();
     this.notificationService.showNotification(
@@ -55,7 +58,8 @@ export class ToolbarComponent {
     console.log('save button pressed');
     let encoderService = new EncoderService(
       this.stateService,
-      this.panZoomService
+      this.panZoomService,
+      this.undoRedoService
     );
     let csv: string = encoderService.exportMechanismDataToCSV();
     console.log(csv);
