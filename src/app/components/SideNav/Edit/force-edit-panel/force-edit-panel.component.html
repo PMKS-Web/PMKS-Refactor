@@ -1,0 +1,130 @@
+<div id="editForce">
+  <!-- MAIN CONTAINER FOR FORCE PANEL -->
+  <div class="scroll-container">
+
+    <!-- HEADER SECTION WITH TITLE AND ACTION BUTTONS -->
+    <panel-section-collapsible>
+      <title-block description='' class="editHeader" (click)="onTitleBlockClick($event)">
+        Edit Force
+        <!-- edit title input if edit selected -->
+        <ng-container *ngIf="isEditingTitle; else forceNameDisplay">
+          <input #forceNameInput [(ngModel)]="this.getSelectedObject().name"
+                 (blur)="setForceName(forceNameInput.value)"
+                 (keyup.enter)="setForceName(forceNameInput.value)" />
+        </ng-container>
+        <!-- force name -->
+        <ng-template #forceNameDisplay>
+          {{ this.getForceName() }}
+        </ng-template>
+        <!-- edit, delete, locking buttons -->
+        <!-- edit -->
+        <button (click)="this.isEditingTitle=true">
+          <img id="edit" ngSrc='assets/icons/edit.svg' style="height: 16px; width: 16px;" height="48" width="48" alt=""/>
+        </button>
+        <!-- delete -->
+        <button (click)="this.deleteForce()">
+          <img id="trash" ngSrc='assets/icons/trash.svg' style="height: 16px; width: 16px;" height="18" width="15" alt=""/>
+        </button>
+        <!-- lock -->
+      </title-block>
+      <p class="subtitle">This is where you edit Forces.</p>
+    </panel-section-collapsible>
+
+      <!-- BASIC SETTINGS DROPDOWN -->
+      <collapsible-subsection titleLabel='Basic Settings' [expanded]="sectionExpanded['FBasic']"
+                              (opened)="sectionExpanded['FBasic'] = true" (closed)="sectionExpanded['FBasic'] = false">
+        <div>
+          <!-- Local/Global Toggle -->
+          <div class="toggle-container">
+            <div class="toggle-label" style="margin-left: 12px;">Coordinate System</div>
+            <div class="toggle-row">
+              <mat-slide-toggle 
+                [(ngModel)]="isGlobalCoordinates">
+                {{ isGlobalCoordinates ? 'Global' : 'Local' }}
+              </mat-slide-toggle>
+            </div>
+          </div>
+
+          <!-- Magnitude and Angle input -->
+          <div class="length-angle-block">
+            <!-- Label on its own line -->
+            <div class="la-label" >Force Magnitude and Angle</div>
+
+            <!-- Inputs side-by-side -->
+            <div class="length-angle-row">
+              <div class="la-cell">
+                M
+                <input
+                  type="number"
+                  [value]="pendingForceMagnitude ?? getForceMagnitude()"
+                  (input)="pendingForceMagnitude = $any($event.target).valueAsNumber"
+                  (keydown.enter)="confirmForceMagnitude()"
+                />
+                <span class="la-unit">N</span>
+              </div>
+
+              <div class="la-cell">
+                <img ngSrc="assets/icons/angle.svg" class="la-icon" alt="angle" height="10" width="10"/>
+                <input
+                  type="number"
+                  [value]="pendingForceAngle ?? getForceAngle()"
+                  (input)="pendingForceAngle = $any($event.target).valueAsNumber"
+                  (keydown.enter)="confirmForceAngle()"
+                />
+                <span class="la-unit">°</span>
+              </div>
+            </div>
+          </div>
+
+                    <!-- Components -->
+          <div class="length-angle-block">
+            <!-- Label on its own line -->
+            <div class="la-label" >Force Components</div>
+
+            <!-- Inputs side-by-side -->
+            <div class="length-angle-row">
+              <div class="la-cell">
+                X
+                <input
+                  type="number"
+                  [value]="pendingForceX ?? getForceX()"
+                  (input)="pendingForceX = $any($event.target).valueAsNumber"
+                  (keydown.enter)="confirmForceX()"
+                />
+                <span class="la-unit">N</span>
+              </div>
+
+              <div class="la-cell">
+                Y
+                <input
+                  type="number"
+                  [value]="pendingForceY ?? getForceY()"
+                  (input)="pendingForceY= $any($event.target).valueAsNumber"
+                  (keydown.enter)="confirmForceY()"
+                />
+                <span class="la-unit">N</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </collapsible-subsection>
+
+      <!-- COLOR SETTINGS -->
+      <collapsible-subsection titleLabel='Color Settings' [expanded]="sectionExpanded['FColor']"
+                              (opened)="sectionExpanded['FColor'] = true" (closed)="sectionExpanded['FColor'] = false">
+        <!-- changes the color of the force -->
+        <div>
+          <p class="colors" style="margin-left: 15px;">Force Color:</p>
+          <div class="row" style="justify-content: center;">
+            <div *ngFor='let color of getColors(); let i=index' class="colors" [style.backgroundColor]='color'
+                 (click)='setForceColor(i)'>
+              <!-- Use an *ngIf directive to show a check mark if the color is selected -->
+              <mat-icon *ngIf='selectedIndex === i' style="color:white">check</mat-icon>
+            </div>
+          </div>
+        </div>
+      </collapsible-subsection>
+
+    </div>
+</div>

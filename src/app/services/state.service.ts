@@ -201,7 +201,12 @@ export class StateService {
       for (const force of rawData.decodedForces) {
         let startCoord = new Coord(force.start.x, force.start.y);
         let endCoord = new Coord(force.end.x, force.end.y);
-        let newForce = new Force(force.id, startCoord, endCoord);
+        let newForce = new Force(
+          force.id,
+          startCoord,
+          endCoord,
+          force.parentLink
+        );
         newForce.name = force.name;
         newForce.magnitude = force.magnitude;
         newForce.angle = force.angle;
