@@ -13,6 +13,7 @@ import { Mechanism } from 'src/app/model/mechanism';
 import { Joint } from 'src/app/model/joint';
 import { NotificationService } from 'src/app/services/notification.service';
 
+
 @Component({
   selector: 'app-svg',
   templateUrl: './svg.component.html',
@@ -26,10 +27,12 @@ export class SvgComponent extends AbstractInteractiveComponent {
   angles: string = "Degree (º)";
 
   constructor(public override interactionService: InteractionService,
-    private stateService: StateService, private panZoomService: PanZoomService, private notificationService: NotificationService,
-              private animationService: AnimationService) {
+              private stateService: StateService,
+              private panZoomService: PanZoomService,
+              private notificationService: NotificationService,
+              public override animationService: AnimationService) {
 
-    super(interactionService);
+    super(interactionService, animationService);
   }
 
   override async ngOnInit(): Promise<void> {
