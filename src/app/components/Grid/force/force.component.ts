@@ -22,6 +22,7 @@ import { NotificationService } from 'src/app/services/notification.service';
 import { ForceInteractor } from 'src/app/controllers/force-interactor';
 import { Force } from 'src/app/model/force';
 import { PanZoomService } from 'src/app/services/pan-zoom.service';
+import { AnimationService } from 'src/app/services/animation.service';
 
 @Component({
   selector: '[app-force]',
@@ -47,9 +48,10 @@ export class ForceComponent
     private notificationService: NotificationService,
     private unitConversionService: UnitConversionService,
     private cdr: ChangeDetectorRef,
-    private panZoomService: PanZoomService
+    private panZoomService: PanZoomService,
+    public override animationService:AnimationService
   ) {
-    super(interactionService);
+    super(interactionService,animationService);
   }
 
   override registerInteractor(): Interactor {
