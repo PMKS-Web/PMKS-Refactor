@@ -74,6 +74,7 @@ export class EncoderService {
       'Magnitude',
       'Angle',
       'Frame of Reference',
+      'Parent Link',
     ],
     p: [
       'Position ID',
@@ -236,6 +237,7 @@ export class EncoderService {
           f.magnitude,
           f.angle,
           f.frameOfReference,
+          f.parentLink.id,
         ]),
       p: mechanism.getArrayOfPositions().map((p: Position) => [
         p.id,
