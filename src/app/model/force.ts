@@ -14,6 +14,8 @@ export class Force {
   private _end: Coord;
   private _magnitude: number;
   private _angle: number;
+  private _relativeAngle: number;
+  private _posInLink: [number, number];
   private _frameOfReference: ForceFrame;
   private _parentLink: Link;
   private _color: string;
@@ -30,12 +32,14 @@ export class Force {
     this._id = id;
     this._parentLink = parent;
     this._name = '';
-    this._start = this.calculatePositionInLink(start);
+    this._start = this.boundToLink(start);
     this._end = new Coord(end.x, end.y);
     this._frameOfReference = ForceFrame.Global;
-    this._angle = this.calculateAngle();
+    this._angle = this.calculateAngle(start, end);
     this._color = this.linkColorOptions[1];
     this._magnitude = start.getDistanceTo(end);
+    this._posInLink = this.calculatePositionInLink();
+    this._relativeAngle = this.calculateRelativeAngle();
   }
 
   get id(): number {
@@ -77,7 +81,7 @@ export class Force {
   }
 
   set start(value: Coord) {
-    this._start = this.calculatePositionInLink(value);
+    this._start = this.boundToLink(value);
   }
 
   set end(value: Coord) {
@@ -98,7 +102,12 @@ export class Force {
   set parentLink(link: Link) {
     this._parentLink = link;
   }
-
+  set relativeAngle(number: number) {
+    this._relativeAngle = number;
+  }
+  setPosInLink() {
+    this._posInLink = this.calculatePositionInLink();
+  }
   changeFrameOfReference() {
     if (this._frameOfReference === ForceFrame.Global) {
       this._frameOfReference = ForceFrame.Local;
@@ -107,9 +116,9 @@ export class Force {
     }
   }
 
-  calculateAngle(): number {
-    const deltaX = this._end.x - this._start.x;
-    const deltaY = this._end.y - this._start.y;
+  calculateAngle(startCoord: Coord, endCoord: Coord): number {
+    const deltaX = endCoord.x - startCoord.x;
+    const deltaY = endCoord.y - startCoord.y;
     const rad: number = Math.atan2(deltaY, deltaX);
     return rad * (180 / Math.PI);
   }
@@ -121,14 +130,15 @@ export class Force {
   calculateYComp(): number {
     return Math.sin((Math.PI * this.angle) / 180) * this.magnitude;
   }
-  setPosAlongLink() {
-    this._start = this.calculatePositionInLink(this._start);
-  }
 
   switchForceDirection() {}
   setForceAngle() {}
-  setXComp(newXComp: number) {}
-  setYComp(newYComp: number) {}
+  setXComp(newXComp: number) {
+    newXComp;
+  }
+  setYComp(newYComp: number) {
+    newYComp;
+  }
   addCoordinates(coord: Coord) {
     this._start = this._start.clone().add(coord);
     this._end = this._end.clone().add(coord);
@@ -139,7 +149,33 @@ export class Force {
   setEndCoordinate(coord: Coord) {
     this._end = coord.clone();
   }
+  updateAfterMovement() {
+    if (this._frameOfReference === ForceFrame.Local)
+      this.angle =
+        (this.parentLink?.calculateAngle() || 0) + this._relativeAngle;
+    const parentCenter = this.parentLink.calculateCenterOfMass();
+    const storedDistance = this._posInLink[0];
+    const storedAngle = this._posInLink[1];
 
+    // You may want to add parent's current angle to maintain relative position
+    const parentAngle =
+      ((this.parentLink?.calculateAngle() || 0) * Math.PI) / 180;
+    const finalAngle = storedAngle + parentAngle;
+
+    this.start = new Coord(
+      parentCenter.x + storedDistance * Math.cos(finalAngle),
+      parentCenter.y + storedDistance * Math.sin(finalAngle)
+    );
+
+    const angleInRadians = (this.angle * Math.PI) / 180;
+    console.log('angleInRadians');
+    console.log(angleInRadians);
+
+    this.end = new Coord(
+      this.start.x + this.magnitude * Math.cos(angleInRadians),
+      this.start.y + this.magnitude * Math.sin(angleInRadians)
+    );
+  }
   clone(): Force {
     const newForce = new Force(
       this._id,
@@ -165,8 +201,20 @@ export class Force {
     const dy = this.end.y - this.start.y;
     this.magnitude = Math.sqrt(dx * dx + dy * dy);
     this.angle = Math.atan2(dy, dx) * (180 / Math.PI);
+    this._relativeAngle = this.calculateRelativeAngle();
+    this._posInLink = this.calculatePositionInLink();
+    this._relativeAngle = this.calculateRelativeAngle();
   }
-  calculatePositionInLink(value: Coord): Coord {
+  calculatePositionInLink(): [number, number] {
+    const displacement = this.start.subtract(
+      this.parentLink.calculateCenterOfMass()
+    );
+    const angleToPos = Math.atan2(displacement.y, displacement.x);
+
+    return [displacement.getDistanceTo(new Coord(0, 0)), angleToPos];
+  }
+
+  boundToLink(value: Coord): Coord {
     const joints: Joint[] = this._parentLink.getJoints();
     const polygonPoints: Coord[] = joints.map((joint) => joint._coords);
     const convexHull = this.computeConvexHull(polygonPoints);
@@ -176,8 +224,11 @@ export class Force {
     ) {
       return value;
     }
-
     return this.findClosestPointOnPolygonBoundary(value, convexHull);
+  }
+
+  calculateRelativeAngle(): number {
+    return this.angle - (this.parentLink?.calculateAngle() || 0);
   }
   // Graham Scan Algorithm (Stolen from svg-path.service.ts)
   computeConvexHull(coords: Coord[]): Coord[] {

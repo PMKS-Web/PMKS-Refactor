@@ -36,9 +36,6 @@ export class AnimationService {
     this.invaldMechanism = true;
     this.positionSolver.getKinematicsObservable().subscribe(() => {
       this.initializeAnimations();
-      console.log('anim states');
-      console.log(this.animationStates);
-      console.log(this.stateService.getMechanism().getJoint(0)._coords.x);
     });
   }
 
@@ -115,7 +112,6 @@ export class AnimationService {
     }
 
     this.invaldMechanism = this.animationStates.length == 0;
-    console.log('test: ' + this.invaldMechanism);
   }
 
   // Starts or pauses animation for all sub-mechanisms based on the playPause flag.
