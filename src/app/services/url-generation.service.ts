@@ -20,7 +20,7 @@ export class UrlGenerationService {
 
   /**
    * Will dynamically generate and return a string URL
-   * based on the mechanism from current state service data
+   * based on the mechanism from curretn state service data
    *   -- uses current URL for copying, ie "http://localhost:4200"
    * @returns string
    */
