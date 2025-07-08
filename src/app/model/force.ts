@@ -297,29 +297,33 @@ export class Force {
     point: Coord,
     polygonPoints: Coord[]
   ): Coord {
-    let closestPoint = polygonPoints[0].clone();
-    let minDistance = point.getDistanceTo(closestPoint);
-
     const n = polygonPoints.length;
 
-    // Check each edge of the polygon
-    for (let i = 0; i < n; i++) {
+    // Start with the first edge to get initial closest point
+    const firstEdgeStart = polygonPoints[0];
+    const firstEdgeEnd = polygonPoints[1];
+    let closestPoint = this.findClosestPointOnLineSegment(
+      point,
+      firstEdgeStart,
+      firstEdgeEnd
+    );
+    let minDistance = point.getDistanceTo(closestPoint);
+
+    // Check remaining edges of the polygon
+    for (let i = 1; i < n; i++) {
       const edgeStart = polygonPoints[i];
       const edgeEnd = polygonPoints[(i + 1) % n];
-
       const closestOnEdge = this.findClosestPointOnLineSegment(
         point,
         edgeStart,
         edgeEnd
       );
       const distance = point.getDistanceTo(closestOnEdge);
-
       if (distance < minDistance) {
         minDistance = distance;
         closestPoint = closestOnEdge;
       }
     }
-
     return closestPoint;
   }
 
@@ -328,19 +332,28 @@ export class Force {
     lineStart: Coord,
     lineEnd: Coord
   ): Coord {
-    const lineVector = lineEnd.subtract(lineStart);
-    const pointVector = point.subtract(lineStart);
+    const shortenAmount = 0.18;
 
-    const lineLengthSquared =
-      lineVector.x * lineVector.x + lineVector.y * lineVector.y;
-    const t = Math.max(
-      0,
-      Math.min(
-        1,
-        (pointVector.x * lineVector.x + pointVector.y * lineVector.y) /
-          lineLengthSquared
-      )
-    );
-    return lineStart.add(lineVector.scale(t));
+    const lineVector = lineEnd.subtract(lineStart);
+    const lineLength = lineStart.getDistanceTo(lineEnd);
+
+    if (lineLength <= 2 * shortenAmount) {
+      return lineStart.add(lineVector.scale(0.5));
+    }
+    const unitVector = lineVector.normalize();
+
+    const shortenedStart = lineStart.add(unitVector.scale(shortenAmount));
+    const shortenedEnd = lineEnd.subtract(unitVector.scale(shortenAmount));
+
+    const shortenedVector = shortenedEnd.subtract(shortenedStart);
+    const shortenedLength = shortenedStart.getDistanceTo(shortenedEnd);
+
+    const pointVector = point.subtract(shortenedStart);
+
+    const dotProduct =
+      pointVector.x * shortenedVector.x + pointVector.y * shortenedVector.y;
+    const projectionScalar = dotProduct / (shortenedLength * shortenedLength);
+    const clampedScalar = Math.max(0, Math.min(1, projectionScalar));
+    return shortenedStart.add(shortenedVector.scale(clampedScalar));
   }
 }
