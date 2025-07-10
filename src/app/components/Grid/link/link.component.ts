@@ -19,6 +19,7 @@ import { SVGPathService } from 'src/app/services/svg-path.service';
 import { UnitConversionService } from 'src/app/services/unit-conversion.service';
 import { Subscription } from 'rxjs';
 import { NotificationService } from 'src/app/services/notification.service';
+import {AnimationService} from 'src/app/services/animation.service';
 
 @Component({
   selector: '[app-link]',
@@ -49,9 +50,10 @@ export class LinkComponent
     private notificationService: NotificationService,
     private svgPathService: SVGPathService,
     private unitConversionService: UnitConversionService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    public override animationService: AnimationService
   ) {
-    super(interactionService);
+    super(interactionService,animationService);
   }
 
   override registerInteractor(): Interactor {

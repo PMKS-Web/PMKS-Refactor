@@ -52,7 +52,7 @@ export class ForceComponent
     private panZoomService: PanZoomService,
     private animationService: AnimationService
   ) {
-    super(interactionService);
+    super(interactionService,animationService);
   }
 
   override registerInteractor(): Interactor {

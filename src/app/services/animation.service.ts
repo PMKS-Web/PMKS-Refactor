@@ -388,4 +388,12 @@ export class AnimationService {
       yVelocityBefore * yVelocityAfter < 0
     );
   }
+
+  public get isAnimating(): boolean {
+    return this.animationStates.some(s => !s.isPaused);
+  }
+
+
+
+
 }
