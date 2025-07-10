@@ -242,20 +242,80 @@ export class LinkComponent
       joints[1]._coords
     );
 
-    // Calculate midpoint
+    const startOffset = 25;
+    const endOffset = 25; // Added end offset for symmetry
+
+    const dx = endCoord.x - startCoord.x;
+    const dy = endCoord.y - startCoord.y;
+    const length = Math.sqrt(dx * dx + dy * dy);
+
+    if (length === 0) return '';
+
     const midX = (startCoord.x + endCoord.x) / 2;
     const midY = (startCoord.y + endCoord.y) / 2;
 
-    // Shorten the line towards the middle by a fixed amount (e.g., 10 pixels or 10% of the total length)
-    const offset = 10; // Adjust this value as needed
+    const unitX = dx / length;
+    const unitY = dy / length;
 
-    const leftX = startCoord.x + (midX - startCoord.x) * 0.9; // Shorten the distance towards the middle
+    // First half: from shortened start to middle
+    const shortenedStartX = startCoord.x + startOffset * unitX;
+    const shortenedStartY = startCoord.y + startOffset * unitY;
+    const leftX = startCoord.x + (midX - startCoord.x) * 0.9;
     const leftY = startCoord.y + (midY - startCoord.y) * 0.9;
 
-    // Draw line from start to the shortened midpoint
-    return `M${startCoord.x},${startCoord.y} L${leftX},${leftY}`;
-  }
+    // Second half: from middle to shortened end
+    const rightX = endCoord.x + (midX - endCoord.x) * 0.9;
+    const rightY = endCoord.y + (midY - endCoord.y) * 0.9;
+    const shortenedEndX = endCoord.x - endOffset * unitX;
+    const shortenedEndY = endCoord.y - endOffset * unitY;
 
+    // Return both line segments
+    return `M${shortenedStartX},${shortenedStartY} L${leftX},${leftY} M${rightX},${rightY} L${shortenedEndX},${shortenedEndY}`;
+  }
+  getDoubleArrowheadSVG(): string {
+    const joints = this.link.getJoints();
+    const endCoord = this.unitConversionService.modelCoordToSVGCoord(
+      joints[1]._coords
+    );
+    const startCoord = this.unitConversionService.modelCoordToSVGCoord(
+      joints[0]._coords
+    );
+
+    // Calculate the vector direction from start to end
+    const dx = endCoord.x - startCoord.x;
+    const dy = endCoord.y - startCoord.y;
+    const length = Math.sqrt(dx * dx + dy * dy);
+
+    if (length === 0) return '';
+
+    // Normalize the vector
+    const unitX = dx / length;
+    const unitY = dy / length;
+
+    // Arrowhead size
+    const arrowLength = 24;
+    const arrowWidth = 12;
+    const offsetFromJoint = 18;
+
+    // First arrowhead at end joint
+    const arrowTip1X = endCoord.x - offsetFromJoint * unitX;
+    const arrowTip1Y = endCoord.y - offsetFromJoint * unitY;
+    const arrow1X1 = arrowTip1X - arrowLength * unitX - arrowWidth * unitY;
+    const arrow1Y1 = arrowTip1Y - arrowLength * unitY + arrowWidth * unitX;
+    const arrow1X2 = arrowTip1X - arrowLength * unitX + arrowWidth * unitY;
+    const arrow1Y2 = arrowTip1Y - arrowLength * unitY - arrowWidth * unitX;
+
+    // Second arrowhead at start joint (pointing in opposite direction)
+    const arrowTip2X = startCoord.x + offsetFromJoint * unitX;
+    const arrowTip2Y = startCoord.y + offsetFromJoint * unitY;
+    const arrow2X1 = arrowTip2X + arrowLength * unitX - arrowWidth * unitY;
+    const arrow2Y1 = arrowTip2Y + arrowLength * unitY + arrowWidth * unitX;
+    const arrow2X2 = arrowTip2X + arrowLength * unitX + arrowWidth * unitY;
+    const arrow2Y2 = arrowTip2Y + arrowLength * unitY - arrowWidth * unitX;
+
+    // Return both arrowheads as separate paths
+    return `M${arrowTip1X},${arrowTip1Y} L${arrow1X1},${arrow1Y1} L${arrow1X2},${arrow1Y2} Z M${arrowTip2X},${arrowTip2Y} L${arrow2X1},${arrow2Y1} L${arrow2X2},${arrow2Y2} Z`;
+  }
   getRightLineSVG(): string {
     const joints = this.link.getJoints();
     const startCoord = this.unitConversionService.modelCoordToSVGCoord(

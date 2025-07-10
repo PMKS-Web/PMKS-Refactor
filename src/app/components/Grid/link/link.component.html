@@ -18,9 +18,8 @@
   <!--Display Length-->
   @if (this.hoverState.isHoveringLength && this.hoverState.linkId ===
   this.link.id) {
-
+  <path [attr.d]="getDoubleArrowheadSVG()" fill="black"></path>
   <path [attr.d]="getLeftLineSVG()" stroke="black" stroke-width="3"></path>
-  <path [attr.d]="getRightLineSVG()" stroke="black" stroke-width="3"></path>
   <text
     class="link-name"
     [attr.x]="getMidPointX()"
