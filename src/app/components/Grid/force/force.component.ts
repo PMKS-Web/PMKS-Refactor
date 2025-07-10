@@ -50,9 +50,9 @@ export class ForceComponent
     private unitConversionService: UnitConversionService,
     private cdr: ChangeDetectorRef,
     private panZoomService: PanZoomService,
-    private animationService: AnimationService
+    animationService: AnimationService
   ) {
-    super(interactionService,animationService);
+    super(interactionService, animationService);
   }
 
   override registerInteractor(): Interactor {
