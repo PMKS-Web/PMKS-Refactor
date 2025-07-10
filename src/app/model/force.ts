@@ -19,6 +19,7 @@ export class Force {
   private _frameOfReference: ForceFrame;
   private _parentLink: Link;
   private _color: string;
+  private _isAnimating: boolean = false;
   private linkColorOptions = [
     '#727FD5',
     '#2F3E9F',
@@ -102,6 +103,9 @@ export class Force {
   set parentLink(link: Link) {
     this._parentLink = link;
   }
+  set isAnimating(is: boolean) {
+    this._isAnimating = is;
+  }
   set relativeAngle(number: number) {
     this._relativeAngle = number;
   }
@@ -157,15 +161,16 @@ export class Force {
     const storedDistance = this._posInLink[0];
     const storedAngle = this._posInLink[1];
 
-    // You may want to add parent's current angle to maintain relative position
     const parentAngle =
       ((this.parentLink?.calculateAngle() || 0) * Math.PI) / 180;
     const finalAngle = storedAngle + parentAngle;
-
-    this.start = new Coord(
-      parentCenter.x + storedDistance * Math.cos(finalAngle),
-      parentCenter.y + storedDistance * Math.sin(finalAngle)
-    );
+    if (this._isAnimating) {
+      console.log('test- is animating');
+      this.start = new Coord(
+        parentCenter.x + storedDistance * Math.cos(finalAngle),
+        parentCenter.y + storedDistance * Math.sin(finalAngle)
+      );
+    }
 
     const angleInRadians = (this.angle * Math.PI) / 180;
     console.log('angleInRadians');
@@ -175,6 +180,7 @@ export class Force {
       this.start.x + this.magnitude * Math.cos(angleInRadians),
       this.start.y + this.magnitude * Math.sin(angleInRadians)
     );
+    this.start = this.start;
   }
   clone(): Force {
     const newForce = new Force(

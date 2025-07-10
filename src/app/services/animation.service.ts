@@ -25,6 +25,8 @@ export class AnimationService {
   private invaldMechanism: boolean;
   private animationProgressSource = new BehaviorSubject<number>(0);
   private speedMultiplier: number = 1;
+  private isAnimatingSource = new BehaviorSubject<boolean>(false);
+  public isAnimating$ = this.isAnimatingSource.asObservable();
   animationProgress$ = this.animationProgressSource.asObservable();
 
   // Initializes the AnimationService, sets up state array, and subscribes to kinematic updates.
@@ -126,6 +128,7 @@ export class AnimationService {
         this.singleMechanismAnimation(state);
       }
     }
+    this.updateIsAnimating();
   }
 
   // Recursively updates joint positions for a single mechanism’s animation frames.
@@ -197,6 +200,7 @@ export class AnimationService {
       state.currentFrameIndex = 0;
     }
     this.emitCurrentFrameIndex(0);
+    this.updateIsAnimating();
   }
 
   // Finds and returns the sub-mechanism index that contains the specified joint ID, or –1 if not found.
@@ -390,10 +394,10 @@ export class AnimationService {
   }
 
   public get isAnimating(): boolean {
-    return this.animationStates.some(s => !s.isPaused);
+    return this.animationStates.some((s) => !s.isPaused);
   }
-
-
-
-
+  private updateIsAnimating() {
+    const currentState = this.isAnimating;
+    this.isAnimatingSource.next(currentState);
+  }
 }
