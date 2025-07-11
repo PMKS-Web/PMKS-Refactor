@@ -357,3 +357,4 @@ export class Force {
     return shortenedStart.add(shortenedVector.scale(clampedScalar));
   }
 }
+/*  */
