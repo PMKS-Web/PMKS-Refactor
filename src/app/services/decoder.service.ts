@@ -60,6 +60,7 @@ export class DecoderService {
       console.log(decompressedJSON);
       const compactData = JSON.parse(decompressedJSON);
       // Expand the compact data into full objects.
+      console.log('compactData');
       console.log(compactData);
       const fullData = this.expandMechanismData(compactData);
 
@@ -235,11 +236,13 @@ export class DecoderService {
           this.convertNumber(row[5], useDecoding)
         ),
         magnitude: this.convertNumber(row[6], useDecoding),
-        angle: this.convertNumber(row[7], useDecoding),
+        angle: row[7],
         frameOfReference: this.convertNumber(row[8], useDecoding),
         parentLink: this.convertNumber(row[9], useDecoding),
       })
     );
+    console.log('decodedForces[0].angle');
+    console.log(decodedForces[0].angle);
 
     const decodedPositions: any[] = (compactData.p || []).map((row: any[]) => ({
       id: this.convertNumber(row[0], useDecoding),
@@ -274,7 +277,7 @@ export class DecoderService {
     value: any,
     useDecoding: boolean = true
   ): number {
-    return useDecoding ? parseInt(value, 16) : value;
+    return useDecoding && Number.isInteger(value) ? parseInt(value, 16) : value;
   }
 
   /**
