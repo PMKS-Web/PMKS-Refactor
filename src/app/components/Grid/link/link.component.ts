@@ -260,12 +260,12 @@ export class LinkComponent
     // First half: from shortened start to middle
     const shortenedStartX = startCoord.x + startOffset * unitX;
     const shortenedStartY = startCoord.y + startOffset * unitY;
-    const leftX = startCoord.x + (midX - startCoord.x) * 0.9;
-    const leftY = startCoord.y + (midY - startCoord.y) * 0.9;
+    const leftX = startCoord.x + (midX - startCoord.x) * 0.8;
+    const leftY = startCoord.y + (midY - startCoord.y) * 0.8;
 
     // Second half: from middle to shortened end
-    const rightX = endCoord.x + (midX - endCoord.x) * 0.9;
-    const rightY = endCoord.y + (midY - endCoord.y) * 0.9;
+    const rightX = endCoord.x + (midX - endCoord.x) * 0.8;
+    const rightY = endCoord.y + (midY - endCoord.y) * 0.8;
     const shortenedEndX = endCoord.x - endOffset * unitX;
     const shortenedEndY = endCoord.y - endOffset * unitY;
 
