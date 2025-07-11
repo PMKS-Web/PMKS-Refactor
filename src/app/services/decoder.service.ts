@@ -235,10 +235,8 @@ export class DecoderService {
           this.convertNumber(row[4], useDecoding),
           this.convertNumber(row[5], useDecoding)
         ),
-        magnitude: this.convertNumber(row[6], useDecoding),
-        angle: row[7],
-        frameOfReference: this.convertNumber(row[8], useDecoding),
-        parentLink: this.convertNumber(row[9], useDecoding),
+        frameOfReference: this.convertNumber(row[6], useDecoding),
+        parentLink: this.convertNumber(row[7], useDecoding),
       })
     );
     console.log('decodedForces[0].angle');

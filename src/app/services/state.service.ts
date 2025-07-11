@@ -210,8 +210,9 @@ export class StateService {
           this.mechanism.getLink(force.parentLink as unknown as number)
         );
         newForce.name = force.name;
-        newForce.magnitude = force.magnitude;
-        newForce.angle = force.angle;
+        newForce.magnitude = newForce.start.getDistanceTo(newForce.end);
+        const coord1 = newForce.end.subtract(newForce.start);
+        newForce.angle = Math.atan2(coord1.y, coord1.x) * (180 / Math.PI);
         newForce.frameOfReference = force.frameOfReference;
         newForce.parentLink.addForce(newForce);
         console.log('force:');

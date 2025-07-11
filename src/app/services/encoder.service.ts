@@ -234,8 +234,6 @@ export class EncoderService {
           f.start.y,
           f.end.x,
           f.end.y,
-          f.magnitude,
-          f.angle,
           f.frameOfReference,
           f.parentLink.id,
         ]),
