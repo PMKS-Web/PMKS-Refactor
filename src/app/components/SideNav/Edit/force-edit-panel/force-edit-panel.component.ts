@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { Action } from 'rxjs/internal/scheduler/Action';
 import { ForceInteractor } from 'src/app/controllers/force-interactor';
 import { Coord } from 'src/app/model/coord';
-import { Force } from 'src/app/model/force';
+import { Force, ForceFrame } from 'src/app/model/force';
 import { Joint } from 'src/app/model/joint';
 import { Link } from 'src/app/model/link';
 
@@ -53,6 +53,12 @@ export class ForceEditPanelComponent {
   }
   getColorIndex(): number {
     return this.selectedIndex;
+  }
+  updateCoordinateSystem() {
+    const thisForce = this.getSelectedObject();
+    thisForce.frameOfReference = this.isGlobalCoordinates
+      ? ForceFrame.Global
+      : ForceFrame.Local;
   }
   //Returns the name of the selected Link
   getForceName(): string {

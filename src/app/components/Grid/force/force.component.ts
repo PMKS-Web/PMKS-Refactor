@@ -37,6 +37,7 @@ export class ForceComponent
   unitSubscription: Subscription = new Subscription();
   angleSubscription: Subscription = new Subscription();
   showIDLabelsSubscription: Subscription = new Subscription();
+  animationProgressSubscription: Subscription = new Subscription();
   showIDLabels: boolean = false;
   units: string = 'N'; // Force units
   unitsAngle: string = 'º';
@@ -49,9 +50,9 @@ export class ForceComponent
     private unitConversionService: UnitConversionService,
     private cdr: ChangeDetectorRef,
     private panZoomService: PanZoomService,
-    public override animationService:AnimationService
+    animationService: AnimationService
   ) {
-    super(interactionService,animationService);
+    super(interactionService, animationService);
   }
 
   override registerInteractor(): Interactor {
@@ -74,6 +75,10 @@ export class ForceComponent
         this.showIDLabels = show;
       }
     );
+    this.animationProgressSubscription =
+      this.animationService.animationProgress$.subscribe((progress: number) => {
+        console.log(progress);
+      });
     super.ngOnInit();
   }
 

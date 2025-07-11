@@ -12,6 +12,7 @@ import type {
   LinkSnapshot,
 } from '../components/ToolBar/undo-redo-panel/action';
 import { NotificationService } from '../services/notification.service';
+import { Force } from '../model/force';
 
 /*
 This interactor defines the following behaviors:
@@ -21,6 +22,7 @@ This interactor defines the following behaviors:
 export class LinkInteractor extends Interactor {
   private activePanel = 'Edit';
   private linkStartPositions = new Map<number, Coord>();
+  private forceStartPositions = new Map<number, { start: Coord; end: Coord }>();
   private lastNotificationTime = 0;
   constructor(
     public link: Link,
@@ -44,6 +46,12 @@ export class LinkInteractor extends Interactor {
       this.link.joints.forEach((joint: Joint, id: number) => {
         this.linkStartPositions.set(id, joint.coords.clone());
       });
+      this.link.forces?.forEach((force: Force) => {
+        this.forceStartPositions.set(force.id, {
+          start: force.start.clone(),
+          end: force.end.clone(),
+        });
+      });
     });
     this.onDrag$.subscribe(() => {
       if (this.stateService.getCurrentActivePanel === 'Analysis') {
@@ -60,6 +68,16 @@ export class LinkInteractor extends Interactor {
       this.linkStartPositions.forEach((startPos, jointID) => {
         const newPos = startPos.clone().add(this.dragOffsetInModel!);
         this.stateService.getMechanism().setJointCoord(jointID, newPos);
+      });
+      this.forceStartPositions.forEach((coords, id) => {
+        const newStartPos: Coord = coords.start
+          .clone()
+          .add(this.dragOffsetInModel!);
+        const newEndPos: Coord = coords.end
+          .clone()
+          .add(this.dragOffsetInModel!);
+        this.stateService.getMechanism().setForceStart(id, newStartPos);
+        this.stateService.getMechanism().setForceEnd(id, newEndPos);
       });
     });
 
@@ -96,6 +114,7 @@ export class LinkInteractor extends Interactor {
       }
 
       this.linkStartPositions.clear();
+      this.forceStartPositions.clear();
       this.stateService.getMechanism().notifyChange();
     });
   }

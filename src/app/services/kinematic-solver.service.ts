@@ -109,7 +109,6 @@ export class PositionSolverService {
 
   // Solves for all joint positions over time, based on each submechanism’s solve order and prerequisites.
   updateAnimationPositions() {
-    console.log('tets');
     this.animationPositions = [];
     for (let solveOrder of this.solveOrders) {
       this.animationPositions.push({
