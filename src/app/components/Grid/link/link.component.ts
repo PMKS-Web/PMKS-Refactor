@@ -23,6 +23,7 @@ import {
   LinkEditHoverService,
   LinkHoverState,
 } from 'src/app/services/link-edit-hover.service';
+import {AnimationService} from 'src/app/services/animation.service';
 
 @Component({
   selector: '[app-link]',
@@ -55,8 +56,9 @@ export class LinkComponent
     private unitConversionService: UnitConversionService,
     private cdr: ChangeDetectorRef,
     private linkHoverService: LinkEditHoverService
+    public override animationService: AnimationService
   ) {
-    super(interactionService);
+    super(interactionService,animationService);
   }
 
   override registerInteractor(): Interactor {

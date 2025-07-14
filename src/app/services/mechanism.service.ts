@@ -1,20 +1,5 @@
-
-
-
-
-
-
-
-
-
 //This file contains information on how to implement forces
 //Once Forces are added we can remove many components to this
-
-
-
-
-
-
 
 import { Injectable, Injector } from '@angular/core';
 import { Joint, PrisJoint, RealJoint } from '../model/joint';
@@ -22,9 +7,7 @@ import { Link, RealLink } from '../model/link';
 import { Force } from '../model/force';
 import { Mechanism } from '../model/mechanism/mechanism';
 import { InstantCenter } from '../model/instant-center';
-import {
-  GlobalUnit,
-} from '../model/utils';
+import { GlobalUnit } from '../model/utils';
 import { BehaviorSubject, connect, Subject } from 'rxjs';
 import { GridUtilsService } from './grid-utils.service';
 import { ActiveObjService } from './active-obj.service';
@@ -70,9 +53,6 @@ export class MechanismService {
   ) {}
 
   // delete mechanism and reset
-
-
-
 
   updateMechanism(save: boolean = false) {
     console.log('update mechanism', save);
@@ -135,11 +115,8 @@ export class MechanismService {
 
   save() {
     const saveHistoryService = this.injector.get(SaveHistoryService);
-    saveHistoryService.save()
+    saveHistoryService.save();
   }
-
-
-
 
   deleteForce() {
     const forceIndex = this.forces.findIndex(
@@ -170,7 +147,8 @@ export class MechanismService {
   }
 
   changeForceLocal() {
-    this.activeObjService.selectedForce.local = !this.activeObjService.selectedForce.local;
+    this.activeObjService.selectedForce.local =
+      !this.activeObjService.selectedForce.local;
     if (this.activeObjService.selectedForce.local) {
       this.activeObjService.selectedForce.stroke = 'blue';
       this.activeObjService.selectedForce.fill = 'blue';
@@ -180,8 +158,6 @@ export class MechanismService {
     }
     this.updateMechanism(true);
   }
-
-
 
   createForceAtCOM() {
     let link = this.activeObjService.selectedLink;
@@ -195,9 +171,9 @@ export class MechanismService {
     if (this.activeObjService.selectedLink.joints.length === 2) {
       const lineVector: Coord = new Coord(
         this.activeObjService.selectedLink.joints[0].x -
-        this.activeObjService.selectedLink.joints[1].x,
+          this.activeObjService.selectedLink.joints[1].x,
         this.activeObjService.selectedLink.joints[0].y -
-        this.activeObjService.selectedLink.joints[1].y
+          this.activeObjService.selectedLink.joints[1].y
       );
 
       // Calculate the vector from the first point on the line to the given point
@@ -211,18 +187,23 @@ export class MechanismService {
         givenPointVector.x * lineVector.x + givenPointVector.y * lineVector.y;
 
       // Calculate the length of the line vector squared
-      const lineLengthSquared: number = lineVector.x * lineVector.x + lineVector.y * lineVector.y;
+      const lineLengthSquared: number =
+        lineVector.x * lineVector.x + lineVector.y * lineVector.y;
 
       // Calculate the parameter t for the projection onto the line
       const t: number = dotProduct / lineLengthSquared;
 
       // Calculate the projected point on the line
-      startCoord.x = this.activeObjService.selectedLink.joints[0].x + t * lineVector.x;
-      startCoord.y = this.activeObjService.selectedLink.joints[0].y + t * lineVector.y;
+      startCoord.x =
+        this.activeObjService.selectedLink.joints[0].x + t * lineVector.x;
+      startCoord.y =
+        this.activeObjService.selectedLink.joints[0].y + t * lineVector.y;
     }
     let maxNumber = 1;
     if (this.forces.length !== 0) {
-      maxNumber = Math.max(...this.forces.map((f) => parseInt(f.id.replace(/\D/g, '')))) + 1;
+      maxNumber =
+        Math.max(...this.forces.map((f) => parseInt(f.id.replace(/\D/g, '')))) +
+        1;
     }
     const force = new Force(
       'F' + maxNumber.toString(),
@@ -232,7 +213,9 @@ export class MechanismService {
     );
     this.activeObjService.selectedLink.forces.push(force);
     this.forces.push(force);
-    PositionSolver.setUpSolvingForces(this.activeObjService.selectedLink.forces); // needed to determine force position when dragging a joint
+    PositionSolver.setUpSolvingForces(
+      this.activeObjService.selectedLink.forces
+    ); // needed to determine force position when dragging a joint
     // PositionSolver.setUpInitialJointLocations(this.selectedLink.joints);
   }
 }

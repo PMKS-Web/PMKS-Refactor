@@ -5,21 +5,36 @@
     class="notification"
     [class.fade-in]="!notification.fadingOut"
     [class.fade-out]="notification.fadingOut">
-    {{ notification.message }}
+    <div class="notification-line"></div>
+    <div class="notification-content">
+      <div class="notification-icon"></div>
+      <span class="notification-message">{{ notification.message }}</span>
+      <button
+        class="close-btn"
+        (click)="onCloseNotification(notification.id)"
+        aria-label="Close notification">
+        ×
+      </button>
+    </div>
   </div>
 </div>
 
-<!-- Warning notification centered -->
-<div class="warning-overlay" *ngIf="warningNotification">
-  <div 
-    class="warning-notification"
-    [class.fade-in]="!warningNotification.fadingOut">
-    <span class="warning-message">{{ warningNotification.message }}</span>
-    <button 
-      class="close-btn"
-      (click)="onCloseWarning()"
-      aria-label="Close warning">
-      ×
-    </button>
+<!-- Warning notification at top (same style as info) -->
+<div class="notification-container warning-container" *ngIf="warningNotification">
+  <div
+    class="notification warning-notification"
+    [class.fade-in]="!warningNotification.fadingOut"
+    [class.fade-out]="warningNotification.fadingOut">
+    <div class="notification-line warning-line"></div>
+    <div class="notification-content">
+      <div class="notification-icon warning-icon"></div>
+      <span class="notification-message"><b>Warning </b> {{ warningNotification.message }}</span>
+      <button
+        class="close-btn"
+        (click)="onCloseWarning()"
+        aria-label="Close warning">
+        ×
+      </button>
+    </div>
   </div>
 </div>

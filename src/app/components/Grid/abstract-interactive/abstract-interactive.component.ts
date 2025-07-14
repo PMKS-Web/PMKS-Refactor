@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Interactor } from 'src/app/controllers/interactor';
 import { InteractionService } from 'src/app/services/interaction.service';
+import { AnimationService } from 'src/app/services/animation.service';
 
 /*
 All interactive components should extend this class. This class binds the component
@@ -12,12 +13,17 @@ to implement registerInteractor() so that this class can bind the interactor.
 @Component({
   selector: 'app-abstract-interactive',
   templateUrl: './abstract-interactive.component.html',
-  styleUrls: ['./abstract-interactive.component.css']
+  styleUrls: ['./abstract-interactive.component.css'],
 })
-export abstract class AbstractInteractiveComponent implements OnInit, OnDestroy{
+export abstract class AbstractInteractiveComponent
+  implements OnInit, OnDestroy
+{
   private interactor!: Interactor;
 
-  constructor(protected interactionService: InteractionService) { }
+  constructor(
+    protected interactionService: InteractionService,
+    protected animationService: AnimationService
+  ) {}
 
   abstract registerInteractor(): Interactor;
 
@@ -39,7 +45,10 @@ export abstract class AbstractInteractiveComponent implements OnInit, OnDestroy{
   }
 
   isHovered(): boolean {
-    return ( this.interactor === this.interactionService.getHoveringObject())
-  }
+    if (this.animationService.isAnimating) {
+      return false;
+    }
 
+    return this.interactor === this.interactionService.getHoveringObject();
+  }
 }

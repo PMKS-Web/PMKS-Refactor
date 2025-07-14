@@ -180,8 +180,8 @@
                 <!-- side by side X & Y -->
                 <div class="xy-row">
                   <div class="xy-cell">
-                    <label>X</label>
-                    <input
+                    <label style ="margin-left: 12px;">X</label>
+                    <input style ="margin-left: 3px;"
                       type="number"
                       [value]="
                         pendingCompX[joint.id] ?? roundToThree(joint.coords.x)
@@ -198,7 +198,7 @@
                   </div>
                   <div class="xy-cell">
                     <label>Y</label>
-                    <input
+                    <input style ="margin-left: 3px;"
                       type="number"
                       [value]="
                         pendingCompY[joint.id] ?? roundToThree(joint.coords.y)

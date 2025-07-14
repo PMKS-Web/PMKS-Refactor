@@ -46,28 +46,28 @@
         </p>
       </panel-section-collapsible>
 
-      <!-- BASIC SETTING DROPDOWN -->
-      <collapsible-subsection
-        titleLabel="Basic Settings"
-        [expanded]="graphExpanded['basicBasic']"
-        (opened)="graphExpanded['basicBasic'] = true"
-        (closed)="graphExpanded['basicBasic'] = false"
-      >
-        <div id="jointPositions" class="xy-block">
-          <label class="xy-label">Input X and Y positions</label>
-          <div class="xy-row">
-            <!-- X position input -->
-            <div class="xy-cell">
-              <label>X</label>
-              <input
-                type="number"
-                [value]="pendingX ?? getJointXCoord()"
-                (input)="pendingX = $any($event.target).valueAsNumber"
-                (keydown.enter)="confirmJointX()"
-                [disabled]="getJointLockState()"
-              />
-              <span class="xy-unit">{{ units }}</span>
-            </div>
+        <!-- BASIC SETTING DROPDOWN -->
+        <collapsible-subsection
+          titleLabel="Basic Settings"
+          [expanded]="graphExpanded['basicBasic']"
+          (opened)="graphExpanded['basicBasic'] = true"
+          (closed)="graphExpanded['basicBasic'] = false"
+          >
+          <div id="jointPositions" class="xy-block">
+            <label class="xy-label" style ="margin-left: 3px; margin-bottom: 10px;margin-top: 5px">Input X and Y positions</label>
+            <div class="xy-row">
+              <!-- X position input -->
+              <div class="xy-cell">
+                <label>X</label>
+                <input
+                  type="number"
+                  [value]="pendingX ?? getJointXCoord()"
+                  (input)="pendingX = $any($event.target).valueAsNumber"
+                  (keydown.enter)="confirmJointX()"
+                  [disabled]="getJointLockState()"
+                />
+                <span class="xy-unit">{{ units }}</span>
+              </div>
 
             <!-- Y position input -->
             <div class="xy-cell">

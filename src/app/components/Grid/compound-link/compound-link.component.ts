@@ -11,6 +11,8 @@ import { SVGPathService } from 'src/app/services/svg-path.service';
 import { UnitConversionService } from 'src/app/services/unit-conversion.service';
 import { NotificationService } from 'src/app/services/notification.service';
 
+import { AnimationService } from 'src/app/services/animation.service';
+
 @Component({
   selector: '[app-compound-link]',
   templateUrl: './compound-link.component.html',
@@ -24,8 +26,10 @@ export class CompoundLinkComponent extends AbstractInteractiveComponent {
 				private colorService: ColorService,
 				private svgPathService: SVGPathService,
         private unitConversionService: UnitConversionService,
-        private notificationService: NotificationService) {
-    super(interactionService);
+        private notificationService: NotificationService,
+        public override animationService: AnimationService
+        ) {
+    super(interactionService,animationService);
   }
 
   override registerInteractor(): Interactor {

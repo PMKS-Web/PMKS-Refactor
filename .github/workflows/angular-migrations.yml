@@ -31,7 +31,7 @@ jobs:
         run: |
           npx @angular/cli@latest update \
             @angular/core@latest @angular/cli@latest \
-            --force --no-interactive
+            --allow-dirty --force
           npm install
 
       - name: Run tests & build

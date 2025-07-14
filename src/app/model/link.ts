@@ -135,6 +135,12 @@ export class Link implements RigidBody {
     for (let joint of this._joints.values()) {
       this._name += joint.name;
     }
+    this.forces.forEach((f) => {
+      f.updateAfterMovement();
+      newJoint.addObserver(() => {
+        f.updateAfterMovement();
+      });
+    });
   }
 
   // update all of the locks i.e. subjoints need to lock when the link is locked,
@@ -168,14 +174,25 @@ export class Link implements RigidBody {
     for (let joint of this._joints.values()) {
       this._name += joint.name;
     }
+    this.forces.forEach((f) => {
+      f.start = f.start; //This forces it to move the force to be on the link
+      f.updateAfterMovement();
+      f.relativeAngle = f.calculateRelativeAngle();
+    });
   }
 
   // Adds a force to the link
   addForce(newForce: Force) {
     this._forces.set(newForce.id, newForce);
+    this.getJoints().forEach((joint) => {
+      joint.addObserver(() => {
+        newForce.updateAfterMovement();
+      });
+    });
+    newForce.updateAfterMovement();
   }
 
-  //Removes a force from a link
+
   removeForce(idORRef: number | Force) {
     if (typeof idORRef === 'number') {
       this._forces.delete(idORRef);

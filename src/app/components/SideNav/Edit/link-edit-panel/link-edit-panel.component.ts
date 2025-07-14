@@ -194,7 +194,7 @@ export class LinkEditPanelComponent implements OnDestroy {
       const x = length.toFixed(3);
       return parseFloat(x);
     }
-    return 0; // or handle null/undefined case as per your application logic
+    return 0;
   }
 
   //I think this is getting called continuously, should probably find a way to amend that
@@ -209,7 +209,7 @@ export class LinkEditPanelComponent implements OnDestroy {
       const x = angle.toFixed(3);
       return parseFloat(x);
     }
-    return 0; // Handle null/undefined case as per your application logic
+    return 0;
   }
 
   //Returns the joints attached to the selected link

@@ -10,7 +10,8 @@ import { PositionInteractor } from 'src/app/controllers/position-interactor';
 import { ColorService } from 'src/app/services/color.service';
 import { SVGPathService } from 'src/app/services/svg-path.service';
 import { UnitConversionService } from 'src/app/services/unit-conversion.service';
-import { Subscription } from 'rxjs';
+import {Subscription} from "rxjs";
+import { AnimationService } from 'src/app/services/animation.service';
 
 @Component({
   selector: '[app-position]',
@@ -30,9 +31,10 @@ export class PositionComponent extends AbstractInteractiveComponent {
     private stateService: StateService,
     private colorService: ColorService,
     private svgPathService: SVGPathService,
-    private unitConversionService: UnitConversionService
+    private unitConversionService: UnitConversionService,
+    public override animationService: AnimationService
   ) {
-    super(interactionService);
+    super(interactionService, animationService);
   }
 
   override registerInteractor(): Interactor {
