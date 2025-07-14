@@ -157,19 +157,16 @@ export class Force {
     const storedDistance = this._posInLink[0];
     const storedAngle = this._posInLink[1];
 
-    // You may want to add parent's current angle to maintain relative position
     const parentAngle =
       ((this.parentLink?.calculateAngle() || 0) * Math.PI) / 180;
     const finalAngle = storedAngle + parentAngle;
 
     this.start = new Coord(
-      parentCenter.x + storedDistance * Math.cos(finalAngle),
-      parentCenter.y + storedDistance * Math.sin(finalAngle)
+      parentCenter.x + storedDistance * Math.cos(storedAngle),
+      parentCenter.y + storedDistance * Math.sin(storedAngle)
     );
 
     const angleInRadians = (this.angle * Math.PI) / 180;
-    console.log('angleInRadians');
-    console.log(angleInRadians);
 
     this.end = new Coord(
       this.start.x + this.magnitude * Math.cos(angleInRadians),
@@ -203,14 +200,12 @@ export class Force {
     this.angle = Math.atan2(dy, dx) * (180 / Math.PI);
     this._relativeAngle = this.calculateRelativeAngle();
     this._posInLink = this.calculatePositionInLink();
-    this._relativeAngle = this.calculateRelativeAngle();
   }
-  calculatePositionInLink(): [number, number] {
-    const displacement = this.start.subtract(
-      this.parentLink.calculateCenterOfMass()
-    );
-    const angleToPos = Math.atan2(displacement.y, displacement.x);
 
+
+  calculatePositionInLink(): [number, number] {
+    const displacement = this.start.subtract(this.parentLink.calculateCenterOfMass());
+    const angleToPos = Math.atan2(displacement.y, displacement.x);
     return [displacement.getDistanceTo(new Coord(0, 0)), angleToPos];
   }
 
