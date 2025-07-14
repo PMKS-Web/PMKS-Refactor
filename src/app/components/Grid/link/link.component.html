@@ -1,19 +1,25 @@
 <svg:g appInteractable xmlns:svg="s" [interactor]="getInteractor()">
-  <path [attr.d]="getDrawnPath()" [attr.fill]="getColor()" [attr.fill-opacity]=0.7 [attr.stroke]="getStrokeColor()" [attr.stroke-width]=7>
-    
-  </path>
-  
-  <image *ngIf="getLocked()" 
-       xlink:href='../../../assets/icons/lock.svg' 
-       [attr.x]="getLockPosition().x - 25" 
-       [attr.y]="getLockPosition().y - 25" 
-       [attr.width]="55" 
-       [attr.height]="55">
-  </image>
-  @if(isHovered() || isSelected()) {
+  <path
+    [attr.d]="getDrawnPath()"
+    [attr.fill]="getColor()"
+    [attr.fill-opacity]="0.7"
+    [attr.stroke]="getStrokeColor()"
+    [attr.stroke-width]="7"
+  ></path>
+
+  <image
+    *ngIf="getLocked()"
+    xlink:href="../../../assets/icons/lock.svg"
+    [attr.x]="getLockPosition().x - 25"
+    [attr.y]="getLockPosition().y - 25"
+    [attr.width]="55"
+    [attr.height]="55"
+  ></image>
   <!--Display Length-->
+  @if (this.hoverState.isHoveringLength && this.hoverState.linkId ===
+  this.link.id) {
+  <path [attr.d]="getDoubleArrowheadSVG()" fill="black"></path>
   <path [attr.d]="getLeftLineSVG()" stroke="black" stroke-width="3"></path>
-  <path [attr.d]="getRightLineSVG()" stroke="black" stroke-width="3"></path>
   <text
     class="link-name"
     [attr.x]="getMidPointX()"
@@ -23,8 +29,10 @@
   >
     {{ getLength() }}
   </text>
-
+  }
   <!--Display Angle-->
+  @if (this.hoverState.isHoveringAngle && this.hoverState.linkId ===
+  this.link.id) {
   <path
     [attr.d]="getAngleSVG()"
     stroke="black"
@@ -32,21 +40,6 @@
     fill="transparent"
     stroke-dasharray="20"
   ></path>
-
-  <!-- First Path: Line from the first joint to the midpoint -->
-  <!--    <path [attr.d]="getUpperBoundSVG()" stroke="black" stroke-width="3"></path>-->
-
-  <!-- Curved Path: Arc representing the angle -->
-  <path
-    [attr.d]="getCurvedPathSVG()"
-    stroke="black"
-    stroke-width="3"
-    fill="transparent"
-    ng
-  ></path>
-
-  <!-- Second Path: Line from the midpoint to the second joint -->
-  <!--    <path [attr.d]="getLowerBoundSVG()" stroke="black" stroke-width="3"></path>-->
 
   <!-- Angle -->
   <text
@@ -58,6 +51,8 @@
   >
     {{ getAngle() }}{{ unitsAngle }}
   </text>
+
+  } @if(isHovered() || isSelected()) {
 
   <!--Display Name-->
   <text
@@ -83,6 +78,8 @@
   }
 </svg:g>
 
+<!--marker-end="url(#arrowhead)"-->
+
 <svg width="500" height="500" xmlns="http://www.w3.org/2000/svg">
   <!-- Define an arrow marker -->
   <defs>
@@ -99,19 +96,3 @@
     </marker>
   </defs>
 </svg>
-
-<!--<svg width="500" height="500" xmlns="http://www.w3.org/2000/svg">-->
-<!--  &lt;!&ndash; First Path: Line from the first joint to the midpoint &ndash;&gt;-->
-<!--  <path [attr.d]="getFirstLineSVG()" stroke="black" stroke-width="3"></path>-->
-
-<!--  &lt;!&ndash; Second Path: Line from the midpoint to the second joint &ndash;&gt;-->
-<!--  <path [attr.d]="getSecondLineSVG()" stroke="black" stroke-width="3"></path>-->
-
-<!--  &lt;!&ndash; Curved Path: Arc representing the angle &ndash;&gt;-->
-<!--  <path [attr.d]="getAngleCurveSVG()" stroke="black" stroke-width="3" fill="transparent"></path>-->
-
-<!--  &lt;!&ndash; Angle Text &ndash;&gt;-->
-<!--  <text class="link-name" [attr.x]="getAngleTextPosX()" [attr.y]="getAngleTextPosY()" alignment-baseline="middle" text-anchor="middle">-->
-<!--    {{getAngle()}}{{unitsAngle}}-->
-<!--  </text>-->
-<!--</svg>-->

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { LinkInteractor } from 'src/app/controllers/link-interactor';
 import { Link } from 'src/app/model/link';
 import { Mechanism } from 'src/app/model/mechanism';
@@ -6,13 +6,14 @@ import { InteractionService } from 'src/app/services/interaction.service';
 import { StateService } from 'src/app/services/state.service';
 import { Joint } from 'src/app/model/joint';
 import { ColorService } from 'src/app/services/color.service';
+import { LinkEditHoverService } from 'src/app/services/link-edit-hover.service';
 
 @Component({
   selector: 'app-link-edit-panel',
   templateUrl: './link-edit-panel.component.html',
   styleUrls: ['./link-edit-panel.component.scss'],
 })
-export class LinkEditPanelComponent {
+export class LinkEditPanelComponent implements OnDestroy {
   //map of each of the variables that determine whether each collapsible subsection is open
   sectionExpanded: { [key: string]: boolean } = {
     LBasic: true,
@@ -40,9 +41,12 @@ export class LinkEditPanelComponent {
   constructor(
     private stateService: StateService,
     private interactionService: InteractionService,
-    private colorService: ColorService
+    private colorService: ColorService,
+    private linkHoverService: LinkEditHoverService
   ) {}
-
+  ngOnDestroy() {
+    this.linkHoverService.clearHover();
+  }
   // Saves the new X value for a joint component
   confirmCompX(jointId: number): void {
     const raw = this.pendingCompX[jointId];
@@ -153,6 +157,19 @@ export class LinkEditPanelComponent {
     this.pendingLinkAngle = undefined;
   }
 
+  onLengthHover(isHovering: boolean) {
+    this.linkHoverService.setLengthHover(
+      isHovering,
+      this.getSelectedObject().id
+    );
+  }
+
+  onAngleHover(isHovering: boolean) {
+    this.linkHoverService.setAngleHover(
+      isHovering,
+      this.getSelectedObject().id
+    );
+  }
   //helper function to access current selected object (will always be a link here)
   getSelectedObject(): Link {
     let link = this.interactionService.getSelectedObject() as LinkInteractor;
