@@ -132,7 +132,7 @@ export class StateService {
         this.mechanism._addJoint(newJoint);
       }
     }
-
+    // Links
     if (rawData.decodedLinks) {
       for (const link of rawData.decodedLinks) {
         let jointsArray: Joint[] = (link.joints as unknown as string)
@@ -198,6 +198,8 @@ export class StateService {
 
     //Forces
     if (rawData.decodedForces) {
+      console.log('force:');
+      console.log(rawData.decodedForces);
       for (const force of rawData.decodedForces) {
         let startCoord = new Coord(force.start.x, force.start.y);
         let endCoord = new Coord(force.end.x, force.end.y);
@@ -205,13 +207,16 @@ export class StateService {
           force.id,
           startCoord,
           endCoord,
-          force.parentLink
+          this.mechanism.getLink(force.parentLink as unknown as number)
         );
         newForce.name = force.name;
-        newForce.magnitude = force.magnitude;
-        newForce.angle = force.angle;
+        newForce.magnitude = newForce.start.getDistanceTo(newForce.end);
+        const coord1 = newForce.end.subtract(newForce.start);
+        newForce.angle = Math.atan2(coord1.y, coord1.x) * (180 / Math.PI);
         newForce.frameOfReference = force.frameOfReference;
-
+        newForce.parentLink.addForce(newForce);
+        console.log('force:');
+        console.log(newForce);
         this.mechanism._addForce(newForce);
       }
     }
