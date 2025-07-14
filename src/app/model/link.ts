@@ -192,7 +192,7 @@ export class Link implements RigidBody {
     newForce.updateAfterMovement();
   }
 
-  //Removes a force from a link
+
   removeForce(idORRef: number | Force) {
     if (typeof idORRef === 'number') {
       this._forces.delete(idORRef);
@@ -447,8 +447,7 @@ export class Link implements RigidBody {
     }
     for (const forceID of this._forces.keys()) {
       const force = this._forces.get(forceID)!;
-      force.start = force.start.add(coord);
-      force.end = force.end.add(coord);
+      // force.setCoordinates(force.start.add(coord), force.end.add(coord));
     }
   }
 
