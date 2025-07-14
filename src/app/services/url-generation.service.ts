@@ -2,6 +2,9 @@
 import { EncoderService } from './encoder.service';
 import { StateService } from './state.service';
 import {PanZoomService} from "./pan-zoom.service";
+import {Injectable} from "@angular/core";
+
+@Injectable({ providedIn: 'root' })
 
 export class UrlGenerationService {
 
@@ -17,7 +20,7 @@ export class UrlGenerationService {
 
   /**
    * Will dynamically generate and return a string URL
-   * based on the mechanism from current state service data
+   * based on the mechanism from curretn state service data
    *   -- uses current URL for copying, ie "http://localhost:4200"
    * @returns string
    */
