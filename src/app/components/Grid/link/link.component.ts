@@ -55,7 +55,7 @@ export class LinkComponent
     private svgPathService: SVGPathService,
     private unitConversionService: UnitConversionService,
     private cdr: ChangeDetectorRef,
-    private linkHoverService: LinkEditHoverService
+    private linkHoverService: LinkEditHoverService,
     public override animationService: AnimationService
   ) {
     super(interactionService,animationService);
