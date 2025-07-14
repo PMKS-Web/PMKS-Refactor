@@ -23,7 +23,7 @@ export class FeedbackPanelComponent {
   userEmail     = '';
 
   private readonly PUBLIC_KEY   = 'Zt9zocAWwnjuoRu4k';
-  private readonly SERVICE_ID   = 'service_u764c3j';
+  private readonly SERVICE_ID   = 'service_w5sn9tv';
   private readonly TEMPLATE_ID  = 'template_jwey1mq';
 
   constructor(
