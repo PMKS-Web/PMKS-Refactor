@@ -12,6 +12,7 @@ import { AnimationBarComponent } from '../components/AnimationBar/animationbar/a
 import { Action } from '../components/ToolBar/undo-redo-panel/action';
 import { ThreePosSynthesis } from '../components/SideNav/Synthesis/three-pos-synthesis/three-pos-synthesis.component';
 import { InteractionService } from './interaction.service';
+import { isUndefined } from 'lodash';
 
 /*
 Stores the global state of the application. This includes the model, global settings, and Pan/Zoom State. This is a singleton service.
@@ -390,6 +391,12 @@ export class StateService {
       case 'setSynthesisLength':
         this.mechanism.setCouplerLength(action.newDistance as number);
         break;
+      case 'setPositionAngle':
+        if(!isUndefined(action.linkId) && !isUndefined(action.newAngle)){
+          console.log("hii")
+          this.mechanism.setPositionAngle(action.newAngle, action.linkId);
+        }
+        break;
       case 'deleteJoint':
         if (action.jointId !== undefined) {
           this.mechanism.removeJoint(action.jointId);
@@ -513,6 +520,12 @@ export class StateService {
         break;      
       case 'setSynthesisLength':
         this.mechanism.setCouplerLength(action.oldDistance as number);
+        break;
+      case 'setPositionAngle':
+        if(!isUndefined(action.linkId) && !isUndefined(action.oldAngle)){
+          console.log("hii")
+          this.mechanism.setPositionAngle(action.oldAngle, action.linkId);
+        }
         break;
       case 'removeSlider':
         if (action.jointId !== undefined) {

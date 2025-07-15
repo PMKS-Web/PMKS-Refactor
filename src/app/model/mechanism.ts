@@ -1209,27 +1209,22 @@ export class Mechanism {
   setCouplerLength(length: number){
   this._positionLengthChange.next(length);
   this._positions.forEach(pos => {
-    const referenceJoint = this.getReferenceJoint(pos);
-    pos.setLength(length, referenceJoint);
+    pos.setLength(length);
   });
   }
+  setPositionAngle(angle: number, id: number){
+    let pos = this._positions.get(id);
+    pos?.setAngle(angle, this._positionReference);
+    console.log(pos)
+  }
 //HELPER FOR setCouplerLength
-
   getReferenceJoint(position: Position): Joint {
     if (this._positionReference === 'Back') {
       return position.getJoints()[0];
     } else if (this._positionReference === 'Front') {
       return position.getJoints()[1];
     } else {
-      const joints = position.getJoints();
-      const joint1 = joints[0];
-      const joint2 = joints[1];
-      const centerX = (joint1.coords.x + joint2.coords.x) / 2;
-      const centerY = (joint1.coords.y + joint2.coords.y) / 2;
-      return new Joint(
-        -1 /*Jav here, put this as placeholder id, idk if it needs to be something specific but we will see if something breaks */,
-        new Coord(centerX, centerY)
-      );
+      return position.getJoints()[2];
     }
   }
 

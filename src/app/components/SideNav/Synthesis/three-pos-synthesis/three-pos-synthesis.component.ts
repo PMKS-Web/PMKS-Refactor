@@ -56,11 +56,8 @@ export class ThreePosSynthesis implements OnInit {
   sectionExpanded: { [key: string]: boolean } = { Basic: false };
   reference: string = 'Center';
   couplerLength: number = 2;
-  pos1Angle: number = 0;
   pos1Specified: boolean = false;
-  pos2Angle: number = 0;
   pos2Specified: boolean = false;
-  pos3Angle: number = 0;
   pos3Specified: boolean = false;
   position1: Position | null = null;
   position2: Position | null = null;
@@ -128,7 +125,7 @@ export class ThreePosSynthesis implements OnInit {
     this.stateService.generateSixBar$.subscribe(() => {
       this.generateSixBar();
     });
-        this.stateService.getMechanism()._positionLengthChange$
+        this.mechanism._positionLengthChange$
       .subscribe(newLength => {
         this.length = newLength;
       });
@@ -138,15 +135,12 @@ export class ThreePosSynthesis implements OnInit {
       if (position.id === 0) {
         this.position1 = position;
         this.pos1Specified = true;
-        this.pos1Angle = position.angle;
       } else if (position.id === 1) {
         this.position2 = position;
         this.pos2Specified = true;
-        this.pos2Angle = position.angle;
       } else if (position.id === 2) {
         this.position3 = position;
         this.pos3Specified = true;
-        this.pos3Angle = position.angle;
       }
     });
     this.mechanism.getArrayOfLinks().forEach((link) => {
@@ -162,7 +156,7 @@ export class ThreePosSynthesis implements OnInit {
   }
   setReference(r: string) {
     this.reference = r;
-    this.stateService.getMechanism()._positionReference = this.reference;
+    this.mechanism._positionReference = this.reference;
     if (this.position1) {
       this.position1.setReference(this.reference);
       this.setPosXCoord(this.getNewCoord(this.position1).x, 1);
@@ -236,7 +230,6 @@ export class ThreePosSynthesis implements OnInit {
 
   resetPos(pos: number) {
     if (pos == 1) {
-      this.pos1Angle = 0;
       this.position1!.angle = 0;
       this.twoPointPositions[0] = {
         x0: -1,
@@ -246,7 +239,6 @@ export class ThreePosSynthesis implements OnInit {
         defined: false,
       };
     } else if (pos == 2) {
-      this.pos2Angle = 0;
       this.position2!.angle = 0;
       this.twoPointPositions[1] = {
         x0: -3.5,
@@ -257,7 +249,6 @@ export class ThreePosSynthesis implements OnInit {
       };
       this.position2LengthErr = { x1: false, y1: false, x2: false, y2: false };
     } else {
-      this.pos3Angle = 0;
       this.position3!.angle = 0;
       this.twoPointPositions[2] = {
         x0: 1.5,
@@ -555,7 +546,7 @@ export class ThreePosSynthesis implements OnInit {
     if (x > 0 && x !== this.couplerLength) {
       this.stateService.recordAction({type: "setSynthesisLength", oldDistance: this.couplerLength, newDistance: x})
       this.couplerLength = x;
-      this.stateService.getMechanism().setCouplerLength(x);
+      this.mechanism.setCouplerLength(x);
     }
   }
 
@@ -667,51 +658,30 @@ export class ThreePosSynthesis implements OnInit {
   }
 
   setPositionAngle(angle: number, posNum: number) {
-    const radians = angle * (Math.PI / 180); // Convert angle to radians
-
-    if (posNum === 1 && this.position1) {
-      this.pos1Angle = angle;
-      this.position1.angle = angle;
-      const backJoint = this.position1.getJoints()[0];
-      const frontJoint = this.position1.getJoints()[1];
-      const midJoint = this.position1.getJoints()[2];
-      const referenceJoint = this.getReferenceJoint(this.position1);
-      this.setCouplerJointCoordinates(
-        referenceJoint,
-        radians,
-        backJoint,
-        midJoint,
-        frontJoint
-      );
-    } else if (posNum === 2 && this.position2) {
-      this.pos2Angle = angle;
-      this.position2.angle = angle;
-      const backJoint = this.position2.getJoints()[0];
-      const frontJoint = this.position2.getJoints()[1];
-      const midJoint = this.position2.getJoints()[2];
-      const referenceJoint = this.getReferenceJoint(this.position2);
-      this.setCouplerJointCoordinates(
-        referenceJoint,
-        radians,
-        backJoint,
-        midJoint,
-        frontJoint
-      );
-    } else if (posNum === 3 && this.position3) {
-      this.pos3Angle = angle;
-      this.position3.angle = angle;
-      const backJoint = this.position3.getJoints()[0];
-      const frontJoint = this.position3.getJoints()[1];
-      const midJoint = this.position3.getJoints()[2];
-      const referenceJoint = this.getReferenceJoint(this.position3);
-      this.setCouplerJointCoordinates(
-        referenceJoint,
-        radians,
-        backJoint,
-        midJoint,
-        frontJoint
-      );
+    let position = undefined;
+    if (posNum === 1) {
+      position = this.position1;
+    } else if (posNum === 2) {
+      position = this.position2;
+    } else{
+      position = this.position3;
     }
+    console.log("position?.angle")
+    console.log(position?.angle.toFixed(3))
+    console.log("angle")
+    console.log(typeof angle)
+
+    if(position && position.angle.toFixed(3) !== Number(angle).toFixed(3)){
+      this.stateService.recordAction({
+        type: "setPositionAngle",
+        linkId: position.id,
+        oldAngle: position.angle,
+        newAngle: Number(angle)
+      })
+      this.mechanism.setPositionAngle(Number(angle), position.id);
+    }
+    
+
     this.cdr.detectChanges();
   }
 
@@ -721,15 +691,7 @@ export class ThreePosSynthesis implements OnInit {
     } else if (this.reference === 'Front') {
       return position.getJoints()[1];
     } else {
-      const joints = position.getJoints();
-      const joint1 = joints[0];
-      const joint2 = joints[1];
-      const centerX = (joint1.coords.x + joint2.coords.x) / 2;
-      const centerY = (joint1.coords.y + joint2.coords.y) / 2;
-      return new Joint(
-        -1 /*Jav here, put this as placeholder id, idk if it needs to be something specific but we will see if something breaks */,
-        new Coord(centerX, centerY)
-      );
+      return position.getJoints()[2];
     }
   }
   getPosXCoord(posNum: number) {
@@ -760,9 +722,9 @@ export class ThreePosSynthesis implements OnInit {
   }
 
   getPosAngle(posNum: number) {
-    if (posNum == 1) return this.pos1Angle.toFixed(3) as unknown as number;
-    else if (posNum == 2) return this.pos2Angle.toFixed(3) as unknown as number;
-    else return this.pos3Angle.toFixed(3) as unknown as number;
+    if (posNum == 1) return this.position1?.angle.toFixed(3) as unknown as number;
+    else if (posNum == 2) return this.position2?.angle.toFixed(3) as unknown as number;
+    else return this.position3?.angle.toFixed(3) as unknown as number;
   }
 
   isPositionDefined(index: number): boolean {
@@ -993,8 +955,7 @@ export class ThreePosSynthesis implements OnInit {
   // Handles focus event to hide placeholder
   // Handles blur event to restore placeholder if input is empty
   swapInputAndGround() {
-    const mechanism: Mechanism = this.stateService.getMechanism();
-    const joints = mechanism.getJoints();
+    const joints = this.mechanism.getJoints();
 
     let inputJoint: Joint | undefined;
     let groundJoint: Joint | undefined;

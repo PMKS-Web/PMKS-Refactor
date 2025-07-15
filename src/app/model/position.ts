@@ -139,12 +139,17 @@ export class Position implements RigidBody {
   setReference(refPoint:string) {
     this._referencePoint = refPoint; //Needed for component
     const joints = this.getJoints();
+    const joint1 = joints[0];
+    const joint2 = joints[1];
     //2 is default reference point in the middle, 0 is leftmost joint, 1 is rightmost joint
     if (refPoint === "Center") {
       joints[2].hidden = false;
       joints[2].reference = true;
       joints[0].reference = false;
       joints[1].reference = false;
+      joints[2]._coords.x = (joint1.coords.x + joint2.coords.x) / 2;
+      joints[2]._coords.y = (joint1.coords.y + joint2.coords.y) / 2;
+      
     }
     else if (refPoint === "Back"){
       joints[2].hidden = true;
@@ -268,7 +273,7 @@ export class Position implements RigidBody {
     }
   }
 
-setLength(newLength: number, refJoint: Joint) {
+setLength(newLength: number) {
   const jointKeys = Array.from(this.joints.keys()).filter(key => {
     const joint = this.joints.get(key);
     return joint !== null && joint !== undefined;
@@ -282,19 +287,15 @@ setLength(newLength: number, refJoint: Joint) {
   if (jointOne && jointTwo && currentLength) {
     if (jointOne.locked || jointTwo.locked) return;
 
-    // Calculate the center point between the two joints
     const centerX = (jointOne.coords.x + jointTwo.coords.x) / 2;
     const centerY = (jointOne.coords.y + jointTwo.coords.y) / 2;
 
-    // Calculate the current angle of the position
     const vectorX = jointTwo.coords.x - jointOne.coords.x;
     const vectorY = jointTwo.coords.y - jointOne.coords.y;
     const angleInRadians = Math.atan2(vectorY, vectorX);
 
-    // Calculate half the new length
     const halfNewLength = newLength / 2;
 
-    // Position both joints equally distant from the center
     jointOne.coords.x = centerX - halfNewLength * Math.cos(angleInRadians);
     jointOne.coords.y = centerY - halfNewLength * Math.sin(angleInRadians);
 
@@ -303,38 +304,69 @@ setLength(newLength: number, refJoint: Joint) {
   }
 }
 
-  setAngle(newAngle: number, refJoint: Joint) {
-    const jointKeys = Array.from(this.joints.keys()).filter(key => {
-      const joint = this.joints.get(key);
-      return joint !== null && joint !== undefined;
-    }).slice(0, 2);
+setAngle(newAngle: number, refJoint: string) {
+  const joints = this.getJoints();
+  const backJoint = joints[0]
+  const frontJoint = joints[1]
+  const centerJoint = joints[2]
+  const currentLength = this.calculateLength();
 
-    let jointOne = this.joints.get(jointKeys[0]);
-    let jointTwo = this.joints.get(jointKeys[1]);
+  if (backJoint && frontJoint && currentLength) {
+    if (backJoint.locked || frontJoint.locked) return;
 
-    const currentAngle = (this.calculateAngle() as number) + 0.000000001;
-    const currentDistance = this.calculateLength();
+    let referenceJoint: Joint;
+    if (refJoint === 'Back') {
+      referenceJoint = backJoint;
+    } else if (refJoint === 'Front') {
+      referenceJoint = frontJoint;
+    } else { // 'Center'
+      referenceJoint = centerJoint!;
+    }
 
-    if (jointOne && jointTwo && currentAngle && currentDistance) {
-      if (refJoint.id == jointTwo.id) {
-        const temp = jointOne;
-        jointOne = jointTwo;
-        jointTwo = temp;
+    const newAngleInRadians = (newAngle * Math.PI) / 180;
+    const centerX = referenceJoint.coords.x;
+    const centerY = referenceJoint.coords.y;
+    const halfLength = currentLength / 2;
+    const dx = Math.cos(newAngleInRadians);
+    const dy = Math.sin(newAngleInRadians);
+
+    if (refJoint === 'Center') {
+      // Rotate around center - both joints move
+      backJoint.coords.x = centerX - halfLength * dx;
+      backJoint.coords.y = centerY - halfLength * dy;
+      
+      frontJoint.coords.x = centerX + halfLength * dx;
+      frontJoint.coords.y = centerY + halfLength * dy;
+      
+      if (centerJoint) {
+        centerJoint._coords.x = centerX;
+        centerJoint._coords.y = centerY;
       }
-
-      if (jointOne.locked || jointTwo.locked) return;
-
-      const angleDifference = newAngle - currentAngle;
-      const currentAngleInRadians = (currentAngle * Math.PI) / 180;
-      const angleInRadians = (angleDifference * Math.PI) / 180;
-
-      const newX = jointOne.coords.x + currentDistance * Math.cos(currentAngleInRadians + angleInRadians);
-      const newY = jointOne.coords.y + currentDistance * Math.sin(currentAngleInRadians + angleInRadians);
-
-      jointTwo.coords.x = newX;
-      jointTwo.coords.y = newY;
+    } else if (refJoint === 'Back') {
+      // Rotate around back joint - front joint moves
+      frontJoint.coords.x = centerX + currentLength * dx;
+      frontJoint.coords.y = centerY + currentLength * dy;
+      
+      if (centerJoint) {
+        centerJoint._coords.x = centerX + halfLength * dx;
+        centerJoint._coords.y = centerY + halfLength * dy;
+      }
+    } else if (refJoint === 'Front') {
+      // Rotate around front joint - back joint moves
+      backJoint.coords.x = centerX - currentLength * dx;
+      backJoint.coords.y = centerY - currentLength * dy;
+      
+      if (centerJoint) {
+        centerJoint._coords.x = centerX - halfLength * dx;
+        centerJoint._coords.y = centerY - halfLength * dy;
+      }
     }
   }
+  const num = this.calculateAngle();
+  if(num){
+    this._angle = num;
+  }
+}
 
   containsJoint(idORRef: number | Joint): boolean {
     const id = typeof idORRef === 'number' ? idORRef : idORRef.id;
