@@ -268,37 +268,40 @@ export class Position implements RigidBody {
     }
   }
 
-  setLength(newLength: number, refJoint: Joint) {
-    const jointKeys = Array.from(this.joints.keys()).filter(key => {
-      const joint = this.joints.get(key);
-      return joint !== null && joint !== undefined;
-    }).slice(0, 2);
+setLength(newLength: number, refJoint: Joint) {
+  const jointKeys = Array.from(this.joints.keys()).filter(key => {
+    const joint = this.joints.get(key);
+    return joint !== null && joint !== undefined;
+  }).slice(0, 2);
 
-    let jointOne = this.joints.get(jointKeys[0]);
-    let jointTwo = this.joints.get(jointKeys[1]);
+  const jointOne = this.joints.get(jointKeys[0]);
+  const jointTwo = this.joints.get(jointKeys[1]);
 
-    const currentLength = this.calculateLength();
+  const currentLength = this.calculateLength();
 
-    if (jointOne && jointTwo && currentLength) {
-      if (refJoint.id == jointTwo.id) {
-        const temp = jointOne;
-        jointOne = jointTwo;
-        jointTwo = temp;
-      }
+  if (jointOne && jointTwo && currentLength) {
+    if (jointOne.locked || jointTwo.locked) return;
 
-      if (jointOne.locked || jointTwo.locked) return;
+    // Calculate the center point between the two joints
+    const centerX = (jointOne.coords.x + jointTwo.coords.x) / 2;
+    const centerY = (jointOne.coords.y + jointTwo.coords.y) / 2;
 
-      const scalingFactor = newLength / currentLength;
-      const vectorX = jointTwo.coords.x - jointOne.coords.x;
-      const vectorY = jointTwo.coords.y - jointOne.coords.y;
+    // Calculate the current angle of the position
+    const vectorX = jointTwo.coords.x - jointOne.coords.x;
+    const vectorY = jointTwo.coords.y - jointOne.coords.y;
+    const angleInRadians = Math.atan2(vectorY, vectorX);
 
-      const scaledVectorX = vectorX * scalingFactor;
-      const scaledVectorY = vectorY * scalingFactor;
+    // Calculate half the new length
+    const halfNewLength = newLength / 2;
 
-      jointTwo.coords.x = jointOne.coords.x + scaledVectorX;
-      jointTwo.coords.y = jointOne.coords.y + scaledVectorY;
-    }
+    // Position both joints equally distant from the center
+    jointOne.coords.x = centerX - halfNewLength * Math.cos(angleInRadians);
+    jointOne.coords.y = centerY - halfNewLength * Math.sin(angleInRadians);
+
+    jointTwo.coords.x = centerX + halfNewLength * Math.cos(angleInRadians);
+    jointTwo.coords.y = centerY + halfNewLength * Math.sin(angleInRadians);
   }
+}
 
   setAngle(newAngle: number, refJoint: Joint) {
     const jointKeys = Array.from(this.joints.keys()).filter(key => {

@@ -18,6 +18,7 @@ import { PositionSolverService } from '../../../../services/kinematic-solver.ser
 import { Position } from '../../../../model/position';
 import { NotificationService } from 'src/app/services/notification.service';
 import { Action } from 'rxjs/internal/scheduler/Action';
+import { Subscription } from 'rxjs';
 
 interface CoordinatePosition {
   x0: number;
@@ -84,7 +85,7 @@ export class ThreePosSynthesis implements OnInit {
   panel: string = 'Synthesis';
   synthedMech: Link[] = [];
   selectedOption: string = 'xy-angle';
-  distance: number = 0;
+  length: number = 2;
   angle: number = 0;
   // New array for two-point mode, using the Position interface
   twoPointPositions: CoordinatePosition[] = [
@@ -104,13 +105,14 @@ export class ThreePosSynthesis implements OnInit {
     [key: number]: { x0: boolean; y0: boolean; x1: boolean; y1: boolean };
   } = {};
   private readonly mechanism: Mechanism;
+  
 
   constructor(
     private stateService: StateService,
     private interactionService: InteractionService,
     private cdr: ChangeDetectorRef,
     private positionSolver: PositionSolverService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
   ) {
     this.mechanism = this.stateService.getMechanism();
   }
@@ -126,6 +128,10 @@ export class ThreePosSynthesis implements OnInit {
     this.stateService.generateSixBar$.subscribe(() => {
       this.generateSixBar();
     });
+        this.stateService.getMechanism()._positionLengthChange$
+      .subscribe(newLength => {
+        this.length = newLength;
+      });
   }
   init() {
     this.mechanism.getArrayOfPositions().forEach((position) => {
@@ -156,6 +162,7 @@ export class ThreePosSynthesis implements OnInit {
   }
   setReference(r: string) {
     this.reference = r;
+    this.stateService.getMechanism()._positionReference = this.reference;
     if (this.position1) {
       this.position1.setReference(this.reference);
       this.setPosXCoord(this.getNewCoord(this.position1).x, 1);
@@ -262,7 +269,9 @@ export class ThreePosSynthesis implements OnInit {
       this.position3LengthErr = { x1: false, y1: false, x2: false, y2: false };
     }
   }
-
+  getLength(): number{
+    return this.length as number;
+  }
   isFourBarGenerated(): boolean {
     return this.fourBarGenerated;
   }
@@ -543,78 +552,10 @@ export class ThreePosSynthesis implements OnInit {
   }
 
   setCouplerLength(x: number) {
-    if (x > 0) {
+    if (x > 0 && x !== this.couplerLength) {
+      this.stateService.recordAction({type: "setSynthesisLength", oldDistance: this.couplerLength, newDistance: x})
       this.couplerLength = x;
-      if (this.reference === 'Center') {
-        if (this.position1) {
-          const angle = this.pos1Angle;
-          const halfLength = x / 2;
-          this.setPositionAngle(0, 1); //Make Position flat to perform calculation
-          let joint1 = this.position1.getJoints()[0];
-          let joint2 = this.position1.getJoints()[1];
-          joint1.coords.x = joint1.coords.x - halfLength;
-          joint2.coords.x = joint2.coords.x + halfLength; //Space outer two joints equidistant about the center of the position
-          this.setPositionAngle(angle, 1); //Give position its original angle back
-        }
-        if (this.position2) {
-          const angle = this.pos2Angle;
-          const halfLength = x / 2;
-          this.setPositionAngle(0, 2); //Make Position flat to perform calculation
-          let joint1 = this.position2.getJoints()[0];
-          let joint2 = this.position2.getJoints()[1];
-          joint1.coords.x = joint1.coords.x - halfLength;
-          joint2.coords.x = joint2.coords.x + halfLength; //Space outer two joints equidistant about the center of the position
-          this.setPositionAngle(angle, 2); //Give position its original angle back
-        }
-        if (this.position3) {
-          const angle = this.pos1Angle;
-          const halfLength = x / 2;
-          this.setPositionAngle(0, 3); //Make Position flat to perform calculation
-          let joint1 = this.position3.getJoints()[0];
-          let joint2 = this.position3.getJoints()[1];
-          joint1.coords.x = joint1.coords.x - halfLength;
-          joint2.coords.x = joint2.coords.x + halfLength; //Space outer two joints equidistant about the center of the position
-          this.setPositionAngle(angle, 3); //Give position its original angle back
-        }
-      } else if (this.reference === 'Back') {
-        if (this.position1) {
-          this.position1.setLength(
-            this.couplerLength,
-            this.position1.getJoints()[0]
-          );
-        }
-        if (this.position2) {
-          this.position2.setLength(
-            this.couplerLength,
-            this.position2.getJoints()[0]
-          );
-        }
-        if (this.position3) {
-          this.position3.setLength(
-            this.couplerLength,
-            this.position3.getJoints()[0]
-          );
-        }
-      } else {
-        if (this.position1) {
-          this.position1.setLength(
-            this.couplerLength,
-            this.position1.getJoints()[1]
-          );
-        }
-        if (this.position2) {
-          this.position2.setLength(
-            this.couplerLength,
-            this.position2.getJoints()[1]
-          );
-        }
-        if (this.position3) {
-          this.position3.setLength(
-            this.couplerLength,
-            this.position3.getJoints()[1]
-          );
-        }
-      }
+      this.stateService.getMechanism().setCouplerLength(x);
     }
   }
 

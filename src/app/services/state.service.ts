@@ -387,6 +387,9 @@ export class StateService {
       case 'generateSixBar':
         this.generateSixBarSubject.next();
         break;
+      case 'setSynthesisLength':
+        this.mechanism.setCouplerLength(action.newDistance as number);
+        break;
       case 'deleteJoint':
         if (action.jointId !== undefined) {
           this.mechanism.removeJoint(action.jointId);
@@ -507,6 +510,9 @@ export class StateService {
         if (action.jointId !== undefined) {
           this.mechanism.removeSlider(action.jointId);
         }
+        break;      
+      case 'setSynthesisLength':
+        this.mechanism.setCouplerLength(action.oldDistance as number);
         break;
       case 'removeSlider':
         if (action.jointId !== undefined) {

@@ -23,12 +23,18 @@ export class Mechanism {
   private _forceIDCount: number;
   private _compoundLinkIDCount: number;
   private _mechanismChange: BehaviorSubject<Mechanism> =
-    new BehaviorSubject<Mechanism>(this);
+  new BehaviorSubject<Mechanism>(this);
   public _mechanismChange$ = this._mechanismChange.asObservable();
-  private _positions: Map<number, Position> = new Map();
   private _trajectories: Map<number, Trajectory> = new Map();
-  private _positionIDCount: number = 0;
   private _refIdCount: number = -1;
+
+  private _positionIDCount: number = 0;
+  private _positions: Map<number, Position> = new Map();
+  public _positionReference: string = 'Center';
+  private _positionLengthChange: BehaviorSubject<number> = new BehaviorSubject<number>(2);
+  public _positionLengthChange$ = this._positionLengthChange.asObservable();
+
+
 
   constructor() {
     this._joints = new Map();
@@ -45,10 +51,6 @@ export class Mechanism {
   }
 
   notifyChange(): void {
-    //console.log("updated Mechanism to");
-    //console.log(Array.from(this._joints.values()));
-    //console.log(Array.from(this._links.values()));
-    //console.log(Array.from(this._positions.values()));
     this._mechanismChange.next(this);
   }
 
@@ -1204,6 +1206,33 @@ export class Mechanism {
   setTrajectory(jointId: number, trajectory: Trajectory): void {
     this._trajectories.set(jointId, trajectory);
   }
+  setCouplerLength(length: number){
+  this._positionLengthChange.next(length);
+  this._positions.forEach(pos => {
+    const referenceJoint = this.getReferenceJoint(pos);
+    pos.setLength(length, referenceJoint);
+  });
+  }
+//HELPER FOR setCouplerLength
+
+  getReferenceJoint(position: Position): Joint {
+    if (this._positionReference === 'Back') {
+      return position.getJoints()[0];
+    } else if (this._positionReference === 'Front') {
+      return position.getJoints()[1];
+    } else {
+      const joints = position.getJoints();
+      const joint1 = joints[0];
+      const joint2 = joints[1];
+      const centerX = (joint1.coords.x + joint2.coords.x) / 2;
+      const centerY = (joint1.coords.y + joint2.coords.y) / 2;
+      return new Joint(
+        -1 /*Jav here, put this as placeholder id, idk if it needs to be something specific but we will see if something breaks */,
+        new Coord(centerX, centerY)
+      );
+    }
+  }
+
 
   //----------------------------CLEAR FUNCTIONS----------------------------
   clearTrajectories(): void {
