@@ -1,4 +1,4 @@
-import { Coord } from '../../../model/coord';
+import {Coord} from "../../../model/coord";
 
 //THE ACTION CLASS CONTAINS ANY POSSIBLE VALUE WE
 //WOULD NEED TO UNDO A USER ACTION
@@ -7,8 +7,8 @@ export interface Action {
   linkId?: number;
 
   jointId?: number;
-  oldCoords?: { x: number; y: number };
-  newCoords?: { x: number; y: number };
+  oldCoords?: { x: number, y: number };
+  newCoords?: { x: number, y: number };
 
   jointData?: JointSnapshot;
   extraJointsData?: JointSnapshot[];
@@ -18,6 +18,12 @@ export interface Action {
   linkMoveData?: LinkMoveSnapshot;
   linkTracerData?: LinkTracerSnapshot;
   linkForceData?: LinkForceSnapshot;
+
+  oldJointPos?: JointSnapshot[];
+  newJointPos?: JointSnapshot[];
+
+  //oldJointPos2?: JointSnapshot2[];
+  //newJointPos2?: JointSnapshot2[];
 
   oldJointPositions?: Array<{
     jointId: number;
@@ -34,6 +40,8 @@ export interface Action {
   end?: Coord;
   attachJointId?: number;
 
+
+
   newLinkId?: number;
   newJointIds?: number[];
 
@@ -41,7 +49,16 @@ export interface Action {
   newDistance?: number;
   oldAngle?: number;
   newAngle?: number;
+
+  axis?:    'x' | 'y';
+  posNum?:  number;
+  oldValue?: number;
+  newValue?: number;
+
+
 }
+
+
 
 export interface LinkSnapshot {
   id: number;
@@ -55,7 +72,7 @@ export interface LinkSnapshot {
 
 export interface JointSnapshot {
   id: number;
-  coords: { x: number; y: number };
+  coords: { x: number; y: number; };
   name: string;
   type: number;
   angle: number;
@@ -74,14 +91,8 @@ export interface LinkLockSnapshot {
 
 export interface LinkMoveSnapshot {
   linkId: number;
-  oldJointPositions: Array<{
-    jointId: number;
-    coords: { x: number; y: number };
-  }>;
-  newJointPositions: Array<{
-    jointId: number;
-    coords: { x: number; y: number };
-  }>;
+  oldJointPositions: Array<{ jointId: number; coords: { x: number; y: number } }>;
+  newJointPositions: Array<{ jointId: number; coords: { x: number; y: number } }>;
 }
 
 export interface LinkTracerSnapshot {
@@ -94,5 +105,8 @@ export interface LinkForceSnapshot {
   linkId: number;
   forceId: number;
   start: { x: number; y: number };
-  end: { x: number; y: number };
+  end:   { x: number; y: number };
 }
+
+
+
