@@ -4,32 +4,34 @@ import { Joint } from "../model/joint";
 import { StateService } from "../services/state.service";
 import { ContextMenuOption, Interactor } from "./interactor";
 
-/*
-This interactor defines the following behaviors:
-- Dragging the Position moves it
-*/
-
+/**
+ * This interactor defines the following behaviors:
+ * - Dragging the Position moves it
+ */
 export class PositionInteractor extends Interactor {
-
   public jointsStartPosModel: Map<number, Coord> = new Map();
+  private positionStartPositions = new Map<number, Coord>();
 
   constructor(public position: Position, private stateService: StateService) {
     super(true, true);
 
     this.onDragStart$.subscribe(() => {
+      this.jointsStartPosModel.clear();
+      this.positionStartPositions.clear();
 
       this.position.joints.forEach((joint: Joint, id: number) => {
-        this.jointsStartPosModel.set(id, joint._coords);
+        const startCoord = joint._coords.clone();
+        this.jointsStartPosModel.set(id, startCoord);
+        this.positionStartPositions.set(id, startCoord);
       });
     });
 
     this.onDrag$.subscribe(() => {
       this.jointsStartPosModel.forEach((coord: Coord, jointID: number) => {
         const joint = this.position.joints.get(jointID);
-        if (this.position.locked){
+        if (this.position.locked) {
           this.stateService.getMechanism().setJointCoord(jointID, coord.add(this.dragOffsetInModel!));
-        }
-        else if (joint) {
+        } else if (joint) {
           const wasLocked = joint.locked;
           joint.locked = false;
           this.stateService.getMechanism().setJointCoord(jointID, coord.add(this.dragOffsetInModel!));
@@ -39,9 +41,38 @@ export class PositionInteractor extends Interactor {
     });
 
     this.onDragEnd$.subscribe(() => {
-      this.jointsStartPosModel.clear();
-    });
+      const oldPositions = Array.from(this.positionStartPositions.entries()).map(
+        ([jointId, coords]) => ({
+          jointId,
+          coords: { x: coords.x, y: coords.y },
+        })
+      );
 
+      const newPositions = Array.from(this.position.joints.values()).map((j) => ({
+        jointId: j.id,
+        coords: { x: j._coords.x, y: j._coords.y },
+      }));
+
+      const moved = oldPositions.some((oldP) => {
+        const newP = newPositions.find((n) => n.jointId === oldP.jointId)!;
+        return (
+          oldP.coords.x !== newP.coords.x || oldP.coords.y !== newP.coords.y
+        );
+      });
+
+      if (moved) {
+        this.stateService.recordAction({
+          type: 'movePosition',
+          linkId: this.position.id,
+          oldJointPositions: oldPositions,
+          newJointPositions: newPositions,
+        });
+      }
+
+      this.jointsStartPosModel.clear();
+      this.positionStartPositions.clear();
+      this.stateService.getMechanism().notifyChange();
+    });
   }
 
   /**

@@ -418,6 +418,14 @@ export class StateService {
           );
         }
         break;
+      case 'movePosition':
+        for (const p of action.newJointPositions!) {
+          this.mechanism.setJointCoord(
+            p.jointId,
+            new Coord(p.coords.x, p.coords.y)
+          );
+        }
+        break;
       case 'addLink':
         if (action.extraJointsData) {
           action.extraJointsData.forEach((js) =>
@@ -580,6 +588,14 @@ export class StateService {
         }
         break;
       case 'moveLink':
+        for (const p of action.oldJointPositions!) {
+          this.mechanism.setJointCoord(
+            p.jointId,
+            new Coord(p.coords.x, p.coords.y)
+          );
+        }
+        break;
+      case 'movePosition':
         for (const p of action.oldJointPositions!) {
           this.mechanism.setJointCoord(
             p.jointId,
