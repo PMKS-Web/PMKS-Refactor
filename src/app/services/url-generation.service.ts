@@ -1,10 +1,18 @@
 
 import { EncoderService } from './encoder.service';
 import { StateService } from './state.service';
+import {PanZoomService} from "./pan-zoom.service";
+import {Injectable} from "@angular/core";
+
+@Injectable({ providedIn: 'root' })
 
 export class UrlGenerationService {
 
-  constructor(private stateService: StateService) {
+  constructor(
+    private stateService: StateService,
+    private panZoomService: PanZoomService
+
+  ) {
 
       //conatins mechanism implicitly ^^^
     }
@@ -12,12 +20,12 @@ export class UrlGenerationService {
 
   /**
    * Will dynamically generate and return a string URL
-   * based on the mechanism from current state service data
+   * based on the mechanism from curretn state service data
    *   -- uses current URL for copying, ie "http://localhost:4200"
    * @returns string
    */
   get generateUrl(): string {
-    const encoder = new EncoderService(this.stateService);
+    const encoder = new EncoderService(this.stateService, this.panZoomService);
     const encodedMechanism: string = encoder.encodeForURL();
     console.log(encodedMechanism);
     let currentUrl: string = window.location.href;
@@ -44,7 +52,7 @@ export class UrlGenerationService {
     console.log('copyURL');
     let url = this.generateUrl; //todo TEST
     this.copyToClipboard(url);
-    
+
     console.log('Mechanism URL copied. If you make additional changes, copy the URL again.');
   }
 }

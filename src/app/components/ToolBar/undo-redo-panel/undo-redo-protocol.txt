@@ -1,0 +1,42 @@
+/*
+===============================
+  PMKS+ Undo/Redo Protocol
+===============================
+
+This project uses an undo/redo system to let users reverse or reapply changes they’ve made to the mechanism.
+Any time the user performs an action that changes state, like moving a joint, deleting a link, or editing
+a value, we capture that change in an Action object. This object stores all the information needed to
+undo the change (using old values) and redo it (using new values).
+
+-----------------------------------
+  WHEN to Add an Undoable Action
+-----------------------------------
+
+If your feature changes anything visible in the mechanism or underlying data (joints, links, forces, etc.),
+you should make it undoable. Ask yourself: “Would a user expect to undo this?” If yes, then you need to
+follow this protocol.
+
+-----------------------------------
+  HOW to Add a New Undoable Action
+-----------------------------------
+
+1. Create an Action object.
+   - Set the type to a descriptive string (e.g., "move-joint", "delete-link").
+   - Include any values necessary to undo and redo the change (like oldCoords and newCoords).
+
+2. Call stateService.commitAction(action) after applying the change.
+   - This saves the action to the undo stack and clears the redo stack.
+
+3. In `StateService.undo()`, add logic for your new `action.type` to reverse the change.
+
+4. In `StateService.redo()`, add logic to reapply the change.
+
+Example:
+
+const action: Action = {
+  type: "move-joint",
+  jointId: joint.id,
+  oldCoords: { x: prevX, y: prevY },
+  newCoords: { x: newX, y: newY }
+};
+this.stateService.recordAction(action);

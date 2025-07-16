@@ -1,6 +1,9 @@
+$pmks-blue: #3949ab;
+$pmks-light-blue: #e8eaf6;
+$pmks-yellow: #ffb300;
 .notification-container {
   position: fixed;
-  top: 20px;
+  top: 5%;
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;
@@ -11,49 +14,109 @@
 }
 
 .notification {
-  background: #333;
-  color: white;
-  padding: 16px 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  background: $pmks-light-blue;
+  color: rgb(0, 0, 0);
+  padding: 10px 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-width: 300px;
-  max-width: 500px;
+  min-width: 400px;
+  max-width: 600px;
   pointer-events: all;
   position: relative;
+  outline: $pmks-blue 1.5px solid;
+  font-family: Roboto;
   
   // Fade in animation
   &.fade-in {
     animation: fadeIn 0.4s ease-out;
   }
   
-  // Optional: Add fade out animation when removed
   &.fade-out {
     animation: fadeOut 0.4s ease-out;
   }
 }
 
+// Warning notification styles
+.warning-notification {
+  background: #ffecb3 !important;
+  outline: #ffb300 1.5px solid !important;
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  position: relative;
+}
+
+.notification-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-left: 12px;
+  margin-right: 12px;
+  background-color: #3949ab;
+  -webkit-mask: url('/assets/icons/information.svg') no-repeat center;
+  mask: url('/assets/icons/information.svg') no-repeat center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.warning-notification .notification-icon {
+  background-color: $pmks-yellow;
+  -webkit-mask: url('/assets/icons/warning.svg') no-repeat center;
+  mask: url('/assets/icons/warning.svg') no-repeat center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.notification-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: #3949ab;
+}
+
+.warning-line {
+  background-color: $pmks-yellow !important;
+}
+
+.notification-message {
+  flex: 1;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
 .close-btn {
   background: none;
   border: none;
-  color: white;
-  font-size: 20px;
+  color: black;
+  font-size: 30px;
   cursor: pointer;
   padding: 0;
-  margin-left: 15px;
+  margin-left: 20px;
+  margin-right: 8px;
   line-height: 1;
-  opacity: 0.7;
+  opacity: 1;
   transition: opacity 0.2s ease;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   
   &:hover {
-    opacity: 1;
+    opacity: 0.6;
   }
   
   &:focus {
-    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline: 2px solid rgba(0, 0, 0, 0.3);
     outline-offset: 2px;
+    border-radius: 2px;
   }
 }
 
@@ -77,24 +140,5 @@
   to {
     opacity: 0;
     transform: translateY(-20px);
-  }
-}
-
-// Optional: Different notification types
-.notification {
-  &.success {
-    background: #4caf50;
-  }
-  
-  &.error {
-    background: #f44336;
-  }
-  
-  &.warning {
-    background: #ff9800;
-  }
-  
-  &.info {
-    background: #2196f3;
   }
 }

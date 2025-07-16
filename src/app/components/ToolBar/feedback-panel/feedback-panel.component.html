@@ -1,0 +1,53 @@
+
+<div class="remover" *ngIf="open" (click)="closePanel($event)">
+
+  <div class="panel panel-feedback" (click)="$event.stopPropagation()">
+    <div class="panel-header">
+      <div class="panel-title">Send Feedback</div>
+       </div>
+
+    <div class="panel-body">
+      <p>
+        Do you want to attach a file? Send us an email at
+        <a href="mailto:gr-pmksplus&#64;wpi.edu">gr-pmksplus&#64;wpi.edu</a>
+      </p>
+
+
+        <textarea
+        placeholder="Leave a message*"
+        [(ngModel)]="message"
+      ></textarea>
+
+      <label>
+        <input type="checkbox" [(ngModel)]="wantsResponse" />
+        I would like a response
+      </label>
+
+      <div *ngIf="wantsResponse" class="form-group email-group">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          [(ngModel)]="userEmail"
+          placeholder="your.email@example.com"
+          required
+          class="email-input"
+        />
+      </div>
+
+
+      <label>
+        <input type="checkbox" [(ngModel)]="sendBrowserInfo" />
+        Send browser and version data
+      </label>
+      <label>
+        <input type="checkbox" [(ngModel)]="sendProject" />
+        Send a copy of the open project
+      </label>
+
+      <button class="send-button" (click)="sendFeedback()">
+        Send Message
+      </button>
+    </div>
+  </div>
+</div>

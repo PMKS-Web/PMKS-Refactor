@@ -1,0 +1,122 @@
+
+.remover {
+  position: fixed;
+  top:    0;
+  left:   0;
+  width:  100vw;
+  height: 100vh;
+  z-index: 10;
+}
+
+
+.panel-feedback {
+  background-color: white;
+  border-radius: 3px;
+  width: 350px;
+  float: right;
+  border-top: 5px solid #3F51B5;
+  box-shadow:
+    0 9px 5px rgba(0,0,0,0.2),
+    12px 0 15px -4px rgba(0,0,0,0.2),
+    -12px 0 15px -4px rgba(0,0,0,0.2);
+  margin: 30px 5px 0 0;
+  padding: 0.5px 0;
+  opacity: 0.999;
+
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #e0e0e0;
+
+    .panel-title {
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: #212121;
+    }
+
+    .close-btn {
+      font-size: 1.25rem;
+      color: #757575;
+    }
+  }
+
+
+  .panel-body {
+    padding: 1rem;
+    overflow-y: auto;
+    font-size: 1rem;
+
+    p {
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+
+    textarea {
+      width: 100%;
+      height: 6rem;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      resize: vertical;
+
+      margin-top: 0.6rem;
+      margin-bottom: 0.8rem;
+    }
+
+    label {
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      margin: 0.5rem -4rem;
+
+      input[type="checkbox"] {
+        margin: 0 -3.5rem 0 0;
+      }
+    }
+
+    .send-button {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      background-color: #3F51B5;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: #303F9F;
+      }
+    }
+  }
+
+  .email-group {
+    margin: 0.5rem 0;
+
+    .email-input {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+  }
+
+  .form-group {
+    input,
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+    }
+  }
+
+
+
+}

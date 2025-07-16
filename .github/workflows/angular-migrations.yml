@@ -1,0 +1,52 @@
+name: "Angular Dependabot + Migrations"
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - "package.json"
+      - "package-lock.json"
+  push:
+    branches: [ main ]
+    paths:
+      - "package.json"
+      - "package-lock.json"
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Use Node.js LTS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 'lts/*'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply Angular CLI migrations
+        run: |
+          npx @angular/cli@latest update \
+            @angular/core@latest @angular/cli@latest \
+            --allow-dirty --force
+          npm install
+
+      - name: Run tests & build
+        run: |
+          npm run test -- --watch=false
+          npm run build -- --watch=false
+
+      - name: Commit & push migrations
+        if: ${{ success() }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -n "$(git status --porcelain)" ]; then
+            git add package.json package-lock.json src/
+            git commit -m "ci: apply Angular schematics migrations"
+            git push
+          fi
+

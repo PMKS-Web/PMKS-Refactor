@@ -1,29 +1,37 @@
 import { Injectable } from '@angular/core';
 import { Mechanism } from '../model/mechanism';
-import {BehaviorSubject} from "rxjs";
-import {Joint} from "../model/joint";
-import {Link} from "../model/link";
-import {CompoundLink} from "../model/compound-link";
-import {Trajectory} from "../model/trajectory";
-import {Force} from "../model/force";
-import {Position} from "../model/position";
-import {Coord} from "../model/coord";
-import {AnimationBarComponent} from "../components/AnimationBar/animationbar/animationbar.component";
-import {Action} from "../components/ToolBar/undo-redo-panel/action";
+import { BehaviorSubject, Subject } from 'rxjs';
+import { Joint } from '../model/joint';
+import { Link } from '../model/link';
+import { CompoundLink } from '../model/compound-link';
+import { Trajectory } from '../model/trajectory';
+import { Force } from '../model/force';
+import { Position } from '../model/position';
+import { Coord } from '../model/coord';
+import { AnimationBarComponent } from '../components/AnimationBar/animationbar/animationbar.component';
+import { Action } from '../components/ToolBar/undo-redo-panel/action';
+import { ThreePosSynthesis } from '../components/SideNav/Synthesis/three-pos-synthesis/three-pos-synthesis.component';
+import { InteractionService } from './interaction.service';
 
 /*
 Stores the global state of the application. This includes the model, global settings, and Pan/Zoom State. This is a singleton service.
 Handles syncing client with server state, and undo/redo.
 */
 
-
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root',
 })
 export class StateService {
-
   private showIDLabelsSubject = new BehaviorSubject<boolean>(false);
   showIDLabels$ = this.showIDLabelsSubject.asObservable();
+  /**These generateBarSubjects need to be here because
+   * the logic is all in the component and not in a
+   * service, eventually it should be refactored.
+   */
+  private generateFourBarSubject = new Subject<void>();
+  private generateSixBarSubject = new Subject<void>();
+  generateFourBar$ = this.generateFourBarSubject.asObservable();
+  generateSixBar$ = this.generateSixBarSubject.asObservable();
 
   // Toggles the visibility of ID labels on all components.
   toggleShowIDLabels() {
@@ -36,32 +44,34 @@ export class StateService {
     this.showIDLabelsSubject.next(false);
   }
 
-    private readonly mechanism: Mechanism;// = new Mechanism();
-    //Need to use BehaviorSubjects when moving data between unrelated components
-    private globalUnits = new BehaviorSubject("Metric (cm)");
-    private globalUnitsSuffix = new BehaviorSubject("cm")
-    private globalAngles = new BehaviorSubject("Degree (º)");
-    private globalAnglesSuffix = new BehaviorSubject("º");
-    private globalActivePanel = new BehaviorSubject("Edit");
+  private readonly mechanism: Mechanism; // = new Mechanism();
+  //Need to use BehaviorSubjects when moving data between unrelated components
+  private globalUnits = new BehaviorSubject('Metric (cm)');
+  private globalUnitsSuffix = new BehaviorSubject('cm');
+  private globalAngles = new BehaviorSubject('Degree (º)');
+  private globalAnglesSuffix = new BehaviorSubject('º');
+  private globalActivePanel = new BehaviorSubject('Edit');
 
-    private animationbarComponent!: AnimationBarComponent;
-    private maxUndoSize = 2;
-    private undoStack: Action[] = [];
-    private redoStack: Action[] = [];
+  private animationbarComponent!: AnimationBarComponent;
+  private maxUndoSize = 2;
+  private undoStack: Action[] = [];
+  private redoStack: Action[] = [];
 
   globalUnitsCurrent = this.globalUnits.asObservable();
-    globalUSuffixCurrent = this.globalUnitsSuffix.asObservable();
-    globalAnglesCurrent = this.globalAngles.asObservable();
-    globalASuffixCurrent = this.globalAnglesSuffix.asObservable();
-    globalActivePanelCurrent = this.globalActivePanel.asObservable();
+  globalUSuffixCurrent = this.globalUnitsSuffix.asObservable();
+  globalAnglesCurrent = this.globalAngles.asObservable();
+  globalASuffixCurrent = this.globalAnglesSuffix.asObservable();
+  globalActivePanelCurrent = this.globalActivePanel.asObservable();
+
+  public sixBarGenerated: boolean = false;
+  public fourBarGenerated: boolean = false;
 
   constructor() {
-    console.log("StateService constructor");
+    console.log('StateService constructor');
     this.mechanism = new Mechanism();
-
   }
-
-
+  private reinitializeSubject = new Subject<void>();
+  public reinitialize$ = this.reinitializeSubject.asObservable();
 
   /**
    * Returns a mechanism that is correctly configured,
@@ -78,62 +88,67 @@ export class StateService {
    *        are stored as an array of number ID's separated by '|'
    * @param rawData
    */
-  public reconstructMechanism(rawData:
-                            { decodedJoints:any[],
-                              decodedLinks:any[],
-                              decodedCompoundLinks:any[],
-                              decodedTrajectories:any[],
-                              decodedForces:any[],
-                              decodedPositions:any[] } ) : void {
+  public reconstructMechanism(rawData: {
+    decodedJoints: any[];
+    decodedLinks: Link[];
+    decodedCompoundLinks: any[];
+    decodedTrajectories: any[];
+    decodedForces: Force[];
+    decodedPositions: Position[];
+  }): void {
     // A fresh Mechanism
-    //this.mechanism = new Mechanism();
-
-    console.log(rawData);
-
-    console.log(rawData.decodedJoints);
-    console.log(rawData.decodedLinks);
-    console.log(rawData.decodedCompoundLinks);
-    console.log(rawData.decodedTrajectories);
-    console.log(rawData.decodedForces);
-    console.log(rawData.decodedPositions);
+    this.mechanism.clearLinks();
+    this.mechanism.clearTrajectories();
+    this.mechanism.clearPositions();
 
     //Joints
     if (rawData.decodedJoints) {
-      console.log("BEFORE JOINTADDS",this.mechanism.getArrayOfJoints())
       for (const joint of rawData.decodedJoints) {
-        let newJoint = new Joint(joint.id, Number(joint.x), Number(joint.y));
+        let newJoint = new Joint(
+          Number(joint.id),
+          Number(joint.x),
+          Number(joint.y)
+        );
         newJoint.name = joint.name;
-        newJoint.angle = (joint.angle);
-        if (Boolean(joint.isGrounded)){ newJoint.addGround();}
-        if (Boolean(joint.isWelded)) {newJoint.addWeld();}
+        newJoint.angle = joint.angle;
+        if (Boolean(joint.isGrounded)) {
+          newJoint.addGround();
+        }
+        if (Boolean(joint.isWelded)) {
+          newJoint.addWeld();
+        }
         newJoint.locked = Boolean(joint.locked);
         newJoint.hidden = Boolean(joint.isHidden);
         newJoint.reference = Boolean(joint.isReference);
-        if(Boolean(joint.isInput)) { newJoint.addInput();}
+        newJoint.generated = Boolean(joint.isGenerated);
+        if (Boolean(joint.isInput)) {
+          newJoint.addInput();
+        }
         newJoint.speed = Number(joint.inputSpeed);
-        if (Boolean(!joint.type)) {newJoint.addSlider();}
-
+        if (Boolean(!joint.type)) {
+          newJoint.addSlider();
+        }
 
         this.mechanism._addJoint(newJoint);
       }
-      console.log("AFTER JOINTADDS", this.mechanism.getArrayOfJoints())
     }
-
-    //Links TODO FORCES IMPLEMENTATION
+    // Links
     if (rawData.decodedLinks) {
       for (const link of rawData.decodedLinks) {
+        let jointsArray: Joint[] = (link.joints as unknown as string)
+          .split('|')
+          .map((element: string): Joint => {
+            return this.mechanism.getJoint(Number(element));
+          });
+        console.log('JOINTS');
+        console.log(this.mechanism.getArrayOfJoints());
         console.log(link.joints);
-
-        let jointsArray: Joint[] = link.joints.split("|").map((element: string):Joint => {return this.mechanism.getJoint(Number(element))});
-        console.log(link.joints);
+        console.log(this.mechanism.getJoint(17));
         for (const x of jointsArray) {
           console.log(x.id);
         }
-        //if (!link.id) {
-          console.log(link, link.id);
-        //}
+        console.log(link, link.id);
         let newLink = new Link(link.id, jointsArray);
-        //link.forces.split("|").forEach((element:number)=> newLink._forces.set()); todo
         newLink.name = link.name;
         newLink.mass = link.mass;
         newLink.angle = link.angle;
@@ -144,11 +159,14 @@ export class StateService {
       }
     }
 
-
     //Compound Links
     if (rawData.decodedCompoundLinks) {
       for (const compoundlink of rawData.decodedCompoundLinks) {
-        let linksArray: Link[] = compoundlink.links.split("|").map((element: string):Link => {return this.mechanism.getLink(Number(element))});
+        let linksArray: Link[] = compoundlink.links
+          .split('|')
+          .map((element: string): Link => {
+            return this.mechanism.getLink(Number(element));
+          });
         let newCompoundLink = new CompoundLink(compoundlink.id, linksArray);
         newCompoundLink.name = compoundlink.name;
         newCompoundLink.mass = compoundlink.mass;
@@ -160,36 +178,45 @@ export class StateService {
     }
 
     //Positions
-    //Links TODO FORCES IMPLEMENTATION
     if (rawData.decodedPositions) {
       for (const position of rawData.decodedPositions) {
-
-        let jointsArray: Joint[] = position.joints.split("|").map((element: string):Joint => {return this.mechanism.getJoint(Number(element))});
-
-        let newPosition = new Position(position.id, jointsArray);
-        //link.forces.split("|").forEach((element:number)=> newLink._forces.set()); todo
+        const jointsArray = (position.joints as unknown as number[]).map((id) =>
+          this.mechanism.getJoint(Number(id))
+        );
+        let newPosition = new Position(Number(position.id), jointsArray);
         newPosition.name = position.name;
         newPosition.mass = position.mass;
         newPosition.angle = Number(position.angle);
         newPosition.locked = Boolean(position.locked);
-        newPosition.setColor(position.color);//
+        newPosition.setColor(position.color); //
         newPosition.setReference(position.refPoint);
 
         this.mechanism._addPosition(newPosition);
       }
+      this.reinitializeSubject.next();
     }
 
     //Forces
     if (rawData.decodedForces) {
+      console.log('force:');
+      console.log(rawData.decodedForces);
       for (const force of rawData.decodedForces) {
-        let startCoord = new Coord(force.start.x,force.start.y);
+        let startCoord = new Coord(force.start.x, force.start.y);
         let endCoord = new Coord(force.end.x, force.end.y);
-        let newForce = new Force(force.id, startCoord, endCoord);
+        let newForce = new Force(
+          force.id,
+          startCoord,
+          endCoord,
+          this.mechanism.getLink(force.parentLink as unknown as number)
+        );
         newForce.name = force.name;
-        newForce.magnitude = force.magnitude;
-        newForce.angle = force.angle;
+        newForce.magnitude = newForce.start.getDistanceTo(newForce.end);
+        const coord1 = newForce.end.subtract(newForce.start);
+        newForce.angle = Math.atan2(coord1.y, coord1.x) * (180 / Math.PI);
         newForce.frameOfReference = force.frameOfReference;
-
+        newForce.parentLink.addForce(newForce);
+        console.log('force:');
+        console.log(newForce);
         this.mechanism._addForce(newForce);
       }
     }
@@ -202,8 +229,8 @@ export class StateService {
         this.mechanism._addTrajectory(newTrajectory);
       }
     }
+    this.getMechanism().notifyChange();
   }
-
 
   // Stores the reference to the AnimationBarComponent for future use.
   public setAnimationBarComponent(component: AnimationBarComponent): void {
@@ -219,41 +246,44 @@ export class StateService {
   public changeActivePanel(panel: string): void {
     this.globalActivePanel.next(panel);
   }
+  public get getCurrentActivePanel(): string {
+    return this.globalActivePanel.value;
+  }
 
   // Updates the global measurement units and their suffix based on user selection.
-  public changeUnits (units: string, suffix: string){
+  public changeUnits(units: string, suffix: string) {
     this.globalUnits.next(units);
     this.globalUnitsSuffix.next(suffix);
   }
 
   // Updates the global angle units and their suffix based on user selection.
-  public changeAngles (angles: string, suffix: string){
+  public changeAngles(angles: string, suffix: string) {
     this.globalAngles.next(angles);
     this.globalAnglesSuffix.next(suffix);
   }
 
   // Returns the current Mechanism instance.
   public getMechanism(): Mechanism {
-      return this.mechanism;
+    return this.mechanism;
   }
 
   // Subscribes to notifications of Mechanism changes as an observable
-  public getMechanismObservable(){
-      return this.mechanism._mechanismChange$;
+  public getMechanismObservable() {
+    return this.mechanism._mechanismChange$;
   }
 
   // Records a new action for undo/redo functionality, merging similar consecutive actions when appropriate.
   public recordAction(action: Action): void {
-    if (action.type === "changeJointAngle") {
+    if (action.type === 'changeJointAngle') {
       const last = this.undoStack[this.undoStack.length - 1];
-      if (last
-        && last.type    === action.type
-        && last.linkId  === action.linkId
-        && last.jointId === action.jointId
+      if (
+        last &&
+        last.type === action.type &&
+        last.linkId === action.linkId &&
+        last.jointId === action.jointId
       ) {
         // Update the last action’s newAngle to the newest value
         (last as any).newAngle = (action as any).newAngle;
-        console.log('Merged changeJointAngle into previous action');
         return;
       }
     }
@@ -268,8 +298,8 @@ export class StateService {
 
   // Returns whether there are actions available to undo.
   public canUndo(): boolean {
-      return this.undoStack.length > 0;
-    }
+    return this.undoStack.length > 0;
+  }
 
   // Returns whether there are actions available to redo.
   public canRedo(): boolean {
@@ -305,9 +335,9 @@ export class StateService {
     console.log('Redo performed for action:', action);
     this.mechanism.notifyChange();
   }
-//------------------------------------------------------------------------------------------------------
-//---------------------------------- | REDO | ----------------------------------------------------------
-//------------------------------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------------------------------
+  //---------------------------------- | REDO | ----------------------------------------------------------
+  //------------------------------------------------------------------------------------------------------
   // Applies an action to the Mechanism (redo logic).
   private applyAction(action: Action): void {
     switch (action.type) {
@@ -351,6 +381,12 @@ export class StateService {
           this.mechanism.removeWeld(action.jointId);
         }
         break;
+      case 'generateFourBar':
+        this.generateFourBarSubject.next();
+        break;
+      case 'generateSixBar':
+        this.generateSixBarSubject.next();
+        break;
       case 'deleteJoint':
         if (action.jointId !== undefined) {
           this.mechanism.removeJoint(action.jointId);
@@ -366,28 +402,31 @@ export class StateService {
         break;
       case 'moveLink':
         for (const p of action.newJointPositions!) {
-          this.mechanism.setJointCoord(p.jointId, new Coord(p.coords.x, p.coords.y));
+          this.mechanism.setJointCoord(
+            p.jointId,
+            new Coord(p.coords.x, p.coords.y)
+          );
         }
         break;
       case 'addLink':
         if (action.extraJointsData) {
-          action.extraJointsData.forEach(js =>
+          action.extraJointsData.forEach((js) =>
             this.restoreJointFromSnapshot(js)
           );
         }
         //rebuild the link
         const ld = action.linkData!;
-        const joints = ld.jointIds.map(id => {
+        const joints = ld.jointIds.map((id) => {
           const j = this.mechanism.getJoint(id);
           if (!j) console.warn(`addLink redo: missing joint ${id}`);
           return j!;
         });
         const newLink = new Link(ld.id, joints);
-        newLink.name   = ld.name;
-        newLink.mass   = ld.mass;
-        newLink.angle  = ld.angle;
+        newLink.name = ld.name;
+        newLink.mass = ld.mass;
+        newLink.angle = ld.angle;
         newLink.locked = ld.locked;
-        newLink.color  = ld.color;
+        newLink.color = ld.color;
         this.mechanism._addLink(newLink);
         break;
       case 'deleteLink':
@@ -395,7 +434,10 @@ export class StateService {
         break;
       case 'addTracer':
         const tr = action.linkTracerData!;
-        this.mechanism.addJointToLink(tr.linkId, new Coord(tr.coords.x, tr.coords.y));
+        this.mechanism.addJointToLink(
+          tr.linkId,
+          new Coord(tr.coords.x, tr.coords.y)
+        );
         break;
       case 'addLinkToLink':
         this.mechanism.addLinkToLink(
@@ -410,16 +452,16 @@ export class StateService {
           this.mechanism.setYCoord(action.jointId, action.newCoords.y);
         }
         break;
-      case "changeJointDistance": {
+      case 'changeJointDistance': {
         const cd = action as any;
-        const link  = this.mechanism.getLink(cd.linkId!)!;
+        const link = this.mechanism.getLink(cd.linkId!)!;
         const joint = this.mechanism.getJoint(cd.jointId!)!;
         link.setLength(cd.newDistance!, joint);
         break;
       }
-      case "changeJointAngle": {
+      case 'changeJointAngle': {
         const ca = action as any;
-        const link  = this.mechanism.getLink(ca.linkId!)!;
+        const link = this.mechanism.getLink(ca.linkId!)!;
         const joint = this.mechanism.getJoint(ca.jointId!)!;
         link.setAngle(ca.newAngle!, joint);
         break;
@@ -455,6 +497,12 @@ export class StateService {
           this.mechanism.addGround(action.jointId);
         }
         break;
+      case 'generateFourBar':
+        this.generateFourBarSubject.next();
+        break;
+      case 'generateSixBar':
+        this.generateSixBarSubject.next();
+        break;
       case 'addSlider':
         if (action.jointId !== undefined) {
           this.mechanism.removeSlider(action.jointId);
@@ -482,15 +530,17 @@ export class StateService {
         }
         // Restore extra (cascaded) joints:
         if (action.extraJointsData) {
-          action.extraJointsData.forEach(jSnap => {
+          action.extraJointsData.forEach((jSnap) => {
             this.restoreJointFromSnapshot(jSnap);
           });
         }
         // Restore removed links:
         if (action.linksData) {
-          action.linksData.forEach(linkSnap => {
-            const linkJoints = linkSnap.jointIds.map(jid => this.mechanism.getJoint(jid));
-            if (linkJoints.every(j => j !== undefined)) {
+          action.linksData.forEach((linkSnap) => {
+            const linkJoints = linkSnap.jointIds.map((jid) =>
+              this.mechanism.getJoint(jid)
+            );
+            if (linkJoints.every((j) => j !== undefined)) {
               const restoredLink = new Link(linkSnap.id, linkJoints);
               restoredLink.name = linkSnap.name;
               restoredLink.mass = linkSnap.mass;
@@ -512,7 +562,10 @@ export class StateService {
         break;
       case 'moveLink':
         for (const p of action.oldJointPositions!) {
-          this.mechanism.setJointCoord(p.jointId, new Coord(p.coords.x, p.coords.y));
+          this.mechanism.setJointCoord(
+            p.jointId,
+            new Coord(p.coords.x, p.coords.y)
+          );
         }
         break;
       case 'addLink':
@@ -520,34 +573,34 @@ export class StateService {
         break;
       case 'deleteLink':
         if (action.extraJointsData) {
-          action.extraJointsData.forEach(js => {
-           if (!this.mechanism.getJoint(js.id)) {
-             this.restoreJointFromSnapshot(js);
-              }
-            });
+          action.extraJointsData.forEach((js) => {
+            if (!this.mechanism.getJoint(js.id)) {
+              this.restoreJointFromSnapshot(js);
+            }
+          });
         }
         // rebuild the link
         const ld = action.linkData!;
-        const jointObjs = ld.jointIds.map(id => {
+        const jointObjs = ld.jointIds.map((id) => {
           const j = this.mechanism.getJoint(id);
           if (!j) console.warn(`undo deleteLink: joint ${id} still missing`);
           return j!;
         });
-        if (jointObjs.every(j => j != null)) {
+        if (jointObjs.every((j) => j != null)) {
           const linkRestored = new Link(ld.id, jointObjs);
-          linkRestored.name   = ld.name;
-          linkRestored.mass   = ld.mass;
-          linkRestored.angle  = ld.angle;
+          linkRestored.name = ld.name;
+          linkRestored.mass = ld.mass;
+          linkRestored.angle = ld.angle;
           linkRestored.locked = ld.locked;
-          linkRestored.color  = ld.color;
+          linkRestored.color = ld.color;
           this.mechanism._addLink(linkRestored);
         }
         break;
       case 'addTracer': {
         const tr = action.linkTracerData!;
         const linkObj = this.mechanism.getLink(tr.linkId);
-        const toRemove = Array.from(linkObj.joints.values()).find(j =>
-          j.coords.x === tr.coords.x && j.coords.y === tr.coords.y
+        const toRemove = Array.from(linkObj.joints.values()).find(
+          (j) => j.coords.x === tr.coords.x && j.coords.y === tr.coords.y
         );
         if (toRemove) {
           this.mechanism.removeJoint(toRemove.id);
@@ -565,7 +618,7 @@ export class StateService {
         }
         if (action.attachJointId !== undefined) {
           this.mechanism.getJoint(action.attachJointId) &&
-          this.mechanism.removeJoint(action.attachJointId);
+            this.mechanism.removeJoint(action.attachJointId);
         }
         break;
       case 'setJoint':
@@ -574,16 +627,16 @@ export class StateService {
           this.mechanism.setYCoord(action.jointId, action.oldCoords.y);
         }
         break;
-      case "changeJointDistance": {
+      case 'changeJointDistance': {
         const cd = action as any;
-        const link  = this.mechanism.getLink(cd.linkId!)!;
+        const link = this.mechanism.getLink(cd.linkId!)!;
         const joint = this.mechanism.getJoint(cd.jointId!)!;
         link.setLength(cd.oldDistance!, joint);
         break;
       }
-      case "changeJointAngle": {
+      case 'changeJointAngle': {
         const ca = action as any;
-        const link  = this.mechanism.getLink(ca.linkId!)!;
+        const link = this.mechanism.getLink(ca.linkId!)!;
         const joint = this.mechanism.getJoint(ca.jointId!)!;
         link.setAngle(ca.oldAngle!, joint);
         break;
@@ -595,7 +648,11 @@ export class StateService {
 
   // Restores a joint from its snapshot data when undoing a deletion.
   private restoreJointFromSnapshot(jointSnapshot: Action['jointData']): void {
-    const restoredJoint = new Joint(jointSnapshot!.id, jointSnapshot!.coords.x, jointSnapshot!.coords.y);
+    const restoredJoint = new Joint(
+      jointSnapshot!.id,
+      jointSnapshot!.coords.x,
+      jointSnapshot!.coords.y
+    );
     restoredJoint.name = jointSnapshot!.name;
     restoredJoint.type = jointSnapshot!.type;
     restoredJoint.angle = jointSnapshot!.angle;
