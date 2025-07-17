@@ -288,7 +288,6 @@ export class ThreePosSynthesis implements OnInit {
   generateFourBar() {
     //button changes to "clear four bar" when already generated, so remove mechanism
     if (this.fourBarGenerated) {
-      let listOfLinks = this.synthedMech;
       while (this.synthedMech.length > 0) {
         let linkId = this.synthedMech[0].id;
         this.synthedMech.splice(0, 1);
@@ -312,7 +311,7 @@ export class ThreePosSynthesis implements OnInit {
       );
       let secondPoint = this.position1!.getJoints()[0]._coords;
       let thirdPoint = this.position1!.getJoints()[1]._coords;
-      let fourthPoint = this.findIntersectionPoint2(
+      let fourthPoint = this.findIntersectionPoint(
         this.position1!.getJoints()[1]._coords,
         this.position2!.getJoints()[1]._coords,
         this.position3!.getJoints()[1]._coords
@@ -551,126 +550,43 @@ export class ThreePosSynthesis implements OnInit {
   }
 
   setPosXCoord(x: number, posNum: number) {
-    const positions = [this.position1, this.position2, this.position3];
-    const position = positions[posNum - 1];
+    const position = [this.position1, this.position2, this.position3][posNum - 1];
+    if (!position) throw new Error(`Invalid position number: ${posNum}`);
 
-    if (!position) {
-      throw new Error(`Invalid position number: ${posNum}`);
-    }
+    let refPos = this.getReferenceJoint(position).coords;
 
-    const [backJoint, frontJoint, midJoint] = position.getJoints();
-    let distanceMoved: number;
-
-    switch (this.reference) {
-      case 'Center':
-        const centerCoord = this.getNewCoord(position);
-        distanceMoved = x - centerCoord.x;
-        break;
-
-      case 'Back':
-        distanceMoved = x - backJoint.coords.x;
-        backJoint.setCoordinates(new Coord(x, backJoint.coords.y));
-        break;
-
-      case 'Front':
-        distanceMoved = x - frontJoint.coords.x;
-        frontJoint.setCoordinates(new Coord(x, frontJoint.coords.y));
-        break;
-
-      default:
-        throw new Error(`Invalid reference: ${this.reference}`);
-    }
-
-    // Apply movement to all joints (except the reference joint which is already set)
-    if (this.reference === 'Center' || this.reference === 'Back') {
-      if (this.reference === 'Center') {
-        backJoint.setCoordinates(
-          new Coord(backJoint.coords.x + distanceMoved, backJoint.coords.y)
-        );
-      }
-      frontJoint.setCoordinates(
-        new Coord(frontJoint.coords.x + distanceMoved, frontJoint.coords.y)
-      );
-      midJoint.setCoordinates(
-        new Coord(midJoint.coords.x + distanceMoved, midJoint.coords.y)
-      );
-    } else if (this.reference === 'Front') {
-      backJoint.setCoordinates(
-        new Coord(backJoint.coords.x + distanceMoved, backJoint.coords.y)
-      );
-      midJoint.setCoordinates(
-        new Coord(midJoint.coords.x + distanceMoved, midJoint.coords.y)
-      );
+    if(position && refPos.x !== x){
+      this.stateService.recordAction({
+        type: "setPositionPosition",
+        linkId: position.id,
+        oldCoords: refPos,
+        newCoords: new Coord(x, parseFloat(this.getPosYCoord(posNum)))
+      })
+      this.mechanism.setPositionLocation(new Coord(x, parseFloat(this.getPosYCoord(posNum))), position.id);
     }
   }
 
   setPosYCoord(y: number, posNum: number) {
-    const positions = [this.position1, this.position2, this.position3];
-    const position = positions[posNum - 1];
-
-    if (!position) {
-      throw new Error(`Invalid position number: ${posNum}`);
-    }
-
-    const [backJoint, frontJoint, midJoint] = position.getJoints();
-    let distanceMoved: number;
-
-    switch (this.reference) {
-      case 'Center':
-        const centerCoord = this.getNewCoord(position);
-        distanceMoved = y - centerCoord.y;
-        break;
-
-      case 'Back':
-        distanceMoved = y - backJoint.coords.y;
-        backJoint.setCoordinates(new Coord(backJoint.coords.x, y));
-        break;
-
-      case 'Front':
-        distanceMoved = y - frontJoint.coords.y;
-        frontJoint.setCoordinates(new Coord(frontJoint.coords.x, y));
-        break;
-
-      default:
-        throw new Error(`Invalid reference: ${this.reference}`);
-    }
-
-    if (this.reference === 'Center' || this.reference === 'Back') {
-      if (this.reference === 'Center') {
-        backJoint.setCoordinates(
-          new Coord(backJoint.coords.x, backJoint.coords.y + distanceMoved)
-        );
-      }
-      frontJoint.setCoordinates(
-        new Coord(frontJoint.coords.x, frontJoint.coords.y + distanceMoved)
-      );
-      midJoint.setCoordinates(
-        new Coord(midJoint.coords.x, midJoint.coords.y + distanceMoved)
-      );
-    } else if (this.reference === 'Front') {
-      backJoint.setCoordinates(
-        new Coord(backJoint.coords.x, backJoint.coords.y + distanceMoved)
-      );
-      midJoint.setCoordinates(
-        new Coord(midJoint.coords.x, midJoint.coords.y + distanceMoved)
-      );
+    const position = [this.position1, this.position2, this.position3][posNum - 1];
+    if (!position) throw new Error(`Invalid position number: ${posNum}`);
+    let refPos = this.getReferenceJoint(position).coords;
+    //check then record action
+    if(position && refPos.y !== y){
+      this.stateService.recordAction({
+        type: "setPositionPosition",
+        linkId: position.id,
+        oldCoords: refPos,
+        newCoords: new Coord(parseFloat(this.getPosXCoord(posNum)), y)
+      })
+      this.mechanism.setPositionLocation(new Coord(parseFloat(this.getPosXCoord(posNum)), y), position.id);
     }
   }
 
   setPositionAngle(angle: number, posNum: number) {
-    let position = undefined;
-    if (posNum === 1) {
-      position = this.position1;
-    } else if (posNum === 2) {
-      position = this.position2;
-    } else{
-      position = this.position3;
-    }
-    console.log("position?.angle")
-    console.log(position?.angle.toFixed(3))
-    console.log("angle")
-    console.log(typeof angle)
-
+    const positions = [this.position1, this.position2, this.position3];
+    const position = positions[posNum - 1];
+    if (!position) throw new Error(`Invalid position number: ${posNum}`);
+    
     if(position && position.angle.toFixed(3) !== Number(angle).toFixed(3)){
       this.stateService.recordAction({
         type: "setPositionAngle",
@@ -799,74 +715,32 @@ export class ThreePosSynthesis implements OnInit {
     }
   }
 
-  findIntersectionPoint(
-    pose1_coord1: Coord,
-    pose2_coord1: Coord,
-    pose3_coord1: Coord
-  ) {
-    //slope of Line 1
-    let slope1 =
-      1 /
-      ((pose2_coord1.y - pose1_coord1.y) / (pose2_coord1.x - pose1_coord1.x));
-    //slope of line 2
-    let slope2 =
-      1 /
-      ((pose3_coord1.y - pose2_coord1.y) / (pose3_coord1.x - pose2_coord1.x));
-
-    //midpoints of the above two lines
-    let midpoint_line1 = new Coord(
-      (pose1_coord1.x + pose2_coord1.x) / 2,
-      (pose1_coord1.y + pose2_coord1.y) / 2
-    );
-    let midpoint_line2 = new Coord(
-      (pose3_coord1.x + pose2_coord1.x) / 2,
-      (pose3_coord1.y + pose2_coord1.y) / 2
-    );
-
-    //intercept
-    let c1 = midpoint_line1.y + slope1 * midpoint_line1.x;
-    let c2 = midpoint_line2.y + slope2 * midpoint_line2.x;
-
-    //intersection point
-    let x1 = (c1 - c2) / (-slope2 + slope1);
-    let y1 = -slope1 * x1 + c1;
-
-    return new Coord(x1, y1);
-  }
-
-  findIntersectionPoint2(
-    pose1_coord2: Coord,
-    pose2_coord2: Coord,
-    pose3_coord2: Coord
-  ) {
-    let slope1 =
-      1 /
-      ((pose2_coord2.y - pose1_coord2.y) / (pose2_coord2.x - pose1_coord2.x));
-    //slope of line 2
-    let slope2 =
-      1 /
-      ((pose3_coord2.y - pose2_coord2.y) / (pose3_coord2.x - pose2_coord2.x));
-
-    //midpoints of the above two lines
-    let midpoint_line1 = new Coord(
-      (pose1_coord2.x + pose2_coord2.x) / 2,
-      (pose1_coord2.y + pose2_coord2.y) / 2
-    );
-    let midpoint_line2 = new Coord(
-      (pose3_coord2.x + pose2_coord2.x) / 2,
-      (pose3_coord2.y + pose2_coord2.y) / 2
-    );
-
-    //intercept
-    let c1 = midpoint_line1.y + slope1 * midpoint_line1.x;
-    let c2 = midpoint_line2.y + slope2 * midpoint_line2.x;
-
-    //intersection point
-    let x1 = (c1 - c2) / (-slope2 + slope1);
-    let y1 = -slope1 * x1 + c1;
-
-    return new Coord(x1, y1);
-  }
+findIntersectionPoint(
+  pose1_coord: Coord,
+  pose2_coord: Coord,
+  pose3_coord: Coord
+) {
+  let slope1 = 1 / ((pose2_coord.y - pose1_coord.y) / (pose2_coord.x - pose1_coord.x));
+  let slope2 = 1 / ((pose3_coord.y - pose2_coord.y) / (pose3_coord.x - pose2_coord.x));
+  
+  let midpoint_line1 = new Coord(
+    (pose1_coord.x + pose2_coord.x) / 2,
+    (pose1_coord.y + pose2_coord.y) / 2
+  );
+  let midpoint_line2 = new Coord(
+    (pose3_coord.x + pose2_coord.x) / 2,
+    (pose3_coord.y + pose2_coord.y) / 2
+  );
+  
+  let c1 = midpoint_line1.y + slope1 * midpoint_line1.x;
+  let c2 = midpoint_line2.y + slope2 * midpoint_line2.x;
+  
+  // intersection point
+  let x1 = (c1 - c2) / (-slope2 + slope1);
+  let y1 = -slope1 * x1 + c1;
+  
+  return new Coord(x1, y1);
+}
 
   verifyMechanismPath() {
     const threshold = 0.09;
@@ -883,7 +757,7 @@ export class ThreePosSynthesis implements OnInit {
       for (const path of animationPaths) {
         const bothJointsMatched = positionCoords.every((coord) => {
           return path.some(
-            (pathPoint) => this.calculateDistance(coord, pathPoint) <= threshold
+            (pathPoint) => pathPoint.getDistanceTo(coord) <= threshold
           );
         });
 
@@ -902,20 +776,12 @@ export class ThreePosSynthesis implements OnInit {
     this.recalcNeeded = false;
   }
 
-  calculateDistance(coord1: Coord, coord2: Coord): number {
-    const dx = coord1.x - coord2.x;
-    const dy = coord1.y - coord2.y;
-    return Math.sqrt(dx * dx + dy * dy);
-  }
-
   toggleLengthLock() {
     this.isLengthLocked = !this.isLengthLocked;
 
-    // / Show the message when locking is activated
     if (this.isLengthLocked) {
       this.showLockMessage = true;
 
-      // Hide the message after 5 seconds
       setTimeout(() => {
         this.showLockMessage = false;
       }, 5000);
@@ -952,7 +818,6 @@ export class ThreePosSynthesis implements OnInit {
     }
   }
 
-  // Handles focus event to hide placeholder
   // Handles blur event to restore placeholder if input is empty
   swapInputAndGround() {
     const joints = this.mechanism.getJoints();
@@ -1117,47 +982,5 @@ export class ThreePosSynthesis implements OnInit {
     else if (positionIndex == 2)
       return this.position2?.getJoints()[jointIndex].coords.y.toFixed(3);
     return this.position3?.getJoints()[jointIndex].coords.y.toFixed(3);
-  }
-
-  // Helper to update joint positions based on center and reference type
-  private setCouplerJointCoordinates(
-    referenceJoint: Joint,
-    radians: number,
-    backJoint: Joint,
-    midJoint: Joint,
-    frontJoint: Joint
-  ): void {
-    const centerX = referenceJoint.coords.x;
-    const centerY = referenceJoint.coords.y;
-    const halfLength = this.couplerLength / 2;
-
-    const dx = Math.cos(radians);
-    const dy = Math.sin(radians);
-
-    if (this.reference === 'Center') {
-      backJoint.setCoordinates(
-        new Coord(centerX - halfLength * dx, centerY - halfLength * dy)
-      );
-      midJoint.setCoordinates(new Coord(centerX, centerY));
-      frontJoint.setCoordinates(
-        new Coord(centerX + halfLength * dx, centerY + halfLength * dy)
-      );
-    } else if (this.reference === 'Back') {
-      frontJoint.setCoordinates(
-        new Coord(
-          centerX + this.couplerLength * dx,
-          centerY + this.couplerLength * dy
-        )
-      );
-      midJoint.setCoordinates(new Coord(centerX + dx, centerY + dy));
-    } else if (this.reference === 'Front') {
-      backJoint.setCoordinates(
-        new Coord(
-          centerX - this.couplerLength * dx,
-          centerY - this.couplerLength * dy
-        )
-      );
-      midJoint.setCoordinates(new Coord(centerX - dx, centerY - dy));
-    }
   }
 }

@@ -1217,6 +1217,16 @@ export class Mechanism {
     pos?.setAngle(angle, this._positionReference);
     console.log(pos)
   }
+  setPositionLocation(newPosition: Coord, id: number){
+    let pos = this._positions.get(id);
+    if(!pos) return;
+    console.log(newPosition)
+    let ref: Coord = this.getReferenceJoint(pos).coords;
+    let difference: Coord = newPosition.subtract(ref);
+    pos._joints.forEach(joint =>{
+      joint._coords = joint._coords.add(difference);
+    })
+  }
 //HELPER FOR setCouplerLength
   getReferenceJoint(position: Position): Joint {
     if (this._positionReference === 'Back') {

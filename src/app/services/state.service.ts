@@ -426,6 +426,9 @@ export class StateService {
           );
         }
         break;
+      case 'setPositionPosition':
+          this.mechanism.setPositionLocation(action.newCoords as Coord, action.linkId as number)
+          break;
       case 'addLink':
         if (action.extraJointsData) {
           action.extraJointsData.forEach((js) =>
@@ -603,6 +606,9 @@ export class StateService {
           );
         }
         break;
+      case 'setPositionPosition':
+          this.mechanism.setPositionLocation(action.oldCoords as Coord, action.linkId as number)
+          break;
       case 'addLink':
         this.mechanism.removeLink(action.linkData!.id);
         break;
