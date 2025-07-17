@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {CommonModule, NgIf} from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToolbarComponent } from 'src/app/components/ToolBar/toolbar/toolbar.component';
 import emailjs, { EmailJSResponseStatus } from 'emailjs-com';
@@ -9,6 +9,11 @@ import { UrlGenerationService } from '../../../services/url-generation.service';
   selector: 'app-feedback-panel',
   templateUrl: './feedback-panel.component.html',
   styleUrls: ['./feedback-panel.component.scss'],
+  imports: [
+    FormsModule,
+    NgIf
+  ],
+  standalone: true
 })
 export class FeedbackPanelComponent {
   @Input() open = false;
