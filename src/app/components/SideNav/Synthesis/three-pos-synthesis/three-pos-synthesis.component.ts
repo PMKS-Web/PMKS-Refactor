@@ -131,6 +131,7 @@ export class ThreePosSynthesis implements OnInit {
       });
   }
   init() {
+    console.log("Synthesis Init");
     this.mechanism.getArrayOfPositions().forEach((position) => {
       if (position.id === 0) {
         this.position1 = position;
@@ -666,6 +667,14 @@ export class ThreePosSynthesis implements OnInit {
   }
 
   deletePosition(index: number) {
+    const positions = [this.position1, this.position2, this.position3];
+    const position = positions[index - 1];
+    position?.getJoints()[1].id
+    this.stateService.recordAction({
+      type: "deletePosition",
+      oldPosition: position as Position
+    })
+
     if (index === 1) {
       this.pos1Specified = false;
       this.mechanism.removePosition(this.position1!.id);

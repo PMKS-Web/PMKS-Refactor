@@ -609,6 +609,14 @@ export class StateService {
       case 'setPositionPosition':
           this.mechanism.setPositionLocation(action.oldCoords as Coord, action.linkId as number)
           break;
+      case 'deletePosition':
+          const joints = action.oldPosition?.getJoints();
+          this.mechanism._addPositionSilent(action.oldPosition as Position);
+          joints?.forEach(joint =>{
+            this.mechanism._addJoint(joint);
+          })
+          this.reinitializeSubject.next();
+          break;
       case 'addLink':
         this.mechanism.removeLink(action.linkData!.id);
         break;

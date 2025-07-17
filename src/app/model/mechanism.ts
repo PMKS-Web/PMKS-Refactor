@@ -91,7 +91,7 @@ export class Mechanism {
     //console.log(this);
   }
 
-  addPos(coordOne: Coord, coordTwo: Coord) {
+  addPos(coordOne: Coord, coordTwo: Coord, id: number = -1) {
     // Create two joints for the new position
     let jointA = new Joint(this._jointIDCount, coordOne);
     this._jointIDCount++;
@@ -1321,6 +1321,11 @@ export class Mechanism {
   public _addPosition(position: Position): void {
     this._positions.set(position.id, position);
     this._positionIDCount++;
+    this._refIdCount--;
+  }
+  //Does the same as the above but does not increment the idCount
+  public _addPositionSilent(position: Position): void {
+    this._positions.set(position.id, position);
     this._refIdCount--;
   }
 
