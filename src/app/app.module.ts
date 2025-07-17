@@ -133,6 +133,7 @@ import {FeedbackPanelComponent} from "./components/ToolBar/feedback-panel/feedba
     ForceEditPanelComponent,
     ForceComponent,
 
+
   ],
   imports: [
     BrowserModule,
