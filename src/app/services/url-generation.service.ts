@@ -5,12 +5,14 @@ import {PanZoomService} from "./pan-zoom.service";
 import {Injectable} from "@angular/core";
 
 @Injectable({ providedIn: 'root' })
+import { UndoRedoService } from './undo-redo.service';
 
 export class UrlGenerationService {
 
   constructor(
     private stateService: StateService,
-    private panZoomService: PanZoomService
+    private panZoomService: PanZoomService,
+    private undoRedoService: UndoRedoService
 
   ) {
 
@@ -25,7 +27,11 @@ export class UrlGenerationService {
    * @returns string
    */
   get generateUrl(): string {
-    const encoder = new EncoderService(this.stateService, this.panZoomService);
+    const encoder = new EncoderService(
+      this.stateService,
+      this.panZoomService,
+      this.undoRedoService
+    );
     const encodedMechanism: string = encoder.encodeForURL();
     console.log(encodedMechanism);
     let currentUrl: string = window.location.href;

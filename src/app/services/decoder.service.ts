@@ -4,6 +4,7 @@ import { PanZoomService } from './pan-zoom.service';
 import { Joint } from '../model/joint';
 import { Force } from '../model/force';
 import { Coord } from '../model/coord';
+import { UndoRedoService } from './undo-redo.service';
 
 /**
  * DecoderService is the reverse of the EncoderService.
@@ -43,12 +44,17 @@ export class DecoderService {
    * @param encoded The URL-encoded string from the EncoderService.
    *
    * @param stateService
+   * @param panZoomService
+   * @param undoRedoService
    */
   static decodeFromURL(
     encoded: string,
     stateService: StateService,
-    panZoomService: PanZoomService
+    panZoomService: PanZoomService,
+    undoRedoService: UndoRedoService
   ) {
+
+
     try {
       const decodedJson = LZString.decompressFromEncodedURIComponent(encoded);
       console.log(decodedJson);
@@ -58,7 +64,19 @@ export class DecoderService {
         .replaceAll('_', ',')
         .replaceAll('~', '","');
       console.log(decompressedJSON);
-      const compactData = JSON.parse(decompressedJSON);
+
+
+      const compactData = JSON.parse(decompressedJSON, (key, value) => {
+        if (typeof value === 'string') {
+          if (/^[0-9a-f]+$/i.test(value)) {
+            return parseInt(value, 16);
+          }
+          if (value === 'y') return true;
+          if (value === 'n') return false;
+          }
+        return value;
+        });
+
       // Expand the compact data into full objects.
       console.log('compactData');
       console.log(compactData);
@@ -83,11 +101,19 @@ export class DecoderService {
         stateService.fourBarGenerated = compactData.fb[0][1] !== 'n';
       }
 
-      // Step 3. Pass the reconstructed mechanism data to the state service.
+      // Pass the reconstructed mechanism data to the state service.
       stateService.reconstructMechanism(fullData);
+
+      if (compactData.u) {
+        undoRedoService.clearStacks();
+        undoRedoService.restoreStacks(compactData.u, compactData.r);
+      }
+
     } catch (error) {
       console.error('Error decoding mechanism data:', error);
     }
+
+
   }
 
   /**
@@ -96,6 +122,7 @@ export class DecoderService {
    *
    * @param csvContent
    * @param stateService
+   * @param panZoomService
    */
   static decodeFromCSV(
     csvContent: string,

@@ -15,6 +15,7 @@ import {Subscription} from "rxjs";
 import {DecoderService} from "../../../services/decoder.service";
 import {PositionSolverService} from "src/app/services/kinematic-solver.service";
 import {PanZoomService} from "../../../services/pan-zoom.service";
+import { UndoRedoService } from 'src/app/services/undo-redo.service';
 
 @Component({
   selector: '[app-graph]',
@@ -32,7 +33,9 @@ export class GraphComponent {
               private interactorService: InteractionService,
               private unitConverter: UnitConversionService,
               private positionSolverService: PositionSolverService,
-              private panZoomService: PanZoomService) {
+              private panZoomService: PanZoomService,
+              private undoRedoService:UndoRedoService
+  ) {
     console.log("GraphComponent.constructor");
     let url = window.location.href;
     //if loading from URL
@@ -40,7 +43,7 @@ export class GraphComponent {
       console.log("Loading Data from URL.")
       const encodedData = url.split("?data=")[1];
       console.log(encodedData);
-      DecoderService.decodeFromURL(encodedData, stateService, panZoomService)
+      DecoderService.decodeFromURL(encodedData, stateService, panZoomService, undoRedoService)
 
       //push a new URL onto the browser stack
       // clears the mech data for a clean appearance

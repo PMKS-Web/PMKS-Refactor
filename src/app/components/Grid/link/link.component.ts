@@ -19,6 +19,7 @@ import { SVGPathService } from 'src/app/services/svg-path.service';
 import { UnitConversionService } from 'src/app/services/unit-conversion.service';
 import { Subscription } from 'rxjs';
 import { NotificationService } from 'src/app/services/notification.service';
+import {UndoRedoService} from 'src/app/services/undo-redo.service';
 import {
   LinkEditHoverService,
   LinkHoverState,
@@ -56,18 +57,15 @@ export class LinkComponent
     private unitConversionService: UnitConversionService,
     private cdr: ChangeDetectorRef,
     private linkHoverService: LinkEditHoverService,
-    public override animationService: AnimationService
+    public override animationService: AnimationService,
+    private undoRedoService: UndoRedoService
+
   ) {
     super(interactionService,animationService);
   }
 
   override registerInteractor(): Interactor {
-    return new LinkInteractor(
-      this.link,
-      this.stateService,
-      this.interactionService,
-      this.notificationService
-    );
+    return new LinkInteractor(this.link, this.stateService, this.interactionService, this.notificationService);
   }
   hoverState: LinkHoverState = {
     isHoveringLength: false,
@@ -205,8 +203,8 @@ export class LinkComponent
     let x2 = this.link.getJoints()[1].coords.x;
     let y1 = this.link.getJoints()[0].coords.y;
     let y2 = this.link.getJoints()[1].coords.y;
-    let x = x1 + (2 / 3) * (x2 - x1);
-    let y = y1 + (2 / 3) * (y2 - y1);
+    let x = x1 + (2/3) * (x2 - x1);
+    let y = y1 + (2/3) * (y2 - y1);
 
     return this.unitConversionService.modelCoordToSVGCoord(new Coord(x, y));
   }

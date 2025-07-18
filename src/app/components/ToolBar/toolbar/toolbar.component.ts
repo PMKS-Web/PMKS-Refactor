@@ -6,6 +6,7 @@ import {DecoderService} from "../../../services/decoder.service";
 import { NotificationService } from 'src/app/services/notification.service';
 import { PanZoomService } from "../../../services/pan-zoom.service";
 import {FeedbackPanelComponent} from "../feedback-panel/feedback-panel.component";
+import { UndoRedoService } from '../../../services/undo-redo.service';
 
 @Component({
   selector: 'app-toolbar',
@@ -17,7 +18,8 @@ export class ToolbarComponent {
   constructor(
     private stateService: StateService,
     private notificationService: NotificationService,
-    private panZoomService: PanZoomService
+    private panZoomService: PanZoomService,
+    private undoRedoService: UndoRedoService
   ) {}
 
 
@@ -41,7 +43,11 @@ export class ToolbarComponent {
   // Handles sharing functionality by copying the generated URL to the clipboard
   handleShare() {
     //this.setCurrentTab("Share");
-    let urlService = new UrlGenerationService(this.stateService, this.panZoomService);
+    let urlService = new UrlGenerationService(
+      this.stateService,
+      this.panZoomService,
+      this.undoRedoService
+    );
     urlService.copyURL();
     this.notificationService.showNotification("Mechanism URL copied. If you make additional changes, copy the URL again.");
   }
@@ -49,9 +55,13 @@ export class ToolbarComponent {
   // Handles sharing functionality by copying the generated URL to the clipboard
   handleSave() {
     //this.setCurrentTab("Save");
-    console.log("save button pressed");
-    let encoderService = new EncoderService(this.stateService,this.panZoomService);
-    let csv:string = encoderService.exportMechanismDataToCSV();
+    console.log('save button pressed');
+    let encoderService = new EncoderService(
+      this.stateService,
+      this.panZoomService,
+      this.undoRedoService
+    );
+    let csv: string = encoderService.exportMechanismDataToCSV();
     console.log(csv);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);

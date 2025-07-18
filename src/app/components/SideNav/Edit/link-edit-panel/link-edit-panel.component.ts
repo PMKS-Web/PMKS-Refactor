@@ -6,6 +6,8 @@ import { InteractionService } from 'src/app/services/interaction.service';
 import { StateService } from 'src/app/services/state.service';
 import { Joint } from 'src/app/model/joint';
 import { ColorService } from 'src/app/services/color.service';
+import {UndoRedoService } from 'src/app/services/undo-redo.service';
+
 import { LinkEditHoverService } from 'src/app/services/link-edit-hover.service';
 
 @Component({
@@ -42,7 +44,8 @@ export class LinkEditPanelComponent implements OnDestroy {
     private stateService: StateService,
     private interactionService: InteractionService,
     private colorService: ColorService,
-    private linkHoverService: LinkEditHoverService
+    private linkHoverService: LinkEditHoverService,
+    private undoRedoService: UndoRedoService
   ) {}
   ngOnDestroy() {
     this.linkHoverService.clearHover();
@@ -61,11 +64,11 @@ export class LinkEditPanelComponent implements OnDestroy {
     }
 
     // record one undo entry
-    this.stateService.recordAction({
-      type: 'setJoint',
-      jointId: jointId,
-      oldCoords: { x: oldX, y: joint.coords.y },
-      newCoords: { x: newX, y: joint.coords.y },
+    this.undoRedoService.recordAction({
+      type:      "setJoint",
+      jointId:   jointId,
+      oldCoords: { x: oldX,           y: joint.coords.y },
+      newCoords: { x: newX,           y: joint.coords.y }
     });
 
     // apply and notify
@@ -88,9 +91,9 @@ export class LinkEditPanelComponent implements OnDestroy {
       return;
     }
 
-    this.stateService.recordAction({
-      type: 'setJoint',
-      jointId: jointId,
+    this.undoRedoService.recordAction({
+      type:      "setJoint",
+      jointId:   jointId,
       oldCoords: { x: joint.coords.x, y: oldY },
       newCoords: { x: joint.coords.x, y: newY },
     });
@@ -115,9 +118,9 @@ export class LinkEditPanelComponent implements OnDestroy {
     }
 
     // Record exactly one undo entry
-    this.stateService.recordAction({
-      type: 'changeJointDistance',
-      linkId: link.id,
+    this.undoRedoService.recordAction({
+      type:        "changeJointDistance",
+      linkId:      link.id,
       // Use whichever joint anchors your link-length
       jointId: link.joints.keys().next().value,
       oldDistance: oldLen,
@@ -144,10 +147,10 @@ export class LinkEditPanelComponent implements OnDestroy {
       return;
     }
 
-    this.stateService.recordAction({
-      type: 'changeJointAngle',
-      linkId: link.id,
-      jointId: link.joints.keys().next().value,
+    this.undoRedoService.recordAction({
+      type:     "changeJointAngle",
+      linkId:   link.id,
+      jointId:  link.joints.keys().next().value,
       oldAngle: oldAng,
       newAngle: newAng,
     });
