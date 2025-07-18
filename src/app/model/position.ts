@@ -20,11 +20,6 @@ export class Position implements RigidBody {
 
   private positionColorOptions = [
     '#5E646D87'
-    // '#FF5733',
-    // '#33FFBD',
-    // '#FF33A6',
-    // '#335BFF',
-    // '#33FF57'
   ];
 
   constructor(id: number, jointA: Joint, jointB: Joint);

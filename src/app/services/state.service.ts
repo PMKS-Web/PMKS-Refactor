@@ -141,14 +141,6 @@ export class StateService {
           .map((element: string): Joint => {
             return this.mechanism.getJoint(Number(element));
           });
-        console.log('JOINTS');
-        console.log(this.mechanism.getArrayOfJoints());
-        console.log(link.joints);
-        console.log(this.mechanism.getJoint(17));
-        for (const x of jointsArray) {
-          console.log(x.id);
-        }
-        console.log(link, link.id);
         let newLink = new Link(link.id, jointsArray);
         newLink.name = link.name;
         newLink.mass = link.mass;
@@ -199,8 +191,6 @@ export class StateService {
 
     //Forces
     if (rawData.decodedForces) {
-      console.log('force:');
-      console.log(rawData.decodedForces);
       for (const force of rawData.decodedForces) {
         let startCoord = new Coord(force.start.x, force.start.y);
         let endCoord = new Coord(force.end.x, force.end.y);
@@ -216,8 +206,6 @@ export class StateService {
         newForce.angle = Math.atan2(coord1.y, coord1.x) * (180 / Math.PI);
         newForce.frameOfReference = force.frameOfReference;
         newForce.parentLink.addForce(newForce);
-        console.log('force:');
-        console.log(newForce);
         this.mechanism._addForce(newForce);
       }
     }
@@ -391,9 +379,11 @@ export class StateService {
       case 'setSynthesisLength':
         this.mechanism.setCouplerLength(action.newDistance as number);
         break;
+      case 'positionSpecified':
+        this.mechanism.addPos(action.linkId as number);
+        break;
       case 'setPositionAngle':
         if(!isUndefined(action.linkId) && !isUndefined(action.newAngle)){
-          console.log("hii")
           this.mechanism.setPositionAngle(action.newAngle, action.linkId);
         }
         break;
@@ -428,6 +418,9 @@ export class StateService {
         break;
       case 'setPositionPosition':
           this.mechanism.setPositionLocation(action.newCoords as Coord, action.linkId as number)
+          break;
+      case 'deletePosition':
+          this.mechanism.removePosition(action.linkId as number)
           break;
       case 'addLink':
         if (action.extraJointsData) {
@@ -532,9 +525,11 @@ export class StateService {
       case 'setSynthesisLength':
         this.mechanism.setCouplerLength(action.oldDistance as number);
         break;
+      case 'positionSpecified':
+        this.mechanism.removePosition(action.linkId as number);
+        break;
       case 'setPositionAngle':
         if(!isUndefined(action.linkId) && !isUndefined(action.oldAngle)){
-          console.log("hii")
           this.mechanism.setPositionAngle(action.oldAngle, action.linkId);
         }
         break;

@@ -56,7 +56,7 @@
 
                     <!--class="right-aligned" for below-->
                       <single-input-block
-                            [input1Value]="length"
+                            [input1Value]="couplerLength"
                             (input1Change)="setCouplerLength($event)"
                             unit1={{units}}
                             [showIcon]="false"
@@ -154,7 +154,7 @@
                (click)="generateFourBar(); recordFourBarWrapper()">
                {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
              </button>
-             <div *ngIf="pos1Specified || pos2Specified || pos3Specified">
+             <div *ngIf="this.anyPositionsDefined()">
              <button class="removeAll" (click)="removeAllPositions()">
                {{ confirmRemoveAll ? 'Are You Sure?' : 'Remove All Positions' }}
              </button>
@@ -266,7 +266,7 @@
           {{ fourBarGenerated ? 'Clear Four-Bar' : 'Generate Four-Bar' }}
         </button>
 
-          <div *ngIf="pos1Specified || pos2Specified || pos3Specified">
+          <div *ngIf="this.anyPositionsDefined()">
             <button class="removeAll" (click)="removeAllPositions()">
               {{ confirmRemoveAll ? 'Are You Sure?' : 'Remove All Positions' }}
            </button>

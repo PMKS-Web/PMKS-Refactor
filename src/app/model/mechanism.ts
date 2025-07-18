@@ -91,36 +91,66 @@ export class Mechanism {
     //console.log(this);
   }
 
-  addPos(coordOne: Coord, coordTwo: Coord, id: number = -1) {
-    // Create two joints for the new position
-    let jointA = new Joint(this._jointIDCount, coordOne);
-    this._jointIDCount++;
-    let jointB = new Joint(this._jointIDCount, coordTwo);
-    this._jointIDCount++;
+addPos(positionIndex: number) {
+    // Get the current coupler length from positionLengthChange
+    const couplerLength = this._positionLengthChange.value;
+    
+    let coord1: Coord, coord2: Coord;
+    
+    if (positionIndex === 1) {
+        coord1 = new Coord(-couplerLength / 2, 0);
+        coord2 = new Coord(couplerLength / 2, 0);
+    } else if (positionIndex === 2) {
+        coord1 = new Coord(-couplerLength / 2 - 1.5 * couplerLength, 0);
+        coord2 = new Coord(couplerLength / 2 - 1.5 * couplerLength, 0);
+    } else if (positionIndex === 3) {
+        coord1 = new Coord(-couplerLength / 2 + 1.5 * couplerLength, 0);
+        coord2 = new Coord(couplerLength / 2 + 1.5 * couplerLength, 0);
+    } else {
+        throw new Error(`Invalid position index: ${positionIndex}`);
+    }
 
-    //Create pseudo joint for fixed reference point, do not add to maps, default to center
+    // Create two joints for the new position
+    let jointA = new Joint(this._jointIDCount, coord1);
+    this._jointIDCount++;
+    let jointB = new Joint(this._jointIDCount, coord2);
+    this._jointIDCount++;
+    
+    // Create pseudo joint for fixed reference point, do not add to maps, default to center
     const centerX = (jointA.coords.x + jointB.coords.x) / 2;
     const centerY = (jointA.coords.y + jointB.coords.y) / 2;
     let jointC = new Joint(this._refIdCount, new Coord(centerX, centerY));
     jointC.hidden = true;
     jointC.reference = true;
     this._refIdCount--;
-
+    
     this._joints.set(jointA.id, jointA);
     this._joints.set(jointB.id, jointB);
     this._joints.set(jointC.id, jointC);
-
-    let position = new Position(this._positionIDCount, [
-      jointA,
-      jointB,
-      jointC,
+    
+    let position = new Position(positionIndex, [
+        jointA,
+        jointB,
+        jointC,
     ]);
-
+    
+    // Set position properties based on index
+    if (positionIndex === 1) {
+        position.name = 'Position 1';
+    } else if (positionIndex === 2) {
+        position.name = 'Position 2';
+    } else if (positionIndex === 3) {
+        position.name = 'Position 3';
+    }
+    
+    position.setReference(this._positionReference);
+    
     this._positionIDCount++;
     this._positions.set(position.id, position);
-
     this.notifyChange();
-  }
+    
+    return position;
+}
 
   populateTrajectories(positionSolver: PositionSolverService): void {
     const animationFrames = positionSolver.getAnimationFrames();
@@ -1126,6 +1156,10 @@ export class Mechanism {
       }
     }
     return [...connectedLinks, ...connectedCompoundLinks] as RigidBody[];
+  }
+
+  public hasPositionWithId(id: number): boolean {
+    return this._positions.has(id);
   }
 
   //----------------------------GET FUNCTIONS----------------------------

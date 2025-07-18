@@ -56,9 +56,6 @@ export class ThreePosSynthesis implements OnInit {
   sectionExpanded: { [key: string]: boolean } = { Basic: false };
   reference: string = 'Center';
   couplerLength: number = 2;
-  pos1Specified: boolean = false;
-  pos2Specified: boolean = false;
-  pos3Specified: boolean = false;
   position1: Position | null = null;
   position2: Position | null = null;
   position3: Position | null = null;
@@ -82,7 +79,6 @@ export class ThreePosSynthesis implements OnInit {
   panel: string = 'Synthesis';
   synthedMech: Link[] = [];
   selectedOption: string = 'xy-angle';
-  length: number = 2;
   angle: number = 0;
   // New array for two-point mode, using the Position interface
   twoPointPositions: CoordinatePosition[] = [
@@ -127,7 +123,7 @@ export class ThreePosSynthesis implements OnInit {
     });
         this.mechanism._positionLengthChange$
       .subscribe(newLength => {
-        this.length = newLength;
+        this.couplerLength = newLength;
       });
   }
   init() {
@@ -135,13 +131,10 @@ export class ThreePosSynthesis implements OnInit {
     this.mechanism.getArrayOfPositions().forEach((position) => {
       if (position.id === 0) {
         this.position1 = position;
-        this.pos1Specified = true;
       } else if (position.id === 1) {
         this.position2 = position;
-        this.pos2Specified = true;
       } else if (position.id === 2) {
         this.position3 = position;
-        this.pos3Specified = true;
       }
     });
     this.mechanism.getArrayOfLinks().forEach((link) => {
@@ -177,42 +170,23 @@ export class ThreePosSynthesis implements OnInit {
   toggleOption(selectedOption: string) {
     this.selectedOption = selectedOption;
   }
-  specifyPosition(index: number) {
-    let coord1: Coord, coord2: Coord;
-    let posX: number, posY: number;
-
-    if (index === 1) {
-      coord1 = new Coord(-this.couplerLength / 2, 0);
-      coord2 = new Coord(this.couplerLength / 2, 0);
-
-      this.pos1Specified = true;
-      this.mechanism.addPos(coord1, coord2);
-      const positions = this.mechanism.getArrayOfPositions();
-      this.position1 = positions[positions.length - 1];
-      this.position1.name = 'Position 1';
-      this.position1.setReference(this.reference); // Only set reference for the new position
-    } else if (index === 2) {
-      coord1 = new Coord(-this.couplerLength / 2 - 1.5 * this.couplerLength, 0);
-      coord2 = new Coord(this.couplerLength / 2 - 1.5 * this.couplerLength, 0);
-
-      this.pos2Specified = true;
-      this.mechanism.addPos(coord1, coord2);
-      const positions = this.mechanism.getArrayOfPositions();
-      this.position2 = positions[positions.length - 1];
-      this.position2.name = 'Position 2';
-      this.position2.setReference(this.reference); // Only set reference for the new position
-    } else if (index === 3) {
-      coord1 = new Coord(-this.couplerLength / 2 + 1.5 * this.couplerLength, 0);
-      coord2 = new Coord(this.couplerLength / 2 + 1.5 * this.couplerLength, 0);
-
-      this.pos3Specified = true;
-      this.mechanism.addPos(coord1, coord2);
-      const positions = this.mechanism.getArrayOfPositions();
-      this.position3 = positions[positions.length - 1];
-      this.position3.name = 'Position 3';
-      this.position3.setReference(this.reference); // Only set reference for the new position
-    }
+// In your component - Updated specifyPosition function
+specifyPosition(index: number) {
+  if(index < 1 || index > 3) {
+    console.warn("Index " + index + " is an invalid position number")
   }
+    if (index === 1) {
+        this.position1 = this.mechanism.addPos(1);
+    } else if (index === 2) {
+        this.position2 = this.mechanism.addPos(2);
+    } else if (index === 3) {
+        this.position3 = this.mechanism.addPos(3);
+    }
+    this.stateService.recordAction({
+      type: "positionSpecified",
+      linkId: index
+    })
+}
 
   getNewCoord(position: Position): Coord {
     let joint: Joint;
@@ -262,7 +236,7 @@ export class ThreePosSynthesis implements OnInit {
     }
   }
   getLength(): number{
-    return this.length as number;
+    return this.couplerLength as number;
   }
   isFourBarGenerated(): boolean {
     return this.fourBarGenerated;
@@ -598,7 +572,6 @@ export class ThreePosSynthesis implements OnInit {
       this.mechanism.setPositionAngle(Number(angle), position.id);
     }
     
-
     this.cdr.detectChanges();
   }
 
@@ -645,22 +618,17 @@ export class ThreePosSynthesis implements OnInit {
   }
 
   isPositionDefined(index: number): boolean {
-    if (index == 1) {
-      return this.pos1Specified;
-    }
-    if (index == 2) return this.pos2Specified;
-    if (index == 3) return this.pos3Specified;
-    return false;
+    return this.mechanism.hasPositionWithId(index);
   }
 
   getFirstUndefinedPosition(): number {
-    if (!this.pos1Specified) {
+    if (!this.mechanism.hasPositionWithId(1)) {
       return 1;
     }
-    if (!this.pos2Specified) {
+    if (!this.mechanism.hasPositionWithId(2)) {
       return 2;
     }
-    if (!this.pos3Specified) {
+    if (!this.mechanism.hasPositionWithId(3)) {
       return 3;
     }
     return 0;
@@ -672,26 +640,27 @@ export class ThreePosSynthesis implements OnInit {
     position?.getJoints()[1].id
     this.stateService.recordAction({
       type: "deletePosition",
-      oldPosition: position as Position
+      oldPosition: position as Position,
+      linkId: index
     })
 
     if (index === 1) {
-      this.pos1Specified = false;
       this.mechanism.removePosition(this.position1!.id);
       this.resetPos(1);
     } else if (index === 2) {
-      this.pos2Specified = false;
       this.mechanism.removePosition(this.position2!.id);
       this.resetPos(2);
     } else if (index === 3) {
-      this.pos3Specified = false;
       this.mechanism.removePosition(this.position3!.id);
       this.resetPos(3);
     }
   }
 
   allPositionsDefined(): boolean {
-    return this.pos1Specified && this.pos2Specified && this.pos3Specified;
+    return this.mechanism.hasPositionWithId(0) && this.mechanism.hasPositionWithId(1) && this.mechanism.hasPositionWithId(2);
+  }
+  anyPositionsDefined(): boolean {
+    return this.mechanism.hasPositionWithId(0) || this.mechanism.hasPositionWithId(1) || this.mechanism.hasPositionWithId(2);
   }
 
   confirmRemoveAll: boolean = false;
@@ -806,7 +775,6 @@ findIntersectionPoint(
     this.cdr.detectChanges();
   }
   specifyPositionEndPoints(index: number) {
-    console.log(index);
     if (index >= 0) {
       this.twoPointPositions[index - 1].defined = true;
       this.specifyPosition(index);
