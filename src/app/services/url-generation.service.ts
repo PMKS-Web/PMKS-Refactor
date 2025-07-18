@@ -3,9 +3,10 @@ import { EncoderService } from './encoder.service';
 import { StateService } from './state.service';
 import {PanZoomService} from "./pan-zoom.service";
 import {Injectable} from "@angular/core";
+import { UndoRedoService } from './undo-redo.service';
 
 @Injectable({ providedIn: 'root' })
-import { UndoRedoService } from './undo-redo.service';
+
 
 export class UrlGenerationService {
 

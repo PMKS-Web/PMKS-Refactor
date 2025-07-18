@@ -9,6 +9,7 @@ import { Link } from 'src/app/model/link';
 import { ColorService } from 'src/app/services/color.service';
 import { InteractionService } from 'src/app/services/interaction.service';
 import { StateService } from 'src/app/services/state.service';
+import { UndoRedoService } from 'src/app/services/undo-redo.service';
 
 @Component({
   selector: 'app-force-edit-panel',
@@ -43,7 +44,8 @@ export class ForceEditPanelComponent {
   constructor(
     private stateService: StateService,
     private interactionService: InteractionService,
-    private colorService: ColorService
+    private colorService: ColorService,
+    private undoRedoService: UndoRedoService
   ) {}
 
   //helper function to access current selected object (will always be a link here)
@@ -108,7 +110,7 @@ export class ForceEditPanelComponent {
       return;
     }
     // Record exactly one undo entry
-    this.stateService.recordAction({
+    this.undoRedoService.recordAction({
       type: 'changeForceMagnitude',
       linkId: this.getSelectedObject().id,
       // Use whichever joint anchors your link-length
@@ -134,7 +136,7 @@ export class ForceEditPanelComponent {
       return;
     }
     // Record exactly one undo entry
-    this.stateService.recordAction({
+    this.undoRedoService.recordAction({
       type: 'changeForceAngle',
       linkId: this.getSelectedObject().id,
       jointId: this.getSelectedObject().parentLink.joints.keys().next().value,
@@ -152,7 +154,7 @@ export class ForceEditPanelComponent {
     const newLen = this.pendingForceX;
     const oldLen = this.getSelectedObject().calculateXComp();
     if (newLen == null || Math.abs(oldLen - newLen)) return;
-    this.stateService.recordAction({
+    this.undoRedoService.recordAction({
       type: 'changeForceX',
       linkId: this.getSelectedObject().id,
       jointId: this.getSelectedObject().parentLink.joints.keys().next().value,
@@ -167,7 +169,7 @@ export class ForceEditPanelComponent {
     const newLen = this.pendingForceY;
     const oldLen = this.getSelectedObject().calculateYComp();
     if (newLen == null || Math.abs(oldLen - newLen)) return;
-    this.stateService.recordAction({
+    this.undoRedoService.recordAction({
       type: 'changeForceY',
       linkId: this.getSelectedObject().id,
       jointId: this.getSelectedObject().parentLink.joints.keys().next().value,

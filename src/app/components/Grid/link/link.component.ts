@@ -65,7 +65,7 @@ export class LinkComponent
   }
 
   override registerInteractor(): Interactor {
-    return new LinkInteractor(this.link, this.stateService, this.interactionService, this.notificationService);
+    return new LinkInteractor(this.link, this.stateService, this.interactionService, this.notificationService, this.undoRedoService);
   }
   hoverState: LinkHoverState = {
     isHoveringLength: false,
