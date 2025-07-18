@@ -17,7 +17,6 @@ import { ChangeDetectorRef } from '@angular/core';
 import { PositionSolverService } from '../../../../services/kinematic-solver.service';
 import { Position } from '../../../../model/position';
 import { NotificationService } from 'src/app/services/notification.service';
-import { Action } from 'rxjs/internal/scheduler/Action';
 
 interface CoordinatePosition {
   x0: number;
@@ -105,12 +104,18 @@ export class ThreePosSynthesis implements OnInit {
   } = {};
   private readonly mechanism: Mechanism;
 
+  pendingX?: number;
+  pendingY?: number;
+  private _oldPosAngle?: number;
+
+
+
   constructor(
     private stateService: StateService,
     private interactionService: InteractionService,
     private cdr: ChangeDetectorRef,
     private positionSolver: PositionSolverService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
   ) {
     this.mechanism = this.stateService.getMechanism();
   }
@@ -725,54 +730,7 @@ export class ThreePosSynthesis implements OnInit {
     }
   }
 
-  setPositionAngle(angle: number, posNum: number) {
-    const radians = angle * (Math.PI / 180); // Convert angle to radians
 
-    if (posNum === 1 && this.position1) {
-      this.pos1Angle = angle;
-      this.position1.angle = angle;
-      const backJoint = this.position1.getJoints()[0];
-      const frontJoint = this.position1.getJoints()[1];
-      const midJoint = this.position1.getJoints()[2];
-      const referenceJoint = this.getReferenceJoint(this.position1);
-      this.setCouplerJointCoordinates(
-        referenceJoint,
-        radians,
-        backJoint,
-        midJoint,
-        frontJoint
-      );
-    } else if (posNum === 2 && this.position2) {
-      this.pos2Angle = angle;
-      this.position2.angle = angle;
-      const backJoint = this.position2.getJoints()[0];
-      const frontJoint = this.position2.getJoints()[1];
-      const midJoint = this.position2.getJoints()[2];
-      const referenceJoint = this.getReferenceJoint(this.position2);
-      this.setCouplerJointCoordinates(
-        referenceJoint,
-        radians,
-        backJoint,
-        midJoint,
-        frontJoint
-      );
-    } else if (posNum === 3 && this.position3) {
-      this.pos3Angle = angle;
-      this.position3.angle = angle;
-      const backJoint = this.position3.getJoints()[0];
-      const frontJoint = this.position3.getJoints()[1];
-      const midJoint = this.position3.getJoints()[2];
-      const referenceJoint = this.getReferenceJoint(this.position3);
-      this.setCouplerJointCoordinates(
-        referenceJoint,
-        radians,
-        backJoint,
-        midJoint,
-        frontJoint
-      );
-    }
-    this.cdr.detectChanges();
-  }
 
   getReferenceJoint(position: Position): Joint {
     if (this.reference === 'Back') {
@@ -1258,4 +1216,131 @@ export class ThreePosSynthesis implements OnInit {
       midJoint.setCoordinates(new Coord(centerX - dx, centerY - dy));
     }
   }
+
+  confirmPosX(index: number, newX: number): void {
+    const pos = this.getPositionByIndex(index);
+    const refJoint = this.getReferenceJoint(pos);
+    const oldX = refJoint.coords.x;
+
+    if (Math.abs(oldX - newX) < 1e-6) {
+      this.pendingX = undefined;
+      return;
+    }
+
+    this.stateService.recordAction({
+      type: 'changePositionX',
+      posNum: index,
+      oldValue: oldX,
+      newValue: newX
+    });
+
+    // move it via your helper (this also nudges the other two joints appropriately)
+    this.setPosXCoord(newX, index);
+    this.pendingX = undefined;
+  }
+
+  confirmPosY(index: number, newY: number): void {
+    const pos = this.getPositionByIndex(index);
+    const refJoint = this.getReferenceJoint(pos);
+    const oldY = refJoint.coords.y;
+
+    if (Math.abs(oldY - newY) < 1e-6) {
+      this.pendingY = undefined;
+      return;
+    }
+
+    this.stateService.recordAction({
+      type: 'changePositionY',
+      posNum: index,
+      oldValue: oldY,
+      newValue: newY
+    });
+
+    // again, delegate to your existing helper
+    this.setPosYCoord(newY, index);
+    this.pendingY = undefined;
+  }
+
+
+
+  recordPosAngle(index: number): void {
+    const pos = this.getPositionByIndex(index);
+    this._oldPosAngle = pos._angle;
+  }
+
+  private getPositionByIndex(i: number) {
+    return this.mechanism.getArrayOfPositions()[i - 1];
+  }
+
+  setPositionAngle(angle: number, posNum: number) {
+
+    const pos = this.getPositionByIndex(posNum);
+    const oldAngle = this._oldPosAngle ?? pos._angle;
+    if (Math.abs(oldAngle - angle) < 1e-6) return;
+
+    this.stateService.recordAction({
+      type: 'changePositionAngle',
+      posNum,
+      oldValue: oldAngle,
+      newValue: angle
+    });
+
+    pos._angle = angle;
+    this.mechanism.notifyChange();
+
+    const radians = angle * (Math.PI / 180); // Convert angle to radians
+
+    if (posNum === 1 && this.position1) {
+      this.pos1Angle = angle;
+      this.position1.angle = angle;
+      const backJoint = this.position1.getJoints()[0];
+      const frontJoint = this.position1.getJoints()[1];
+      const midJoint = this.position1.getJoints()[2];
+      const referenceJoint = this.getReferenceJoint(this.position1);
+      this.setCouplerJointCoordinates(
+        referenceJoint,
+        radians,
+        backJoint,
+        midJoint,
+        frontJoint
+      );
+    } else if (posNum === 2 && this.position2) {
+      this.pos2Angle = angle;
+      this.position2.angle = angle;
+      const backJoint = this.position2.getJoints()[0];
+      const frontJoint = this.position2.getJoints()[1];
+      const midJoint = this.position2.getJoints()[2];
+      const referenceJoint = this.getReferenceJoint(this.position2);
+      this.setCouplerJointCoordinates(
+        referenceJoint,
+        radians,
+        backJoint,
+        midJoint,
+        frontJoint
+      );
+    } else if (posNum === 3 && this.position3) {
+      this.pos3Angle = angle;
+      this.position3.angle = angle;
+      const backJoint = this.position3.getJoints()[0];
+      const frontJoint = this.position3.getJoints()[1];
+      const midJoint = this.position3.getJoints()[2];
+      const referenceJoint = this.getReferenceJoint(this.position3);
+      this.setCouplerJointCoordinates(
+        referenceJoint,
+        radians,
+        backJoint,
+        midJoint,
+        frontJoint
+      );
+    }
+    this.cdr.detectChanges();
+  }
+
+
+
+
+
+
+
+
 }

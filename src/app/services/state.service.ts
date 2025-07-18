@@ -467,6 +467,30 @@ export class StateService {
         break;
       }
 
+      case 'changePositionX': {
+        const pos = this.mechanism.getArrayOfPositions()[action.posNum! - 1];
+
+        const refJoint = pos.getJoints()[0];
+
+        this.mechanism.setXCoord(refJoint.id, action.newValue!);
+        break;
+      }
+
+      case 'changePositionY': {
+        const pos = this.mechanism.getArrayOfPositions()[action.posNum! - 1];
+        const refJoint = pos.getJoints()[0];
+        this.mechanism.setYCoord(refJoint.id, action.newValue!);
+        break;
+      }
+
+      case 'changePositionAngle': {
+        const pos = this.mechanism.getArrayOfPositions()[action.posNum! - 1];
+        // restore the new angle
+        pos.angle = action.newValue!;
+
+        break;
+      }
+
       default:
         console.error('No inverse defined for action type:', action.type);
     }
@@ -639,6 +663,28 @@ export class StateService {
         const link = this.mechanism.getLink(ca.linkId!)!;
         const joint = this.mechanism.getJoint(ca.jointId!)!;
         link.setAngle(ca.oldAngle!, joint);
+        break;
+      }
+
+      case 'changePositionX': {
+        const pos = this.mechanism.getArrayOfPositions()[action.posNum! - 1];
+        const refJoint = pos.getJoints()[0];
+        // put it back to the oldValue
+        this.mechanism.setXCoord(refJoint.id, action.oldValue!);
+        break;
+      }
+
+      case 'changePositionY': {
+        const pos = this.mechanism.getArrayOfPositions()[action.posNum! - 1];
+        const refJoint = pos.getJoints()[0];
+        this.mechanism.setYCoord(refJoint.id, action.oldValue!);
+        break;
+      }
+
+      case 'changePositionAngle': {
+        const pos = this.mechanism.getArrayOfPositions()[action.posNum! - 1];
+        pos.angle = action.oldValue!;
+
         break;
       }
       default:

@@ -16,7 +16,7 @@ export class Position implements RigidBody {
   private _color: string = "";
   private _isLocked: boolean;
   private _referencePoint: string = "Center";
-  private _angle: number;
+  _angle: number;
 
   private positionColorOptions = [
     '#5E646D87'
