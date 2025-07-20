@@ -1217,10 +1217,12 @@ export class ThreePosSynthesis implements OnInit {
     }
   }
 
-  confirmPosX(index: number, newX: number): void {
+  confirmPosX(index: number, newX: number, jointIndex: 0 | 1 | 2): void {
     const pos = this.getPositionByIndex(index);
     const refJoint = this.getReferenceJoint(pos);
     const oldX = refJoint.coords.x;
+
+
 
     if (Math.abs(oldX - newX) < 1e-6) {
       this.pendingX = undefined;
@@ -1234,12 +1236,16 @@ export class ThreePosSynthesis implements OnInit {
       newValue: newX
     });
 
-    // move it via your helper (this also nudges the other two joints appropriately)
-    this.setPosXCoord(newX, index);
+    if (this.selectedOption === 'two-points' && jointIndex !== 2) {
+      // only move that one endpoint
+      this.updateEndPointCoords(index, jointIndex === 0 ? 'x0' : 'x1', newX);
+    } else {
+      this.setPosXCoord(newX, index);
+    }
     this.pendingX = undefined;
   }
 
-  confirmPosY(index: number, newY: number): void {
+  confirmPosY(index: number, newY: number, jointIndex: 0 | 1 | 2 ): void {
     const pos = this.getPositionByIndex(index);
     const refJoint = this.getReferenceJoint(pos);
     const oldY = refJoint.coords.y;
@@ -1256,8 +1262,12 @@ export class ThreePosSynthesis implements OnInit {
       newValue: newY
     });
 
-    // again, delegate to your existing helper
-    this.setPosYCoord(newY, index);
+    if (this.selectedOption === 'two-points' && jointIndex !== 2) {
+      this.updateEndPointCoords(index, jointIndex === 0 ? 'y0' : 'y1', newY);
+    } else {
+      this.setPosYCoord(newY, index);
+    }
+
     this.pendingY = undefined;
   }
 

@@ -687,9 +687,11 @@ export class StateService {
 
         break;
       }
+
       default:
         console.error('No inverse defined for action type:', action.type);
     }
+
   }
 
   // Restores a joint from its snapshot data when undoing a deletion.

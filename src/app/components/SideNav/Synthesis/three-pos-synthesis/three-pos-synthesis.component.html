@@ -118,7 +118,7 @@
                             type="number"
                             [value]="getPosXCoord(i)"
                             (input)="pendingX = $any($event.target).valueAsNumber"
-                            (keydown.enter)="confirmPosX(i, pendingX!)"
+                            (keydown.enter)="confirmPosX(i, pendingX!,2)"
                             [disabled]="isFourBarGenerated()"
                           />
                           <span class="xy-unit">{{ units }}</span>
@@ -129,7 +129,7 @@
                             type="number"
                             [value]="getPosYCoord(i)"
                             (input)="pendingY = $any($event.target).valueAsNumber"
-                            (keydown.enter)="confirmPosY(i, pendingY!)"
+                            (keydown.enter)="confirmPosY(i, pendingY!,2)"
                             [disabled]="isFourBarGenerated()"
                           />
                           <span class="xy-unit">{{ units }}</span>
@@ -225,7 +225,7 @@
               </button>
             </span>
           </div>
-          <div *ngFor='let i of [1,2,3]' class="position-container">
+
           <!-- allows the user to enter coordinates for the end points -->
           <div class='poseData' *ngIf='this.isPositionDefined(index)'>
 
@@ -236,9 +236,9 @@
                   <label>X</label>
                   <input
                     type="number"
-                    [value]="getPosXCoord(i)"
+                    [value]="getEndPointXCoords(index, 0)"
                     (input)="pendingX = $any($event.target).valueAsNumber"
-                    (keydown.enter)="confirmPosX(i, pendingX!)"
+                    (keydown.enter)="confirmPosX(index, pendingX!, 0)"
                     [disabled]="isFourBarGenerated()"
                   />
                   <span class="xy-unit">{{ units }}</span>
@@ -247,9 +247,9 @@
                   <label>Y</label>
                   <input
                     type="number"
-                    [value]="getPosYCoord(i)"
+                    [value]="getEndPointYCoords(index, 0)"
                     (input)="pendingY = $any($event.target).valueAsNumber"
-                    (keydown.enter)="confirmPosY(i, pendingY!)"
+                    (keydown.enter)="confirmPosY(index, pendingY!, 0)"
                     [disabled]="isFourBarGenerated()"
                   />
                   <span class="xy-unit">{{ units }}</span>
@@ -263,9 +263,9 @@
                   <label>X</label>
                   <input
                     type="number"
-                    [value]="getPosXCoord(i)"
+                    [value]="getEndPointXCoords(index, 1)"
                     (input)="pendingX = $any($event.target).valueAsNumber"
-                    (keydown.enter)="confirmPosX(i, pendingX!)"
+                    (keydown.enter)="confirmPosX(index, pendingX!, 1)"
                     [disabled]="isFourBarGenerated()"
                   />
                   <span class="xy-unit">{{ units }}</span>
@@ -274,9 +274,9 @@
                   <label>Y</label>
                   <input
                     type="number"
-                    [value]="getPosYCoord(i)"
+                    [value]="getEndPointYCoords(index, 1)"
                     (input)="pendingY = $any($event.target).valueAsNumber"
-                    (keydown.enter)="confirmPosY(i, pendingY!)"
+                    (keydown.enter)="confirmPosY(index, pendingY!, 1)"
                     [disabled]="isFourBarGenerated()"
                   />
                   <span class="xy-unit">{{ units }}</span>
@@ -285,14 +285,12 @@
             </div>
           </div>
           <!-- If position has not yet been created and it's the first undefined position, show "specify position" button -->
-          <div class="positionCreateEndPoints" *ngIf="getFirstUndefinedPosition() === i">
-            <button id="specifyEndPoints" (click)="this.specifyPositionEndPoints(i)">Specify Position</button>
+          <div class="positionCreateEndPoints" *ngIf="getFirstUndefinedPosition() === index">
+            <button id="specifyEndPoints" (click)="this.specifyPositionEndPoints(index)">Specify Position</button>
           </div>
 
-        </div>
 
         </div>
-
 
 
         <!-- Action Buttons -->
