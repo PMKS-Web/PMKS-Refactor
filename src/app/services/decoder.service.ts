@@ -266,8 +266,6 @@ export class DecoderService {
         parentLink: this.convertNumber(row[7], useDecoding),
       })
     );
-    console.log('decodedForces[0].angle');
-    console.log(decodedForces[0].angle);
 
     const decodedPositions: any[] = (compactData.p || []).map((row: any[]) => ({
       id: this.convertNumber(row[0], useDecoding),
