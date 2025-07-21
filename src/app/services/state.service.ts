@@ -382,6 +382,12 @@ export class StateService {
       case 'positionSpecified':
         this.mechanism.addPos(action.linkId as number);
         break;
+      case 'deleteAllPositions':
+        action.oldPositionArray?.forEach(pos =>{
+          this.mechanism.removePosition(pos.id);
+        })
+        this.reinitializeSubject.next();
+        break;
       case 'setPositionAngle':
         if(!isUndefined(action.linkId) && !isUndefined(action.newAngle)){
           this.mechanism.setPositionAngle(action.newAngle, action.linkId);
@@ -420,7 +426,9 @@ export class StateService {
           this.mechanism.setPositionLocation(action.newCoords as Coord, action.linkId as number)
           break;
       case 'deletePosition':
-          this.mechanism.removePosition(action.linkId as number)
+        if(action.oldPosition){
+          this.mechanism.removePosition(action?.oldPosition.id)
+        }
           break;
       case 'addLink':
         if (action.extraJointsData) {
@@ -524,6 +532,18 @@ export class StateService {
         break;      
       case 'setSynthesisLength':
         this.mechanism.setCouplerLength(action.oldDistance as number);
+        break;
+      case 'deleteAllPositions':
+        action.oldPositionArray?.forEach(pos =>{
+          console.log("pos")
+          console.log(pos)
+          this.mechanism._addPositionSilent(pos);
+          const joints = pos.getJoints();
+          joints?.forEach(joint =>{
+            this.mechanism._addJoint(joint);
+          })
+          this.reinitializeSubject.next();
+        })
         break;
       case 'positionSpecified':
         this.mechanism.removePosition(action.linkId as number);

@@ -129,11 +129,11 @@ export class ThreePosSynthesis implements OnInit {
   init() {
     console.log("Synthesis Init");
     this.mechanism.getArrayOfPositions().forEach((position) => {
-      if (position.id === 0) {
+      if (position.id === 1) {
         this.position1 = position;
-      } else if (position.id === 1) {
-        this.position2 = position;
       } else if (position.id === 2) {
+        this.position2 = position;
+      } else if (position.id === 3) {
         this.position3 = position;
       }
     });
@@ -204,36 +204,36 @@ specifyPosition(index: number) {
   }
 
   resetPos(pos: number) {
-    if (pos == 1) {
-      this.position1!.angle = 0;
-      this.twoPointPositions[0] = {
-        x0: -1,
-        y0: 0,
-        x1: 1,
-        y1: 0,
-        defined: false,
-      };
-    } else if (pos == 2) {
-      this.position2!.angle = 0;
-      this.twoPointPositions[1] = {
-        x0: -3.5,
-        y0: 0,
-        x1: -1.5,
-        y1: 0,
-        defined: false,
-      };
-      this.position2LengthErr = { x1: false, y1: false, x2: false, y2: false };
-    } else {
-      this.position3!.angle = 0;
-      this.twoPointPositions[2] = {
-        x0: 1.5,
-        y0: 0,
-        x1: 3.5,
-        y1: 0,
-        defined: false,
-      };
-      this.position3LengthErr = { x1: false, y1: false, x2: false, y2: false };
-    }
+    // if (pos == 1) {
+    //   this.position1!.angle = 0;
+    //   this.twoPointPositions[0] = {
+    //     x0: -1,
+    //     y0: 0,
+    //     x1: 1,
+    //     y1: 0,
+    //     defined: false,
+    //   };
+    // } else if (pos == 2) {
+    //   this.position2!.angle = 0;
+    //   this.twoPointPositions[1] = {
+    //     x0: -3.5,
+    //     y0: 0,
+    //     x1: -1.5,
+    //     y1: 0,
+    //     defined: false,
+    //   };
+    //   this.position2LengthErr = { x1: false, y1: false, x2: false, y2: false };
+    // } else {
+    //   this.position3!.angle = 0;
+    //   this.twoPointPositions[2] = {
+    //     x0: 1.5,
+    //     y0: 0,
+    //     x1: 3.5,
+    //     y1: 0,
+    //     defined: false,
+    //   };
+    //   this.position3LengthErr = { x1: false, y1: false, x2: false, y2: false };
+    // }
   }
   getLength(): number{
     return this.couplerLength as number;
@@ -637,11 +637,9 @@ specifyPosition(index: number) {
   deletePosition(index: number) {
     const positions = [this.position1, this.position2, this.position3];
     const position = positions[index - 1];
-    position?.getJoints()[1].id
     this.stateService.recordAction({
       type: "deletePosition",
       oldPosition: position as Position,
-      linkId: index
     })
 
     if (index === 1) {
@@ -657,10 +655,11 @@ specifyPosition(index: number) {
   }
 
   allPositionsDefined(): boolean {
-    return this.mechanism.hasPositionWithId(0) && this.mechanism.hasPositionWithId(1) && this.mechanism.hasPositionWithId(2);
+    if(!this.position1 || !this.position2 || !this.position3) return false;
+    return this.mechanism.hasPositionWithId(this.position1!.id) && this.mechanism.hasPositionWithId(this.position2!.id) && this.mechanism.hasPositionWithId(this.position3!.id);
   }
   anyPositionsDefined(): boolean {
-    return this.mechanism.hasPositionWithId(0) || this.mechanism.hasPositionWithId(1) || this.mechanism.hasPositionWithId(2);
+    return (this.position1 && this.mechanism.hasPositionWithId(this.position1!.id)) || (this.position2 && this.mechanism.hasPositionWithId(this.position2!.id)) || (this.position3 && this.mechanism.hasPositionWithId(this.position3!.id)) || false;
   }
 
   confirmRemoveAll: boolean = false;
@@ -676,20 +675,25 @@ specifyPosition(index: number) {
     });
   }
   removeAllPositions() {
-    if (!this.confirmRemoveAll) {
-      this.confirmRemoveAll = true;
-      setTimeout(() => (this.confirmRemoveAll = false), 3000);
-    } else {
-      if (this.sixBarGenerated) {
-        this.generateSixBar();
-      } else if (this.fourBarGenerated) {
-        this.generateFourBar(); // this deletes the four bar despite its name
-      }
-      this.synthedMech = [];
-      this.confirmRemoveAll = false;
-      this.deletePosition(1);
-      this.deletePosition(2);
-      this.deletePosition(3);
+    const positions = [this.position1, this.position2, this.position3];
+
+    this.stateService.recordAction({
+      type: "deleteAllPositions",
+      oldPositionArray: positions as Position[],
+    })
+
+    if (this.position1 && this.isPositionDefined(this.position1.id)) {
+      this.mechanism.removePosition(this.position1!.id);
+      this.resetPos(1);
+    }  
+    if (this.position2 && this.isPositionDefined(this.position2.id)) {
+      this.mechanism.removePosition(this.position2!.id);
+      this.resetPos(2);
+    } 
+    if (this.position3 && this.isPositionDefined(this.position3.id)) {
+      console.log("hi")
+      this.mechanism.removePosition(this.position3!.id);
+      this.resetPos(3);
     }
   }
 

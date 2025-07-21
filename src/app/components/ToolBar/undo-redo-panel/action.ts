@@ -15,6 +15,7 @@ export interface Action {
   extraJointsData?: JointSnapshot[];
   
   oldPosition?: Position;
+  oldPositionArray?: Position[];
 
   linkData?: LinkSnapshot;
   linkLockData?: LinkLockSnapshot;
