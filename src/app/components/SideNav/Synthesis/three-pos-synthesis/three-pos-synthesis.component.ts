@@ -203,38 +203,6 @@ specifyPosition(index: number) {
     return new Coord(joint.coords.x, joint.coords.y);
   }
 
-  resetPos(pos: number) {
-    // if (pos == 1) {
-    //   this.position1!.angle = 0;
-    //   this.twoPointPositions[0] = {
-    //     x0: -1,
-    //     y0: 0,
-    //     x1: 1,
-    //     y1: 0,
-    //     defined: false,
-    //   };
-    // } else if (pos == 2) {
-    //   this.position2!.angle = 0;
-    //   this.twoPointPositions[1] = {
-    //     x0: -3.5,
-    //     y0: 0,
-    //     x1: -1.5,
-    //     y1: 0,
-    //     defined: false,
-    //   };
-    //   this.position2LengthErr = { x1: false, y1: false, x2: false, y2: false };
-    // } else {
-    //   this.position3!.angle = 0;
-    //   this.twoPointPositions[2] = {
-    //     x0: 1.5,
-    //     y0: 0,
-    //     x1: 3.5,
-    //     y1: 0,
-    //     defined: false,
-    //   };
-    //   this.position3LengthErr = { x1: false, y1: false, x2: false, y2: false };
-    // }
-  }
   getLength(): number{
     return this.couplerLength as number;
   }
@@ -545,7 +513,6 @@ specifyPosition(index: number) {
     const position = [this.position1, this.position2, this.position3][posNum - 1];
     if (!position) throw new Error(`Invalid position number: ${posNum}`);
     let refPos = this.getReferenceJoint(position).coords;
-    //check then record action
     if(position && refPos.y !== y){
       this.stateService.recordAction({
         type: "setPositionPosition",
@@ -644,13 +611,10 @@ specifyPosition(index: number) {
 
     if (index === 1) {
       this.mechanism.removePosition(this.position1!.id);
-      this.resetPos(1);
     } else if (index === 2) {
       this.mechanism.removePosition(this.position2!.id);
-      this.resetPos(2);
     } else if (index === 3) {
       this.mechanism.removePosition(this.position3!.id);
-      this.resetPos(3);
     }
   }
 
@@ -684,16 +648,12 @@ specifyPosition(index: number) {
 
     if (this.position1 && this.isPositionDefined(this.position1.id)) {
       this.mechanism.removePosition(this.position1!.id);
-      this.resetPos(1);
     }  
     if (this.position2 && this.isPositionDefined(this.position2.id)) {
       this.mechanism.removePosition(this.position2!.id);
-      this.resetPos(2);
     } 
     if (this.position3 && this.isPositionDefined(this.position3.id)) {
-      console.log("hi")
       this.mechanism.removePosition(this.position3!.id);
-      this.resetPos(3);
     }
   }
 
@@ -717,7 +677,6 @@ findIntersectionPoint(
   let c1 = midpoint_line1.y + slope1 * midpoint_line1.x;
   let c2 = midpoint_line2.y + slope2 * midpoint_line2.x;
   
-  // intersection point
   let x1 = (c1 - c2) / (-slope2 + slope1);
   let y1 = -slope1 * x1 + c1;
   
@@ -851,56 +810,55 @@ findIntersectionPoint(
     this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
   }
 
-  clearLinkage() {
-    //button changes to "clear four bar" when already generated, so remove mechanism
-    if (this.fourBarGenerated) {
-      let listOfLinks = this.synthedMech;
-      console.log(listOfLinks);
-      while (this.synthedMech.length > 0) {
-        let linkId = this.synthedMech[0].id;
-        console.log(linkId);
-        this.synthedMech.splice(0, 1);
-        this.mechanism.removeLink(linkId);
-        this.position1!.locked = false;
-        this.position2!.locked = false;
-        this.position3!.locked = false;
-        console.log('LIST OF LINKS AFTER DELETION:');
-        console.log(this.mechanism.getArrayOfLinks());
-      }
-      this.setPositionsColorToDefault();
-      this.mechanism.clearTrajectories();
-      this.fourBarGenerated = false;
-      this.stateService.fourBarGenerated = this.fourBarGenerated;
-      this.sixBarGenerated = false;
-      this.stateService.sixBarGenerated = this.sixBarGenerated;
-      this.synthedMech = [];
-      this.Generated.emit(false);
-    }
-    this.sixBarGenerated = !this.sixBarGenerated;
-    //clear the six-bar
-    if (!this.sixBarGenerated) {
-      let listOfLinks = this.synthedMech;
-      console.log(listOfLinks);
-      while (this.synthedMech.length > 0) {
-        let linkId = this.synthedMech[0].id;
-        console.log(linkId);
-        this.synthedMech.splice(0, 1);
-        this.mechanism.removeLink(linkId);
-        this.position1!.locked = false;
-        this.position2!.locked = false;
-        this.position3!.locked = false;
-        console.log('LIST OF LINKS AFTER DELETION:');
-        console.log(this.mechanism.getArrayOfLinks());
-      }
-      this.setPositionsColorToDefault();
-      this.mechanism.clearTrajectories();
-      console.log('Six-bar has been cleared');
-      this.fourBarGenerated = false;
-      this.stateService.fourBarGenerated = this.fourBarGenerated;
-      this.cdr.detectChanges();
-      return;
-    }
-  }
+  // clearLinkage() {
+  //   //button changes to "clear four bar" when already generated, so remove mechanism
+  //   if (this.fourBarGenerated) {
+  //     let listOfLinks = this.synthedMech;
+  //     console.log(listOfLinks);
+  //     while (this.synthedMech.length > 0) {
+  //       let linkId = this.synthedMech[0].id;
+  //       console.log(linkId);
+  //       this.synthedMech.splice(0, 1);
+  //       this.mechanism.removeLink(linkId);
+  //       this.position1!.locked = false;
+  //       this.position2!.locked = false;
+  //       this.position3!.locked = false;
+  //       console.log('LIST OF LINKS AFTER DELETION:');
+  //       console.log(this.mechanism.getArrayOfLinks());
+  //     }
+  //     this.setPositionsColorToDefault();
+  //     this.mechanism.clearTrajectories();
+  //     this.fourBarGenerated = false;
+  //     this.stateService.fourBarGenerated = this.fourBarGenerated;
+  //     this.sixBarGenerated = false;
+  //     this.stateService.sixBarGenerated = this.sixBarGenerated;
+  //     this.synthedMech = [];
+  //     this.Generated.emit(false);
+  //   }
+  //   this.sixBarGenerated = !this.sixBarGenerated;
+  //   if (!this.sixBarGenerated) {
+  //     let listOfLinks = this.synthedMech;
+  //     console.log(listOfLinks);
+  //     while (this.synthedMech.length > 0) {
+  //       let linkId = this.synthedMech[0].id;
+  //       console.log(linkId);
+  //       this.synthedMech.splice(0, 1);
+  //       this.mechanism.removeLink(linkId);
+  //       this.position1!.locked = false;
+  //       this.position2!.locked = false;
+  //       this.position3!.locked = false;
+  //       console.log('LIST OF LINKS AFTER DELETION:');
+  //       console.log(this.mechanism.getArrayOfLinks());
+  //     }
+  //     this.setPositionsColorToDefault();
+  //     this.mechanism.clearTrajectories();
+  //     console.log('Six-bar has been cleared');
+  //     this.fourBarGenerated = false;
+  //     this.stateService.fourBarGenerated = this.fourBarGenerated;
+  //     this.cdr.detectChanges();
+  //     return;
+  //   }
+  // }
 
   updateEndPointCoords(
     positionIndex: number,
