@@ -1,17 +1,22 @@
 <div id="editLink">
   <!-- MAIN CONTAINER FOR LINK PANEL -->
   <div class="scroll-container">
-
-
     <!-- HEADER SECTION WITH TITLE AND ACTION BUTTONS -->
     <panel-section-collapsible>
-      <title-block description='' class="editHeader" (click)="onTitleBlockClick($event)">
+      <title-block
+        description=""
+        class="editHeader"
+        (click)="onTitleBlockClick($event)"
+      >
         Edit Link
         <!-- edit title input if edit selected -->
         <ng-container *ngIf="isEditingTitle; else linkNameDisplay">
-          <input #linkNameInput [(ngModel)]="this.getSelectedObject().name"
-                 (blur)="setLinkName(linkNameInput.value)"
-                 (keyup.enter)="setLinkName(linkNameInput.value)" />
+          <input
+            #linkNameInput
+            [(ngModel)]="this.getSelectedObject().name"
+            (blur)="setLinkName(linkNameInput.value)"
+            (keyup.enter)="setLinkName(linkNameInput.value)"
+          />
         </ng-container>
         <!-- link name -->
         <ng-template #linkNameDisplay>
@@ -19,76 +24,148 @@
         </ng-template>
         <!-- edit, delete,locking buttons -->
         <!-- edit -->
-        <button (click)="this.isEditingTitle=true">
-          <img id="edit" ngSrc='assets/icons/edit.svg' style="height: 16px; width: 16px;" matTooltip="Edit Link Title" matTooltipShowDelay='300' height="48" width="48" alt=""/>
+        <button (click)="this.isEditingTitle = true">
+          <img
+            id="edit"
+            ngSrc="assets/icons/edit.svg"
+            style="height: 16px; width: 16px"
+            matTooltip="Edit Link Title"
+            matTooltipShowDelay="300"
+            height="48"
+            width="48"
+            alt=""
+          />
         </button>
         <!-- delete -->
         <button (click)="this.deleteLink()">
-          <img id="trash" ngSrc='assets/icons/trash.svg' style="height: 16px; width: 16px;" matTooltip="Delete This Link" matTooltipShowDelay='300' height="18" width="15" alt=""/>
+          <img
+            id="trash"
+            ngSrc="assets/icons/trash.svg"
+            style="height: 16px; width: 16px"
+            matTooltip="Delete This Link"
+            matTooltipShowDelay="300"
+            height="18"
+            width="15"
+            alt=""
+          />
         </button>
         <!-- lock -->
         <button (click)="this.lockLink()">
           <ng-container *ngIf="isLocked; else unlockIcon">
-            <img ngSrc='assets/icons/unlock.svg' style="height: 24px; width: 24px; margin-top: -2.5px;" matTooltip="Unlock This Link" matTooltipShowDelay='300' height="25" width="25" alt=""/>
+            <img
+              ngSrc="assets/icons/unlock.svg"
+              style="height: 24px; width: 24px; margin-top: -2.5px"
+              matTooltip="Unlock This Link"
+              matTooltipShowDelay="300"
+              height="25"
+              width="25"
+              alt=""
+            />
           </ng-container>
           <ng-template #unlockIcon>
-            <img ngSrc='assets/icons/lock.svg' style="height: 24px; width: 24px; margin-top: -2.5px;" matTooltip="Lock This Link" matTooltipShowDelay='300' height="50" width="25" alt=""/>
+            <img
+              ngSrc="assets/icons/lock.svg"
+              style="height: 24px; width: 24px; margin-top: -2.5px"
+              matTooltip="Lock This Link"
+              matTooltipShowDelay="300"
+              height="50"
+              width="25"
+              alt=""
+            />
           </ng-template>
         </button>
       </title-block>
-      <p class="subtitle">This is where you edit Links. Change things such as the position.</p>
+      <p class="subtitle">
+        This is where you edit Links. Change things such as the position.
+      </p>
     </panel-section-collapsible>
 
     <div id="body" [class.disabled-panel]="isLocked">
-
       <!-- BASIC SETTING DROPDOWN -->
-      <collapsible-subsection titleLabel='Basic Settings' [expanded]="sectionExpanded['LBasic']"
-                              (opened)="sectionExpanded['LBasic'] = true" (closed)="sectionExpanded['LBasic'] = false">
+      <collapsible-subsection
+        titleLabel="Basic Settings"
+        [expanded]="sectionExpanded['LBasic']"
+        (opened)="sectionExpanded['LBasic'] = true"
+        (closed)="sectionExpanded['LBasic'] = false"
+      >
         <div>
           <!-- Link length and angle input -->
           <div class="length-angle-block">
             <!--Label on its own line -->
-            <div class="la-label" style ="margin-left: 12px;"> Link Length and Angle </div>
+            <div class="la-label" style="margin-left: 12px">
+              Link Length and Angle
+            </div>
 
             <!--Inputs side-by-side -->
             <div class="length-angle-row">
               <div class="la-cell">
-                <img ngSrc="assets/icons/length.svg" class="la-icon" alt="length" height="15" width="12"/>
+                <img
+                  ngSrc="assets/icons/length.svg"
+                  class="la-icon"
+                  alt="length"
+                  height="15"
+                  width="12"
+                />
                 <input
                   type="number"
                   [value]="pendingLinkLength ?? getLinkLength()"
-                  (input)="pendingLinkLength = $any($event.target).valueAsNumber"
+                  (input)="
+                    pendingLinkLength = $any($event.target).valueAsNumber
+                  "
                   (keydown.enter)="confirmLinkLength()"
+                  (mouseenter)="onLengthHover(true)"
+                  (mouseleave)="onLengthHover(false)"
+                  (focus)="onLengthHover(true)"
+                  (blur)="onLengthHover(false)"
                   [disabled]="isLocked"
                 />
                 <span class="la-unit">{{ units }}</span>
               </div>
-
               <div class="la-cell">
-                <img ngSrc="assets/icons/angle.svg" class="la-icon" alt="angle" height="10" width="10"/>
+                <img
+                  ngSrc="assets/icons/angle.svg"
+                  class="la-icon"
+                  alt="angle"
+                  height="10"
+                  width="10"
+                />
                 <input
                   type="number"
                   [value]="pendingLinkAngle ?? getLinkAngle()"
                   (input)="pendingLinkAngle = $any($event.target).valueAsNumber"
                   (keydown.enter)="confirmLinkAngle()"
+                  (mouseenter)="onAngleHover(true)"
+                  (mouseleave)="onAngleHover(false)"
+                  (focus)="onAngleHover(true)"
+                  (blur)="onAngleHover(false)"
                   [disabled]="isLocked"
                 />
-
                 <span class="la-unit">{{ angles }}</span>
               </div>
             </div>
           </div>
 
           <!-- tracer and force buttons -->
-          <dual-button btn1Text="Add Tracer" btn2Text="Add Force" [btn1Action]="addTracer" [Link]=getSelectedObject() [btn1SVGPath]="addTracerIconPath" [btn2SVGPath]="addForceIconPath"
-                       [mechanism]="getMechanism()">
+          <dual-button
+            btn1Text="Add Tracer"
+            btn2Text="Add Force"
+            [btn1Action]="addTracer"
+            [Link]="getSelectedObject()"
+            [btn1SVGPath]="addTracerIconPath"
+            [btn2SVGPath]="addForceIconPath"
+            [mechanism]="getMechanism()"
+          >
           </dual-button>
         </div>
       </collapsible-subsection>
 
       <!-- COMPONENTS DROPDOWN -->
-      <collapsible-subsection titleLabel='Components' [expanded]="sectionExpanded['LComponent']"
-                              (opened)="sectionExpanded['LComponent'] = true" (closed)="sectionExpanded['LComponent'] = false">
+      <collapsible-subsection
+        titleLabel="Components"
+        [expanded]="sectionExpanded['LComponent']"
+        (opened)="sectionExpanded['LComponent'] = true"
+        (closed)="sectionExpanded['LComponent'] = false"
+      >
         <div id="linkComponents">
           <!-- displays a list of all joints and tracers for a link -->
           <!--        <p>Components</p>-->
@@ -96,16 +173,24 @@
             <div *ngFor="let joint of getLinkComponents()">
               <div class="xy-block">
                 <!-- label on its own line -->
-                <label class="xy-label" style ="margin-left: 12px;">Joint {{ joint.name }}</label>
+                <label class="xy-label" style="margin-left: 12px"
+                  >Joint {{ joint.name }}</label
+                >
 
                 <!-- side by side X & Y -->
                 <div class="xy-row">
                   <div class="xy-cell">
-                    <label>X</label>
-                    <input
+                    <label style ="margin-left: 12px;">X</label>
+                    <input style ="margin-left: 3px;"
                       type="number"
-                      [value]="pendingCompX[joint.id] ?? roundToThree(joint.coords.x)"
-                      (input)="pendingCompX[joint.id] = $any($event.target).valueAsNumber"
+                      [value]="
+                        pendingCompX[joint.id] ?? roundToThree(joint.coords.x)
+                      "
+                      (input)="
+                        pendingCompX[joint.id] = $any(
+                          $event.target
+                        ).valueAsNumber
+                      "
                       (keydown.enter)="confirmCompX(joint.id)"
                       [disabled]="isLocked"
                     />
@@ -113,10 +198,16 @@
                   </div>
                   <div class="xy-cell">
                     <label>Y</label>
-                    <input
+                    <input style ="margin-left: 3px;"
                       type="number"
-                      [value]="pendingCompY[joint.id] ?? roundToThree(joint.coords.y)"
-                      (input)="pendingCompY[joint.id] = $any($event.target).valueAsNumber"
+                      [value]="
+                        pendingCompY[joint.id] ?? roundToThree(joint.coords.y)
+                      "
+                      (input)="
+                        pendingCompY[joint.id] = $any(
+                          $event.target
+                        ).valueAsNumber
+                      "
                       (keydown.enter)="confirmCompY(joint.id)"
                       [disabled]="isLocked"
                     />
@@ -125,51 +216,72 @@
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </collapsible-subsection>
 
       <!-- MASS SETTINGS -->
-<collapsible-subsection titleLabel='Mass Settings' [expanded]="sectionExpanded['LMass']"
- (opened)="sectionExpanded['LMass'] = true" (closed)="sectionExpanded['LMass'] = false">
+      <collapsible-subsection
+        titleLabel="Mass Settings"
+        [expanded]="sectionExpanded['LMass']"
+        (opened)="sectionExpanded['LMass'] = true"
+        (closed)="sectionExpanded['LMass'] = false"
+      >
+        <div class="input-container">
+          <div class="label-group">
+            <span class="label" style="margin-left: 12px">Link Mass</span>
+            <mat-icon
+              id="linkMassTooltip"
+              matTooltip="Enter tooltip here"
+              [matTooltipShowDelay]="1000"
+              class="label-help"
+              >help_outline</mat-icon
+            >
+          </div>
+          <div class="input-group">
+            <single-input-block
+              class="right-aligned"
+              [showIcon]="false"
+              unit1="kg"
+            ></single-input-block>
+          </div>
+        </div>
 
- <div class="input-container">
-  <div class="label-group">
-    <span class="label" style ="margin-left: 12px;">Link Mass</span>
-    <mat-icon id="linkMassTooltip" matTooltip="Enter tooltip here" [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon>
-  </div>
-  <div class="input-group">
-    <single-input-block class="right-aligned" [showIcon]="false" unit1="kg"></single-input-block>
-  </div>
-</div>
-
-
-
-  <dual-input-block
-    label1="X" label2="Y"
-    unit1="" unit2=""
-    tooltip="Enter tooltip here">
-    Center of Mass Position
-  </dual-input-block>
-
-</collapsible-subsection>
+        <dual-input-block
+          label1="X"
+          label2="Y"
+          unit1=""
+          unit2=""
+          tooltip="Enter tooltip here"
+        >
+          Center of Mass Position
+        </dual-input-block>
+      </collapsible-subsection>
       <!-- VISUAL SETTINGS -->
-      <collapsible-subsection titleLabel='Visual Settings' [expanded]="sectionExpanded['LVisual']"
-                              (opened)="sectionExpanded['LVisual'] = true" (closed)="sectionExpanded['LVisual'] = false">
+      <collapsible-subsection
+        titleLabel="Visual Settings"
+        [expanded]="sectionExpanded['LVisual']"
+        (opened)="sectionExpanded['LVisual'] = true"
+        (closed)="sectionExpanded['LVisual'] = false"
+      >
         <!-- changes the color of the link -->
         <div>
-          <p class="colors" style="margin-left: 15px;">Link Color:</p>
-          <div class="row" style="justify-content: center;">
-            <div *ngFor='let color of getColors(); let i=index' class="colors" [style.backgroundColor]='color'
-                 (click)='setLinkColor(i)'>
+          <p class="colors" style="margin-left: 15px">Link Color:</p>
+          <div class="row" style="justify-content: center">
+            <div
+              *ngFor="let color of getColors(); let i = index"
+              class="colors"
+              [style.backgroundColor]="color"
+              (click)="setLinkColor(i)"
+            >
               <!-- Use an *ngIf directive to show a check mark if the color is selected -->
-              <mat-icon *ngIf='selectedIndex === i' style="color:white">check</mat-icon>
+              <mat-icon *ngIf="selectedIndex === i" style="color: white"
+                >check</mat-icon
+              >
             </div>
           </div>
         </div>
       </collapsible-subsection>
-
     </div>
   </div>
 </div>

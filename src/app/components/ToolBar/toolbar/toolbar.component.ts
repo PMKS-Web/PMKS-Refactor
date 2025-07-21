@@ -1,12 +1,12 @@
-import { Component } from '@angular/core';
-import { StateService } from '../../../services/state.service';
-import { UrlGenerationService } from '../../../services/url-generation.service';
-import { EncoderService } from '../../../services/encoder.service';
-import { DecoderService } from '../../../services/decoder.service';
+import { Component} from '@angular/core'
+import { StateService } from "../../../services/state.service";
+import { UrlGenerationService } from "../../../services/url-generation.service";
+import {EncoderService} from "../../../services/encoder.service";
+import {DecoderService} from "../../../services/decoder.service";
 import { NotificationService } from 'src/app/services/notification.service';
 import { PanZoomService } from "../../../services/pan-zoom.service";
 import {FeedbackPanelComponent} from "../feedback-panel/feedback-panel.component";
-
+import { UndoRedoService } from '../../../services/undo-redo.service';
 
 @Component({
   selector: 'app-toolbar',
@@ -14,20 +14,24 @@ import {FeedbackPanelComponent} from "../feedback-panel/feedback-panel.component
   styleUrls: ['./toolbar.component.scss'],
 })
 export class ToolbarComponent {
+
   constructor(
     private stateService: StateService,
     private notificationService: NotificationService,
-    private panZoomService: PanZoomService
+    private panZoomService: PanZoomService,
+    private undoRedoService: UndoRedoService
   ) {}
+
 
   selectedPanel: string = '';
 
   // Sets the currently active tab
-  setCurrentTab(clickedPanel: string) {
-    if (clickedPanel == this.selectedPanel) {
+  setCurrentTab(clickedPanel: string){
+    if(clickedPanel==this.selectedPanel) {
       this.selectedPanel = '';
-    } else {
-      this.selectedPanel = clickedPanel;
+    }
+    else{
+      this.selectedPanel= clickedPanel;
     }
   }
 
@@ -41,12 +45,11 @@ export class ToolbarComponent {
     //this.setCurrentTab("Share");
     let urlService = new UrlGenerationService(
       this.stateService,
-      this.panZoomService
+      this.panZoomService,
+      this.undoRedoService
     );
     urlService.copyURL();
-    this.notificationService.showNotification(
-      'Mechanism URL copied. If you make additional changes, copy the URL again.'
-    );
+    this.notificationService.showNotification("Mechanism URL copied. If you make additional changes, copy the URL again.");
   }
 
   // Handles sharing functionality by copying the generated URL to the clipboard
@@ -55,24 +58,17 @@ export class ToolbarComponent {
     console.log('save button pressed');
     let encoderService = new EncoderService(
       this.stateService,
-      this.panZoomService
+      this.panZoomService,
+      this.undoRedoService
     );
     let csv: string = encoderService.exportMechanismDataToCSV();
     console.log(csv);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     const date = new Date();
-    a.download =
-      'data-' +
-      (date.getMonth() + 1).toLocaleString('en-US', {
-        minimumIntegerDigits: 2,
-      }) +
-      date.getDate().toLocaleString('en-US', { minimumIntegerDigits: 2 }) +
-      date.getHours().toLocaleString('en-US', { minimumIntegerDigits: 2 }) +
-      date.getMinutes().toLocaleString('en-US', { minimumIntegerDigits: 2 }) +
-      '.csv';
+    a.download = "data-"+(date.getMonth()+1).toLocaleString('en-US', {minimumIntegerDigits: 2})+date.getDate().toLocaleString('en-US', {minimumIntegerDigits: 2})+(date.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2}))+date.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2})+".csv";
     a.click();
     URL.revokeObjectURL(url);
     //todo notification of download
@@ -104,11 +100,8 @@ export class ToolbarComponent {
         // The file contents as text
         const fileContents: string = e.target.result as string;
         console.log('File Contents:', fileContents);
-        DecoderService.decodeFromCSV(
-          fileContents,
-          this.stateService,
-          this.panZoomService
-        );
+        DecoderService.decodeFromCSV(fileContents, this.stateService,this.panZoomService)
+
       };
 
       // Read file content as text
@@ -116,4 +109,9 @@ export class ToolbarComponent {
     });
     fileInput.click();
   }
+
+
+
+
+
 }

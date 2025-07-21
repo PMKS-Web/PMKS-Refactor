@@ -101,7 +101,9 @@ export class AnimationBarComponent implements OnInit {
           .populateTrajectories(this.positionSolver);
 
         setTimeout(() => {}, 100);
-        //display the trajectories
+        this.isAnimating = true;
+        this.isPausedAnimating = false;
+        this.updateTimelineMarkers();
         break;
       case 'stop':
         this.animationService.reset();

@@ -112,7 +112,6 @@ export class AnimationService {
     }
 
     this.invaldMechanism = this.animationStates.length == 0;
-    console.log('test: ' + this.invaldMechanism);
   }
 
   // Starts or pauses animation for all sub-mechanisms based on the playPause flag.
@@ -389,4 +388,12 @@ export class AnimationService {
       yVelocityBefore * yVelocityAfter < 0
     );
   }
+
+  public get isAnimating(): boolean {
+    return this.animationStates.some(s => !s.isPaused);
+  }
+
+
+
+
 }

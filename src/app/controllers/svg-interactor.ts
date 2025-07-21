@@ -6,7 +6,7 @@ import { CreateLinkFromGridCapture} from "./click-capture/create-link-from-grid-
 import { PanZoomService } from "../services/pan-zoom.service";
 import type { JointSnapshot, LinkSnapshot } from "../components/ToolBar/undo-redo-panel/action";
 import { NotificationService } from "../services/notification.service";
-
+import { UndoRedoService } from "../services/undo-redo.service";
 
 /*
 This handles any interaction with the SVG canvas.
@@ -20,7 +20,9 @@ export class SvgInteractor extends Interactor {
   constructor(private stateService: StateService,
               private interactionService: InteractionService,
               private panZoomService: PanZoomService,
-              private notificationService: NotificationService) {
+              private notificationService: NotificationService,
+              private undoRedoService: UndoRedoService
+              ) {
               super(true, true);
 
     this.onDragStart$.subscribe(() => {this.lastSVGPosition = this.getMousePos().screen;
@@ -106,7 +108,7 @@ export class SvgInteractor extends Interactor {
         color:    createdLink.color
       };
 
-      this.stateService.recordAction({
+      this.undoRedoService.recordAction({
         type:             'addLink',
         linkData,
         extraJointsData:  extraJointsData.length ? extraJointsData : undefined

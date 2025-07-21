@@ -3,6 +3,7 @@ import { StateService } from 'src/app/services/state.service';
 import { InteractionService } from 'src/app/services/interaction.service';
 import { Mechanism } from '../../../model/mechanism';
 import { NotificationService } from 'src/app/services/notification.service';
+import { UndoRedoService } from 'src/app/services/undo-redo.service';
 
 @Component({
   selector: 'app-undo-redo-panel',
@@ -12,16 +13,17 @@ import { NotificationService } from 'src/app/services/notification.service';
 export class UndoRedoPanelComponent {
   constructor(
     public stateService: StateService,
+    public undoRedoService: UndoRedoService,
     public mechanism: Mechanism,
     private NotificationService: NotificationService
   ) {}
   @HostListener('document:keydown', ['$event'])
   handleKeyDown(event: KeyboardEvent) {
-    if (event.ctrlKey && event.key === 'z' && this.stateService.canUndo()) {
+    if (event.ctrlKey && event.key === 'z' && this.undoRedoService.canUndo()) {
       event.preventDefault();
       this.onUndo();
     }
-    if (event.ctrlKey && event.key === 'y' && this.stateService.canRedo()) {
+    if (event.ctrlKey && event.key === 'y' && this.undoRedoService.canRedo()) {
       event.preventDefault();
       this.onRedo();
     }
@@ -30,7 +32,7 @@ export class UndoRedoPanelComponent {
   onUndo(): void {
     console.log('Undo button clicked');
     // Call the undo function from UndoRedoService.
-    this.stateService.undo();
+    this.undoRedoService.undo();
     this.mechanism.clearTrajectories();
     this.mechanism.notifyChange();
     this.NotificationService.showNotification('Undo Called');
@@ -39,7 +41,7 @@ export class UndoRedoPanelComponent {
   //WHEN USER CLICKS REDO
   onRedo(): void {
     console.log('Redo button clicked');
-    this.stateService.redo();
+    this.undoRedoService.redo();
     this.mechanism.clearTrajectories();
     this.mechanism.notifyChange();
     this.NotificationService.showNotification('Redo Called');
