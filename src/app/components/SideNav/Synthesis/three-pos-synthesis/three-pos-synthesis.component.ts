@@ -650,6 +650,7 @@ specifyPosition(index: number) {
       this.confirmRemoveAll = true;
       return;
     }
+    this.confirmRemoveAll = false;
     const positions = [this.position1, this.position2, this.position3];
 
     this.undoRedoService.recordAction({
