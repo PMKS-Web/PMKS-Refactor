@@ -3,6 +3,7 @@ import { Position } from "../model/position";
 import { Joint } from "../model/joint";
 import { StateService } from "../services/state.service";
 import { ContextMenuOption, Interactor } from "./interactor";
+import { UndoRedoService } from "../services/undo-redo.service";
 
 /**
  * This interactor defines the following behaviors:
@@ -12,7 +13,7 @@ export class PositionInteractor extends Interactor {
   public jointsStartPosModel: Map<number, Coord> = new Map();
   private positionStartPositions = new Map<number, Coord>();
 
-  constructor(public position: Position, private stateService: StateService) {
+  constructor(public position: Position, private stateService: StateService, private undoRedoService: UndoRedoService) {
     super(true, true);
 
     this.onDragStart$.subscribe(() => {
@@ -61,7 +62,7 @@ export class PositionInteractor extends Interactor {
       });
 
       if (moved) {
-        this.stateService.recordAction({
+        this.undoRedoService.recordAction({
           type: 'movePosition',
           linkId: this.position.id,
           oldJointPositions: oldPositions,

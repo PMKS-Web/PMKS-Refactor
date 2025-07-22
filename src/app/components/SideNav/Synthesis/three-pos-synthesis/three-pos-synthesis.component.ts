@@ -113,7 +113,7 @@ export class ThreePosSynthesis implements OnInit {
   }
   ngOnInit(): void {
     this.init();
-    this.stateService.reinitialize$.subscribe(() => {
+    this.undoRedoService.reinitialize$.subscribe(() => {
       this.init();
       this.cdr.detectChanges();
     });
@@ -184,7 +184,7 @@ specifyPosition(index: number) {
     } else if (index === 3) {
         this.position3 = this.mechanism.addPos(3);
     }
-    this.stateService.recordAction({
+    this.undoRedoService.recordAction({
       type: "positionSpecified",
       linkId: index
     })
@@ -489,7 +489,7 @@ specifyPosition(index: number) {
 
   setCouplerLength(x: number) {
     if (x > 0 && x !== this.couplerLength) {
-      this.stateService.recordAction({type: "setSynthesisLength", oldDistance: this.couplerLength, newDistance: x})
+      this.undoRedoService.recordAction({type: "setSynthesisLength", oldDistance: this.couplerLength, newDistance: x})
       this.couplerLength = x;
       this.mechanism.setCouplerLength(x);
     }
@@ -502,7 +502,7 @@ specifyPosition(index: number) {
     let refPos = this.getReferenceJoint(position).coords;
 
     if(position && refPos.x !== x){
-      this.stateService.recordAction({
+      this.undoRedoService.recordAction({
         type: "setPositionPosition",
         linkId: position.id,
         oldCoords: refPos,
@@ -517,7 +517,7 @@ specifyPosition(index: number) {
     if (!position) throw new Error(`Invalid position number: ${posNum}`);
     let refPos = this.getReferenceJoint(position).coords;
     if(position && refPos.y !== y){
-      this.stateService.recordAction({
+      this.undoRedoService.recordAction({
         type: "setPositionPosition",
         linkId: position.id,
         oldCoords: refPos,
@@ -533,7 +533,7 @@ specifyPosition(index: number) {
     if (!position) throw new Error(`Invalid position number: ${posNum}`);
     
     if(position && position.angle.toFixed(3) !== Number(angle).toFixed(3)){
-      this.stateService.recordAction({
+      this.undoRedoService.recordAction({
         type: "setPositionAngle",
         linkId: position.id,
         oldAngle: position.angle,
@@ -607,7 +607,7 @@ specifyPosition(index: number) {
   deletePosition(index: number) {
     const positions = [this.position1, this.position2, this.position3];
     const position = positions[index - 1];
-    this.stateService.recordAction({
+    this.undoRedoService.recordAction({
       type: "deletePosition",
       oldPosition: position as Position,
     })
@@ -644,7 +644,7 @@ specifyPosition(index: number) {
   removeAllPositions() {
     const positions = [this.position1, this.position2, this.position3];
 
-    this.stateService.recordAction({
+    this.undoRedoService.recordAction({
       type: "deleteAllPositions",
       oldPositionArray: positions as Position[],
     })
