@@ -1,3 +1,4 @@
+import { Position } from 'src/app/model/position';
 import { Coord } from '../../../model/coord';
 
 //THE ACTION CLASS CONTAINS ANY POSSIBLE VALUE WE
@@ -12,6 +13,9 @@ export interface Action {
 
   jointData?: JointSnapshot;
   extraJointsData?: JointSnapshot[];
+  
+  oldPosition?: Position;
+  oldPositionArray?: Position[];
 
   linkData?: LinkSnapshot;
   linkLockData?: LinkLockSnapshot;

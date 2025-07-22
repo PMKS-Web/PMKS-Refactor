@@ -12,6 +12,7 @@ import { SVGPathService } from 'src/app/services/svg-path.service';
 import { UnitConversionService } from 'src/app/services/unit-conversion.service';
 import {Subscription} from "rxjs";
 import { AnimationService } from 'src/app/services/animation.service';
+import { UndoRedoService } from 'src/app/services/undo-redo.service';
 
 @Component({
   selector: '[app-position]',
@@ -32,13 +33,14 @@ export class PositionComponent extends AbstractInteractiveComponent {
     private colorService: ColorService,
     private svgPathService: SVGPathService,
     private unitConversionService: UnitConversionService,
-    public override animationService: AnimationService
+    public override animationService: AnimationService,
+    private undoRedoService: UndoRedoService
   ) {
     super(interactionService, animationService);
   }
 
   override registerInteractor(): Interactor {
-    return new PositionInteractor(this.position, this.stateService);
+    return new PositionInteractor(this.position, this.stateService, this.undoRedoService);
   }
 
   override ngOnInit() {

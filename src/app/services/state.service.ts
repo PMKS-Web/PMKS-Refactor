@@ -239,7 +239,6 @@ export class StateService {
   public getAnimationBarComponent(): AnimationBarComponent {
     return this.animationbarComponent;
   }
-
   // Changes the active panel in the UI to the specified panel name.
   public changeActivePanel(panel: string): void {
     this.globalActivePanel.next(panel);
