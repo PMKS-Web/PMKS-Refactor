@@ -146,9 +146,12 @@ export class ThreePosSynthesis implements OnInit {
     let initialGreenCount = this.mechanism
       .getArrayOfPositions()
       .filter((position) => position.color === 'green').length;
-    if (initialGreenCount > 0 || this.stateService.sixBarGenerated)
+    if (initialGreenCount > 0 || this.stateService.sixBarGenerated){
       this.fourBarGenerated = true;
-    this.sixBarGenerated = this.stateService.sixBarGenerated;
+      this.stateService.fourBarGenerated = true;
+      this.sixBarGenerated = this.stateService.sixBarGenerated;
+    }
+
   }
   setReference(r: string) {
     this.reference = r;
@@ -246,6 +249,7 @@ specifyPosition(index: number) {
       this.fourBarGenerated = false;
       this.sixBarGenerated = false;
       this.stateService.sixBarGenerated = this.sixBarGenerated;
+      this.stateService.fourBarGenerated = this.fourBarGenerated;
       this.synthedMech = [];
       this.Generated.emit(false);
     } else {
@@ -642,6 +646,10 @@ specifyPosition(index: number) {
     });
   }
   removeAllPositions() {
+    if(!this.confirmRemoveAll) {
+      this.confirmRemoveAll = true;
+      return;
+    }
     const positions = [this.position1, this.position2, this.position3];
 
     this.undoRedoService.recordAction({
@@ -812,56 +820,6 @@ findIntersectionPoint(
 
     this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
   }
-
-  // clearLinkage() {
-  //   //button changes to "clear four bar" when already generated, so remove mechanism
-  //   if (this.fourBarGenerated) {
-  //     let listOfLinks = this.synthedMech;
-  //     console.log(listOfLinks);
-  //     while (this.synthedMech.length > 0) {
-  //       let linkId = this.synthedMech[0].id;
-  //       console.log(linkId);
-  //       this.synthedMech.splice(0, 1);
-  //       this.mechanism.removeLink(linkId);
-  //       this.position1!.locked = false;
-  //       this.position2!.locked = false;
-  //       this.position3!.locked = false;
-  //       console.log('LIST OF LINKS AFTER DELETION:');
-  //       console.log(this.mechanism.getArrayOfLinks());
-  //     }
-  //     this.setPositionsColorToDefault();
-  //     this.mechanism.clearTrajectories();
-  //     this.fourBarGenerated = false;
-  //     this.stateService.fourBarGenerated = this.fourBarGenerated;
-  //     this.sixBarGenerated = false;
-  //     this.stateService.sixBarGenerated = this.sixBarGenerated;
-  //     this.synthedMech = [];
-  //     this.Generated.emit(false);
-  //   }
-  //   this.sixBarGenerated = !this.sixBarGenerated;
-  //   if (!this.sixBarGenerated) {
-  //     let listOfLinks = this.synthedMech;
-  //     console.log(listOfLinks);
-  //     while (this.synthedMech.length > 0) {
-  //       let linkId = this.synthedMech[0].id;
-  //       console.log(linkId);
-  //       this.synthedMech.splice(0, 1);
-  //       this.mechanism.removeLink(linkId);
-  //       this.position1!.locked = false;
-  //       this.position2!.locked = false;
-  //       this.position3!.locked = false;
-  //       console.log('LIST OF LINKS AFTER DELETION:');
-  //       console.log(this.mechanism.getArrayOfLinks());
-  //     }
-  //     this.setPositionsColorToDefault();
-  //     this.mechanism.clearTrajectories();
-  //     console.log('Six-bar has been cleared');
-  //     this.fourBarGenerated = false;
-  //     this.stateService.fourBarGenerated = this.fourBarGenerated;
-  //     this.cdr.detectChanges();
-  //     return;
-  //   }
-  // }
 
   updateEndPointCoords(
     positionIndex: number,
