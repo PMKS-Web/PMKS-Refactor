@@ -134,10 +134,12 @@ export class Force {
   switchForceDirection() {}
   setForceAngle() {}
   setXComp(newXComp: number) {
-    newXComp;
+    this._end.x = this._start.x + newXComp ;
+    this.updateFromEndpoints();
   }
   setYComp(newYComp: number) {
-    newYComp;
+    this._end.y = this._start.y + newYComp ;
+    this.updateFromEndpoints();
   }
   addCoordinates(coord: Coord) {
     this._start = this._start.clone().add(coord);
@@ -200,6 +202,10 @@ export class Force {
     this.angle = Math.atan2(dy, dx) * (180 / Math.PI);
     this._relativeAngle = this.calculateRelativeAngle();
     this._posInLink = this.calculatePositionInLink();
+  }
+  public updateFromAngle(){
+    this.end.x = this.start.x + this.magnitude * Math.cos(this._angle / 180 * Math.PI)
+    this.end.y = this.start.y + this.magnitude * Math.sin(this._angle / 180 * Math.PI)
   }
 
 
@@ -352,4 +358,3 @@ export class Force {
     return shortenedStart.add(shortenedVector.scale(clampedScalar));
   }
 }
-/*  */
