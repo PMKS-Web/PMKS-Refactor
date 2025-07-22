@@ -1,10 +1,10 @@
 
-<div class="remover" *ngIf="open" (click)="closePanel($event)">
+<div class="remover" *ngIf="true" (click)="closePanel($event)">
 
   <div class="panel panel-feedback" (click)="$event.stopPropagation()">
     <div class="panel-header">
       <div class="panel-title">Send Feedback</div>
-       </div>
+    </div>
 
     <div class="panel-body">
       <p>
@@ -13,7 +13,7 @@
       </p>
 
 
-        <textarea
+      <textarea
         placeholder="Leave a message*"
         [(ngModel)]="message"
       ></textarea>

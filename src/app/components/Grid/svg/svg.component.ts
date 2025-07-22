@@ -12,6 +12,7 @@ import {Subscription} from "rxjs";
 import { Mechanism } from 'src/app/model/mechanism';
 import { Joint } from 'src/app/model/joint';
 import { NotificationService } from 'src/app/services/notification.service';
+import { UndoRedoService } from 'src/app/services/undo-redo.service';
 
 
 @Component({
@@ -30,7 +31,9 @@ export class SvgComponent extends AbstractInteractiveComponent {
               private stateService: StateService,
               private panZoomService: PanZoomService,
               private notificationService: NotificationService,
-              public override animationService: AnimationService) {
+              public override animationService: AnimationService,
+              private undoRedoService: UndoRedoService
+  ) {
 
     super(interactionService, animationService);
   }
@@ -47,7 +50,7 @@ export class SvgComponent extends AbstractInteractiveComponent {
       this.panZoomService._onWindowResize(event);
   }
   override registerInteractor(): Interactor {
-    let interactor = new SvgInteractor(this.stateService,this.interactionService, this.panZoomService, this.notificationService);
+    let interactor = new SvgInteractor(this.stateService,this.interactionService, this.panZoomService, this.notificationService, this.undoRedoService);
 
     interactor.onKeyDown$.subscribe((event) => {
       if (event.key === "s") {

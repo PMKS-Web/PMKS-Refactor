@@ -8,7 +8,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
-
 /* Component Imports */
 import { InteractionDirective } from 'src/app/controllers/directives/interaction-directive';
 import { AppComponent } from './app.component';
@@ -75,6 +74,7 @@ import { RouterModule } from '@angular/router';
 import { NotificationComponent } from './components/Blocks/notification/notification.component';
 import { ForceEditPanelComponent } from './components/SideNav/Edit/force-edit-panel/force-edit-panel.component';
 import { ForceComponent } from './components/Grid/force/force.component';
+import {FeedbackPanelComponent} from "./components/ToolBar/feedback-panel/feedback-panel.component";
 
 @NgModule({
   declarations: [
@@ -132,6 +132,8 @@ import { ForceComponent } from './components/Grid/force/force.component';
     NotificationComponent,
     ForceEditPanelComponent,
     ForceComponent,
+
+
   ],
   imports: [
     BrowserModule,
@@ -155,6 +157,7 @@ import { ForceComponent } from './components/Grid/force/force.component';
     MatSliderModule,
     NgOptimizedImage,
     RouterModule.forRoot([]),
+    FeedbackPanelComponent,
   ],
   providers: [],
   exports: [PanelSectionCollapsibleComponent, TitleBlock],

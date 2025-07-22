@@ -19,6 +19,7 @@ import { Position } from '../../../../model/position';
 import { NotificationService } from 'src/app/services/notification.service';
 import { Action } from 'rxjs/internal/scheduler/Action';
 import { Subscription } from 'rxjs';
+import { UndoRedoService } from 'src/app/services/undo-redo.service';
 
 interface CoordinatePosition {
   x0: number;
@@ -106,6 +107,7 @@ export class ThreePosSynthesis implements OnInit {
     private cdr: ChangeDetectorRef,
     private positionSolver: PositionSolverService,
     private notificationService: NotificationService,
+    private undoRedoService: UndoRedoService
   ) {
     this.mechanism = this.stateService.getMechanism();
   }
@@ -325,7 +327,8 @@ specifyPosition(index: number) {
         inputLink,
         this.stateService,
         this.interactionService,
-        this.notificationService
+        this.notificationService,
+        this.undoRedoService
       );
       this.interactionService.setSelectedObject(linkInteractor);
       this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
@@ -629,12 +632,12 @@ specifyPosition(index: number) {
   confirmRemoveAll: boolean = false;
 
   recordFourBarWrapper() {
-    this.stateService.recordAction({
+    this.undoRedoService.recordAction({
       type: 'generateFourBar',
     });
   }
   recordSixBarWrapper() {
-    this.stateService.recordAction({
+    this.undoRedoService.recordAction({
       type: 'generateSixBar',
     });
   }

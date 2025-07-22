@@ -40,3 +40,7 @@ const action: Action = {
   newCoords: { x: newX, y: newY }
 };
 this.stateService.recordAction(action);
+
+NOTE: If you are trying to implement the undo redo feature into anything that uses
+dual input blocks, you must get rid of the dual input block and re-figure the html
+in a way that does not call upon the dual input blocks

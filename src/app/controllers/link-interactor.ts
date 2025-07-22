@@ -13,6 +13,7 @@ import type {
 } from '../components/ToolBar/undo-redo-panel/action';
 import { NotificationService } from '../services/notification.service';
 import { Force } from '../model/force';
+import { UndoRedoService } from "../services/undo-redo.service";
 
 /*
 This interactor defines the following behaviors:
@@ -28,7 +29,9 @@ export class LinkInteractor extends Interactor {
     public link: Link,
     private stateService: StateService,
     private interactionService: InteractionService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private undoRedoService: UndoRedoService
+
   ) {
     super(true, true);
 
@@ -105,7 +108,7 @@ export class LinkInteractor extends Interactor {
       });
 
       if (moved) {
-        this.stateService.recordAction({
+        this.undoRedoService.recordAction({
           type: 'moveLink',
           linkId: this.link.id,
           oldJointPositions: oldPositions,
@@ -172,14 +175,14 @@ export class LinkInteractor extends Interactor {
                 (id) => !beforeJointIds.includes(id)
               );
 
-              this.stateService.recordAction({
-                type: 'addLinkToLink',
-                parentLinkId: this.link.id,
-                start,
-                end,
-                newLinkId,
-                newJointIds,
-              });
+                  this.undoRedoService.recordAction({
+                    type:          'addLinkToLink',
+                    parentLinkId:  this.link.id,
+                    start,
+                    end,
+                    newLinkId,
+                    newJointIds
+                  });
 
               const extraJointsData = newJointIds.map((id) => {
                 const j = mech.getJoint(id)!;
@@ -203,13 +206,13 @@ export class LinkInteractor extends Interactor {
                 (js) => js.coords.x === start.x && js.coords.y === start.y
               )!.id;
 
-              this.stateService.recordAction({
-                type: 'addLinkToLink',
-                parentLinkId: this.link.id,
-                start: start,
-                end: end,
-                attachJointId: attachJointId,
-              });
+                  this.undoRedoService.recordAction({
+                    type:             'addLinkToLink',
+                    parentLinkId:   this.link.id,
+                    start:          start,
+                    end:            end,
+                    attachJointId:  attachJointId
+                  });
 
               mech.notifyChange();
             });
@@ -236,15 +239,15 @@ export class LinkInteractor extends Interactor {
             const newId = afterIds.find((id) => !beforeIds.includes(id))!;
             const newJoint = this.link.joints.get(newId)!;
 
-            // recordAction with a real jointId
-            this.stateService.recordAction({
-              type: 'addTracer',
-              linkTracerData: {
-                linkId: this.link.id,
-                jointId: newId,
-                coords: { x: newJoint.coords.x, y: newJoint.coords.y },
-              },
-            });
+                // recordAction with a real jointId
+                this.undoRedoService.recordAction({
+                  type: 'addTracer',
+                  linkTracerData: {
+                    linkId: this.link.id,
+                    jointId: newId,
+                    coords: { x: newJoint.coords.x, y: newJoint.coords.y }
+                  }
+                });
 
             this.stateService.getMechanism().notifyChange();
           },
@@ -302,11 +305,12 @@ export class LinkInteractor extends Interactor {
               isReference: j.reference,
             }));
 
-            this.stateService.recordAction({
-              type: 'deleteLink',
-              linkData,
-              extraJointsData,
-            });
+                this.undoRedoService.recordAction({
+                  type:            "deleteLink",
+                  linkData,
+                  extraJointsData
+                });
+
 
             mechanism.removeLink(this.link.id);
             this.stateService.getMechanism().notifyChange();
