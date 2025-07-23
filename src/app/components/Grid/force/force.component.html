@@ -61,9 +61,9 @@
 
   @if (isHovered() || isSelected()) {
   <text
-    class="force-label"
+    class="force-name"
     [attr.x]="getMagnitudeLabelX()"
-    [attr.y]="getMagnitudeLabelY()"
+    [attr.y]="getMagnitudeLabelY() + 50"
     alignment-baseline="middle"
     text-anchor="middle"
   >
