@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ToolbarComponent } from 'src/app/components/ToolBar/toolbar/toolbar.component';
 import emailjs, { EmailJSResponseStatus } from 'emailjs-com';
 import { UrlGenerationService } from '../../../services/url-generation.service';
+import { NotificationService } from 'src/app/services/notification.service';
 
 @Component({
   selector: 'app-feedback-panel',
@@ -31,6 +32,7 @@ export class FeedbackPanelComponent {
 
   constructor(
     private toolbar: ToolbarComponent,
+    private notificationService: NotificationService,
     private urlGen: UrlGenerationService
   ) {
     emailjs.init(this.PUBLIC_KEY);
@@ -38,13 +40,18 @@ export class FeedbackPanelComponent {
 
   sendFeedback() {
     if (!this.message.trim()) {
-      alert('Please enter a message before sending.');
+      this.notificationService.showWarning(
+        'Please enter a message before sending.'
+      );
       return;
     }
 
     // require email if they asked for a response
     if (this.wantsResponse && !this.userEmail.trim()) {
-      return alert('Please enter your email if you want a response.');
+      this.notificationService.showWarning(
+        'Please enter your email if you want a response.'
+      );
+      return;
     }
 
     this.isSending = true;
@@ -60,12 +67,16 @@ export class FeedbackPanelComponent {
     emailjs
       .send(this.SERVICE_ID, this.TEMPLATE_ID, templateParams)
       .then((res: EmailJSResponseStatus) => {
-        alert('Feedback sent! Thank you.');
+        this.notificationService.showNotification(
+          'Thanks for your feedback!'
+        );
         this.message = '';
       })
       .catch((err) => {
         console.error('EmailJS error:', err);
-        alert('Oops, something went wrong. Please try again later.');
+        this.notificationService.showWarning(
+          'Sorry, we couldn’t send your feedback. Please try again in a moment.'
+        );
       })
       .finally(() => {
         this.isSending = false;

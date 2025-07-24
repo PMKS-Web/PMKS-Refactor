@@ -12,7 +12,7 @@
 .panel-feedback {
   background-color: white;
   border-radius: 3px;
-  width: 350px;
+  width: 320px;
   float: right;
   border-top: 5px solid #3F51B5;
   box-shadow:
@@ -20,7 +20,6 @@
     12px 0 15px -4px rgba(0,0,0,0.2),
     -12px 0 15px -4px rgba(0,0,0,0.2);
   margin: 30px 5px 0 0;
-  padding: 0.5px 0;
   opacity: 0.999;
 
 
@@ -28,7 +27,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem;
     border-bottom: 1px solid #e0e0e0;
 
     .panel-title {
@@ -46,7 +45,6 @@
 
   .panel-body {
     padding: 1rem;
-    overflow-y: auto;
     font-size: 1rem;
 
     p {
@@ -74,6 +72,7 @@
       margin: 0.5rem -4rem;
 
       input[type="checkbox"] {
+        accent-color: #3F51B5;
         margin: 0 -3.5rem 0 0;
       }
     }

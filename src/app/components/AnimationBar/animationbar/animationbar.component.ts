@@ -126,11 +126,13 @@ export class AnimationBarComponent implements OnInit {
     console.log(text);
   }
   getMechanismIndex(): number {
-    let obj = this.interactionService.getSelectedObject();
-    let index = -1;
-    if (obj == undefined) {
-      return -1;
+    const obj = this.interactionService.getSelectedObject();
+    if (!obj) {
+      return 0;
     }
+
+    let index = -1;
+
     switch (obj.constructor.name) {
       case 'JointInteractor':
         let jInteractor = obj as JointInteractor;
