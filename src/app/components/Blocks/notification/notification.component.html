@@ -4,12 +4,13 @@
     class="notification"
     [class.warning-notification]="notification.type === 'warning'"
     [class.fade-in]="!notification.fadingOut"
-    [class.fade-out]="notification.fadingOut">
-    <div 
+    [class.fade-out]="notification.fadingOut"
+    style="width: 600px; min-width: 600px; max-width: 300px;">
+    <div
       class="notification-line"
       [class.warning-line]="notification.type === 'warning'"></div>
     <div class="notification-content">
-      <div 
+      <div
         class="notification-icon"
         [class.warning-icon]="notification.type === 'warning'"></div>
       <span class="notification-message">
