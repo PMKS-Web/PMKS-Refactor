@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import {CommonModule, NgIf} from '@angular/common';
+import {NgIf} from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToolbarComponent } from 'src/app/components/ToolBar/toolbar/toolbar.component';
 import emailjs, { EmailJSResponseStatus } from 'emailjs-com';
