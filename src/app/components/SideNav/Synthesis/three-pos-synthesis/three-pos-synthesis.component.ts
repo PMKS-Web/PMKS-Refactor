@@ -20,6 +20,7 @@ import { NotificationService } from 'src/app/services/notification.service';
 import { Action } from 'rxjs/internal/scheduler/Action';
 import { Subscription } from 'rxjs';
 import { UndoRedoService } from 'src/app/services/undo-redo.service';
+import { AnimationService } from 'src/app/services/animation.service';
 
 interface CoordinatePosition {
   x0: number;
@@ -107,6 +108,7 @@ export class ThreePosSynthesis implements OnInit {
     private cdr: ChangeDetectorRef,
     private positionSolver: PositionSolverService,
     private notificationService: NotificationService,
+    private animationService: AnimationService,
     private undoRedoService: UndoRedoService
   ) {
     this.mechanism = this.stateService.getMechanism();
@@ -373,31 +375,46 @@ specifyPosition(index: number) {
     this.sixBarGenerated = !this.sixBarGenerated;
     this.stateService.sixBarGenerated = this.sixBarGenerated;
 
-    //clear the six-bar
     if (!this.sixBarGenerated) {
-      let listOfLinks = this.synthedMech[4].id;
       while (this.synthedMech.length > 4) {
         let linkId = this.synthedMech[4].id;
-        this.synthedMech.splice(4, 1);
-        this.mechanism.removeLink(linkId);
-        this.mechanism.removeLink(linkId - 1);
+        let link1 = this.synthedMech[4];
+        let link2 = this.synthedMech[3];
+
+        this.synthedMech.splice(3, 2);
+
+        link1.joints.forEach(joint =>{
+          if(this.mechanism.getJoint(joint.id))
+            this.mechanism.removeJoint(joint.id);
+        })
+        link2.joints.forEach(joint =>{
+          this.mechanism.removeJoint(joint.id);
+        })
 
         this.position1!.locked = false;
         this.position2!.locked = false;
         this.position3!.locked = false;
-        console.log('LIST OF LINKS AFTER DELETION:');
-        console.log(this.mechanism.getArrayOfLinks());
-        this.mechanism.removeJoint(10);
       }
-      this.mechanism.removeJoint(10);
-      this.setPositionsColorToDefault();
       this.mechanism.clearTrajectories();
       console.log('Six-bar has been cleared');
       this.fourBarGenerated = true;
       this.sixBarGenerated = false;
       this.stateService.sixBarGenerated = this.sixBarGenerated;
       this.stateService.fourBarGenerated = this.fourBarGenerated;
+
+      let firstGround = this.synthedMech[0];
+      let lastGround = this.synthedMech[this.synthedMech.length - 1];
+     //change the inputs to ground
+      const joints = [firstGround.getJoints()[0], lastGround.getJoints()[1]];
+      for (const joint of joints) {
+        if (joint.isGrounded) {
+          joint.addInput();
+          break;
+        }
+      }
       this.cdr.detectChanges();
+      this.positionSolver.solvePositions();
+      // this.verifyMechanismPath();
       return;
     }
 
@@ -651,6 +668,9 @@ specifyPosition(index: number) {
       return;
     }
     this.confirmRemoveAll = false;
+    if (this.sixBarGenerated) this.generateSixBar()
+    if(this.fourBarGenerated) this.generateFourBar();
+
     const positions = [this.position1, this.position2, this.position3];
 
     this.undoRedoService.recordAction({
