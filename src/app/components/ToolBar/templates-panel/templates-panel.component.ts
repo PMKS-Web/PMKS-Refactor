@@ -20,7 +20,7 @@ export class TemplatesPanelComponent {
   private mechanism: Mechanism;
   public open = true;
   // Get current URL without query params
-  private currentUrl = window.location.href.split('?')[0]; 
+  private currentUrl = window.location.href.split('?')[0];
 
   constructor(private interactionService: InteractionService, private stateService: StateService, public toolbarComponent: ToolbarComponent, private positionSolver: PositionSolverService){
     //creates a new mechanism in the state
@@ -40,6 +40,9 @@ export class TemplatesPanelComponent {
     this.open=false; //closes panel sort of, will need a better fix to actually close the panel in the toolbar
     //Opens a new windows using the encoded data from the url encoder
     let newWindow = null;;
+
+
+
     switch (linkage) {
       case 'fourbar':
         newWindow = window.open(`${this.currentUrl}?data=N4IgViBcDa0gDAPwIIgPoFoDMA6AjFpgEw7x5oh6JICeidAhogHYtvMYZUBC6GJANiJp4OAJwUqSVqyYz2nIogDC6XGTQl4ADknV2iOQY7ZEAETU4sAFkx4cAgKx7abI-OYgAul4oAbKFgEFG59AGIAdiIIgDEzRz4SbQjnDFFHR2sxbJzcnIp4AB8qFnQSMUy0bVF4RzFfOB5lcKIYrABRMRj0UTwxLLzB7Vt7LMlCpVK0RxwU4QRFFTNw+DM8IkdUNFw8FJEcIjxHeBPTs9PdECJCrEQp3AjrZwRvXxAAYygQRAAXL8QAGb-AAOXxAAF8gA`, '_blank');
@@ -60,5 +63,12 @@ export class TemplatesPanelComponent {
     if (newWindow) {
       newWindow.sessionStorage.setItem('isNewTab', 'true');
     }
+
+    const animBar = this.stateService.getAnimationBarComponent?.();
+    if (animBar) {
+      animBar.updateTimelineMarkers();
+    }
+
+
   }
 }
