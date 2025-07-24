@@ -6,14 +6,12 @@ export interface Notification {
   message: string;
   timestamp: number;
   fadingOut?: boolean;
+  type?: 'normal' | 'warning';
 }
 
-export interface WarningNotification {
-  id: string;
-  message: string;
-  timestamp: number;
-  fadingOut?: boolean;
-  onClose?: Subject<string>; // Subject to emit when closed
+export interface WarningNotification extends Notification {
+  onClose?: Subject<string>;
+  type: 'warning';
 }
 
 @Injectable({
@@ -33,6 +31,7 @@ export class NotificationService {
       message,
       timestamp: Date.now(),
       fadingOut: false,
+      type: 'normal',
     };
 
     const currentNotifications = this.notificationsSubject.value;
@@ -49,32 +48,28 @@ export class NotificationService {
   }
 
   showWarning(message: string): Subject<string> {
-    // Close existing warning if any
     this.closeWarning();
 
     const onCloseSubject = new Subject<string>();
-
     const warningNotification: WarningNotification = {
       id: this.generateId(),
       message,
       timestamp: Date.now(),
       onClose: onCloseSubject,
+      type: 'warning',
     };
 
-    this.warningNotificationSubject.next(warningNotification);
-
+    this.notificationsSubject.next([...this.notificationsSubject.value, warningNotification]);
     return onCloseSubject;
   }
 
   closeWarning(): void {
     const currentWarning = this.warningNotificationSubject.value;
     if (currentWarning) {
-      // Emit the close event
       if (currentWarning.onClose) {
         currentWarning.onClose.next(currentWarning.id);
         currentWarning.onClose.complete();
       }
-
       this.warningNotificationSubject.next(null);
     }
   }
