@@ -16,3 +16,14 @@
     }
   }
 }
+@media (max-width: 68em) {
+  .button-text {
+    display: none;
+  }
+  
+  .toolbar-button.toolbar-button {
+    min-width: auto !important;
+    padding: 0 8px !important; // Adjust this value as needed
+    width: auto;
+  }
+}
