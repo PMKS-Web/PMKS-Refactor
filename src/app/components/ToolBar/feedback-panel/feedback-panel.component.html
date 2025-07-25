@@ -2,14 +2,16 @@
 <div class="remover" *ngIf="true" (click)="closePanel($event)">
 
   <div class="panel panel-feedback" (click)="$event.stopPropagation()">
-    <div class="panel-header">
-      <div class="panel-title">Send Feedback</div>
-    </div>
+    <panel-section-collapsible>
+      <title-block description="" class="feedbackHeader">
+        <h3>Feedback</h3>
+      </title-block>
+    </panel-section-collapsible>
 
     <div class="panel-body">
       <p>
-        Do you want to attach a file? Send us an email at
-        <a href="mailto:gr-pmksplus&#64;wpi.edu">gr-pmksplus&#64;wpi.edu</a>
+        Do you want to attach a file? Send us an email at:
+        <a href="mailto:feedback@pmksplus.mech.website">feedback&#64;pmksplus.mech.website</a>
       </p>
 
 

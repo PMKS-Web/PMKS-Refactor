@@ -44,25 +44,31 @@
 
 
   .panel-body {
-    padding: 1rem;
+    padding: 16px;
     font-size: 1rem;
+    width: 300px;
+    margin-top: -20px;
 
     p {
       margin-bottom: 1rem;
       font-size: 1rem;
+      margin-top: 0px;
     }
 
     textarea {
-      width: 100%;
+      width: 90%;
       height: 6rem;
-      padding: 0.5rem;
       font-size: 1rem;
       border: 1px solid #ccc;
       border-radius: 3px;
       resize: vertical;
 
       margin-top: 0.6rem;
-      margin-bottom: 0.8rem;
+      margin-bottom: 0.5rem;
+      background-color: #f0f0f0;
+      color: #000;
+      line-height: 1.4;
+      padding: 0.5rem;
     }
 
     label {
@@ -78,7 +84,7 @@
     }
 
     .send-button {
-      width: 100%;
+      width: 96%;
       padding: 0.75rem;
       font-size: 1rem;
       background-color: #3F51B5;
@@ -115,7 +121,5 @@
       box-sizing: border-box;
     }
   }
-
-
 
 }

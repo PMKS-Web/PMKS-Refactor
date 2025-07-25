@@ -9,12 +9,7 @@ import { NotificationService } from 'src/app/services/notification.service';
 @Component({
   selector: 'app-feedback-panel',
   templateUrl: './feedback-panel.component.html',
-  styleUrls: ['./feedback-panel.component.scss'],
-  imports: [
-    FormsModule,
-    NgIf
-  ],
-  standalone: true
+  styleUrls: ['./feedback-panel.component.scss']
 })
 export class FeedbackPanelComponent {
   @Input() open = false;

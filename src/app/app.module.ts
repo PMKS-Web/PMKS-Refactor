@@ -132,6 +132,7 @@ import {FeedbackPanelComponent} from "./components/ToolBar/feedback-panel/feedba
     NotificationComponent,
     ForceEditPanelComponent,
     ForceComponent,
+    FeedbackPanelComponent
 
 
   ],
@@ -157,7 +158,6 @@ import {FeedbackPanelComponent} from "./components/ToolBar/feedback-panel/feedba
     MatSliderModule,
     NgOptimizedImage,
     RouterModule.forRoot([]),
-    FeedbackPanelComponent,
   ],
   providers: [],
   exports: [PanelSectionCollapsibleComponent, TitleBlock],

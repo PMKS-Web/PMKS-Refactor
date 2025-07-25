@@ -41,8 +41,17 @@ export class ToolbarComponent {
   }
 
   // Handles sharing functionality by copying the generated URL to the clipboard
+  // @ts-ignore
   handleShare() {
     //this.setCurrentTab("Share");
+
+    if (!this.undoRedoService.canUndo() && !this.undoRedoService.canRedo()) {
+      return this.notificationService.showWarning(
+        'Nothing to share yet—make some changes before sharing.'
+      );
+    }
+
+
     let urlService = new UrlGenerationService(
       this.stateService,
       this.panZoomService,

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { StateService } from 'src/app/services/state.service';
 import { InteractionService } from 'src/app/services/interaction.service';
 import { JointInteractor } from 'src/app/controllers/joint-interactor';
@@ -18,7 +18,7 @@ import {UndoRedoService} from "src/app/services/undo-redo.service";
 
 })
 
-export class jointEditPanelComponent {
+export class jointEditPanelComponent implements OnDestroy{
 
   graphExpanded: { [key: string]: boolean } = {
     basicBasic: true,
@@ -38,8 +38,20 @@ export class jointEditPanelComponent {
   ) {
     console.log('joint-edit-panel.constructor');
   }
+
+  ngOnDestroy() {
+    this._selSub.unsubscribe();
+  }
+
+
   public pendingX?: number;
   public pendingY?: number;
+
+  private _selSub = this.interactorService._selectionChange$
+    .subscribe(sel => {
+      // when nothing is selected (i.e. after delete), wipe out our buffers
+      if (!sel) this.resetPanel();
+    });
 
   // Confirms and saves the X coordinate input
   confirmJointX(): void {
@@ -424,4 +436,10 @@ export class jointEditPanelComponent {
     }
     return -1;
   }
+
+  private resetPanel(): void {
+    this.pendingX = undefined;
+    this.pendingY = undefined;
+  }
+
 }
