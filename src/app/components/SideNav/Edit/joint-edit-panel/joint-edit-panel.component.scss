@@ -130,11 +130,14 @@ button {
   flex: 1 0 120px;
   font-weight: 600;
   color: #333;
+  margin-top: 5px;
 }
 
 .dar-cell {
   display: flex;
   align-items: center;
+  margin-top: 8px;
+  margin-bottom: 5px;
 }
 
 .dar-icon {
