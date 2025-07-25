@@ -8,6 +8,7 @@ import { Injectable } from '@angular/core';
 import {StateService} from "./state.service";
 import { isUndefined } from "lodash";
 import { Position } from "../model/position";
+import { Force } from "../model/force";
 
 @Injectable({
   providedIn: 'root'
@@ -170,6 +171,15 @@ export class UndoRedoService {
           break;
         case 'positionSpecified':
           this.mechanism.addPos(action.linkId as number);
+          break;
+        case 'addForce':
+          if(!action.oldForce) return
+          this.mechanism._addForce(action.oldForce);
+          action.oldForce.parentLink.addForce(action.oldForce);
+          break;
+        case 'deleteForce':
+          if(!action.oldForce) return
+          this.mechanism.removeForce(action.oldForce.id);
           break;
         case 'deleteAllPositions':
           action.oldPositionArray?.forEach(pos =>{
@@ -337,6 +347,14 @@ export class UndoRedoService {
       case 'positionSpecified':
         this.mechanism.removePosition(action.linkId as number);
         break;
+      case 'addForce':
+        this.mechanism.removeForce(action.oldForce?.id as number);
+        break;
+      case 'deleteForce':
+          if(!action.oldForce) return
+          this.mechanism._addForce(action.oldForce);
+          action.oldForce.parentLink.addForce(action.oldForce);
+          break;
       case 'setPositionAngle':
         if(!isUndefined(action.linkId) && !isUndefined(action.oldAngle)){
           this.mechanism.setPositionAngle(action.oldAngle, action.linkId);

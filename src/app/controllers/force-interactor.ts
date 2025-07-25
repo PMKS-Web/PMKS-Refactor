@@ -6,6 +6,7 @@ import { StateService } from '../services/state.service';
 import { ContextMenuOption, Interactor } from './interactor';
 // import type { ForceSnapshot } from '../components/ToolBar/undo-redo-panel/action';
 import { NotificationService } from '../services/notification.service';
+import { UndoRedoService } from '../services/undo-redo.service';
 
 /*
 This interactor defines the following behaviors:
@@ -26,7 +27,8 @@ export class ForceInteractor extends Interactor {
     public force: Force,
     private stateService: StateService,
     private interactionService: InteractionService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private undoRedoService: UndoRedoService
   ) {
     super(true, true);
 
@@ -180,22 +182,12 @@ export class ForceInteractor extends Interactor {
           icon: 'assets/contextMenuIcons/trash.svg',
           label: 'Delete Force',
           action: () => {
-            //TODO Force Snapshot
-            // const forceData: ForceSnapshot = {
-            //   id: this.force.id,
-            //   name: this.force.name,
-            //   start: { x: this.force.start.x, y: this.force.start.y },
-            //   end: { x: this.force.end.x, y: this.force.end.y },
-            //   magnitude: this.force.magnitude,
-            //   angle: this.force.angle,
-            //   frameOfReference: this.force.frameOfReference,
-            //   parentLinkId: this.force.parentLink.id,
-            // };
 
-            // this.stateService.recordAction({
-            //   type: 'deleteForce',
-            //   forceData,
-            // });
+
+            this.undoRedoService.recordAction({
+              type: 'deleteForce',
+              oldForce: this.getForce(),
+            });
 
             mechanism.removeForce(this.force.id);
             this.stateService.getMechanism().notifyChange();

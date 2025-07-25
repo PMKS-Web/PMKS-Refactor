@@ -1,5 +1,6 @@
 import { Position } from 'src/app/model/position';
 import { Coord } from '../../../model/coord';
+import { Force } from 'src/app/model/force';
 
 //THE ACTION CLASS CONTAINS ANY POSSIBLE VALUE WE
 //WOULD NEED TO UNDO A USER ACTION
@@ -40,7 +41,7 @@ export interface Action {
 
   newLinkId?: number;
   newJointIds?: number[];
-
+  oldForce?: Force;
   oldDistance?: number;
   newDistance?: number;
   oldAngle?: number;
