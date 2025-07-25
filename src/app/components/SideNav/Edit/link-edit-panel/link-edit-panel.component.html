@@ -229,16 +229,17 @@
       >
         <div class="input-container">
           <div class="label-group">
-            <span class="label" style="margin-left: 12px">Link Mass</span>
+            <span class="label" style="margin-left: 12px; margin-top: -20px">Link Mass</span>
             <mat-icon
               id="linkMassTooltip"
               matTooltip="Enter tooltip here"
               [matTooltipShowDelay]="1000"
               class="label-help"
+              [ngStyle]="{ 'margin-top': '-10px' }"
               >help_outline</mat-icon
             >
           </div>
-          <div class="input-group">
+          <div class="input-group"  style="margin-top: -20px">
             <single-input-block
               class="right-aligned"
               [showIcon]="false"
@@ -253,8 +254,9 @@
           unit1=""
           unit2=""
           tooltip="Enter tooltip here"
+          [ngStyle]="{ 'margin-bottom': '8px', 'margin-top': '-20px' }"
         >
-          Center of Mass Position
+          <span style="margin-bottom: 12px; display: inline-block;">Center of Mass Position</span>
         </dual-input-block>
       </collapsible-subsection>
       <!-- VISUAL SETTINGS -->
