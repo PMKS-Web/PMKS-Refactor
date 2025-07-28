@@ -16,8 +16,7 @@
     [attr.height]="55"
   ></image>
 
-  @if (this.hoverState.isHoveringLength && this.hoverState.positionId ===
-  this.position.id && !this.isHidden) {
+  @if (this.hoverState.isHoveringLength && !this.isHidden) {
   <path [attr.d]="getDoubleArrowheadSVG()" fill="black"></path>
   <path [attr.d]="getLeftLineSVG()" stroke="black" stroke-width="3"></path>
   <text

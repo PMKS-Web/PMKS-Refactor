@@ -530,6 +530,9 @@ export class ThreePosSynthesis implements OnInit {
       positions[jointId - 1].id
     );
   }
+  onLengthHover(isHovering: boolean): void {
+    this.positionHoverService.setLengthHover(isHovering);
+  }
 
   onAngleHover(isHovering: boolean, jointId: number): void {
     this.positionHoverService.setAngleHover(isHovering, jointId);

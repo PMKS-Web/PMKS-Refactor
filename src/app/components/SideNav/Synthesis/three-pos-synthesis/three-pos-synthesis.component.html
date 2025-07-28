@@ -72,14 +72,19 @@
               />
 
               <!--class="right-aligned" for below-->
-              <single-input-block
-                [input1Value]="couplerLength"
-                (input1Change)="setCouplerLength($event)"
-                unit1="{{ units }}"
-                [showIcon]="false"
-                [disabled]="this.fourBarGenerated || this.sixBarGenerated"
+              <div
+                (mouseenter)="onLengthHover(true)"
+                (mouseleave)="onLengthHover(false)"
               >
-              </single-input-block>
+                <single-input-block
+                  [input1Value]="couplerLength"
+                  (input1Change)="setCouplerLength($event)"
+                  unit1="{{ units }}"
+                  [showIcon]="false"
+                  [disabled]="this.fourBarGenerated || this.sixBarGenerated"
+                >
+                </single-input-block>
+              </div>
             </div>
 
             <!-- The fixed reference is the center of rotation and you set that with the radio block -->
@@ -168,10 +173,7 @@
 
               <!-- allows the user to enter coordinates and an angle for the position -->
               <div class="poseData" *ngIf="this.isPositionDefined(i)">
-                <div
-                  (mouseenter)="onComponentHover(true, i)"
-                  (mouseleave)="onComponentHover(false, i)"
-                >
+                <div>
                   <dual-input-block
                     [input1Value]="getPosXCoord(i)"
                     [input2Value]="getPosYCoord(i)"
@@ -205,8 +207,6 @@
                     [disabled]="
                       this.isFourBarGenerated() || this.isSixBarGenerated()
                     "
-                    (focus)="onComponentHover(true, i)"
-                    (blur)="onComponentHover(false, i)"
                   >
                   </single-input-block>
                 </div>
@@ -365,7 +365,6 @@
               </dual-input-block>
             </div>
           </div>
-
           <!-- If position has not yet been created and it's the first undefined position, show "specify position" button -->
           <div
             class="positionCreateEndPoints"
