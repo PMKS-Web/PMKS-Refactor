@@ -71,7 +71,6 @@ export class ToolbarComponent {
 
   // Handles sharing functionality by copying the generated URL to the clipboard
   handleSave() {
-    //this.setCurrentTab("Save");
     console.log('save button pressed');
     let encoderService = new EncoderService(
       this.stateService,

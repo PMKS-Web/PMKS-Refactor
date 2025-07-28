@@ -718,8 +718,8 @@ export class ThreePosSynthesis implements OnInit {
       return;
     }
     this.confirmRemoveAll = false;
-    if (this.sixBarGenerated) this.generateSixBar();
-    if (this.fourBarGenerated) this.generateFourBar();
+    // if (this.sixBarGenerated) this.generateSixBar();
+    // if (this.fourBarGenerated) this.generateFourBar();
 
     const positions = [this.position1, this.position2, this.position3];
 
