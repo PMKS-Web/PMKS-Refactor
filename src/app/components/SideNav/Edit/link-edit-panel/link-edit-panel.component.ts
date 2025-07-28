@@ -9,6 +9,7 @@ import { ColorService } from 'src/app/services/color.service';
 import {UndoRedoService } from 'src/app/services/undo-redo.service';
 
 import { LinkEditHoverService } from 'src/app/services/link-edit-hover.service';
+import { PositionEditHoverService } from 'src/app/services/position-edit-hover.service';
 
 @Component({
   selector: 'app-link-edit-panel',
@@ -214,6 +215,7 @@ export class LinkEditPanelComponent implements OnDestroy {
     }
     return 0;
   }
+
 
   //Returns the joints attached to the selected link
   getLinkJoints(): Map<number, Joint> {
