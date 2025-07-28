@@ -21,6 +21,7 @@ import { Action } from 'rxjs/internal/scheduler/Action';
 import { Subscription } from 'rxjs';
 import { UndoRedoService } from 'src/app/services/undo-redo.service';
 import { AnimationService } from 'src/app/services/animation.service';
+import { PositionEditHoverService } from 'src/app/services/position-edit-hover.service';
 
 interface CoordinatePosition {
   x0: number;
@@ -100,7 +101,6 @@ export class ThreePosSynthesis implements OnInit {
     [key: number]: { x0: boolean; y0: boolean; x1: boolean; y1: boolean };
   } = {};
   private readonly mechanism: Mechanism;
-  
 
   constructor(
     private stateService: StateService,
@@ -108,7 +108,7 @@ export class ThreePosSynthesis implements OnInit {
     private cdr: ChangeDetectorRef,
     private positionSolver: PositionSolverService,
     private notificationService: NotificationService,
-    private animationService: AnimationService,
+    private positionHoverService: PositionEditHoverService,
     private undoRedoService: UndoRedoService
   ) {
     this.mechanism = this.stateService.getMechanism();
@@ -125,13 +125,12 @@ export class ThreePosSynthesis implements OnInit {
     this.stateService.generateSixBar$.subscribe(() => {
       this.generateSixBar();
     });
-        this.mechanism._positionLengthChange$
-      .subscribe(newLength => {
-        this.couplerLength = newLength;
-      });
+    this.mechanism._positionLengthChange$.subscribe((newLength) => {
+      this.couplerLength = newLength;
+    });
   }
   init() {
-    console.log("Synthesis Init");
+    console.log('Synthesis Init');
     this.mechanism.getArrayOfPositions().forEach((position) => {
       if (position.id === 1) {
         this.position1 = position;
@@ -148,12 +147,11 @@ export class ThreePosSynthesis implements OnInit {
     let initialGreenCount = this.mechanism
       .getArrayOfPositions()
       .filter((position) => position.color === 'green').length;
-    if (initialGreenCount > 0 || this.stateService.sixBarGenerated){
+    if (initialGreenCount > 0 || this.stateService.sixBarGenerated) {
       this.fourBarGenerated = true;
       this.stateService.fourBarGenerated = true;
       this.sixBarGenerated = this.stateService.sixBarGenerated;
     }
-
   }
   setReference(r: string) {
     this.reference = r;
@@ -177,23 +175,23 @@ export class ThreePosSynthesis implements OnInit {
   toggleOption(selectedOption: string) {
     this.selectedOption = selectedOption;
   }
-// In your component - Updated specifyPosition function
-specifyPosition(index: number) {
-  if(index < 1 || index > 3) {
-    console.warn("Index " + index + " is an invalid position number")
-  }
+  // In your component - Updated specifyPosition function
+  specifyPosition(index: number) {
+    if (index < 1 || index > 3) {
+      console.warn('Index ' + index + ' is an invalid position number');
+    }
     if (index === 1) {
-        this.position1 = this.mechanism.addPos(1);
+      this.position1 = this.mechanism.addPos(1);
     } else if (index === 2) {
-        this.position2 = this.mechanism.addPos(2);
+      this.position2 = this.mechanism.addPos(2);
     } else if (index === 3) {
-        this.position3 = this.mechanism.addPos(3);
+      this.position3 = this.mechanism.addPos(3);
     }
     this.undoRedoService.recordAction({
-      type: "positionSpecified",
-      linkId: index
-    })
-}
+      type: 'positionSpecified',
+      linkId: index,
+    });
+  }
 
   getNewCoord(position: Position): Coord {
     let joint: Joint;
@@ -210,7 +208,7 @@ specifyPosition(index: number) {
     return new Coord(joint.coords.x, joint.coords.y);
   }
 
-  getLength(): number{
+  getLength(): number {
     return this.couplerLength as number;
   }
   isFourBarGenerated(): boolean {
@@ -383,13 +381,13 @@ specifyPosition(index: number) {
 
         this.synthedMech.splice(3, 2);
 
-        link1.joints.forEach(joint =>{
-          if(this.mechanism.getJoint(joint.id))
+        link1.joints.forEach((joint) => {
+          if (this.mechanism.getJoint(joint.id))
             this.mechanism.removeJoint(joint.id);
-        })
-        link2.joints.forEach(joint =>{
+        });
+        link2.joints.forEach((joint) => {
           this.mechanism.removeJoint(joint.id);
-        })
+        });
 
         this.position1!.locked = false;
         this.position2!.locked = false;
@@ -404,7 +402,7 @@ specifyPosition(index: number) {
 
       let firstGround = this.synthedMech[0];
       let lastGround = this.synthedMech[this.synthedMech.length - 1];
-     //change the inputs to ground
+      //change the inputs to ground
       const joints = [firstGround.getJoints()[0], lastGround.getJoints()[1]];
       for (const joint of joints) {
         if (joint.isGrounded) {
@@ -510,41 +508,72 @@ specifyPosition(index: number) {
 
   setCouplerLength(x: number) {
     if (x > 0 && x !== this.couplerLength) {
-      this.undoRedoService.recordAction({type: "setSynthesisLength", oldDistance: this.couplerLength, newDistance: x})
+      this.undoRedoService.recordAction({
+        type: 'setSynthesisLength',
+        oldDistance: this.couplerLength,
+        newDistance: x,
+      });
       this.couplerLength = x;
       this.mechanism.setCouplerLength(x);
     }
   }
 
+  onComponentHover(isHovering: boolean, jointId: number): void {
+    const positions = [
+      this.position1,
+      this.position2,
+      this.position2,
+    ] as Position[];
+
+    this.positionHoverService.setLengthHover(
+      isHovering,
+      positions[jointId - 1].id
+    );
+  }
+
+  onAngleHover(isHovering: boolean, jointId: number): void {
+    this.positionHoverService.setAngleHover(isHovering, jointId);
+  }
+
   setPosXCoord(x: number, posNum: number) {
-    const position = [this.position1, this.position2, this.position3][posNum - 1];
+    const position = [this.position1, this.position2, this.position3][
+      posNum - 1
+    ];
     if (!position) throw new Error(`Invalid position number: ${posNum}`);
 
     let refPos = this.getReferenceJoint(position).coords;
 
-    if(position && refPos.x !== x){
+    if (position && refPos.x !== x) {
       this.undoRedoService.recordAction({
-        type: "setPositionPosition",
+        type: 'setPositionPosition',
         linkId: position.id,
         oldCoords: refPos,
-        newCoords: new Coord(x, parseFloat(this.getPosYCoord(posNum)))
-      })
-      this.mechanism.setPositionLocation(new Coord(x, parseFloat(this.getPosYCoord(posNum))), position.id);
+        newCoords: new Coord(x, parseFloat(this.getPosYCoord(posNum))),
+      });
+      this.mechanism.setPositionLocation(
+        new Coord(x, parseFloat(this.getPosYCoord(posNum))),
+        position.id
+      );
     }
   }
 
   setPosYCoord(y: number, posNum: number) {
-    const position = [this.position1, this.position2, this.position3][posNum - 1];
+    const position = [this.position1, this.position2, this.position3][
+      posNum - 1
+    ];
     if (!position) throw new Error(`Invalid position number: ${posNum}`);
     let refPos = this.getReferenceJoint(position).coords;
-    if(position && refPos.y !== y){
+    if (position && refPos.y !== y) {
       this.undoRedoService.recordAction({
-        type: "setPositionPosition",
+        type: 'setPositionPosition',
         linkId: position.id,
         oldCoords: refPos,
-        newCoords: new Coord(parseFloat(this.getPosXCoord(posNum)), y)
-      })
-      this.mechanism.setPositionLocation(new Coord(parseFloat(this.getPosXCoord(posNum)), y), position.id);
+        newCoords: new Coord(parseFloat(this.getPosXCoord(posNum)), y),
+      });
+      this.mechanism.setPositionLocation(
+        new Coord(parseFloat(this.getPosXCoord(posNum)), y),
+        position.id
+      );
     }
   }
 
@@ -552,17 +581,17 @@ specifyPosition(index: number) {
     const positions = [this.position1, this.position2, this.position3];
     const position = positions[posNum - 1];
     if (!position) throw new Error(`Invalid position number: ${posNum}`);
-    
-    if(position && position.angle.toFixed(3) !== Number(angle).toFixed(3)){
+
+    if (position && position.angle.toFixed(3) !== Number(angle).toFixed(3)) {
       this.undoRedoService.recordAction({
-        type: "setPositionAngle",
+        type: 'setPositionAngle',
         linkId: position.id,
         oldAngle: position.angle,
-        newAngle: Number(angle)
-      })
+        newAngle: Number(angle),
+      });
       this.mechanism.setPositionAngle(Number(angle), position.id);
     }
-    
+
     this.cdr.detectChanges();
   }
 
@@ -603,8 +632,10 @@ specifyPosition(index: number) {
   }
 
   getPosAngle(posNum: number) {
-    if (posNum == 1) return this.position1?.angle.toFixed(3) as unknown as number;
-    else if (posNum == 2) return this.position2?.angle.toFixed(3) as unknown as number;
+    if (posNum == 1)
+      return this.position1?.angle.toFixed(3) as unknown as number;
+    else if (posNum == 2)
+      return this.position2?.angle.toFixed(3) as unknown as number;
     else return this.position3?.angle.toFixed(3) as unknown as number;
   }
 
@@ -629,9 +660,9 @@ specifyPosition(index: number) {
     const positions = [this.position1, this.position2, this.position3];
     const position = positions[index - 1];
     this.undoRedoService.recordAction({
-      type: "deletePosition",
+      type: 'deletePosition',
       oldPosition: position as Position,
-    })
+    });
 
     if (index === 1) {
       this.mechanism.removePosition(this.position1!.id);
@@ -643,11 +674,23 @@ specifyPosition(index: number) {
   }
 
   allPositionsDefined(): boolean {
-    if(!this.position1 || !this.position2 || !this.position3) return false;
-    return this.mechanism.hasPositionWithId(this.position1!.id) && this.mechanism.hasPositionWithId(this.position2!.id) && this.mechanism.hasPositionWithId(this.position3!.id);
+    if (!this.position1 || !this.position2 || !this.position3) return false;
+    return (
+      this.mechanism.hasPositionWithId(this.position1!.id) &&
+      this.mechanism.hasPositionWithId(this.position2!.id) &&
+      this.mechanism.hasPositionWithId(this.position3!.id)
+    );
   }
   anyPositionsDefined(): boolean {
-    return (this.position1 && this.mechanism.hasPositionWithId(this.position1!.id)) || (this.position2 && this.mechanism.hasPositionWithId(this.position2!.id)) || (this.position3 && this.mechanism.hasPositionWithId(this.position3!.id)) || false;
+    return (
+      (this.position1 &&
+        this.mechanism.hasPositionWithId(this.position1!.id)) ||
+      (this.position2 &&
+        this.mechanism.hasPositionWithId(this.position2!.id)) ||
+      (this.position3 &&
+        this.mechanism.hasPositionWithId(this.position3!.id)) ||
+      false
+    );
   }
 
   confirmRemoveAll: boolean = false;
@@ -663,57 +706,59 @@ specifyPosition(index: number) {
     });
   }
   removeAllPositions() {
-    if(!this.confirmRemoveAll) {
+    if (!this.confirmRemoveAll) {
       this.confirmRemoveAll = true;
       return;
     }
     this.confirmRemoveAll = false;
-    if (this.sixBarGenerated) this.generateSixBar()
-    if(this.fourBarGenerated) this.generateFourBar();
+    if (this.sixBarGenerated) this.generateSixBar();
+    if (this.fourBarGenerated) this.generateFourBar();
 
     const positions = [this.position1, this.position2, this.position3];
 
     this.undoRedoService.recordAction({
-      type: "deleteAllPositions",
+      type: 'deleteAllPositions',
       oldPositionArray: positions as Position[],
-    })
+    });
 
     if (this.position1 && this.isPositionDefined(this.position1.id)) {
       this.mechanism.removePosition(this.position1!.id);
-    }  
+    }
     if (this.position2 && this.isPositionDefined(this.position2.id)) {
       this.mechanism.removePosition(this.position2!.id);
-    } 
+    }
     if (this.position3 && this.isPositionDefined(this.position3.id)) {
       this.mechanism.removePosition(this.position3!.id);
     }
   }
 
-findIntersectionPoint(
-  pose1_coord: Coord,
-  pose2_coord: Coord,
-  pose3_coord: Coord
-) {
-  let slope1 = 1 / ((pose2_coord.y - pose1_coord.y) / (pose2_coord.x - pose1_coord.x));
-  let slope2 = 1 / ((pose3_coord.y - pose2_coord.y) / (pose3_coord.x - pose2_coord.x));
-  
-  let midpoint_line1 = new Coord(
-    (pose1_coord.x + pose2_coord.x) / 2,
-    (pose1_coord.y + pose2_coord.y) / 2
-  );
-  let midpoint_line2 = new Coord(
-    (pose3_coord.x + pose2_coord.x) / 2,
-    (pose3_coord.y + pose2_coord.y) / 2
-  );
-  
-  let c1 = midpoint_line1.y + slope1 * midpoint_line1.x;
-  let c2 = midpoint_line2.y + slope2 * midpoint_line2.x;
-  
-  let x1 = (c1 - c2) / (-slope2 + slope1);
-  let y1 = -slope1 * x1 + c1;
-  
-  return new Coord(x1, y1);
-}
+  findIntersectionPoint(
+    pose1_coord: Coord,
+    pose2_coord: Coord,
+    pose3_coord: Coord
+  ) {
+    let slope1 =
+      1 / ((pose2_coord.y - pose1_coord.y) / (pose2_coord.x - pose1_coord.x));
+    let slope2 =
+      1 / ((pose3_coord.y - pose2_coord.y) / (pose3_coord.x - pose2_coord.x));
+
+    let midpoint_line1 = new Coord(
+      (pose1_coord.x + pose2_coord.x) / 2,
+      (pose1_coord.y + pose2_coord.y) / 2
+    );
+    let midpoint_line2 = new Coord(
+      (pose3_coord.x + pose2_coord.x) / 2,
+      (pose3_coord.y + pose2_coord.y) / 2
+    );
+
+    let c1 = midpoint_line1.y + slope1 * midpoint_line1.x;
+    let c2 = midpoint_line2.y + slope2 * midpoint_line2.x;
+
+    let x1 = (c1 - c2) / (-slope2 + slope1);
+    let y1 = -slope1 * x1 + c1;
+
+    return new Coord(x1, y1);
+  }
 
   verifyMechanismPath() {
     const threshold = 0.09;

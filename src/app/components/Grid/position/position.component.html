@@ -15,23 +15,28 @@
     [attr.width]="55"
     [attr.height]="55"
   ></image>
-  @if (isHovered() || isSelected() && !this.isHidden) {
+
+  @if (this.hoverState.isHoveringLength && this.hoverState.positionId ===
+  this.position.id && !this.isHidden) {
   <path [attr.d]="getDoubleArrowheadSVG()" fill="black"></path>
   <path [attr.d]="getLeftLineSVG()" stroke="black" stroke-width="3"></path>
   <text
     class="position-name"
-    [attr.x]="getBCoord().x"
-    [attr.y]="getBCoord().y"
+    [attr.x]="getMidPointX()"
+    [attr.y]="getMidPointY() - 30"
     alignment-baseline="middle"
     text-anchor="middle"
   >
     {{ getLength() }}
   </text>
+  } @if (this.hoverState.isHoveringAngle && this.hoverState.positionId ===
+  this.position.id && !this.isHidden) {
   <path
     [attr.d]="getAngleSVG()"
     stroke="black"
-    stroke-width="5"
+    stroke-width="3"
     fill="transparent"
+    stroke-dasharray="20"
   ></path>
   <text
     class="position-name"
@@ -42,7 +47,7 @@
   >
     {{ getAngle() }}{{ unitsAngle }}
   </text>
-  <!-- Link Name -->
+  } @if((isHovered() || isSelected()) && !this.isHidden) {
   <text
     class="position-name"
     [attr.x]="getCOMX()"
