@@ -711,6 +711,10 @@ export class ThreePosSynthesis implements OnInit {
   removeAllPositions() {
     if (!this.confirmRemoveAll) {
       this.confirmRemoveAll = true;
+      setTimeout(() => {
+        this.confirmRemoveAll = false;
+      }, 3000);
+
       return;
     }
     this.confirmRemoveAll = false;
