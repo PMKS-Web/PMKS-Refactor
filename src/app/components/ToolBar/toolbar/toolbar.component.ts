@@ -1,12 +1,12 @@
-import { Component} from '@angular/core'
-import { StateService } from "../../../services/state.service";
-import { UrlGenerationService } from "../../../services/url-generation.service";
-import {EncoderService} from "../../../services/encoder.service";
-import {DecoderService} from "../../../services/decoder.service";
+import { Component } from '@angular/core';
+import { StateService } from '../../../services/state.service';
+import { UrlGenerationService } from '../../../services/url-generation.service';
+import { EncoderService } from '../../../services/encoder.service';
+import { DecoderService } from '../../../services/decoder.service';
 import { NotificationService } from 'src/app/services/notification.service';
-import { PanZoomService } from "../../../services/pan-zoom.service";
-import {FeedbackPanelComponent} from "../feedback-panel/feedback-panel.component";
+import { PanZoomService } from '../../../services/pan-zoom.service';
 import { UndoRedoService } from '../../../services/undo-redo.service';
+import { AnimationService } from 'src/app/services/animation.service';
 
 @Component({
   selector: 'app-toolbar',
@@ -14,24 +14,27 @@ import { UndoRedoService } from '../../../services/undo-redo.service';
   styleUrls: ['./toolbar.component.scss'],
 })
 export class ToolbarComponent {
-
+  currentFrameIndex: number = 0;
   constructor(
     private stateService: StateService,
     private notificationService: NotificationService,
     private panZoomService: PanZoomService,
-    private undoRedoService: UndoRedoService
-  ) {}
-
+    private undoRedoService: UndoRedoService,
+    private animationService: AnimationService
+  ) {
+    this.animationService.animationProgress$.subscribe((obs) => {
+      this.currentFrameIndex = obs;
+    });
+  }
 
   selectedPanel: string = '';
 
   // Sets the currently active tab
-  setCurrentTab(clickedPanel: string){
-    if(clickedPanel==this.selectedPanel) {
+  setCurrentTab(clickedPanel: string) {
+    if (clickedPanel == this.selectedPanel) {
       this.selectedPanel = '';
-    }
-    else{
-      this.selectedPanel= clickedPanel;
+    } else {
+      this.selectedPanel = clickedPanel;
     }
   }
 
@@ -43,14 +46,16 @@ export class ToolbarComponent {
   // Handles sharing functionality by copying the generated URL to the clipboard
   // @ts-ignore
   handleShare() {
-    //this.setCurrentTab("Share");
-
     if (!this.undoRedoService.canUndo() && !this.undoRedoService.canRedo()) {
       return this.notificationService.showWarning(
         'Nothing to share yet—make some changes before sharing.'
       );
     }
-
+    let temp: number = 0;
+    if (this.currentFrameIndex > 0.001) {
+      temp = this.currentFrameIndex;
+      this.animationService.setAnimationProgress(0);
+    }
 
     let urlService = new UrlGenerationService(
       this.stateService,
@@ -58,7 +63,10 @@ export class ToolbarComponent {
       this.undoRedoService
     );
     urlService.copyURL();
-    this.notificationService.showNotification("Mechanism URL copied. If you make additional changes, copy the URL again.");
+    this.notificationService.showNotification(
+      'Mechanism URL copied. If you make additional changes, copy the URL again.'
+    );
+    this.animationService.setAnimationProgress(temp);
   }
 
   // Handles sharing functionality by copying the generated URL to the clipboard
@@ -72,12 +80,20 @@ export class ToolbarComponent {
     );
     let csv: string = encoderService.exportMechanismDataToCSV();
     console.log(csv);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
     const date = new Date();
-    a.download = "data-"+(date.getMonth()+1).toLocaleString('en-US', {minimumIntegerDigits: 2})+date.getDate().toLocaleString('en-US', {minimumIntegerDigits: 2})+(date.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2}))+date.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2})+".csv";
+    a.download =
+      'data-' +
+      (date.getMonth() + 1).toLocaleString('en-US', {
+        minimumIntegerDigits: 2,
+      }) +
+      date.getDate().toLocaleString('en-US', { minimumIntegerDigits: 2 }) +
+      date.getHours().toLocaleString('en-US', { minimumIntegerDigits: 2 }) +
+      date.getMinutes().toLocaleString('en-US', { minimumIntegerDigits: 2 }) +
+      '.csv';
     a.click();
     URL.revokeObjectURL(url);
     //todo notification of download
@@ -109,8 +125,11 @@ export class ToolbarComponent {
         // The file contents as text
         const fileContents: string = e.target.result as string;
         console.log('File Contents:', fileContents);
-        DecoderService.decodeFromCSV(fileContents, this.stateService,this.panZoomService)
-
+        DecoderService.decodeFromCSV(
+          fileContents,
+          this.stateService,
+          this.panZoomService
+        );
       };
 
       // Read file content as text
@@ -118,9 +137,4 @@ export class ToolbarComponent {
     });
     fileInput.click();
   }
-
-
-
-
-
 }
