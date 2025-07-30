@@ -1,5 +1,4 @@
-// src/app/tours/driver‑tour.ts
-import Driver from 'driver.js';
+
 
 export interface TourStep {
   element: string;
@@ -10,7 +9,7 @@ export interface TourStep {
   };
 }
 
-export const DRIVER_TOUR: TourStep[] = [
+export const TOUR_STEPS: TourStep[] = [
   {
     element: 'app-root',
     popover: {

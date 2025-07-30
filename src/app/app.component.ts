@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component,AfterViewInit } from '@angular/core';
 import { DriverTourService } from './services/driver-tour.service';
-import { DRIVER_TOUR } from './components/Tours/driver-tour';
+
 
 @Component({
   selector: 'app-root',
@@ -15,7 +15,9 @@ export class AppComponent {
   }
 
   ngAfterViewInit() {
-    setTimeout(() => this.tour.start(DRIVER_TOUR), 0);
+    setTimeout(() => {
+      this.tour.start();
+    }, 0);
   }
 
 
