@@ -314,8 +314,10 @@ export class LinkInteractor extends Interactor {
 
             mechanism.removeLink(this.link.id);
             this.stateService.getMechanism().notifyChange();
+            this.interactionService.deselectObject();
           },
           disabled: false,
+
         }
       );
     }

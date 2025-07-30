@@ -26,15 +26,18 @@
       </label>
 
       <div *ngIf="wantsResponse" class="form-group email-group">
-        <input
-          id="email"
-          type="email"
-          [(ngModel)]="userEmail"
-          placeholder="your.email@example.com"
-          required
-          class="email-input"
-        />
+        <div class="single-input-block">
+          <label class="single-input-label">
+            <input
+              type="email"
+              [(ngModel)]="userEmail"
+              placeholder="your.email@example.com"
+              required
+            />
+          </label>
+        </div>
       </div>
+
 
 
       <label>
