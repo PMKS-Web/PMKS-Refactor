@@ -16,6 +16,7 @@ This interactor defines the following behaviors:
 export class ForceInteractor extends Interactor {
   private activePanel = 'Edit';
   private forceStartPositions: { start: Coord; end: Coord } | null = null;
+  private forceStart: Force | null = null;
   private lastNotificationTime = 0;
 
   // Add these new properties for handle dragging
@@ -44,6 +45,7 @@ export class ForceInteractor extends Interactor {
         start: new Coord(this.force.start.x, this.force.start.y),
         end: this.force.end.clone(),
       };
+      this.forceStart = this.force.clone();
 
       // If dragging a handle, store the original handle position
       if (this.isDraggingHandle && this.handleDragType) {
@@ -98,14 +100,11 @@ export class ForceInteractor extends Interactor {
         oldPositions.end.y !== newPositions.end.y;
 
       if (moved) {
-        // Record action for undo/redo
-        // this.stateService.recordAction({
-        //   type: this.isDraggingHandle ? 'moveForceHandle' : 'moveForce',
-        //   forceId: this.force.id,
-        //   oldPositions: oldPositions,
-        //   newPositions: newPositions,
-        //   handleType: this.handleDragType
-        // });
+        this.undoRedoService.recordAction({
+          type: 'moveForce',
+          oldForce: this.forceStart as Force,
+          newForce: this.force.clone(),
+        });
       }
 
       // Clean up dragging state
@@ -182,8 +181,6 @@ export class ForceInteractor extends Interactor {
           icon: 'assets/contextMenuIcons/trash.svg',
           label: 'Delete Force',
           action: () => {
-
-
             this.undoRedoService.recordAction({
               type: 'deleteForce',
               oldForce: this.getForce(),

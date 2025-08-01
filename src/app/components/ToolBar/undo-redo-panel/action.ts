@@ -14,7 +14,7 @@ export interface Action {
 
   jointData?: JointSnapshot;
   extraJointsData?: JointSnapshot[];
-  
+
   oldPosition?: Position;
   oldPositionArray?: Position[];
 
@@ -42,6 +42,7 @@ export interface Action {
   newLinkId?: number;
   newJointIds?: number[];
   oldForce?: Force;
+  newForce?: Force;
   oldDistance?: number;
   newDistance?: number;
   oldAngle?: number;

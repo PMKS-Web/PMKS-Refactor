@@ -1,19 +1,18 @@
-import {Action} from "../components/ToolBar/undo-redo-panel/action";
-import {Coord} from "../model/coord";
-import {Link} from "../model/link";
-import {Joint} from "../model/joint";
-import {Mechanism} from "../model/mechanism";
-import {Subject} from "rxjs";
+import { Action } from '../components/ToolBar/undo-redo-panel/action';
+import { Coord } from '../model/coord';
+import { Link } from '../model/link';
+import { Joint } from '../model/joint';
+import { Mechanism } from '../model/mechanism';
+import { Subject } from 'rxjs';
 import { Injectable } from '@angular/core';
-import {StateService} from "./state.service";
-import { isUndefined } from "lodash";
-import { Position } from "../model/position";
-import { Force } from "../model/force";
+import { StateService } from './state.service';
+import { isUndefined } from 'lodash';
+import { Position } from '../model/position';
+import { Force } from '../model/force';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
-
 export class UndoRedoService {
   private undoStack: Action[] = [];
   private redoStack: Action[] = [];
@@ -105,193 +104,197 @@ export class UndoRedoService {
     this.redoStack = [];
   }
 
-  public restoreStacks(
-    undoStack: Action[],
-    redoStack: Action[]
-  ): void {
+  public restoreStacks(undoStack: Action[], redoStack: Action[]): void {
     this.undoStack = [...undoStack];
     this.redoStack = [...redoStack];
   }
-
 
   //------------------------------------------------------------------------------------------------------
   //---------------------------------- | REDO | ----------------------------------------------------------
   //------------------------------------------------------------------------------------------------------
   // Applies an action to the Mechanism (redo logic).
   private applyAction(action: Action): void {
-      switch (action.type) {
-        case 'addInput':
-          if (action.jointId !== undefined) {
-            this.mechanism.addInput(action.jointId);
-          }
-          break;
-        case 'removeInput':
-          if (action.jointId !== undefined) {
-            this.mechanism.removeInput(action.jointId);
-          }
-          break;
-        case 'addGround':
-          if (action.jointId !== undefined) {
-            this.mechanism.addGround(action.jointId);
-          }
-          break;
-        case 'removeGround':
-          if (action.jointId !== undefined) {
-            this.mechanism.removeGround(action.jointId);
-          }
-          break;
-        case 'addSlider':
-          if (action.jointId !== undefined) {
-            this.mechanism.addSlider(action.jointId);
-          }
-          break;
-        case 'removeSlider':
-          if (action.jointId !== undefined) {
-            this.mechanism.removeSlider(action.jointId);
-          }
-          break;
-        case 'addWeld':
-          if (action.jointId !== undefined) {
-            this.mechanism.addWeld(action.jointId);
-          }
-          break;
-        case 'removeWeld':
-          if (action.jointId !== undefined) {
-            this.mechanism.removeWeld(action.jointId);
-          }
-          break;
-        case 'generateFourBar':
-          this.generateFourBarSubject.next();
-          break;
-        case 'generateSixBar':
-          this.generateSixBarSubject.next();
-          break;
-        case 'setSynthesisLength':
-          this.mechanism.setCouplerLength(action.newDistance as number);
-          break;
-        case 'positionSpecified':
-          this.mechanism.addPos(action.linkId as number);
-          break;
-        case 'addForce':
-          if(!action.oldForce) return
-          this.mechanism._addForce(action.oldForce);
-          action.oldForce.parentLink.addForce(action.oldForce);
-          break;
-        case 'deleteForce':
-          if(!action.oldForce) return
-          this.mechanism.removeForce(action.oldForce.id);
-          break;
-        case 'deleteAllPositions':
-          action.oldPositionArray?.forEach(pos =>{
-            this.mechanism.removePosition(pos.id);
-          })
-          this.reinitializeSubject.next();
-          break;
-        case 'setPositionAngle':
-          if(!isUndefined(action.linkId) && !isUndefined(action.newAngle)){
-            this.mechanism.setPositionAngle(action.newAngle, action.linkId);
-          }
-          break;
-        case 'deleteJoint':
-          if (action.jointId !== undefined) {
-            this.mechanism.removeJoint(action.jointId);
-          }
-          break;
-        case 'moveJoint':
-          if (action.jointId != null && action.newCoords) {
-            this.mechanism.setJointCoord(
-              action.jointId,
-              new Coord(action.newCoords.x, action.newCoords.y)
-            );
-          }
-          break;
-        case 'moveLink':
-          for (const p of action.newJointPositions!) {
-            this.mechanism.setJointCoord(
-              p.jointId,
-              new Coord(p.coords.x, p.coords.y)
-            );
-          }
-          break;
-        case 'movePosition':
-          for (const p of action.newJointPositions!) {
-            this.mechanism.setJointCoord(
-              p.jointId,
-              new Coord(p.coords.x, p.coords.y)
-            );
-          }
-          break;
-        case 'setPositionPosition':
-            this.mechanism.setPositionLocation(action.newCoords as Coord, action.linkId as number)
-            break;
-        case 'deletePosition':
-          if(action.oldPosition){
-            this.mechanism.removePosition(action?.oldPosition.id)
-          }
-            break;
-        case 'addLink':
-          if (action.extraJointsData) {
-            action.extraJointsData.forEach((js) =>
-              this.restoreJointFromSnapshot(js)
-            );
-          }
-          //rebuild the link
-          const ld = action.linkData!;
-          const joints = ld.jointIds.map((id) => {
-            const j = this.mechanism.getJoint(id);
-            if (!j) console.warn(`addLink redo: missing joint ${id}`);
-            return j!;
-          });
-          const newLink = new Link(ld.id, joints);
-          newLink.name = ld.name;
-          newLink.mass = ld.mass;
-          newLink.angle = ld.angle;
-          newLink.locked = ld.locked;
-          newLink.color = ld.color;
-          this.mechanism._addLink(newLink);
-          break;
-        case 'deleteLink':
-          this.mechanism.removeLink(action.linkData!.id);
-          break;
-        case 'addTracer':
-          const tr = action.linkTracerData!;
-          this.mechanism.addJointToLink(
-            tr.linkId,
-            new Coord(tr.coords.x, tr.coords.y)
-          );
-          break;
-        case 'addLinkToLink':
-          this.mechanism.addLinkToLink(
-            action.parentLinkId!,
-            action.start!,
-            action.end!
-          );
-          break;
-        case 'setJoint':
-          if (action.jointId != null && action.newCoords) {
-            this.mechanism.setXCoord(action.jointId, action.newCoords.x);
-            this.mechanism.setYCoord(action.jointId, action.newCoords.y);
-          }
-          break;
-        case 'changeJointDistance': {
-          const cd = action as any;
-          const link = this.mechanism.getLink(cd.linkId!)!;
-          const joint = this.mechanism.getJoint(cd.jointId!)!;
-          link.setLength(cd.newDistance!, joint);
-          break;
+    switch (action.type) {
+      case 'addInput':
+        if (action.jointId !== undefined) {
+          this.mechanism.addInput(action.jointId);
         }
-        case 'changeJointAngle': {
-          const ca = action as any;
-          const link = this.mechanism.getLink(ca.linkId!)!;
-          const joint = this.mechanism.getJoint(ca.jointId!)!;
-          link.setAngle(ca.newAngle!, joint);
-          break;
+        break;
+      case 'removeInput':
+        if (action.jointId !== undefined) {
+          this.mechanism.removeInput(action.jointId);
         }
-  
-        default:
-          console.error('No inverse defined for action type:', action.type);
+        break;
+      case 'addGround':
+        if (action.jointId !== undefined) {
+          this.mechanism.addGround(action.jointId);
+        }
+        break;
+      case 'removeGround':
+        if (action.jointId !== undefined) {
+          this.mechanism.removeGround(action.jointId);
+        }
+        break;
+      case 'addSlider':
+        if (action.jointId !== undefined) {
+          this.mechanism.addSlider(action.jointId);
+        }
+        break;
+      case 'removeSlider':
+        if (action.jointId !== undefined) {
+          this.mechanism.removeSlider(action.jointId);
+        }
+        break;
+      case 'addWeld':
+        if (action.jointId !== undefined) {
+          this.mechanism.addWeld(action.jointId);
+        }
+        break;
+      case 'removeWeld':
+        if (action.jointId !== undefined) {
+          this.mechanism.removeWeld(action.jointId);
+        }
+        break;
+      case 'generateFourBar':
+        this.generateFourBarSubject.next();
+        break;
+      case 'generateSixBar':
+        this.generateSixBarSubject.next();
+        break;
+      case 'setSynthesisLength':
+        this.mechanism.setCouplerLength(action.newDistance as number);
+        break;
+      case 'positionSpecified':
+        this.mechanism.addPos(action.linkId as number);
+        break;
+      case 'addForce':
+        if (!action.oldForce) return;
+        this.mechanism._addForce(action.oldForce);
+        action.oldForce.parentLink.addForce(action.oldForce);
+        break;
+      case 'deleteForce':
+        if (!action.oldForce) return;
+        this.mechanism.removeForce(action.oldForce.id);
+        break;
+      case 'moveForce':
+        if (!action.newForce || !action.oldForce) return;
+        this.mechanism.setForceStart(action.newForce.id, action.newForce.start);
+        this.mechanism.setForceEnd(action.newForce.id, action.newForce.end);
+        break;
+      case 'deleteAllPositions':
+        action.oldPositionArray?.forEach((pos) => {
+          this.mechanism.removePosition(pos.id);
+        });
+        this.reinitializeSubject.next();
+        break;
+      case 'setPositionAngle':
+        if (!isUndefined(action.linkId) && !isUndefined(action.newAngle)) {
+          this.mechanism.setPositionAngle(action.newAngle, action.linkId);
+        }
+        break;
+      case 'deleteJoint':
+        if (action.jointId !== undefined) {
+          this.mechanism.removeJoint(action.jointId);
+        }
+        break;
+      case 'moveJoint':
+        if (action.jointId != null && action.newCoords) {
+          this.mechanism.setJointCoord(
+            action.jointId,
+            new Coord(action.newCoords.x, action.newCoords.y)
+          );
+        }
+        break;
+      case 'moveLink':
+        for (const p of action.newJointPositions!) {
+          this.mechanism.setJointCoord(
+            p.jointId,
+            new Coord(p.coords.x, p.coords.y)
+          );
+        }
+        break;
+      case 'movePosition':
+        for (const p of action.newJointPositions!) {
+          this.mechanism.setJointCoord(
+            p.jointId,
+            new Coord(p.coords.x, p.coords.y)
+          );
+        }
+        break;
+      case 'setPositionPosition':
+        this.mechanism.setPositionLocation(
+          action.newCoords as Coord,
+          action.linkId as number
+        );
+        break;
+      case 'deletePosition':
+        if (action.oldPosition) {
+          this.mechanism.removePosition(action?.oldPosition.id);
+        }
+        break;
+      case 'addLink':
+        if (action.extraJointsData) {
+          action.extraJointsData.forEach((js) =>
+            this.restoreJointFromSnapshot(js)
+          );
+        }
+        //rebuild the link
+        const ld = action.linkData!;
+        const joints = ld.jointIds.map((id) => {
+          const j = this.mechanism.getJoint(id);
+          if (!j) console.warn(`addLink redo: missing joint ${id}`);
+          return j!;
+        });
+        const newLink = new Link(ld.id, joints);
+        newLink.name = ld.name;
+        newLink.mass = ld.mass;
+        newLink.angle = ld.angle;
+        newLink.locked = ld.locked;
+        newLink.color = ld.color;
+        this.mechanism._addLink(newLink);
+        break;
+      case 'deleteLink':
+        this.mechanism.removeLink(action.linkData!.id);
+        break;
+      case 'addTracer':
+        const tr = action.linkTracerData!;
+        this.mechanism.addJointToLink(
+          tr.linkId,
+          new Coord(tr.coords.x, tr.coords.y)
+        );
+        break;
+      case 'addLinkToLink':
+        this.mechanism.addLinkToLink(
+          action.parentLinkId!,
+          action.start!,
+          action.end!
+        );
+        break;
+      case 'setJoint':
+        if (action.jointId != null && action.newCoords) {
+          this.mechanism.setXCoord(action.jointId, action.newCoords.x);
+          this.mechanism.setYCoord(action.jointId, action.newCoords.y);
+        }
+        break;
+      case 'changeJointDistance': {
+        const cd = action as any;
+        const link = this.mechanism.getLink(cd.linkId!)!;
+        const joint = this.mechanism.getJoint(cd.jointId!)!;
+        link.setLength(cd.newDistance!, joint);
+        break;
       }
+      case 'changeJointAngle': {
+        const ca = action as any;
+        const link = this.mechanism.getLink(ca.linkId!)!;
+        const joint = this.mechanism.getJoint(ca.jointId!)!;
+        link.setAngle(ca.newAngle!, joint);
+        break;
+      }
+
+      default:
+        console.error('No inverse defined for action type:', action.type);
     }
+  }
   //---------------------------------------------------------------------------------
   // --------------------------- | UNDO | ------------------------------------------
   //--------------------------------------------------------------------------------
@@ -328,21 +331,21 @@ export class UndoRedoService {
         if (action.jointId !== undefined) {
           this.mechanism.removeSlider(action.jointId);
         }
-        break;      
+        break;
       case 'setSynthesisLength':
         this.mechanism.setCouplerLength(action.oldDistance as number);
         break;
       case 'deleteAllPositions':
-        action.oldPositionArray?.forEach(pos =>{
-          console.log("pos")
-          console.log(pos)
+        action.oldPositionArray?.forEach((pos) => {
+          console.log('pos');
+          console.log(pos);
           this.mechanism._addPositionSilent(pos);
           const joints = pos.getJoints();
-          joints?.forEach(joint =>{
+          joints?.forEach((joint) => {
             this.mechanism._addJoint(joint);
-          })
+          });
           this.reinitializeSubject.next();
-        })
+        });
         break;
       case 'positionSpecified':
         this.mechanism.removePosition(action.linkId as number);
@@ -350,13 +353,18 @@ export class UndoRedoService {
       case 'addForce':
         this.mechanism.removeForce(action.oldForce?.id as number);
         break;
+      case 'moveForce':
+        if (!action.newForce || !action.oldForce) return;
+        this.mechanism.setForceStart(action.newForce.id, action.oldForce.start);
+        this.mechanism.setForceEnd(action.newForce.id, action.oldForce.end);
+        break;
       case 'deleteForce':
-          if(!action.oldForce) return
-          this.mechanism._addForce(action.oldForce);
-          action.oldForce.parentLink.addForce(action.oldForce);
-          break;
+        if (!action.oldForce) return;
+        this.mechanism._addForce(action.oldForce);
+        action.oldForce.parentLink.addForce(action.oldForce);
+        break;
       case 'setPositionAngle':
-        if(!isUndefined(action.linkId) && !isUndefined(action.oldAngle)){
+        if (!isUndefined(action.linkId) && !isUndefined(action.oldAngle)) {
           this.mechanism.setPositionAngle(action.oldAngle, action.linkId);
         }
         break;
@@ -429,16 +437,19 @@ export class UndoRedoService {
         }
         break;
       case 'setPositionPosition':
-          this.mechanism.setPositionLocation(action.oldCoords as Coord, action.linkId as number)
-          break;
+        this.mechanism.setPositionLocation(
+          action.oldCoords as Coord,
+          action.linkId as number
+        );
+        break;
       case 'deletePosition':
-          const joints = action.oldPosition?.getJoints();
-          this.mechanism._addPositionSilent(action.oldPosition as Position);
-          joints?.forEach(joint =>{
-            this.mechanism._addJoint(joint);
-          })
-          this.reinitializeSubject.next();
-          break;
+        const joints = action.oldPosition?.getJoints();
+        this.mechanism._addPositionSilent(action.oldPosition as Position);
+        joints?.forEach((joint) => {
+          this.mechanism._addJoint(joint);
+        });
+        this.reinitializeSubject.next();
+        break;
       case 'addLink':
         this.mechanism.removeLink(action.linkData!.id);
         break;
