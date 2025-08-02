@@ -278,6 +278,11 @@ export class LinkEditPanelComponent implements OnDestroy {
       CoM,
       CoM.subtract(new Coord(0, 1))
     );
+    this.undoRedoService.recordAction({
+      type: 'addForce',
+      oldForce: this.getMechanism().getMostRecentForce().clone(),
+    });
+    console.log('hi');
   }
 
   //deletes the link and calls deselectObject to close the panel
