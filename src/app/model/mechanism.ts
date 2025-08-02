@@ -1162,6 +1162,11 @@ addPos(positionIndex: number) {
     return this._positions.has(id);
   }
 
+  public getMostRecentForce(): Force{
+    return this._forces.get(this._forceIDCount - 1) as Force;
+
+  }
+
   //----------------------------GET FUNCTIONS----------------------------
   getJoint(id: number): Joint {
     return <Joint>this._joints.get(id) || this._joints.get(id);

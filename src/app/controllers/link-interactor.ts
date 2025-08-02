@@ -336,6 +336,11 @@ export class LinkInteractor extends Interactor {
       this.stateService
         .getMechanism()
         .addForceToLink(this.link.id, modelPosAtRightClick, mousePos);
+        const newForce = this.stateService.getMechanism().getMostRecentForce();
+      this.undoRedoService.recordAction({
+        type: 'addForce',
+        oldForce: newForce.clone(),
+      });
       this.stateService.getMechanism().notifyChange();
     });
     this.interactionService.enterClickCapture(capture);
