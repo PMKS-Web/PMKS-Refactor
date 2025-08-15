@@ -25,6 +25,14 @@ export class NotificationService {
     new BehaviorSubject<WarningNotification | null>(null);
   public warningNotification$ = this.warningNotificationSubject.asObservable();
 
+  constructor() {
+    (window as any).pmksNotify = (message: string, type: 'warning' | 'normal' = 'warning') => {
+      if (type === 'warning') this.showWarning(message);
+      else this.showNotification(message);
+    };
+  }
+
+
   showNotification(message: string): void {
     const notification: Notification = {
       id: this.generateId(),
