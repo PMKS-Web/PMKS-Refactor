@@ -45,8 +45,6 @@ export class StateService {
     private globalActivePanel = new BehaviorSubject("Edit");
 
     private animationbarComponent!: AnimationBarComponent;
-    //private undoStack: Mechanism[] = [];
-    //private redoStack: Mechanism[] = [];
     private currentState: any = {};
 
     private maxUndoSize = 2;
@@ -243,17 +241,31 @@ export class StateService {
         return this.mechanism._mechanismChange$;
     }
 
-    public recordAction(action: Action): void {
-      if (this.undoStack.length >= this.maxUndoSize) {
-        // Remove the oldest action from the stack.
-        this.undoStack.shift();
+  public recordAction(action: Action): void {
+    if (action.type === "changeJointAngle") {
+      const last = this.undoStack[this.undoStack.length - 1];
+      if (last
+        && last.type    === action.type
+        && last.linkId  === action.linkId
+        && last.jointId === action.jointId
+      ) {
+        // Update the last action’s newAngle to the newest value
+        (last as any).newAngle = (action as any).newAngle;
+        console.log('Merged changeJointAngle into previous action');
+        return;
       }
-      this.undoStack.push(action);
-      this.redoStack = [];
-      console.log('Action recorded:', action);
     }
 
-    public canUndo(): boolean {
+    if (this.undoStack.length >= this.maxUndoSize) {
+      this.undoStack.shift();
+    }
+    this.undoStack.push(action);
+    this.redoStack = [];
+    console.log('Action recorded:', action);
+  }
+
+
+  public canUndo(): boolean {
       return this.undoStack.length > 0;
     }
 
@@ -289,8 +301,9 @@ export class StateService {
     console.log('Redo performed for action:', action);
     this.mechanism.notifyChange();
   }
-
-  // Define how to apply an action (redo)
+//------------------------------------------------------------------------------------------------------
+//---------------------------------- | REDO | ----------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
   private applyAction(action: Action): void {
     switch (action.type) {
       case 'addInput':
@@ -337,14 +350,83 @@ export class StateService {
         if (action.jointId !== undefined) {
           this.mechanism.removeJoint(action.jointId);
         }
-
         break;
+      case 'moveJoint':
+        if (action.jointId != null && action.newCoords) {
+          this.mechanism.setJointCoord(
+            action.jointId,
+            new Coord(action.newCoords.x, action.newCoords.y)
+          );
+        }
+        break;
+      case 'moveLink':
+        for (const p of action.newJointPositions!) {
+          this.mechanism.setJointCoord(p.jointId, new Coord(p.coords.x, p.coords.y));
+        }
+        break;
+      case 'addLink':
+        if (action.extraJointsData) {
+          action.extraJointsData.forEach(js =>
+            this.restoreJointFromSnapshot(js)
+          );
+        }
+        //rebuild the link
+        const ld = action.linkData!;
+        const joints = ld.jointIds.map(id => {
+          const j = this.mechanism.getJoint(id);
+          if (!j) console.warn(`addLink redo: missing joint ${id}`);
+          return j!;
+        });
+        const newLink = new Link(ld.id, joints);
+        newLink.name   = ld.name;
+        newLink.mass   = ld.mass;
+        newLink.angle  = ld.angle;
+        newLink.locked = ld.locked;
+        newLink.color  = ld.color;
+        this.mechanism._addLink(newLink);
+        break;
+      case 'deleteLink':
+        this.mechanism.removeLink(action.linkData!.id);
+        break;
+      case 'addTracer':
+        const tr = action.linkTracerData!;
+        this.mechanism.addJointToLink(tr.linkId, new Coord(tr.coords.x, tr.coords.y));
+        break;
+      case 'addLinkToLink':
+        this.mechanism.addLinkToLink(
+          action.parentLinkId!,
+          action.start!,
+          action.end!
+        );
+        break;
+      case 'setJoint':
+        if (action.jointId != null && action.newCoords) {
+          this.mechanism.setXCoord(action.jointId, action.newCoords.x);
+          this.mechanism.setYCoord(action.jointId, action.newCoords.y);
+        }
+        break;
+      case "changeJointDistance": {
+        const cd = action as any;
+        const link  = this.mechanism.getLink(cd.linkId!)!;
+        const joint = this.mechanism.getJoint(cd.jointId!)!;
+        link.setLength(cd.newDistance!, joint);
+        break;
+      }
+      case "changeJointAngle": {
+        const ca = action as any;
+        const link  = this.mechanism.getLink(ca.linkId!)!;
+        const joint = this.mechanism.getJoint(ca.jointId!)!;
+        link.setAngle(ca.newAngle!, joint);
+        break;
+      }
+
       default:
         console.error('No inverse defined for action type:', action.type);
     }
   }
-
-// Define how to apply the inverse of an action (for undo)
+  //---------------------------------------------------------------------------------
+  // --------------------------- | UNDO | ------------------------------------------
+  //--------------------------------------------------------------------------------
   private applyInverseAction(action: Action): void {
     switch (action.type) {
       case 'addInput':
@@ -413,9 +495,93 @@ export class StateService {
             }
           });
         }
-
         break;
-
+      case 'moveJoint':
+        if (action.jointId != null && action.oldCoords) {
+          this.mechanism.setJointCoord(
+            action.jointId,
+            new Coord(action.oldCoords.x, action.oldCoords.y)
+          );
+        }
+        break;
+      case 'moveLink':
+        for (const p of action.oldJointPositions!) {
+          this.mechanism.setJointCoord(p.jointId, new Coord(p.coords.x, p.coords.y));
+        }
+        break;
+      case 'addLink':
+        this.mechanism.removeLink(action.linkData!.id);
+        break;
+      case 'deleteLink':
+        if (action.extraJointsData) {
+          action.extraJointsData.forEach(js => {
+           if (!this.mechanism.getJoint(js.id)) {
+             this.restoreJointFromSnapshot(js);
+              }
+            });
+        }
+        // rebuild the link
+        const ld = action.linkData!;
+        const jointObjs = ld.jointIds.map(id => {
+          const j = this.mechanism.getJoint(id);
+          if (!j) console.warn(`undo deleteLink: joint ${id} still missing`);
+          return j!;
+        });
+        if (jointObjs.every(j => j != null)) {
+          const linkRestored = new Link(ld.id, jointObjs);
+          linkRestored.name   = ld.name;
+          linkRestored.mass   = ld.mass;
+          linkRestored.angle  = ld.angle;
+          linkRestored.locked = ld.locked;
+          linkRestored.color  = ld.color;
+          this.mechanism._addLink(linkRestored);
+        }
+        break;
+      case 'addTracer': {
+        const tr = action.linkTracerData!;
+        const linkObj = this.mechanism.getLink(tr.linkId);
+        const toRemove = Array.from(linkObj.joints.values()).find(j =>
+          j.coords.x === tr.coords.x && j.coords.y === tr.coords.y
+        );
+        if (toRemove) {
+          this.mechanism.removeJoint(toRemove.id);
+        } else {
+          console.warn(
+            `Undo addTracer: no tracer found at (${tr.coords.x},${tr.coords.y})`
+          );
+        }
+        break;
+      }
+      case 'addLinkToLink':
+        // remove the brand‑new link
+        if (action.newLinkId !== undefined) {
+          this.mechanism.removeLink(action.newLinkId);
+        }
+        if (action.attachJointId !== undefined) {
+          this.mechanism.getJoint(action.attachJointId) &&
+          this.mechanism.removeJoint(action.attachJointId);
+        }
+        break;
+      case 'setJoint':
+        if (action.jointId != null && action.oldCoords) {
+          this.mechanism.setXCoord(action.jointId, action.oldCoords.x);
+          this.mechanism.setYCoord(action.jointId, action.oldCoords.y);
+        }
+        break;
+      case "changeJointDistance": {
+        const cd = action as any;
+        const link  = this.mechanism.getLink(cd.linkId!)!;
+        const joint = this.mechanism.getJoint(cd.jointId!)!;
+        link.setLength(cd.oldDistance!, joint);
+        break;
+      }
+      case "changeJointAngle": {
+        const ca = action as any;
+        const link  = this.mechanism.getLink(ca.linkId!)!;
+        const joint = this.mechanism.getJoint(ca.jointId!)!;
+        link.setAngle(ca.oldAngle!, joint);
+        break;
+      }
       default:
         console.error('No inverse defined for action type:', action.type);
     }
@@ -435,7 +601,4 @@ export class StateService {
     restoredJoint.reference = jointSnapshot!.isReference;
     this.mechanism._addJoint(restoredJoint);
   }
-
-
-
 }

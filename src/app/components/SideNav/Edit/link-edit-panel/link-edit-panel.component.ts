@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit} from '@angular/core'
+import { Component} from '@angular/core'
 import { Interactor } from 'src/app/controllers/interactor';
 import { LinkInteractor } from 'src/app/controllers/link-interactor';
 import { Link } from 'src/app/model/link';
@@ -7,9 +7,6 @@ import { InteractionService } from 'src/app/services/interaction.service';
 import { StateService } from 'src/app/services/state.service';
 import { Joint } from 'src/app/model/joint';
 import { ColorService } from 'src/app/services/color.service';
-import { FormControl, FormGroup } from "@angular/forms";
-import { LinkComponent } from '../../../Grid/link/link.component';
-import { Coord } from 'src/app/model/coord';
 import {Subscription} from "rxjs";
 
 
@@ -37,6 +34,12 @@ export class LinkEditPanelComponent{
       //icon paths for dual button for addFracer and addForce
       public addTracerIconPath: string = "assets/icons/addTracer.svg";
       public addForceIconPath: string = "assets/icons/addForce.svg";
+  public pendingLinkLength?: number;
+  public pendingLinkAngle?: number;
+  /** Buffers for component edits */
+  public pendingCompX: Record<number, number> = {};
+  public pendingCompY: Record<number, number> = {};
+
   unitSubscription: Subscription = new Subscription();
   angleSubscription: Subscription = new Subscription();
   units: string = "cm";
@@ -52,7 +55,115 @@ export class LinkEditPanelComponent{
     this.angleSubscription = this.stateService.globalASuffixCurrent.subscribe((angles) => {this.angles = angles;});
   }
 
-    //helper function to access current selected object (will always be a link here)
+  confirmCompX(jointId: number): void {
+    const raw = this.pendingCompX[jointId];
+    if (raw == null) return;
+
+    const joint = this.getLinkComponents().find(j => j.id === jointId)!;
+    const oldX  = joint.coords.x;
+    const newX  = raw;
+    if (Math.abs(oldX - newX) < 1e-6) {
+      delete this.pendingCompX[jointId];
+      return;
+    }
+
+    // record one undo entry
+    this.stateService.recordAction({
+      type:      "setJoint",
+      jointId:   jointId,
+      oldCoords: { x: oldX,           y: joint.coords.y },
+      newCoords: { x: newX,           y: joint.coords.y }
+    });
+
+    // apply and notify
+    joint.coords.x = newX;
+    this.getMechanism().notifyChange();
+
+    delete this.pendingCompX[jointId];
+  }
+
+  confirmCompY(jointId: number): void {
+    const raw = this.pendingCompY[jointId];
+    if (raw == null) return;
+
+    const joint = this.getLinkComponents().find(j => j.id === jointId)!;
+    const oldY  = joint.coords.y;
+    const newY  = raw;
+    if (Math.abs(oldY - newY) < 1e-6) {
+      delete this.pendingCompY[jointId];
+      return;
+    }
+
+    this.stateService.recordAction({
+      type:      "setJoint",
+      jointId:   jointId,
+      oldCoords: { x: joint.coords.x, y: oldY },
+      newCoords: { x: joint.coords.x, y: newY }
+    });
+
+    joint.coords.y = newY;
+    this.getMechanism().notifyChange();
+
+    delete this.pendingCompY[jointId];
+  }
+
+
+  confirmLinkLength(): void {
+    const raw = this.pendingLinkLength;
+    if (raw == null) return;
+
+    const link   = this.getSelectedObject();
+    const oldLen = this.getLinkLength();
+    const newLen = raw;
+    if (Math.abs(oldLen - newLen) < 1e-6) {
+      this.pendingLinkLength = undefined;
+      return;
+    }
+
+    // Record exactly one undo entry
+    this.stateService.recordAction({
+      type:        "changeJointDistance",
+      linkId:      link.id,
+      // Use whichever joint anchors your link-length
+      jointId:     link.joints.keys().next().value,
+      oldDistance: oldLen,
+      newDistance: newLen
+    });
+
+    // Apply the change
+    this.setLinkLength(newLen);
+    this.getMechanism().notifyChange();
+
+    this.pendingLinkLength = undefined;
+  }
+
+  confirmLinkAngle(): void {
+    const raw = this.pendingLinkAngle;
+    if (raw == null) return;
+
+    const link   = this.getSelectedObject();
+    const oldAng = this.getLinkAngle();
+    const newAng = raw;
+    if (Math.abs(oldAng - newAng) < 1e-6) {
+      this.pendingLinkAngle = undefined;
+      return;
+    }
+
+    this.stateService.recordAction({
+      type:     "changeJointAngle",
+      linkId:   link.id,
+      jointId:  link.joints.keys().next().value,
+      oldAngle: oldAng,
+      newAngle: newAng
+    });
+
+    this.setLinkAngle(newAng);
+    this.getMechanism().notifyChange();
+    this.pendingLinkAngle = undefined;
+  }
+
+
+  //helper function to access current selected object (will always be a link here)
     getSelectedObject(): Link{
         let link = this.interactionService.getSelectedObject() as LinkInteractor;
         return link.getLink();

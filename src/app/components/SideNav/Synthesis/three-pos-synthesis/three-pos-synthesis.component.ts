@@ -568,6 +568,15 @@ isSixBarGenerated(): boolean {
       this.positionSolver.solvePositions();
       this.verifyMechanismPath();
 
+      const inputLink = this.synthedMech[0];
+      const linkInteractor = new LinkInteractor(
+        inputLink,
+        this.stateService,
+        this.interactionService
+      );
+      this.interactionService.setSelectedObject(linkInteractor);
+      this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
+
       let initialGreenCount = this.mechanism.getArrayOfPositions().filter(position => position.color === 'green').length;
 
       if (initialGreenCount < 3) {//since is not the best we check the other input joint, to see of that gives better result

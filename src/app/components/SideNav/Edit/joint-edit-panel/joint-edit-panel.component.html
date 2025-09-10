@@ -26,46 +26,84 @@
         </panel-section-collapsible>
 
         <!-- BASIC SETTING DROPDOWN -->
-        <collapsible-subsection titleLabel='Basic Settings' [expanded]="graphExpanded['basicBasic']"
-                                (opened)="graphExpanded['basicBasic'] = true"
-                                (closed)="graphExpanded['basicBasic'] = false">
-          <!-- THE JOINT X AND Y COORD INPUT COMPONENT -->
-          <div class="flex-container">
-            <dual-input-block [input1Value]="getJointXCoord()"
-                              [input2Value]="getJointYCoord()"
-                              (input1Change)="setJointXCoord($event)"
-                              (input2Change)="setJointYCoord($event)"
-                              tooltip="Change the x and y values of the current joint!"
-                              label1="X"
-                              label2="Y"
-                              unit1={{units}}
-                              unit2={{units}}
-                              tooltip = "The location of the Joint in X and Y Positions">
-              Input X and Y positions
-            </dual-input-block>
+        <collapsible-subsection
+          titleLabel="Basic Settings"
+          [expanded]="graphExpanded['basicBasic']"
+          (opened)="graphExpanded['basicBasic'] = true"
+          (closed)="graphExpanded['basicBasic'] = false"
+          >
+          <div id="jointPositions" class="xy-block">
+            <label class="xy-label">Input X and Y positions</label>
+            <div class="xy-row">
+              <div class="xy-cell">
+                <label>X</label>
+                <input
+                  type="number"
+                  [value]="pendingX ?? getJointXCoord()"
+                  (input)="pendingX = $any($event.target).valueAsNumber"
+                  (keydown.enter)="confirmJointX()"
+                  [disabled]="getJointLockState()"
+                />
+                <span class="xy-unit">{{ units }}</span>
+              </div>
+              <div class="xy-cell">
+                <label>Y</label>
+                <input
+                  type="number"
+                  [value]="pendingY ?? getJointYCoord()"
+                  (input)="pendingY = $any($event.target).valueAsNumber"
+                  (keydown.enter)="confirmJointY()"
+                  [disabled]="getJointLockState()"
+                />
+                <span class="xy-unit">{{ units }}</span>
+              </div>
+            </div>
           </div>
         </collapsible-subsection>
+
         <!-- DYNAMICALLY DISPLAYS CONNECTED JOINTS BASED ON A LIST PROVIDED IN THE TYPESCRIPT -->
         <collapsible-subsection titleLabel='Distance to Joint' [expanded]="graphExpanded['distance']"
                                 (opened)="graphExpanded['distance'] = true"
                                 (closed)="graphExpanded['distance'] = false">
+
+
           <div id="connectedJoints">
             <div id="container">
-              <div *ngFor='let joint of getConnectedJoints(); let i = index;'>
+              <div *ngFor="let joint of getConnectedJoints()">
                 <ng-container *ngIf="getCurrentJoint().name !== joint.name">
-                  <dual-input-block
-                    [input1Value]="getJointDistance(joint)"
-                    [input2Value]="getJointAngle(joint)"
-                    (input1Change)="changeJointDistance(joint.id, $event)"
-                    (input2Change)="changeJointAngle(joint.id, $event)"
-                    [disabled] = "joint.locked"
-                    iconLabel1 = "assets/icons/length.svg"
-                    iconLabel2="assets/icons/angle.svg"
-                    unit1={{units}}
-                    unit2={{angles}}
-                    tooltip = "The distance and angle from Joint {{getCurrentJoint().name}} to {{joint.name}}">
-                    Joint {{getCurrentJoint().name}} to Joint {{ joint.name }}
-                  </dual-input-block>
+                  <div class="distance-angle-block">
+                    <!-- LABEL -->
+                    <div class="dar-label">
+                      Joint {{ getCurrentJoint().name }} to Joint {{ joint.name }}
+                    </div>
+
+                    <!-- Then the row of inputs -->
+                    <div class="distance-angle-row">
+                      <div class="dar-cell">
+                        <!-- distance input -->
+                        <img src="assets/icons/length.svg" class="dar-icon"/>
+                        <input
+                          type="number"
+                          [value]="getJointDistance(joint)"
+                          (change)="changeJointDistance(joint.id,$any($event.target).valueAsNumber)"
+                          [disabled]="joint.locked"
+                        />
+                        <span class="dar-unit">{{ units }}</span>
+                      </div>
+
+                      <div class="dar-cell">
+                        <!-- angle input -->
+                        <img src="assets/icons/angle.svg" class="dar-icon"/>
+                        <input
+                          type="number"
+                          [ngModel]="getJointAngle(joint)"
+                          (keydown.enter)="onAngleEnter(joint.id,$any($event.target).value)"
+                          [disabled]="joint.locked"
+                        />
+                        <span class="dar-unit">{{ angles }}</span>
+                      </div>
+                    </div>
+                  </div>
                 </ng-container>
               </div>
             </div>
@@ -91,24 +129,6 @@
                       (valueChanged)="handleToggleInputChange($event)"></app-toggle>
 
 
-          <!-- TRI BUTTON THAT IS USED FOR DIRECTION OF INPUT ON INPUT JOINT -->
-          <div>
-            <div *ngIf="getCurrentJoint().isInput">
-              <p class="input-direction-label" style="margin: 4px 0 5px 10px;">
-                Input Direction
-                <mat-icon matTooltip='Select the direction of rotation for the animation to start in. Note that positive angles are always counter-clockwise.' [matTooltipShowDelay]='1000' class='label-help'>help_outline</mat-icon>
-              </p>
-              <div class="button-container">
-                <tri-button btn1Text="Counter-Clockwise" btn2Text="Clockwise"
-                            [btn1Visible]="true"
-                            [btn1Disabled]="!canAddInput()"
-                            [btn2Disabled]="!canAddInput()"
-                            [btn1Action]="makeInputCounterClockwise" [btn2Action]="makeInputClockwise"
-                            [joint]="getCurrentJoint()" [mechanism]="getMechanism()">
-                </tri-button>
-              </div>
-            </div>
-          </div>
         </collapsible-subsection>
       </div>
     </div>

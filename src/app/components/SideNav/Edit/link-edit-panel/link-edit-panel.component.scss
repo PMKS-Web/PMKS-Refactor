@@ -1,17 +1,6 @@
 @use 'sass:map';
 @use '@angular/material' as mat;
 
-@mixin css($theme) {
-  // Get the color config from the theme.
-  $color-config: mat.m2-get-color-config($theme);
-  // Get the primary color palette from the color-config.
-  $primary-palette: map.get($color-config, 'primary');
-  $accent-palette: map.get($color-config, 'accent');
-  $typography-config: mat.m2-get-typography-config($theme);
-  $background: map.get($theme, background);
-  $foreground: map.get($theme, foreground);
-}
-
 .scroll-container {
   max-height: 60vh;
   overflow:hidden;
@@ -62,17 +51,13 @@
   align-items: flex-start;
 
 }
-/*
-.flex-container > * {
-  margin: 5px;
-}
-*/
+
 .left-aligned {
-  margin-right: auto; /* Pushes this element to the left */
+  margin-right: auto;
 }
 
 .right-aligned {
-  margin-left: auto; /* Pushes this element to the right */
+  margin-left: auto;
 }
 
 div.colors {
@@ -117,10 +102,7 @@ button {
   align-items: center;
 }
 
-#linkComponenets {
-  max-height: 100px;
-  overflow-y: scroll;
-}
+
 
 .label-help {
   color: #3f51b5;
@@ -143,3 +125,77 @@ button {
   display: flex;
   align-items: center;
 }
+
+
+/* Wrapper for link length+angle section */
+.length-angle-block {
+  margin-bottom: 12px;
+}
+
+.la-label {
+  display: block;
+  font: inherit;
+  color: inherit;
+  margin-bottom: 4px;
+}
+
+.length-angle-row {
+  display: flex;
+  gap: 16px;
+}
+
+/* Individual cell */
+.la-cell {
+  display: flex;
+  align-items: center;
+}
+
+/* Icon next to each input */
+.la-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+}
+
+/* Unit text spacing */
+.la-unit {
+  margin-left: 4px;
+  font-size: 0.9em;
+  color: #666;
+}
+
+
+
+.xy-block {
+  margin-bottom: 12px;
+}
+
+.xy-label {
+  display: block;
+  font: inherit;
+  color: inherit;
+  margin-bottom: 4px;
+}
+
+.xy-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.xy-cell {
+  display: flex;
+  align-items: center;
+}
+
+.xy-unit {
+  margin-left: 4px;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.xy-cell input {
+  width: 4.5rem;
+}
+
+

@@ -215,22 +215,41 @@ export class AnalysisSolveService {
         const timeLabels: string[] = [];
 
         switch (dataOf) {
-            case ("Position"):
-                xData.push({ data: jointAnalysis.positions.map(coord => coord.x), label: "X data of Position" });
-                yData.push({ data: jointAnalysis.positions.map(coord => coord.y), label: "Y data of Position" });
-                timeLabels.push(...jointAnalysis.positions.map((_, index) => String(index)));
-
-                return { xData, yData, timeLabels };
+          case ("Position"):
+            xData.push({
+              data: jointAnalysis.positions.map(coord => coord.x),
+              label: "X data of Position",
+              borderColor: 'orange',
+              backgroundColor: 'rgba(255, 165, 0, 0.3)',
+              fill: false
+            });
+            yData.push({
+              data: jointAnalysis.positions.map(coord => coord.y),
+              label: "Y data of Position"
+            });
+            timeLabels.push(...jointAnalysis.positions.map((_, index) => String(index)));
+            return { xData, yData, timeLabels };
 
             case ("Velocity"):
-                xData.push({ data: jointAnalysis.velocities.map(coord => coord.x), label: "X data of Velocity" });
+                xData.push({
+                  data: jointAnalysis.velocities.map(coord => coord.x),
+                  label: "X data of Velocity",
+                  borderColor: 'orange',
+                  backgroundColor: 'rgba(255, 165, 0, 0.3)',
+                  fill: false
+                   });
                 yData.push({ data: jointAnalysis.velocities.map(coord => coord.y), label: "Y data of Velocity" });
                 timeLabels.push(...jointAnalysis.velocities.map((_, index) => String(index)));
 
                 return { xData, yData, timeLabels };
-
             case ("Acceleration"):
-                xData.push({ data: jointAnalysis.accelerations.map(coord => coord.x), label: "X data of Acceleration" });
+                xData.push({
+                  data: jointAnalysis.accelerations.map(coord => coord.x),
+                  label: "X data of Acceleration",
+                  borderColor: 'orange',
+                  backgroundColor: 'rgba(255, 165, 0, 0.3)',
+                  fill: false
+                });
                 yData.push({ data: jointAnalysis.accelerations.map(coord => coord.y), label: "Y data of Acceleration" });
                 timeLabels.push(...jointAnalysis.accelerations.map((_, index) => String(index)));
 

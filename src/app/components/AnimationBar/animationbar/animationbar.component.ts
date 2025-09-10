@@ -24,9 +24,6 @@ import { FormControl } from '@angular/forms';
 })
 export class AnimationBarComponent implements OnInit{
 
-  public sliderControl = new FormControl(0);
-
-
   constructor(
     public interactionService: InteractionService,
     private animationService: AnimationService,
@@ -90,6 +87,7 @@ export class AnimationBarComponent implements OnInit{
         this.animationService.animateMechanisms(false);
         this.isAnimating = true;
         this.isPausedAnimating = true;
+        this.updateTimelineMarkers();
         break;
       case 'play':
         this.animationService.animateMechanisms(true);
@@ -98,6 +96,7 @@ export class AnimationBarComponent implements OnInit{
         this.stateService.getMechanism().populateTrajectories(this.positionSolver);
 
         setTimeout(() => {
+          this.updateTimelineMarkers();
 
         }, 100);
         //display the trajectories
@@ -109,6 +108,7 @@ export class AnimationBarComponent implements OnInit{
         this.sliderValue = 0;
         this.stateService.getMechanism().clearTrajectories();
         //Clear the trajectories
+        this.updateTimelineMarkers();
         break;
     }
   }
@@ -156,7 +156,12 @@ export class AnimationBarComponent implements OnInit{
     const inputElement = event.target as HTMLInputElement;
     const numericValue = parseFloat(inputElement.value);
     this.sliderValue = numericValue;
-    const fraction = numericValue / 100;
+    let fraction = numericValue / 100;
+
+    if (!this.animationService.startDirectionCounterclockwise) {
+      fraction = 1 - fraction;
+    }
+
     this.animationService.setAnimationProgress(fraction);
   }
 
@@ -168,8 +173,6 @@ export class AnimationBarComponent implements OnInit{
     this.isDragging = false;
   }
 
-
-
   toggleAnimationSpeed(): void{
     const speedOptions = [0.5,1,2]
     const index = speedOptions.indexOf(this.animationSpeed);
@@ -178,66 +181,44 @@ export class AnimationBarComponent implements OnInit{
   }
 
   updateTimelineMarkers(): void {
-    const mechanismIndex = this.getMechanismIndex();
+    const mech = this.animationService.getAnimationState(this.getMechanismIndex());
+    if (!mech) return;
 
-    if (mechanismIndex === -1) {
-       return;
+    const flips = this.animationService.getDirectionChanges(mech);
+
+    const newMarkers = [];
+
+    if (flips.clockwise) {
+      newMarkers.push(this.createMarker(flips.clockwise.frame, flips.clockwise.position, 'clockwise'));
+    }
+
+    if (flips.counterClockwise) {
+      newMarkers.push(this.createMarker(flips.counterClockwise.frame, flips.counterClockwise.position, 'counterclockwise'));
+    }
+
+    if (flips.clockwise2) {
+      newMarkers.push(this.createMarker(flips.clockwise2.frame, flips.clockwise2.position, 'clockwise'));
+    }
+
+    if (flips.counterClockwise2) {
+      newMarkers.push(this.createMarker(flips.counterClockwise2.frame, flips.counterClockwise2.position, 'counterclockwise'));
     }
 
 
+    newMarkers.sort((a, b) => a.position - b.position);
 
-    const mechanismState = this.animationService.getAnimationState(mechanismIndex);
-    if (!mechanismState) {
-      console.log(mechanismState);
-      return;
-    }
-
-    const changes = this.animationService.getDirectionChanges(mechanismState);
-    console.log("flag3");
-    const totalFrames = mechanismState.totalFrames ?? 1;
-    this.timelineMarkers = [];
-
-    const ccw = this.animationService.startDirectionCounterclockwise;
-
-    // 1) Handle the "clockwise" change
-    if (changes.clockwise !== undefined) {
-      console.log("flag4");
-      const frameIndex = changes.clockwise.frame;
-
-      const rawFraction = frameIndex / (totalFrames - 1);
-      const finalFraction = ccw ? rawFraction : (1 - rawFraction);
-      const position = Math.min(Math.max(finalFraction * 100, 0), 100);
-
-      const markerType = ccw ? 'clockwise' : 'counterclockwise';
-
-
-      this.timelineMarkers.push({
-        position,
-        type: markerType,
-        coords: changes.clockwise.position
-      });
-    }
-
-    // 2) Handle the "counterClockwise" change
-    if (changes.counterClockwise !== undefined) {
-      const frameIndex = changes.counterClockwise.frame;
-
-      const rawFraction = frameIndex / (totalFrames - 1);
-      const finalFraction = ccw ? rawFraction : (1 - rawFraction);
-      const position = Math.min(Math.max(finalFraction * 100, 0), 100);
-      console.log("flag5");
-      const markerType = ccw ? 'counterclockwise' : 'clockwise';
-
-
-      this.timelineMarkers.push({
-        position,
-        type: markerType,
-        coords: changes.counterClockwise.position
-      });
-    }
-
-    console.log("Final timelineMarkers array:", this.timelineMarkers);
+    this.timelineMarkers = newMarkers;
   }
+
+  private createMarker(frame: number, coord: Coord, type: 'clockwise'|'counterclockwise') {
+    const raw = frame / (this.animationService.getAnimationState(this.getMechanismIndex())!.totalFrames - 1);
+    return {
+      position: raw * 100,
+      type,
+      coords: coord
+    };
+  }
+
 
 }
 

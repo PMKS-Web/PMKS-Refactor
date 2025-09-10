@@ -306,4 +306,8 @@ export class InteractionService {
         this.lastSelected=undefined;
     }
 
+  public setSelectedObject(interactor: Interactor): void {
+    this.selectNewObject(interactor);
+  }
+
 }
