@@ -71,7 +71,10 @@ export class SvgComponent extends AbstractInteractiveComponent {
 
   getDegrees() {
     //put in animation service? to get specific number of degrees.
-    return "N/A"
+    if (this.animationService.currentDegreesOfFreedom() == 0) {
+      return "N/A"
+    }
+    return this.animationService.currentDegreesOfFreedom();
   }
 
   cursorPosition: string = " x: 0.00, y: 0.00";

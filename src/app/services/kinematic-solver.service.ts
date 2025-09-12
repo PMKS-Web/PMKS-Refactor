@@ -182,8 +182,14 @@ export class PositionSolverService {
           break;
       }
     }
+
+    // If fewer than 2 links no dof
+    if (links.size < 2) {
+      return 0;
+    }
+
     N += links.size + 1; // +1 accounts for ground that is assumed
-    console.log(`N = ${N}, J = ${J}`);
+    // console.log(`N = ${N}, J = ${J}`);
     return 3 * (N - 1) - 2 * J; //
   }
 
@@ -722,5 +728,14 @@ export class PositionSolverService {
   // Flattens and returns all joint positions across every submechanism and time step for downstream use.
   public getAnimationPositions(): Coord[][] {
     return this.animationPositions.flatMap((entry) => entry.positions);
+  }
+
+  public getDegrees(): number {
+    const subMechanisms = this.stateService.getMechanism().getSubMechanisms();
+    if (subMechanisms.length === 0) {
+      return 0;
+    }
+
+    return this.getDegreesOfFreedom(subMechanisms[0]);
   }
 }
