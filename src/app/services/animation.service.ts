@@ -247,6 +247,8 @@ export class AnimationService {
       const frameIndex = Math.floor(progress * (state.totalFrames - 1));
       state.currentFrameIndex = frameIndex;
 
+      this.updateTimeStep(state.timeStepFrames[frameIndex]);
+
       for (
         let jointIndex = 0;
         jointIndex < state.jointIDs.length;
