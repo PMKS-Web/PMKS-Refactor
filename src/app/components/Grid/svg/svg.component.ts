@@ -69,11 +69,8 @@ export class SvgComponent extends AbstractInteractiveComponent {
     return this.animationService.isInvalid();
   }
 
+  // get specific dof from animationService
   getDegrees() {
-    //put in animation service? to get specific number of degrees.
-    if (this.animationService.currentDegreesOfFreedom() == 0) {
-      return "N/A"
-    }
     return this.animationService.currentDegreesOfFreedom();
   }
 
