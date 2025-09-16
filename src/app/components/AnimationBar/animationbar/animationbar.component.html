@@ -40,7 +40,9 @@
       <div id='tLabel'>T:</div>
       <form>
         <input
+          [value]="currentTimeStep"
           [disabled]='invalidMechanism()'
+          (input)="onTimeStepInput($event)"
           id='animationBar-input'
           name='timestep'
           type='number'

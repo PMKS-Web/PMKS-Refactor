@@ -23,6 +23,7 @@ import { FormControl } from '@angular/forms';
 })
 export class AnimationBarComponent implements OnInit {
   public sliderControl = new FormControl(0);
+  public currentTimeStep = 0;
 
   constructor(
     public interactionService: InteractionService,
@@ -36,6 +37,10 @@ export class AnimationBarComponent implements OnInit {
         this.sliderValue = progress * 100;
       }
     });
+    this.animationService.timeStep$.subscribe((timeStep) => {
+      // rounds timeStep to the nearest hundredths place
+      this.currentTimeStep = Math.round(timeStep * 1e2) / 1e2;
+    })
   }
 
   zoomIn() {
@@ -110,6 +115,7 @@ export class AnimationBarComponent implements OnInit {
         this.isAnimating = false;
         this.isPausedAnimating = true;
         this.sliderValue = 0;
+        this.currentTimeStep = 0;
         this.stateService.getMechanism().clearTrajectories();
         //Clear the trajectories
         break;
@@ -239,5 +245,10 @@ export class AnimationBarComponent implements OnInit {
     }
 
     console.log('Final timelineMarkers array:', this.timelineMarkers);
+  }
+
+  onTimeStepInput(event: any): void {
+    const inputElement = event.target as HTMLInputElement;
+    this.currentTimeStep = parseFloat(inputElement.value);
   }
 }

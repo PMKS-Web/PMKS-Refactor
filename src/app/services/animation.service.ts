@@ -3,7 +3,8 @@ import { StateService } from './state.service';
 import { Coord } from '../model/coord';
 import { PositionSolverService } from './kinematic-solver.service';
 import { AnimationPositions } from './kinematic-solver.service';
-import { BehaviorSubject } from 'rxjs';
+import {BehaviorSubject, Subscription} from 'rxjs';
+import {iteratee} from "lodash";
 
 export interface JointAnimationState {
   mechanismIndex: number;
@@ -14,6 +15,7 @@ export interface JointAnimationState {
   jointIDs: number[];
   animationFrames: Coord[][];
   inputSpeed: number;
+  timeStepFrames: number[];
 }
 
 @Injectable({
@@ -25,7 +27,10 @@ export class AnimationService {
   private invaldMechanism: boolean;
   private animationProgressSource = new BehaviorSubject<number>(0);
   private speedMultiplier: number = 1;
+  private globalInputSpeed: number = 10; // Input speed in RPM -> should be taken from settings
+  private timeStepSource = new BehaviorSubject<number>(0);
   animationProgress$ = this.animationProgressSource.asObservable();
+  timeStep$ = this.timeStepSource.asObservable();
 
   // Initializes the AnimationService, sets up state array, and subscribes to kinematic updates.
   constructor(
@@ -99,6 +104,16 @@ export class AnimationService {
           frames[subMechanismIndex].correspondingJoints[jointIndex]
         );
       }
+
+      // calculate timeSteps for each frame
+      let timeStepFrames: number[] = [];
+      let secPerAnimationFrame: number = ((60 / this.globalInputSpeed) / (totalFrames - 1));
+      for(let iTimeStep = 0; iTimeStep < totalFrames; iTimeStep++) {
+        // totalFrames is the number of steps to get 1 revolution.
+        // can figure out seconds by dividing rpm by this number
+        timeStepFrames.push(secPerAnimationFrame * iTimeStep); //
+      }
+
       this.animationStates.push({
         mechanismIndex: mechanismIndex,
         currentFrameIndex: currentFrameIndex,
@@ -108,6 +123,7 @@ export class AnimationService {
         jointIDs: jointIDs,
         animationFrames: animationFrames,
         inputSpeed: inputSpeed,
+        timeStepFrames: timeStepFrames
       });
     }
 
@@ -160,6 +176,9 @@ export class AnimationService {
       // Send that to the timeline
       this.updateProgress(displayProgress);
 
+      // Send timestep to Behavior Subject
+      this.updateTimeStep(state.timeStepFrames[state.currentFrameIndex]);
+
       // Update each joint's position for this frame
       for (
         let jointIndex = 0;
@@ -211,6 +230,11 @@ export class AnimationService {
   // Sends the normalized animation progress value (0–1) to subscribers.
   updateProgress(progress: number) {
     this.animationProgressSource.next(progress);
+  }
+
+  // Sends out current time in animation to subscribers
+  updateTimeStep(timeStep: number) {
+    this.timeStepSource.next(timeStep);
   }
 
   // Sets joint positions to correspond to a specific normalized progress value across all frames.
