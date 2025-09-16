@@ -68,12 +68,12 @@ export class GraphComponent {
       //checks with checksum to see if value matches with the last char of url
       if(checksum.verifyChecksum(encodedData.length, lastChar)) {
         console.log("Checksum passed! Link is from 2023 PMKS.");
-        this.notificationService.showNotification("PMKS 2023 Links are unable to be transferred. Please remake the Mechanism");
+        this.notificationService.showNotification("PMKS 2023 Links are unable to be transferred. Please remake the Mechanism. You are being transferred to the 2023 version.");
 
-        //after 2 seconds redirect user to 2023 PMKS
+        //after 5 seconds redirect user to 2023 PMKS
         setTimeout(() => {
           window.open("https://testing.pmksplus.mech.website", '_blank')
-        }, 2000);
+        }, 5000);
       }
       else{
         console.log("Checksum did not pass. Likely not link from 2023 PMKS or had been modified.")
