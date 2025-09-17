@@ -23,7 +23,8 @@ import { FormControl, FormsModule } from '@angular/forms';
 })
 export class AnimationBarComponent implements OnInit {
   public sliderControl = new FormControl(0);
-  public currentTimeStep = 0;
+  public _currentTimeStep = 0;
+  public _displayTS = '';
 
   constructor(
     public interactionService: InteractionService,
@@ -71,6 +72,26 @@ export class AnimationBarComponent implements OnInit {
 
   ngOnInit() {
     this.stateService.setAnimationBarComponent(this);
+
+    const inputTSDisplay = document.getElementById('animationBar-input');
+    const observer = new MutationObserver(changesList => {
+      changesList.forEach(singleChange => {
+        if (singleChange.attributeName === 'disabled') {
+          // checking that disabled attribute has been altered
+          // is also checking that inputTSDisplay is not null and that disabled is true
+          if (inputTSDisplay instanceof HTMLInputElement && inputTSDisplay.disabled) {
+            this._displayTS = '';
+          }
+        }
+      });
+    });
+
+    if (inputTSDisplay !== null && inputTSDisplay !== undefined) {
+      // if inputTSDisplay exists the mutation observer will check and update the value when
+      // it becomes disabled (so when the mechanism becomes invalid)
+      // function is called when attributes of inputTSDisplay are altered, added, or deleted
+      observer.observe(inputTSDisplay, { attributes: true });
+    }
   }
 
   @Input() mechanism!: Mechanism;
@@ -256,5 +277,18 @@ export class AnimationBarComponent implements OnInit {
     this.sliderValue = Math.floor(fraction * 100);
     this.animationService.setAnimationProgress(fraction);
     this.currentTimeStep = Math.round(numericValue * 1e2) / 1e2;
+  }
+
+  public set displayTS(value : number) {
+    if (this.invalidMechanism()) {
+      this._displayTS = '';
+    } else {
+      this._displayTS = value.toString();
+    }
+  }
+
+  private set currentTimeStep(value: number) {
+    this._currentTimeStep = value;
+    this.displayTS = value;
   }
 }

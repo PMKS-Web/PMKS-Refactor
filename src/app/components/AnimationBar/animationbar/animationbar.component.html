@@ -41,7 +41,7 @@
       <form>
         <!--[value]="invalidMechanism() ? '' : currentTimeStep"-->
         <input
-          [(ngModel)]="currentTimeStep"
+          [(ngModel)]="_displayTS"
           [disabled]='invalidMechanism()'
           (keyup.enter)="onTimeStepInput($event)"
           id='animationBar-input'
