@@ -730,12 +730,34 @@ export class PositionSolverService {
     return this.animationPositions.flatMap((entry) => entry.positions);
   }
 
-  public getDegrees(): number {
+  public isMechanism(subMechanism: Map<Joint, RigidBody[]>): boolean {
+    // at least one joint is grounded, >= 2 links, has a submechanism (at least one joint)
+    let hasGround = false;
+
+    let links: Set<RigidBody> = new Set();
+    for (let joint of subMechanism.keys()) {
+      if (joint.isGrounded) {
+        hasGround = true;
+      }
+      for (let rigidBody of subMechanism.get(joint)!) {
+        links.add(rigidBody);
+      }
+    }
+    return (subMechanism.size > 0 && links.size >= 2 && hasGround)
+
+  }
+
+  public getDegrees(): string | number {
     const subMechanisms = this.stateService.getMechanism().getSubMechanisms();
     if (subMechanisms.length === 0) {
-      return 0;
+      return "N/A";
+    }
+
+    if (!this.isMechanism(subMechanisms[0])) {
+      return "N/A";
     }
 
     return this.getDegreesOfFreedom(subMechanisms[0]);
   }
+
 }
