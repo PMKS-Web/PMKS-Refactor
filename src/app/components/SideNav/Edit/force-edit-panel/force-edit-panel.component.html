@@ -58,20 +58,7 @@
       (closed)="sectionExpanded['FBasic'] = false"
     >
       <div>
-        <!-- Local/Global Toggle -->
-        <div class="toggle-container">
-          <div class="toggle-label" style="margin-left: 12px">
-            Coordinate System
-          </div>
-          <div class="toggle-row">
-            <mat-slide-toggle
-              [(ngModel)]="isGlobalCoordinates"
-              (change)="updateCoordinateSystem()"
-            >
-              {{ isGlobalCoordinates ? "Global" : "Local" }}
-            </mat-slide-toggle>
-          </div>
-        </div>
+
 
         <!-- Magnitude and Angle input -->
         <div class="length-angle-block">
@@ -176,7 +163,28 @@
       </div>
     </collapsible-subsection>
 
-    
+    <!-- Local/Global Buttons -->
+    <div class="coord-selector">
+      <div class="coord-label">
+        Coordinate System
+      </div>
+
+      <div class="coord-buttons">
+        <button
+          mat-raised-button
+          [color]="!isGlobalCoordinates ? 'primary' : undefined"
+          (click)="isGlobalCoordinates = false; updateCoordinateSystem()">
+          Local
+        </button>
+        <button
+          mat-raised-button
+          [color]="isGlobalCoordinates ? 'primary' : undefined"
+          (click)="isGlobalCoordinates = true; updateCoordinateSystem()">
+          Global
+        </button>
+      </div>
+
+    </div>
 
     <!-- COLOR SETTINGS -->
     <collapsible-subsection
