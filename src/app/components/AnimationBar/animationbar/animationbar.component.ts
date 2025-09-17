@@ -14,7 +14,7 @@ import { Coord } from '../../../model/coord';
 import { PanZoomService } from '../../../services/pan-zoom.service';
 import { Mechanism } from '../../../model/mechanism';
 import { StateService } from 'src/app/services/state.service';
-import { FormControl } from '@angular/forms';
+import { FormControl, FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-animation-bar',
@@ -39,7 +39,9 @@ export class AnimationBarComponent implements OnInit {
     });
     this.animationService.timeStep$.subscribe((timeStep) => {
       // rounds timeStep to the nearest hundredths place
+      console.log(this.currentTimeStep);
       this.currentTimeStep = Math.round(timeStep * 1e2) / 1e2;
+      console.log("got new num");
     })
   }
 
@@ -249,6 +251,27 @@ export class AnimationBarComponent implements OnInit {
 
   onTimeStepInput(event: any): void {
     const inputElement = event.target as HTMLInputElement;
-    this.currentTimeStep = parseFloat(inputElement.value);
+    let numericValue = parseFloat(inputElement.value);
+    this.currentTimeStep = numericValue;
+    console.log('Time Step:', numericValue);
+    if (numericValue < 0) {
+      // entered value lower than 0
+      numericValue = 0
+      console.log('Lower than 0');
+    } else if (numericValue > this.animationService.maxTimeStep) {
+      // entered value higher than max time
+      numericValue = this.animationService.maxTimeStep;
+      console.log('Higher than ', this.animationService.maxTimeStep);
+    } else {
+      // entered value that is valid, but need to round to the nearest timestep
+      numericValue = Math.floor(numericValue / this.animationService.intervalTimeStep) * this.animationService.intervalTimeStep;
+      console.log('NewTimeStep: ', numericValue);
+    }
+
+    //this.currentTimeStep = numericValue;
+    const fraction = numericValue / this.animationService.maxTimeStep;
+    console.log('New fraction:', fraction);
+    this.sliderValue = Math.floor(fraction * 100);
+    this.animationService.setAnimationProgress(fraction);
   }
 }

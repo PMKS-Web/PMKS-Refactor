@@ -29,6 +29,8 @@ export class AnimationService {
   private speedMultiplier: number = 1;
   private globalInputSpeed: number = 10; // Input speed in RPM -> should be taken from settings
   private timeStepSource = new BehaviorSubject<number>(0);
+  private _maxTimeStep = -1;
+  private _intervalTimeStep: number = -1;
   animationProgress$ = this.animationProgressSource.asObservable();
   timeStep$ = this.timeStepSource.asObservable();
 
@@ -108,10 +110,14 @@ export class AnimationService {
       // calculate timeSteps for each frame
       let timeStepFrames: number[] = [];
       let secPerAnimationFrame: number = ((60 / this.globalInputSpeed) / (totalFrames - 1));
+      this._intervalTimeStep = secPerAnimationFrame;
       for(let iTimeStep = 0; iTimeStep < totalFrames; iTimeStep++) {
         // totalFrames is the number of steps to get 1 revolution.
         // can figure out seconds by dividing rpm by this number
-        timeStepFrames.push(secPerAnimationFrame * iTimeStep); //
+        timeStepFrames.push(secPerAnimationFrame * iTimeStep);
+        if (iTimeStep == totalFrames - 1) {
+          this._maxTimeStep = secPerAnimationFrame * iTimeStep;
+        }
       }
 
       this.animationStates.push({
@@ -242,6 +248,7 @@ export class AnimationService {
     if (progress < 0 || progress > 1) {
       return;
     }
+    console.log("HERE")
 
     for (let state of this.animationStates) {
       const frameIndex = Math.floor(progress * (state.totalFrames - 1));
@@ -419,7 +426,12 @@ export class AnimationService {
     return this.animationStates.some(s => !s.isPaused);
   }
 
+  public get maxTimeStep() {
+    return this._maxTimeStep;
+  }
 
-
+  public get intervalTimeStep() {
+    return this._intervalTimeStep;
+  }
 
 }
