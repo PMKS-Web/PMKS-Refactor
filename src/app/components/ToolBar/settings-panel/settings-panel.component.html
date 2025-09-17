@@ -74,6 +74,29 @@
           (selectionChanged)="changeAngle($event)"
         ></radio-block>
       </div>
+
+      <!-- RPM SPEED (row) -->
+      <div class="option-row">
+        <p class="label-with-icon">
+          <span style="flex: 0 0 auto; margin-right: 5px;">RPM Speed</span>
+          <mat-icon
+            matTooltip="Choose your input speed in rpm (revolutions per minute)"
+            [matTooltipShowDelay]="1000"
+            class="tooltip"
+          >
+            help_outline
+          </mat-icon>
+        </p>
+        <form>
+          <input
+            [value]="rpmSpeed"
+            (change)="changeRPMSpeed($event)"
+            id='settings-rpmSpeed'
+            name='rpmSpeedInput'
+            type='number'
+          />
+        </form>
+      </div>
     </collapsible-subsection>
 
 

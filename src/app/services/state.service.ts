@@ -12,6 +12,7 @@ import { AnimationBarComponent } from '../components/AnimationBar/animationbar/a
 import { Action } from '../components/ToolBar/undo-redo-panel/action';
 import { ThreePosSynthesis } from '../components/SideNav/Synthesis/three-pos-synthesis/three-pos-synthesis.component';
 import { InteractionService } from './interaction.service';
+import {B} from "@angular/cdk/keycodes";
 
 /*
 Stores the global state of the application. This includes the model, global settings, and Pan/Zoom State. This is a singleton service.
@@ -51,6 +52,7 @@ export class StateService {
   private globalAngles = new BehaviorSubject('Degree (º)');
   private globalAnglesSuffix = new BehaviorSubject('º');
   private globalActivePanel = new BehaviorSubject('Edit');
+  private globalRPMSpeed = new BehaviorSubject(10);
 
   private animationbarComponent!: AnimationBarComponent;
 
@@ -59,6 +61,7 @@ export class StateService {
   globalAnglesCurrent = this.globalAngles.asObservable();
   globalASuffixCurrent = this.globalAnglesSuffix.asObservable();
   globalActivePanelCurrent = this.globalActivePanel.asObservable();
+  globalRPMSpeedCurrent = this.globalRPMSpeed.asObservable();
 
   public sixBarGenerated: boolean = false;
   public fourBarGenerated: boolean = false;
@@ -253,6 +256,11 @@ export class StateService {
   public changeUnits(units: string, suffix: string) {
     this.globalUnits.next(units);
     this.globalUnitsSuffix.next(suffix);
+  }
+
+  // Updates the global rpm speed of the input joint
+  public changeRPMSpeed(speed: number) {
+    this.globalRPMSpeed.next(speed);
   }
 
   // Updates the global angle units and their suffix based on user selection.

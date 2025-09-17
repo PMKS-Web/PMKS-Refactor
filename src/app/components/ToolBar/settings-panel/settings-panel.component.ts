@@ -28,6 +28,7 @@ export class SettingsPanelComponent{
   minorGridEnabled: boolean = true;
   units: string = "Metric (cm)";
   angles: string = "Degree (º)";
+  rpmSpeed: number = 10;
 
   @Input() iconClass: string = ''; // Add this line
 
@@ -61,6 +62,17 @@ export class SettingsPanelComponent{
       this.stateService.changeAngles(newAngle, "rad")
     }
     else this.stateService.changeAngles(newAngle, "º");
+  }
+
+  // Handles the user changing the input speed in rpm
+  changeRPMSpeed(event: any){
+    const inputElement = event.target as HTMLInputElement;
+    let newSpeed = parseFloat(inputElement.value);
+    if (newSpeed < 0) {
+      newSpeed = 0;
+    }
+    this.rpmSpeed = newSpeed;
+    this.stateService.changeRPMSpeed(newSpeed);
   }
 
   // Toggles both the grid and minor grid, and emits value change
