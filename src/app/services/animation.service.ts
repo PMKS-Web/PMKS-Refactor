@@ -248,7 +248,6 @@ export class AnimationService {
     if (progress < 0 || progress > 1) {
       return;
     }
-    console.log("HERE")
 
     for (let state of this.animationStates) {
       const frameIndex = Math.floor(progress * (state.totalFrames - 1));
@@ -432,6 +431,29 @@ export class AnimationService {
 
   public get intervalTimeStep() {
     return this._intervalTimeStep;
+  }
+
+  public getClosestTimeStep(time: number) {
+    let tSFrames = this.animationStates[0].timeStepFrames;
+    if (tSFrames === undefined) {
+      return -1;
+    }
+    if (time < 0) {
+      // entered value lower than 0
+      time = 0
+    } else if (time > this.maxTimeStep) {
+      // entered value higher than max time
+      time = this.maxTimeStep;
+    } else {
+      // entered value that is valid, but need to round to the nearest timestep
+      let nearest = Math.floor(time / this.intervalTimeStep) * this.intervalTimeStep;
+      if (Math.round(time * 1e2) / 1e2 == Math.round((nearest + this.intervalTimeStep) * 1e2) / 1e2) {
+        time = nearest + this.intervalTimeStep;
+      } else {
+        time = nearest;
+      }
+    }
+    return time
   }
 
 }
