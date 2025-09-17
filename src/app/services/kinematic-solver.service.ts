@@ -138,7 +138,11 @@ export class PositionSolverService {
       inputJoint!,
       subMechanism
     );
-    return minDistanceFromGround == 4;
+    console.log("Loop: " + minDistanceFromGround)
+    //allows mechanism with open loop
+    return minDistanceFromGround == Number.MAX_VALUE || minDistanceFromGround == 4;
+
+
   }
 
   // Finds the single input joint in a submechanism and ensures it is grounded; returns null if invalid.
@@ -183,13 +187,8 @@ export class PositionSolverService {
       }
     }
 
-    // If fewer than 2 links no dof
-    if (links.size < 2) {
-      return 0;
-    }
-
     N += links.size + 1; // +1 accounts for ground that is assumed
-    // console.log(`N = ${N}, J = ${J}`);
+    console.log(`N = ${N}, J = ${J}`);
     return 3 * (N - 1) - 2 * J; //
   }
 
@@ -743,7 +742,7 @@ export class PositionSolverService {
         links.add(rigidBody);
       }
     }
-    return (subMechanism.size > 0 && links.size >= 2 && hasGround)
+    return (subMechanism.size > 0 && links.size >= 1 && hasGround)
 
   }
 
