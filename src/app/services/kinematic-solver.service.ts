@@ -4,6 +4,7 @@ import { Joint, JointType } from '../model/joint';
 import { RigidBody } from '../model/link';
 import { Coord } from '../model/coord';
 import { BehaviorSubject } from 'rxjs';
+import {add, has} from "lodash";
 
 export enum SolveType {
   Ground,
@@ -168,6 +169,9 @@ export class PositionSolverService {
   private getDegreesOfFreedom(subMechanism: Map<Joint, RigidBody[]>): number {
     let N: number = 0; // number of links
     let J: number = 0; //counting full pair connections
+    let hasGround = false;
+    let addGround = 0;
+
     let links: Set<RigidBody> = new Set();
     for (let joint of subMechanism.keys()) {
       for (let rigidBody of subMechanism.get(joint)!) {
@@ -178,6 +182,7 @@ export class PositionSolverService {
           J += subMechanism.get(joint)!.length - 1;
           if (joint.isGrounded) {
             J += 1;
+            hasGround = true;
           }
           break;
         case JointType.Prismatic:
@@ -187,9 +192,15 @@ export class PositionSolverService {
       }
     }
 
-    N += links.size + 1; // +1 accounts for ground that is assumed
+    if (hasGround) {
+      addGround++; // 0 or 1
+    }
+
+    N += links.size + addGround; // +1 accounts for ground, +0 if no ground present
+
     console.log(`N = ${N}, J = ${J}`);
-    return 3 * (N - 1) - 2 * J; //
+    console.log(`3 * (${N} - 1) - 2 * ${J}`)
+    return 3 * (N - 1) - 2 * J;
   }
 
   // Recursively computes the minimum link‐distance from a given input joint back to the grounded joint.
@@ -730,8 +741,8 @@ export class PositionSolverService {
   }
 
   public isMechanism(subMechanism: Map<Joint, RigidBody[]>): boolean {
-    // at least one joint is grounded, >= 2 links, has a submechanism (at least one joint)
     let hasGround = false;
+    let addGround: number = 0;
 
     let links: Set<RigidBody> = new Set();
     for (let joint of subMechanism.keys()) {
@@ -742,7 +753,11 @@ export class PositionSolverService {
         links.add(rigidBody);
       }
     }
-    return (subMechanism.size > 0 && links.size >= 1 && hasGround)
+    if (hasGround) {
+      addGround++;
+    }
+    // At least one submechanism, number of links minimum 2 (ground counts if applicable)
+    return (subMechanism.size > 0 && links.size + addGround >= 2)
 
   }
 
