@@ -39,6 +39,10 @@ export class jointEditPanelComponent implements OnDestroy{
     console.log('joint-edit-panel.constructor');
   }
 
+  ngOnInit() {
+    this.displayInputSpeed();
+  }
+
   ngOnDestroy() {
     this._selSub.unsubscribe();
   }
@@ -51,6 +55,9 @@ export class jointEditPanelComponent implements OnDestroy{
     .subscribe(sel => {
       // when nothing is selected (i.e. after delete), wipe out our buffers
       if (!sel) this.resetPanel();
+      else {
+        this.displayInputSpeed();
+      }
     });
 
   // Confirms and saves the X coordinate input
@@ -440,6 +447,30 @@ export class jointEditPanelComponent implements OnDestroy{
   private resetPanel(): void {
     this.pendingX = undefined;
     this.pendingY = undefined;
+  }
+
+  displayInputSpeed() {
+    const inputSpeedHTML = document.getElementById('inputJointSpeed');
+    if (inputSpeedHTML == null) {
+      console.log("null");
+      return;
+    }
+    console.log(this.getCurrentJoint().isInput);
+    if (this.getCurrentJoint().isInput) {
+      console.log("IsInput");
+      inputSpeedHTML.style.display = 'block';
+    } else {
+      console.log("NOT input");
+      inputSpeedHTML.style.display = 'none';
+    }
+  }
+
+  getInputSpeed() {
+    return this.getCurrentJoint().inputSpeed;
+  }
+
+  setInputSpeed(newSpeed: number): void {
+    this.getCurrentJoint().speed = newSpeed;
   }
 
 }

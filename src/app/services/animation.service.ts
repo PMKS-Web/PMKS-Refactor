@@ -27,7 +27,7 @@ export class AnimationService {
   private invaldMechanism: boolean;
   private animationProgressSource = new BehaviorSubject<number>(0);
   private speedMultiplier: number = 1;
-  private globalInputSpeed: number = 10; // Input speed in RPM -> should be taken from settings
+  private globalInputSpeed: number = 10; // Input speed in RPM -> editable for each mechanism in edit
   private timeStepSource = new BehaviorSubject<number>(0);
   private _maxTimeStep = -1;
   private _intervalTimeStep: number = -1;

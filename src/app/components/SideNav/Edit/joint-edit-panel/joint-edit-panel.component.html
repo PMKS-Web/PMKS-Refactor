@@ -83,6 +83,22 @@
             </div>
           </div>
         </div>
+
+        <div id="inputJointSpeed" class="speed-block">
+          <label class="speed-label" style ="margin-left: 3px; margin-bottom: 10px;margin-top: 5px">Input Joint Speed</label>
+          <div class="speed-row">
+            <!-- changes input joint speed in rpm -->
+            <div class="speed-cell">
+              <input
+                type="number"
+                [value]="getInputSpeed()"
+                (input)="setInputSpeed($any($event.target).valueAsNumber)"
+                [disabled]="getJointLockState()"
+              />
+              <span class="speed-unit">rpm</span>
+            </div>
+          </div>
+        </div>
       </collapsible-subsection>
 
       <!-- DYNAMICALLY DISPLAYS CONNECTED JOINTS BASED ON A LIST PROVIDED IN THE TYPESCRIPT -->
