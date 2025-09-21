@@ -27,7 +27,7 @@ export class AnimationService {
   private invaldMechanism: boolean;
   private animationProgressSource = new BehaviorSubject<number>(0);
   private speedMultiplier: number = 1;
-  private globalInputSpeed: number = 10;
+  private globalInputSpeed: number = 10; // Input speed in RPM -> should be taken from settings
   private timeStepSource = new BehaviorSubject<number>(0);
   private _maxTimeStep = -1;
   private _intervalTimeStep: number = -1;
@@ -44,10 +44,6 @@ export class AnimationService {
     this.positionSolver.getKinematicsObservable().subscribe(() => {
       this.initializeAnimations();
     });
-    this.stateService.globalRPMSpeedCurrent.subscribe((newRPM) => {
-      this.globalInputSpeed = newRPM;
-      this.initializeAnimations();
-    })
   }
 
   private frameIndexSource = new BehaviorSubject<number>(0);

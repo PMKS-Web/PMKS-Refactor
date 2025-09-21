@@ -21,7 +21,7 @@
     margin-top: 30px;
     margin-right: 5px;
   }
-  #angleUnits, #globalUnits, #inputDirection, #settings-rpmSpeed{
+  #angleUnits, #globalUnits, #inputDirection{
     display: flex;
     justify-content: flex-start;
     margin-left: 10px;
@@ -89,14 +89,8 @@
   }
 
   #angleUnits{
-    margin-bottom: -10px;
-  }
-
-  #settings-rpmSpeed{
     margin-bottom: 10px;
-    width: 50px;
   }
-
   .toggle-container {
     display: flex;
     align-items: center;
