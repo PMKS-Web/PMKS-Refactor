@@ -27,6 +27,8 @@ export class Mechanism {
   public _mechanismChange$ = this._mechanismChange.asObservable();
   private _trajectories: Map<number, Trajectory> = new Map();
   private _refIdCount: number = -1;
+  private _inputSpeed = new BehaviorSubject<number>(10);
+  public mechanismRPMSpeed = this._inputSpeed.asObservable();
 
   private _positionIDCount: number = 0;
   private _positions: Map<number, Position> = new Map();
@@ -1238,6 +1240,11 @@ addPos(positionIndex: number) {
   getArrayOfForces(): Array<Force> {
     return Array.from(this._forces.values());
   }
+
+  getInputSpeed(): number {
+    return this._inputSpeed.value;
+  }
+
   //----------------------------SET FUNCTIONS----------------------------
   set_jointIDCount(count: number) {
     this._jointIDCount = count;
@@ -1277,6 +1284,9 @@ addPos(positionIndex: number) {
     }
   }
 
+  setInputSpeed(speed: number) {
+    this._inputSpeed.next(speed);
+  }
 
   //----------------------------CLEAR FUNCTIONS----------------------------
   clearTrajectories(): void {

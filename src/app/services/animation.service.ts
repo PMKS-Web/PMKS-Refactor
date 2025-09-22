@@ -27,7 +27,7 @@ export class AnimationService {
   private invaldMechanism: boolean;
   private animationProgressSource = new BehaviorSubject<number>(0);
   private speedMultiplier: number = 1;
-  private globalInputSpeed: number = 10; // Input speed in RPM -> editable for each mechanism in edit
+  private mechInputSpeed: number = 10; // Input speed in RPM -> editable for each mechanism in edit
   private timeStepSource = new BehaviorSubject<number>(0);
   private _maxTimeStep = -1;
   private _intervalTimeStep: number = -1;
@@ -44,6 +44,11 @@ export class AnimationService {
     this.positionSolver.getKinematicsObservable().subscribe(() => {
       this.initializeAnimations();
     });
+
+    this.stateService.getMechanism().mechanismRPMSpeed.subscribe(mechanismRPMSpeed => {
+      this.mechInputSpeed = mechanismRPMSpeed;
+      this.initializeAnimations();
+    })
   }
 
   private frameIndexSource = new BehaviorSubject<number>(0);
@@ -109,7 +114,7 @@ export class AnimationService {
 
       // calculate timeSteps for each frame
       let timeStepFrames: number[] = [];
-      let secPerAnimationFrame: number = ((60 / this.globalInputSpeed) / (totalFrames - 1));
+      let secPerAnimationFrame: number = ((60 / this.mechInputSpeed) / (totalFrames - 1));
       this._intervalTimeStep = secPerAnimationFrame;
       for(let iTimeStep = 0; iTimeStep < totalFrames; iTimeStep++) {
         // totalFrames is the number of steps to get 1 revolution.

@@ -451,26 +451,32 @@ export class jointEditPanelComponent implements OnDestroy{
 
   displayInputSpeed() {
     const inputSpeedHTML = document.getElementById('inputJointSpeed');
+    const xyBlockHTML = document.getElementById('jointPositions');
     if (inputSpeedHTML == null) {
-      console.log("null");
       return;
     }
     console.log(this.getCurrentJoint().isInput);
     if (this.getCurrentJoint().isInput) {
-      console.log("IsInput");
       inputSpeedHTML.style.display = 'block';
+      if (xyBlockHTML != null) {
+        xyBlockHTML.style.marginBottom = '0px';
+      }
     } else {
-      console.log("NOT input");
       inputSpeedHTML.style.display = 'none';
+      if (xyBlockHTML != null) {
+        xyBlockHTML.style.marginBottom = '12px';
+      }
     }
   }
 
   getInputSpeed() {
-    return this.getCurrentJoint().inputSpeed;
+    //return this.getCurrentJoint().inputSpeed;
+    return this.getMechanism().getInputSpeed();
   }
 
   setInputSpeed(newSpeed: number): void {
-    this.getCurrentJoint().speed = newSpeed;
+    //this.getCurrentJoint().speed = newSpeed; // sets the specific input joint speed
+    this.getMechanism().setInputSpeed(newSpeed); // sets whole mechanism input speed
   }
 
 }
