@@ -19,6 +19,7 @@ export class Joint {
   private _isHidden: boolean;
   private _isReference: boolean;
   private _isGenerated: boolean;
+  private _rpmSpeed: number;
 
   constructor(id: number, x: number, y: number);
   constructor(id: number, coord: Coord);
@@ -44,6 +45,7 @@ export class Joint {
     this._isHidden = false;
     this._isReference = false;
     this._isGenerated = false;
+    this._rpmSpeed = 10;
 
     if (typeof xORCoord === 'number' && y !== undefined) {
       this._coords = new Coord(xORCoord, y);
@@ -84,6 +86,10 @@ export class Joint {
     return this._inputSpeed;
   }
 
+  get rpmSpeed(): number {
+    return this._rpmSpeed;
+  }
+
   get isWelded(): boolean {
     return this._isWelded;
   }
@@ -117,6 +123,10 @@ export class Joint {
   }
   set locked(value: boolean) {
     this._parentLocked = value;
+  }
+
+  set rpmSpeed(newSpeed: number) {
+    this._rpmSpeed = newSpeed;
   }
 
   set hidden(val: boolean) {

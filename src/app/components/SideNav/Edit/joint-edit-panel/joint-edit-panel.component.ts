@@ -470,12 +470,12 @@ export class jointEditPanelComponent implements OnDestroy{
   }
 
   getInputSpeed() {
-    //return this.getCurrentJoint().inputSpeed;
-    return this.getMechanism().getInputSpeed();
+    return this.getCurrentJoint().rpmSpeed;
+    //return this.getMechanism().getInputSpeed();
   }
 
   setInputSpeed(newSpeed: number): void {
-    //this.getCurrentJoint().speed = newSpeed; // sets the specific input joint speed
+    this.getCurrentJoint().rpmSpeed = newSpeed; // sets the specific input joint speed
     this.getMechanism().setInputSpeed(newSpeed); // sets whole mechanism input speed
   }
 
