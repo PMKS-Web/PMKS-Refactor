@@ -1,4 +1,5 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit} from '@angular/core';
+import { Subscription } from 'rxjs';
 import { StateService } from 'src/app/services/state.service';
 import { InteractionService } from 'src/app/services/interaction.service';
 import { JointInteractor } from 'src/app/controllers/joint-interactor';
@@ -28,8 +29,12 @@ export class jointEditPanelComponent implements OnDestroy{
     distance: true,
   };
   isEditingTitle: boolean = false;
-  units: string = 'cm';
-  angles: string = 'º';
+  unitSuffix: string = 'cm';
+  angleSuffix: string = 'º';
+  
+  unitSuffixSubscription: Subscription = new Subscription();
+  angleSuffixSubscription: Subscription = new Subscription();
+
   constructor(
     private undoRedoService: UndoRedoService,
     private stateService: StateService,
@@ -39,8 +44,23 @@ export class jointEditPanelComponent implements OnDestroy{
     console.log('joint-edit-panel.constructor');
   }
 
+  ngOnInit(){
+    //subscript to listen for unit suffix from stateService
+    this.unitSuffixSubscription = this.stateService.globalUSuffixCurrent.subscribe((unitSuffix)=>{
+      this.unitSuffix = unitSuffix;
+    })
+
+    //subscript to listen for angle suffix from stateService
+    this.angleSuffixSubscription = this.stateService.globalAnglesCurrent.subscribe((angleSuffix)=>{
+      this.angleSuffix = angleSuffix;
+    })
+  }
+
+  //unsubscribe when object deleted
   ngOnDestroy() {
     this._selSub.unsubscribe();
+    this.unitSuffixSubscription.unsubscribe();
+    this.angleSuffixSubscription.unsubscribe();
   }
 
 

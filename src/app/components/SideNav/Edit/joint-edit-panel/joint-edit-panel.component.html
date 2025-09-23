@@ -66,7 +66,7 @@
                   (keydown.enter)="confirmJointX()"
                   [disabled]="getJointLockState()"
                 />
-                <span class="xy-unit">{{ units }}</span>
+                <span class="xy-unit">{{ unitSuffix }}</span>
               </div>
 
             <!-- Y position input -->
@@ -79,7 +79,7 @@
                 (keydown.enter)="confirmJointY()"
                 [disabled]="getJointLockState()"
               />
-              <span class="xy-unit">{{ units }}</span>
+              <span class="xy-unit">{{ unitSuffix }}</span>
             </div>
           </div>
         </div>
@@ -129,7 +129,7 @@
                         (blur)="onLengthHover(false, joint.id)"
                         [disabled]="joint.locked"
                       />
-                      <span class="dar-unit">{{ units }}</span>
+                      <span class="dar-unit">{{ unitSuffix }}</span>
                     </div>
 
                     <div class="dar-cell">
@@ -153,7 +153,7 @@
                         (blur)="onAngleHover(false, joint.id)"
                         [disabled]="joint.locked"
                       />
-                      <span class="dar-unit">{{ angles }}</span>
+                      <span class="dar-unit">{{ angleSuffix }}</span>
                     </div>
                   </div>
                 </div>
