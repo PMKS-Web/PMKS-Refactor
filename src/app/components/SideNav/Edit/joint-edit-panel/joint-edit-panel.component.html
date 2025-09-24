@@ -82,6 +82,19 @@
               <span class="xy-unit">{{ units }}</span>
             </div>
           </div>
+          <div class="xy-row" *ngIf="currentJointType === 'slider' || currentJointType === 'slider-input'" style="margin-top: 16px;">
+            <div class="xy-cell">
+              <label style="margin-right: 5px;">Angle</label>
+              <input
+                type="number"
+                [value]="pendingAngle ?? getJointAngle2()"
+                (input)="pendingAngle = $any($event.target).valueAsNumber"
+                (keydown.enter)="confirmJointAngle()"
+                [disabled]="getJointLockState()"
+              />
+              <span class="xy-unit">deg</span>
+            </div>
+          </div>
         </div>
       </collapsible-subsection>
 
