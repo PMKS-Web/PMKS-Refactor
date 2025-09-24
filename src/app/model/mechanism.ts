@@ -22,8 +22,7 @@ export class Mechanism {
   private _linkIDCount: number;
   private _forceIDCount: number;
   private _compoundLinkIDCount: number;
-  private _mechanismChange: BehaviorSubject<Mechanism> =
-  new BehaviorSubject<Mechanism>(this);
+  private _mechanismChange: BehaviorSubject<Mechanism> = new BehaviorSubject<Mechanism>(this);
   public _mechanismChange$ = this._mechanismChange.asObservable();
   private _trajectories: Map<number, Trajectory> = new Map();
   private _refIdCount: number = -1;
