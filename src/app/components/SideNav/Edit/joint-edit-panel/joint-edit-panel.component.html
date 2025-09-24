@@ -193,7 +193,7 @@
         <app-toggle
           tooltip="This toggle will ground or remove the ground on the joint"
           label="Toggle Ground"
-          [initialValue]="false"
+          [initialValue]="_isGround"
           [iconClass]="'toggle-ground-icon'"
           (valueChanged)="handleToggleGroundChange($event)"
         ></app-toggle>
@@ -202,7 +202,7 @@
           *ngIf="canAddWeld()"
           tooltip="This toggle will weld or unweld the joint"
           label="Toggle Weld"
-          [initialValue]="false"
+          [initialValue]="_isWeld"
           [iconClass]="'toggle-weld-icon'"
           (valueChanged)="handleToggleWeldChange($event)"
         ></app-toggle>
@@ -211,7 +211,7 @@
           *ngIf="canAddInput()"
           tooltip="This toggle will make the joint an input or remove the input"
           label="Toggle Input"
-          [initialValue]="true"
+          [initialValue]="_isInput"
           [iconClass]="'toggle-input-icon'"
           (valueChanged)="handleToggleInputChange($event)"
         ></app-toggle>

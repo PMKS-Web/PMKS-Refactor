@@ -30,6 +30,9 @@ export class jointEditPanelComponent implements OnDestroy{
   isEditingTitle: boolean = false;
   units: string = 'cm';
   angles: string = 'º';
+  _isInput: boolean = false;
+  _isGround: boolean = false;
+  _isWeld: boolean = false;
   constructor(
     private undoRedoService: UndoRedoService,
     private stateService: StateService,
@@ -56,7 +59,18 @@ export class jointEditPanelComponent implements OnDestroy{
       // when nothing is selected (i.e. after delete), wipe out our buffers
       if (!sel) this.resetPanel();
       else {
+        this.getCurrentJoint();
         this.displayInputSpeed();
+        this.getCurrentJoint().getInputObservable().subscribe(value => {
+          this._isInput = value;
+        });
+        this.getCurrentJoint().getGroundedObservable().subscribe(value => {
+          this._isGround = value;
+        })
+        this.getCurrentJoint().getWeldedObservable().subscribe(value => {
+          this._isWeld = value;
+          console.log("Changing weld value: ", value);
+        })
       }
     });
 
@@ -381,6 +395,18 @@ export class jointEditPanelComponent implements OnDestroy{
     return parseFloat(angleInDegrees.toFixed(3));
   }
 
+  getJointGround() {
+    return this.getCurrentJoint().isGrounded;
+  }
+
+  getJointInput() {
+    return this.getCurrentJoint().isInput;
+  }
+
+  getJointWeld() {
+    return this.getCurrentJoint().isWelded;
+  }
+
   // Handles the toggle for grounding the joint
   handleToggleGroundChange(stateChange: boolean) {
     console.log('Toggle State Changed: ', stateChange);
@@ -389,7 +415,9 @@ export class jointEditPanelComponent implements OnDestroy{
       this.getMechanism().addGround(this.getCurrentJoint().id);
     } else {
       this.getMechanism().removeGround(this.getCurrentJoint().id);
+      this._isInput = false;
     }
+    this._isGround = stateChange;
   }
 
   // Handles the toggle for welding the joint
@@ -401,6 +429,7 @@ export class jointEditPanelComponent implements OnDestroy{
     } else {
       this.getMechanism().removeWeld(this.getCurrentJoint().id);
     }
+    this._isWeld = stateChange;
   }
 
   // Handles the toggle for marking the joint as an input
@@ -412,6 +441,7 @@ export class jointEditPanelComponent implements OnDestroy{
     } else {
       this.getMechanism().removeInput(this.getCurrentJoint().id);
     }
+    this._isInput = stateChange;
   }
 
   // Determines whether welding should be shown for this joint
