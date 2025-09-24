@@ -94,6 +94,11 @@ export class LinkInteractor extends Interactor {
 
     // On drag end, inside LinkInteractor:
     this.onDragEnd$.subscribe(() => {
+      if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
+      ) {
+        return;
+      }
+
       //Snapshot the old positions from your Map<number,Coord>
       const oldPositions = Array.from(this.linkStartPositions.entries()).map(
         ([jointId, coords]) => ({

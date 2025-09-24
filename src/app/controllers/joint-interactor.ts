@@ -86,6 +86,10 @@ export class JointInteractor extends Interactor {
     });
 
     this.onDragEnd$.subscribe(() => {
+      if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
+      ) {
+        return;
+      }
       if (this.jointStartCoords) {
         const oldPos = this.jointStartCoords;
         const newPos = this.joint.coords.clone();
