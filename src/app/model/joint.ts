@@ -181,7 +181,6 @@ export class Joint {
 
   addWeld() {
     this._isWelded.next(true);
-    console.log('stuff');
   }
 
   removeWeld() {

@@ -69,7 +69,6 @@ export class jointEditPanelComponent implements OnDestroy{
         })
         this.getCurrentJoint().getWeldedObservable().subscribe(value => {
           this._isWeld = value;
-          console.log("Changing weld value: ", value);
         })
       }
     });
@@ -485,7 +484,6 @@ export class jointEditPanelComponent implements OnDestroy{
     if (inputSpeedHTML == null) {
       return;
     }
-    console.log(this.getCurrentJoint().isInput);
     if (this.getCurrentJoint().isInput) {
       inputSpeedHTML.style.display = 'block';
       if (xyBlockHTML != null) {
