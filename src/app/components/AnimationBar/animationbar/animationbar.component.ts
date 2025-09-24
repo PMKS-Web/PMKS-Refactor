@@ -98,6 +98,7 @@ export class AnimationBarComponent implements OnInit {
 
   private isAnimating: boolean = false;
   private isPausedAnimating: boolean = true;
+  private isStoppedAnimating: boolean = true;
   public animationSpeed: number = 1;
   timelineMarkers: {
     position: number;
@@ -117,11 +118,13 @@ export class AnimationBarComponent implements OnInit {
         this.animationService.animateMechanisms(false);
         this.isAnimating = true;
         this.isPausedAnimating = true;
+        this.isStoppedAnimating = false;
         break;
       case 'play':
         this.animationService.animateMechanisms(true);
         this.isAnimating = true;
         this.isPausedAnimating = false;
+        this.isStoppedAnimating = false;
         this.stateService
           .getMechanism()
           .populateTrajectories(this.positionSolver);
@@ -135,6 +138,7 @@ export class AnimationBarComponent implements OnInit {
         this.animationService.reset();
         this.isAnimating = false;
         this.isPausedAnimating = true;
+        this.isStoppedAnimating = true;
         this.sliderValue = 0;
         this.currentTimeStep = 0;
         this.stateService.getMechanism().clearTrajectories();
@@ -148,6 +152,9 @@ export class AnimationBarComponent implements OnInit {
   }
   getIsPausedAnimating(): boolean {
     return this.isPausedAnimating;
+  }
+  getIsStoppedAnimating(): boolean {
+    return this.isStoppedAnimating;
   }
   sendNotification(text: string) {
     console.log(text);

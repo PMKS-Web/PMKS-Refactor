@@ -42,6 +42,13 @@ export class JointInteractor extends Interactor {
           );
         return;
       }
+      if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
+      ) {
+        this.notificationService.showNotification(
+          'Cannot edit while Animation is in play or paused state!'
+        );
+        return;
+      }
 
       if (
         (!this.joint.locked ||
@@ -110,6 +117,13 @@ export class JointInteractor extends Interactor {
       this.notificationService.showNotification(
         'Cannot edit in the Synthesis mode! Switch to Edit mode to edit.'
       );
+    }
+    if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
+    ) {
+      this.notificationService.showNotification(
+        'Cannot edit while Animation is in play or paused state!'
+      );
+      return availableContext;
     }
     if (this.stateService.getCurrentActivePanel === 'Analysis') {
       this.notificationService.showNotification(

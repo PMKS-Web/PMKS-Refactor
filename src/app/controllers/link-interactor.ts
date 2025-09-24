@@ -46,6 +46,14 @@ export class LinkInteractor extends Interactor {
         return;
       }
 
+      if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
+      ) {
+        this.notificationService.showNotification(
+          'Cannot edit while Animation is in play or paused state!'
+        );
+        return;
+      }
+
       this.link.joints.forEach((joint: Joint, id: number) => {
         this.linkStartPositions.set(id, joint.coords.clone());
       });
@@ -132,6 +140,13 @@ export class LinkInteractor extends Interactor {
     if (this.stateService.getCurrentActivePanel === 'Synthesis') {
       this.notificationService.showNotification(
         'Cannot edit in the Synthesis mode! Switch to Edit mode to edit.'
+      );
+      return availableContext;
+    }
+    if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
+    ) {
+      this.notificationService.showNotification(
+        'Cannot edit while Animation is in play or paused state!'
       );
       return availableContext;
     }
