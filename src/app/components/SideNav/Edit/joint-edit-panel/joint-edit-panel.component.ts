@@ -63,6 +63,7 @@ export class jointEditPanelComponent implements OnDestroy{
         this.displayInputSpeed();
         this.getCurrentJoint().getInputObservable().subscribe(value => {
           this._isInput = value;
+          this.displayInputSpeed();
         });
         this.getCurrentJoint().getGroundedObservable().subscribe(value => {
           this._isGround = value;
