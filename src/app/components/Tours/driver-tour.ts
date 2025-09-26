@@ -229,6 +229,65 @@ export function buildTourSteps(
         }
       }
     },
+
+
+    {
+      element: '#animationBar',
+      popover: {
+        title: 'Animation Bar',
+        description:
+          ' add description for animation bar',
+        side: 'top',
+        align: 'center'
+      }
+    },
+
+
+
+    {
+      element: '[data-tour="templates-btn"]',
+      popover: { title: 'Templates', description: 'Browse starter mechanisms.', side: 'bottom' },
+      onNextClick: async (_el: any, _step: any, { driver }: any) => {
+        (document.querySelector('[data-tour="templates-btn"]') as HTMLElement)?.click();
+        for (let i = 0; i < 40; i++) {
+          if (document.querySelector('[data-tour="templates-panel"], [data-tour="templates-panel-host"]')) break;
+          await new Promise(r => setTimeout(r, 50));
+        }
+        driver.moveNext();
+      },
+    },
+
+
+    {
+      element: '[data-tour="settings-btn"]',
+      popover: { title: 'Settings', description: 'Adjust options.', side: 'bottom' },
+      onNextClick: async (_el: any, _step: any, { driver }: any) => {
+        (document.querySelector('[data-tour="settings-btn"]') as HTMLElement)?.click();
+        for (let i = 0; i < 40; i++) {
+          if (document.querySelector('[data-tour="settings-panel"]')) break;
+          await new Promise(r => setTimeout(r, 50));
+        }
+        driver.moveNext();
+      },
+    },
+
+
+    {
+      element: '[data-tour="feedback-btn"]',
+      popover: { title: 'Feedback', description: 'Send us feedback.', side: 'bottom' },
+      onNextClick: async (_el: any, _step: any, { driver }: any) => {
+        (document.querySelector('[data-tour="feedback-btn"]') as HTMLElement)?.click();
+        for (let i = 0; i < 40; i++) {
+          if (document.querySelector('[data-tour="feedback-panel"]')) break;
+          await new Promise(r => setTimeout(r, 50));
+        }
+        driver.moveNext();
+      },
+    },
+
+
+
+
     {
       element: '#templatesButton',
       popover: {
@@ -239,3 +298,7 @@ export function buildTourSteps(
     }
   ];
 }
+
+
+
+

@@ -31,9 +31,13 @@
   </button>
 
   <!-- TEMPLATES -->
-  <button mat-button class="toolbar-button" (click)="setCurrentTab('Templates');"
-          matTooltip='Show the library of available linkages'
-          matTooltipShowDelay='1000'>
+  <button
+    mat-button
+    class="toolbar-button"
+    data-tour="templates-btn"
+    (click)="setCurrentTab('Templates');"
+    matTooltip='Show the library of available linkages'
+    matTooltipShowDelay='1000'>
     <mat-icon>apps</mat-icon>
     Templates
   </button>
@@ -60,17 +64,25 @@
   <app-undo-redo-panel></app-undo-redo-panel>
 
   <!-- SETTINGS -->
-  <button mat-button class="toolbar-button" (click)="setCurrentTab('Settings');"
-          matTooltip='Change Linkage Settings'
-          matTooltipShowDelay='1000'>
+  <button
+    mat-button
+    class="toolbar-button"
+    data-tour="settings-btn"
+    (click)="setCurrentTab('Settings');"
+    matTooltip='Change Linkage Settings'
+    matTooltipShowDelay='1000'>
     <mat-icon>settings</mat-icon>
     Settings
   </button>
 
   <!-- FEEDBACK -->
-  <button mat-button class="toolbar-button" (click)="setCurrentTab('Feedback');"
-          matTooltip='Send Us Feedback'
-          matTooltipShowDelay='1000'>
+  <button
+    mat-button
+    class="toolbar-button"
+    data-tour="feedback-btn"
+    (click)="setCurrentTab('Feedback');"
+    matTooltip='Send Us Feedback'
+    matTooltipShowDelay='1000'>
     <mat-icon>feedback</mat-icon>
     Feedback
   </button>
