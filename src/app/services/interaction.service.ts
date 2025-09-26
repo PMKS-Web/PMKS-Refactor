@@ -318,10 +318,14 @@ export class InteractionService {
   // Deselects any currently selected Interactor.
   public deselectObject() {
     this.lastSelected = undefined;
+    this._selectionChange.next(undefined);
   }
 
   // Selects the specified Interactor and deselects all others.
   public setSelectedObject(interactor: Interactor): void {
     this.selectNewObject(interactor);
   }
+
+
+
 }

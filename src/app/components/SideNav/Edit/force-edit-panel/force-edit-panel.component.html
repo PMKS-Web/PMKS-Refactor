@@ -142,8 +142,41 @@
             </div>
           </div>
         </div>
+
+                <!-- Position -->
+        <div class="length-angle-block">
+          <div class="la-label">Force Position</div>
+
+          <div class="length-angle-row">
+            <div class="la-cell">
+              X
+              <input
+                type="number"
+                [value]="pendingPosX ?? getPosX()"
+                (input)="pendingPosX = $any($event.target).valueAsNumber"
+                (keydown.enter)="confirmPosX()"
+              />
+              <span class="la-unit">N</span>
+            </div>
+
+            <div class="la-cell">
+              Y
+              <input
+                type="number"
+                [value]="pendingPosY ?? getPosY()"
+                (input)="pendingPosY = $any($event.target).valueAsNumber"
+                (keydown.enter)="confirmPosY()"
+              />
+              <span class="la-unit">N</span>
+            </div>
+          </div>
+        </div>
+
+
       </div>
     </collapsible-subsection>
+
+    
 
     <!-- COLOR SETTINGS -->
     <collapsible-subsection

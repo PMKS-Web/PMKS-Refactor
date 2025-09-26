@@ -197,7 +197,7 @@ export class DecoderService {
    */
   private static expandMechanismData(
     compactData: any,
-    useDecoding: boolean = true
+    useDecoding: boolean = false
   ): any {
     const decodedJoints: Joint[] = (compactData.j || []).map((row: any[]) => ({
       id: this.convertNumber(row[0], useDecoding),

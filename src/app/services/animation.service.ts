@@ -393,6 +393,9 @@ export class AnimationService {
     return this.animationStates.some(s => !s.isPaused);
   }
 
+  public currentDegreesOfFreedom() {
+    return this.positionSolver.getDegrees();
+  }
 
 
 

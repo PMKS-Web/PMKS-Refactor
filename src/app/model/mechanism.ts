@@ -23,12 +23,18 @@ export class Mechanism {
   private _forceIDCount: number;
   private _compoundLinkIDCount: number;
   private _mechanismChange: BehaviorSubject<Mechanism> =
-    new BehaviorSubject<Mechanism>(this);
+  new BehaviorSubject<Mechanism>(this);
   public _mechanismChange$ = this._mechanismChange.asObservable();
-  private _positions: Map<number, Position> = new Map();
   private _trajectories: Map<number, Trajectory> = new Map();
-  private _positionIDCount: number = 0;
   private _refIdCount: number = -1;
+
+  private _positionIDCount: number = 0;
+  private _positions: Map<number, Position> = new Map();
+  public _positionReference: string = 'Center';
+  private _positionLengthChange: BehaviorSubject<number> = new BehaviorSubject<number>(2);
+  public _positionLengthChange$ = this._positionLengthChange.asObservable();
+
+
 
   constructor() {
     this._joints = new Map();
@@ -45,10 +51,6 @@ export class Mechanism {
   }
 
   notifyChange(): void {
-    //console.log("updated Mechanism to");
-    //console.log(Array.from(this._joints.values()));
-    //console.log(Array.from(this._links.values()));
-    //console.log(Array.from(this._positions.values()));
     this._mechanismChange.next(this);
   }
 
@@ -89,36 +91,66 @@ export class Mechanism {
     //console.log(this);
   }
 
-  addPos(coordOne: Coord, coordTwo: Coord) {
-    // Create two joints for the new position
-    let jointA = new Joint(this._jointIDCount, coordOne);
-    this._jointIDCount++;
-    let jointB = new Joint(this._jointIDCount, coordTwo);
-    this._jointIDCount++;
+addPos(positionIndex: number) {
+    // Get the current coupler length from positionLengthChange
+    const couplerLength = this._positionLengthChange.value;
+    
+    let coord1: Coord, coord2: Coord;
+    
+    if (positionIndex === 1) {
+        coord1 = new Coord(-couplerLength / 2, 0);
+        coord2 = new Coord(couplerLength / 2, 0);
+    } else if (positionIndex === 2) {
+        coord1 = new Coord(-couplerLength / 2 - 1.5 * couplerLength, 0);
+        coord2 = new Coord(couplerLength / 2 - 1.5 * couplerLength, 0);
+    } else if (positionIndex === 3) {
+        coord1 = new Coord(-couplerLength / 2 + 1.5 * couplerLength, 0);
+        coord2 = new Coord(couplerLength / 2 + 1.5 * couplerLength, 0);
+    } else {
+        throw new Error(`Invalid position index: ${positionIndex}`);
+    }
 
-    //Create pseudo joint for fixed reference point, do not add to maps, default to center
+    // Create two joints for the new position
+    let jointA = new Joint(this._jointIDCount, coord1);
+    this._jointIDCount++;
+    let jointB = new Joint(this._jointIDCount, coord2);
+    this._jointIDCount++;
+    
+    // Create pseudo joint for fixed reference point, do not add to maps, default to center
     const centerX = (jointA.coords.x + jointB.coords.x) / 2;
     const centerY = (jointA.coords.y + jointB.coords.y) / 2;
     let jointC = new Joint(this._refIdCount, new Coord(centerX, centerY));
     jointC.hidden = true;
     jointC.reference = true;
     this._refIdCount--;
-
+    
     this._joints.set(jointA.id, jointA);
     this._joints.set(jointB.id, jointB);
     this._joints.set(jointC.id, jointC);
-
-    let position = new Position(this._positionIDCount, [
-      jointA,
-      jointB,
-      jointC,
+    
+    let position = new Position(positionIndex, [
+        jointA,
+        jointB,
+        jointC,
     ]);
-
+    
+    // Set position properties based on index
+    if (positionIndex === 1) {
+        position.name = 'Position 1';
+    } else if (positionIndex === 2) {
+        position.name = 'Position 2';
+    } else if (positionIndex === 3) {
+        position.name = 'Position 3';
+    }
+    
+    position.setReference(this._positionReference);
+    
     this._positionIDCount++;
     this._positions.set(position.id, position);
-
     this.notifyChange();
-  }
+    
+    return position;
+}
 
   populateTrajectories(positionSolver: PositionSolverService): void {
     const animationFrames = positionSolver.getAnimationFrames();
@@ -1126,6 +1158,15 @@ export class Mechanism {
     return [...connectedLinks, ...connectedCompoundLinks] as RigidBody[];
   }
 
+  public hasPositionWithId(id: number): boolean {
+    return this._positions.has(id);
+  }
+
+  public getMostRecentForce(): Force{
+    return this._forces.get(this._forceIDCount - 1) as Force;
+
+  }
+
   //----------------------------GET FUNCTIONS----------------------------
   getJoint(id: number): Joint {
     return <Joint>this._joints.get(id) || this._joints.get(id);
@@ -1204,6 +1245,38 @@ export class Mechanism {
   setTrajectory(jointId: number, trajectory: Trajectory): void {
     this._trajectories.set(jointId, trajectory);
   }
+  setCouplerLength(length: number){
+  this._positionLengthChange.next(length);
+  this._positions.forEach(pos => {
+    pos.setLength(length);
+  });
+  }
+  setPositionAngle(angle: number, id: number){
+    let pos = this._positions.get(id);
+    pos?.setAngle(angle, this._positionReference);
+    console.log(pos)
+  }
+  setPositionLocation(newPosition: Coord, id: number){
+    let pos = this._positions.get(id);
+    if(!pos) return;
+    console.log(newPosition)
+    let ref: Coord = this.getReferenceJoint(pos).coords;
+    let difference: Coord = newPosition.subtract(ref);
+    pos._joints.forEach(joint =>{
+      joint._coords = joint._coords.add(difference);
+    })
+  }
+//HELPER FOR setCouplerLength
+  getReferenceJoint(position: Position): Joint {
+    if (this._positionReference === 'Back') {
+      return position.getJoints()[0];
+    } else if (this._positionReference === 'Front') {
+      return position.getJoints()[1];
+    } else {
+      return position.getJoints()[2];
+    }
+  }
+
 
   //----------------------------CLEAR FUNCTIONS----------------------------
   clearTrajectories(): void {
@@ -1287,6 +1360,11 @@ export class Mechanism {
   public _addPosition(position: Position): void {
     this._positions.set(position.id, position);
     this._positionIDCount++;
+    this._refIdCount--;
+  }
+  //Does the same as the above but does not increment the idCount
+  public _addPositionSilent(position: Position): void {
+    this._positions.set(position.id, position);
     this._refIdCount--;
   }
 

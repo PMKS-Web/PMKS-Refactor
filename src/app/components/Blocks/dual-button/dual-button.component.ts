@@ -1,9 +1,9 @@
 import { Component, Input } from '@angular/core';
 import { FormGroup } from '@angular/forms';
-import {Link} from "../../../model/link";
-import {Joint} from "../../../model/joint";
-import {Mechanism} from "../../../model/mechanism";
-
+import { Link } from '../../../model/link';
+import { Joint } from '../../../model/joint';
+import { Mechanism } from '../../../model/mechanism';
+import { UndoRedoService } from 'src/app/services/undo-redo.service';
 
 @Component({
   selector: 'dual-button',
@@ -25,13 +25,13 @@ export class DualButtonComponent {
   @Input() btn1SVGPath: string = '';
   @Input() btn2SVGPath: string = '';
 
-/*
+  /*
   <mat-icon svgIcon='unweld_joint'></mat-icon>
   <mat-icon [svgIcon]=btn3Icon></mat-icon>
     <mat-icon svgIcon='weld_joint'></mat-icon>
 */
 
-  constructor() {}
+  constructor(private undoRedoService: UndoRedoService) {}
   getSelectedObject(): Link {
     return this.Link;
   }
@@ -40,5 +40,3 @@ export class DualButtonComponent {
     return this.mechanism;
   }
 }
-
-

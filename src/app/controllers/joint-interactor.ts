@@ -9,6 +9,7 @@ import { Action } from '../components/ToolBar/undo-redo-panel/action';
 import { NotificationService } from '../services/notification.service';
 import { UndoRedoService } from '../services/undo-redo.service';
 
+
 /*
 This interactor defines the following behaviors:
 - Dragging the joint moves it
@@ -330,8 +331,11 @@ export class JointInteractor extends Interactor {
           };
 
           this.undoRedoService.recordAction(actionObj);
+          this.interactionService.deselectObject();
         },
         disabled: false,
+
+
       });
     }
     return availableContext;

@@ -6,9 +6,11 @@ import { InteractionService } from 'src/app/services/interaction.service';
 import { StateService } from 'src/app/services/state.service';
 import { Joint } from 'src/app/model/joint';
 import { ColorService } from 'src/app/services/color.service';
-import {UndoRedoService } from 'src/app/services/undo-redo.service';
+import { UndoRedoService } from 'src/app/services/undo-redo.service';
 
 import { LinkEditHoverService } from 'src/app/services/link-edit-hover.service';
+import { PositionEditHoverService } from 'src/app/services/position-edit-hover.service';
+import { Coord } from 'src/app/model/coord';
 
 @Component({
   selector: 'app-link-edit-panel',
@@ -65,10 +67,10 @@ export class LinkEditPanelComponent implements OnDestroy {
 
     // record one undo entry
     this.undoRedoService.recordAction({
-      type:      "setJoint",
-      jointId:   jointId,
-      oldCoords: { x: oldX,           y: joint.coords.y },
-      newCoords: { x: newX,           y: joint.coords.y }
+      type: 'setJoint',
+      jointId: jointId,
+      oldCoords: { x: oldX, y: joint.coords.y },
+      newCoords: { x: newX, y: joint.coords.y },
     });
 
     // apply and notify
@@ -92,8 +94,8 @@ export class LinkEditPanelComponent implements OnDestroy {
     }
 
     this.undoRedoService.recordAction({
-      type:      "setJoint",
-      jointId:   jointId,
+      type: 'setJoint',
+      jointId: jointId,
       oldCoords: { x: joint.coords.x, y: oldY },
       newCoords: { x: joint.coords.x, y: newY },
     });
@@ -119,8 +121,8 @@ export class LinkEditPanelComponent implements OnDestroy {
 
     // Record exactly one undo entry
     this.undoRedoService.recordAction({
-      type:        "changeJointDistance",
-      linkId:      link.id,
+      type: 'changeJointDistance',
+      linkId: link.id,
       // Use whichever joint anchors your link-length
       jointId: link.joints.keys().next().value,
       oldDistance: oldLen,
@@ -148,9 +150,9 @@ export class LinkEditPanelComponent implements OnDestroy {
     }
 
     this.undoRedoService.recordAction({
-      type:     "changeJointAngle",
-      linkId:   link.id,
-      jointId:  link.joints.keys().next().value,
+      type: 'changeJointAngle',
+      linkId: link.id,
+      jointId: link.joints.keys().next().value,
       oldAngle: oldAng,
       newAngle: newAng,
     });
@@ -267,6 +269,20 @@ export class LinkEditPanelComponent implements OnDestroy {
     let CoM = this.getSelectedObject().centerOfMass;
     let linkID = this.getSelectedObject().id;
     this.getMechanism().addJointToLink(linkID, CoM);
+  }
+  addForce(): void {
+    let CoM = this.getSelectedObject().centerOfMass;
+    let linkID = this.getSelectedObject().id;
+    this.getMechanism().addForceToLink(
+      linkID,
+      CoM,
+      CoM.subtract(new Coord(0, 1))
+    );
+    this.undoRedoService.recordAction({
+      type: 'addForce',
+      oldForce: this.getMechanism().getMostRecentForce().clone(),
+    });
+    console.log('hi');
   }
 
   //deletes the link and calls deselectObject to close the panel

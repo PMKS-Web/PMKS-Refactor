@@ -1,16 +1,18 @@
-import {Action} from "../components/ToolBar/undo-redo-panel/action";
-import {Coord} from "../model/coord";
-import {Link} from "../model/link";
-import {Joint} from "../model/joint";
-import {Mechanism} from "../model/mechanism";
-import {Subject} from "rxjs";
+import { Action } from '../components/ToolBar/undo-redo-panel/action';
+import { Coord } from '../model/coord';
+import { Link } from '../model/link';
+import { Joint } from '../model/joint';
+import { Mechanism } from '../model/mechanism';
+import { Subject } from 'rxjs';
 import { Injectable } from '@angular/core';
-import {StateService} from "./state.service";
+import { StateService } from './state.service';
+import { isUndefined } from 'lodash';
+import { Position } from '../model/position';
+import { Force } from '../model/force';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
-
 export class UndoRedoService {
   private undoStack: Action[] = [];
   private redoStack: Action[] = [];
@@ -18,6 +20,8 @@ export class UndoRedoService {
 
   private generateFourBarSubject = new Subject<void>();
   private generateSixBarSubject = new Subject<void>();
+  private reinitializeSubject = new Subject<void>();
+  public reinitialize$ = this.reinitializeSubject.asObservable();
 
   private mechanism: Mechanism;
   constructor(private stateService: StateService) {
@@ -100,14 +104,10 @@ export class UndoRedoService {
     this.redoStack = [];
   }
 
-  public restoreStacks(
-    undoStack: Action[],
-    redoStack: Action[]
-  ): void {
+  public restoreStacks(undoStack: Action[], redoStack: Action[]): void {
     this.undoStack = [...undoStack];
     this.redoStack = [...redoStack];
   }
-
 
   //------------------------------------------------------------------------------------------------------
   //---------------------------------- | REDO | ----------------------------------------------------------
@@ -161,6 +161,37 @@ export class UndoRedoService {
       case 'generateSixBar':
         this.generateSixBarSubject.next();
         break;
+      case 'setSynthesisLength':
+        this.mechanism.setCouplerLength(action.newDistance as number);
+        break;
+      case 'positionSpecified':
+        this.mechanism.addPos(action.linkId as number);
+        break;
+      case 'addForce':
+        if (!action.oldForce) return;
+        this.mechanism._addForce(action.oldForce);
+        action.oldForce.parentLink.addForce(action.oldForce);
+        break;
+      case 'deleteForce':
+        if (!action.oldForce) return;
+        this.mechanism.removeForce(action.oldForce.id);
+        break;
+      case 'moveForce':
+        if (!action.newForce || !action.oldForce) return;
+        this.mechanism.setForceStart(action.newForce.id, action.newForce.start);
+        this.mechanism.setForceEnd(action.newForce.id, action.newForce.end);
+        break;
+      case 'deleteAllPositions':
+        action.oldPositionArray?.forEach((pos) => {
+          this.mechanism.removePosition(pos.id);
+        });
+        this.reinitializeSubject.next();
+        break;
+      case 'setPositionAngle':
+        if (!isUndefined(action.linkId) && !isUndefined(action.newAngle)) {
+          this.mechanism.setPositionAngle(action.newAngle, action.linkId);
+        }
+        break;
       case 'deleteJoint':
         if (action.jointId !== undefined) {
           this.mechanism.removeJoint(action.jointId);
@@ -180,6 +211,25 @@ export class UndoRedoService {
             p.jointId,
             new Coord(p.coords.x, p.coords.y)
           );
+        }
+        break;
+      case 'movePosition':
+        for (const p of action.newJointPositions!) {
+          this.mechanism.setJointCoord(
+            p.jointId,
+            new Coord(p.coords.x, p.coords.y)
+          );
+        }
+        break;
+      case 'setPositionPosition':
+        this.mechanism.setPositionLocation(
+          action.newCoords as Coord,
+          action.linkId as number
+        );
+        break;
+      case 'deletePosition':
+        if (action.oldPosition) {
+          this.mechanism.removePosition(action?.oldPosition.id);
         }
         break;
       case 'addLink':
@@ -282,6 +332,42 @@ export class UndoRedoService {
           this.mechanism.removeSlider(action.jointId);
         }
         break;
+      case 'setSynthesisLength':
+        this.mechanism.setCouplerLength(action.oldDistance as number);
+        break;
+      case 'deleteAllPositions':
+        action.oldPositionArray?.forEach((pos) => {
+          console.log('pos');
+          console.log(pos);
+          this.mechanism._addPositionSilent(pos);
+          const joints = pos.getJoints();
+          joints?.forEach((joint) => {
+            this.mechanism._addJoint(joint);
+          });
+          this.reinitializeSubject.next();
+        });
+        break;
+      case 'positionSpecified':
+        this.mechanism.removePosition(action.linkId as number);
+        break;
+      case 'addForce':
+        this.mechanism.removeForce(action.oldForce?.id as number);
+        break;
+      case 'moveForce':
+        if (!action.newForce || !action.oldForce) return;
+        this.mechanism.setForceStart(action.newForce.id, action.oldForce.start);
+        this.mechanism.setForceEnd(action.newForce.id, action.oldForce.end);
+        break;
+      case 'deleteForce':
+        if (!action.oldForce) return;
+        this.mechanism._addForce(action.oldForce);
+        action.oldForce.parentLink.addForce(action.oldForce);
+        break;
+      case 'setPositionAngle':
+        if (!isUndefined(action.linkId) && !isUndefined(action.oldAngle)) {
+          this.mechanism.setPositionAngle(action.oldAngle, action.linkId);
+        }
+        break;
       case 'removeSlider':
         if (action.jointId !== undefined) {
           this.mechanism.addSlider(action.jointId);
@@ -342,6 +428,28 @@ export class UndoRedoService {
           );
         }
         break;
+      case 'movePosition':
+        for (const p of action.oldJointPositions!) {
+          this.mechanism.setJointCoord(
+            p.jointId,
+            new Coord(p.coords.x, p.coords.y)
+          );
+        }
+        break;
+      case 'setPositionPosition':
+        this.mechanism.setPositionLocation(
+          action.oldCoords as Coord,
+          action.linkId as number
+        );
+        break;
+      case 'deletePosition':
+        const joints = action.oldPosition?.getJoints();
+        this.mechanism._addPositionSilent(action.oldPosition as Position);
+        joints?.forEach((joint) => {
+          this.mechanism._addJoint(joint);
+        });
+        this.reinitializeSubject.next();
+        break;
       case 'addLink':
         this.mechanism.removeLink(action.linkData!.id);
         break;
@@ -392,7 +500,7 @@ export class UndoRedoService {
         }
         if (action.attachJointId !== undefined) {
           this.mechanism.getJoint(action.attachJointId) &&
-          this.mechanism.removeJoint(action.attachJointId);
+            this.mechanism.removeJoint(action.attachJointId);
         }
         break;
       case 'setJoint':

@@ -5,6 +5,7 @@ import { Coord } from 'src/app/model/coord';
 import { Force, ForceFrame } from 'src/app/model/force';
 import { Joint } from 'src/app/model/joint';
 import { Link } from 'src/app/model/link';
+import { Position } from 'src/app/model/position';
 
 import { ColorService } from 'src/app/services/color.service';
 import { InteractionService } from 'src/app/services/interaction.service';
@@ -38,6 +39,9 @@ export class ForceEditPanelComponent {
   /** Buffers for component edits */
   public pendingForceX?: number;
   public pendingForceY?: number;
+
+  public pendingPosX?: number;
+  public pendingPosY?: number;
   units: string = 'cm';
   angles: string = 'º';
   isGlobalCoordinates: boolean = true;
@@ -127,15 +131,13 @@ export class ForceEditPanelComponent {
   }
 
   confirmForceAngle(): void {
-    const raw = this.pendingForceAngle;
-    if (raw == null) return;
+    const newLen = this.pendingForceAngle;
+    if (newLen == null) return;
     const oldLen = this.getForceAngle();
-    const newLen = raw;
     if (Math.abs(oldLen - newLen) < 1e-6) {
       this.pendingForceMagnitude = undefined;
       return;
     }
-    // Record exactly one undo entry
     this.undoRedoService.recordAction({
       type: 'changeForceAngle',
       linkId: this.getSelectedObject().id,
@@ -143,9 +145,9 @@ export class ForceEditPanelComponent {
       oldDistance: oldLen,
       newDistance: newLen,
     });
-
-    // Apply the change
-    this.getSelectedObject().angle = newLen;
+    const force = this.getSelectedObject();
+    force.angle = newLen;
+    force.updateFromAngle();
     this.stateService.getMechanism().notifyChange();
 
     this.pendingForceMagnitude = undefined;
@@ -153,7 +155,7 @@ export class ForceEditPanelComponent {
   confirmForceX(): void {
     const newLen = this.pendingForceX;
     const oldLen = this.getSelectedObject().calculateXComp();
-    if (newLen == null || Math.abs(oldLen - newLen)) return;
+    if (newLen == null || Math.abs(oldLen - newLen) < 1e-6) return;
     this.undoRedoService.recordAction({
       type: 'changeForceX',
       linkId: this.getSelectedObject().id,
@@ -168,7 +170,7 @@ export class ForceEditPanelComponent {
   confirmForceY(): void {
     const newLen = this.pendingForceY;
     const oldLen = this.getSelectedObject().calculateYComp();
-    if (newLen == null || Math.abs(oldLen - newLen)) return;
+    if (newLen == null || Math.abs(oldLen - newLen) < 1e-6) return;
     this.undoRedoService.recordAction({
       type: 'changeForceY',
       linkId: this.getSelectedObject().id,
@@ -181,9 +183,42 @@ export class ForceEditPanelComponent {
     this.pendingForceMagnitude = undefined;
   }
 
+  confirmPosX(): void {
+    const newLen = this.pendingPosX;
+    const oldLen = this.getSelectedObject().start.x;
+    if (newLen == null || Math.abs(oldLen - newLen) < 1e-6) return;
+    this.undoRedoService.recordAction({
+      type: 'changeForcePosX',
+      linkId: this.getSelectedObject().id,
+      jointId: this.getSelectedObject().parentLink.joints.keys().next().value,
+      oldDistance: oldLen,
+      newDistance: newLen,
+    });
+    this.getSelectedObject().start = new Coord( newLen, this.getSelectedObject().start.y);
+    this.stateService.getMechanism().notifyChange();
+    this.pendingPosX = undefined;
+  }
+  confirmPosY(): void {
+    const newLen = this.pendingPosY
+    const oldLen = this.getSelectedObject().start.y;
+    if (newLen == null || Math.abs(oldLen - newLen) < 1e-6) return;
+    this.undoRedoService.recordAction({
+      type: 'changeForcePosY',
+      linkId: this.getSelectedObject().id,
+      jointId: this.getSelectedObject().parentLink.joints.keys().next().value,
+      oldDistance: oldLen,
+      newDistance: newLen,
+    });
+    this.getSelectedObject().start = new Coord( this.getSelectedObject().start.x, newLen);
+    this.stateService.getMechanism().notifyChange();
+    this.pendingPosY = undefined;
+  }
+
   //place holders
   setForceMagnitude(magnitude: number): void {
-    this.getSelectedObject().magnitude = magnitude;
+    const force = this.getSelectedObject();
+    force.magnitude = magnitude;
+    force.updateFromAngle();
   }
   getColors(): string[] {
     return this.colorService.getLinkColorOptions();
@@ -197,5 +232,11 @@ export class ForceEditPanelComponent {
   }
   getForceY() {
     return this.getSelectedObject().calculateYComp().toFixed(3);
+  }
+  getPosX() {
+    return this.getSelectedObject().start.x.toFixed(3);
+  }
+  getPosY() {
+    return this.getSelectedObject().start.y.toFixed(3);
   }
 }
