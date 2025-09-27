@@ -132,8 +132,12 @@
                       />
                       <input
                         type="number"
-                        [value]="getJointDistance(joint)"
-                        (change)="
+                        id="angleInputElement"
+                        [value]="pendingJointDistance ?? getJointDistance(joint)"
+                        (input)="
+                          pendingJointDistance = $any($event.target).valueAsNumber
+                        "
+                        (keydown.enter)="
                           changeJointDistance(
                             joint.id,
                             $any($event.target).valueAsNumber
@@ -159,7 +163,8 @@
                       />
                       <input
                         type="number"
-                        [ngModel]="getJointAngle(joint)"
+                        [ngModel]="pendingJointAngle ?? getJointAngle(joint)"
+                        (input) = "pendingJointAngle = $any($event.target).valueAsNumber"
                         (keydown.enter)="
                           onAngleEnter(joint.id, $any($event.target).value)
                         "
