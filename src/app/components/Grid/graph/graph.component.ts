@@ -16,6 +16,8 @@ import {DecoderService} from "../../../services/decoder.service";
 import {PositionSolverService} from "src/app/services/kinematic-solver.service";
 import {PanZoomService} from "../../../services/pan-zoom.service";
 import { UndoRedoService } from 'src/app/services/undo-redo.service';
+import {Checksum} from "../../../services/checksum.service";
+import { NotificationService } from 'src/app/services/notification.service';
 
 @Component({
   selector: '[app-graph]',
@@ -34,10 +36,12 @@ export class GraphComponent {
               private unitConverter: UnitConversionService,
               private positionSolverService: PositionSolverService,
               private panZoomService: PanZoomService,
-              private undoRedoService:UndoRedoService
+              private undoRedoService:UndoRedoService,
+              private notificationService: NotificationService
   ) {
     console.log("GraphComponent.constructor");
     let url = window.location.href;
+    let checksum = new Checksum();
     //if loading from URL
     if (url.includes("?data=")) {
       console.log("Loading Data from URL.")
@@ -51,6 +55,34 @@ export class GraphComponent {
 
       //Solve positions so the Animation bar updates on page load
       positionSolverService.solvePositions();
+    }
+    //check to see if link is potentially from 2023 PMKS
+    else if(url.includes("?")) {
+      //prepares the link for checking with checksum
+      let encodedData = url.split("?")[1];
+      console.log("Loading Data from URL")
+      console.log(encodedData);
+      let lastChar = encodedData[encodedData.length - 1];
+      encodedData = encodedData.substring(0,encodedData.length - 1);
+
+      //checks with checksum to see if value matches with the last char of url
+      if(checksum.verifyChecksum(encodedData.length, lastChar)) {
+        console.log("Checksum passed! Link is from 2023 PMKS.");
+        this.notificationService.showNotification("PMKS 2023 Links are unable to be transferred. Please remake the Mechanism. You are being transferred to the 2023 version.");
+
+        //after 5 seconds redirect user to 2023 PMKS
+        setTimeout(() => {
+          window.open("https://testing.pmksplus.mech.website", '_blank')
+        }, 5000);
+      }
+      else{
+        console.log("Checksum did not pass. Likely not link from 2023 PMKS or had been modified.")
+      }
+
+      //push a new URL onto the browser stack
+      // clears the mech data for a clean appearance
+      history.pushState({}, "", url.split("?")[0]);
+
     }
   }
 

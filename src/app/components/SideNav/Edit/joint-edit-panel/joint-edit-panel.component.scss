@@ -17,13 +17,15 @@
   box-shadow: 3px 3px 3px gray;
   width: 100%;
   max-height: calc(90vh - 30px);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .scroll-container {
-  max-height: none;
+  max-height: 83vh;
+  overflow: hidden;
   overflow-y: auto;
-  width: 100%;
-  overflow-x: hidden;
 }
 .scroll-container::-webkit-scrollbar {
   width: 8px;

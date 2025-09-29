@@ -434,6 +434,10 @@ export class AnimationService {
     return this._maxTimeStep;
   }
 
+  public currentDegreesOfFreedom() {
+    return this.positionSolver.getDegrees();
+  }
+
   public get intervalTimeStep() {
     return this._intervalTimeStep;
   }
