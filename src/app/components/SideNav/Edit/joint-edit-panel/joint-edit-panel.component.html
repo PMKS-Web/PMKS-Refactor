@@ -200,7 +200,9 @@
           label="Toggle Ground"
           [initialValue]="_isGround"
           [iconClass]="'toggle-ground-icon'"
+          [disabled] = "_preventToggle"
           (valueChanged)="handleToggleGroundChange($event)"
+          (actionPrevented) = "toggleClickStopped($event)"
         ></app-toggle>
         <!-- TOGGLE BLOCK FOR WELDING -->
         <app-toggle
@@ -209,7 +211,9 @@
           label="Toggle Weld"
           [initialValue]="_isWeld"
           [iconClass]="'toggle-weld-icon'"
+          [disabled] = "_preventToggle"
           (valueChanged)="handleToggleWeldChange($event)"
+          (actionPrevented) = "toggleClickStopped($event)"
         ></app-toggle>
         <!-- TOGGLE BLOCK FOR INPUT -->
         <app-toggle
@@ -218,7 +222,9 @@
           label="Toggle Input"
           [initialValue]="_isInput"
           [iconClass]="'toggle-input-icon'"
+          [disabled] = "_preventToggle"
           (valueChanged)="handleToggleInputChange($event)"
+          (actionPrevented) = "toggleClickStopped($event)"
         ></app-toggle>
       </collapsible-subsection>
     </div>

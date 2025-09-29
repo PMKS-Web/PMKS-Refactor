@@ -34,6 +34,7 @@ export class jointEditPanelComponent implements OnDestroy{
   _isInput: boolean = false;
   _isGround: boolean = false;
   _isWeld: boolean = false;
+  _preventToggle: boolean = true;
   public pendingJointDistance?: number;
   public pendingJointAngle?: number;
   constructor(
@@ -44,6 +45,9 @@ export class jointEditPanelComponent implements OnDestroy{
     private notificationService: NotificationService
   ) {
     console.log('joint-edit-panel.constructor');
+    this.stateService.getAnimationBarComponent().stoppedAnimating.subscribe((isStopped) => {
+      this._preventToggle = !isStopped;
+    })
   }
 
   ngOnInit() {
@@ -194,7 +198,7 @@ export class jointEditPanelComponent implements OnDestroy{
   // Any function that will make changes to the joint should call this.confirmCanEdit() first,
   // to make sure that the mechanism is not in a state of animation, before making changes.
   confirmCanEdit(): boolean {
-    if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()) {
+    if (this._preventToggle) {
       this.notificationService.showNotification(
         'Cannot edit joint while Animation is in play or paused state!'
       );
@@ -455,11 +459,19 @@ export class jointEditPanelComponent implements OnDestroy{
     return this.getCurrentJoint().isWelded;
   }
 
+  // called when a click on toggle has been prevented.
+  // used to show a notification to the user
+  toggleClickStopped(stopped: boolean) {
+    if (stopped) {
+      this.confirmCanEdit();
+    }
+  }
+
   // Handles the toggle for grounding the joint
   handleToggleGroundChange(stateChange: boolean) {
     /*let canEdit = this.confirmCanEdit();
     if (!canEdit) {
-      this._isGround = !stateChange;
+      console.log("HERE")
       return;
     }*/
 

@@ -15,6 +15,7 @@ import { PanZoomService } from '../../../services/pan-zoom.service';
 import { Mechanism } from '../../../model/mechanism';
 import { StateService } from 'src/app/services/state.service';
 import { FormControl, FormsModule } from '@angular/forms';
+import {BehaviorSubject} from "rxjs";
 
 @Component({
   selector: 'app-animation-bar',
@@ -98,7 +99,9 @@ export class AnimationBarComponent implements OnInit {
 
   private isAnimating: boolean = false;
   private isPausedAnimating: boolean = true;
-  private isStoppedAnimating: boolean = true;
+  private isStoppedAnimating: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
+  stoppedAnimating = this.isStoppedAnimating.asObservable();
+
   public animationSpeed: number = 1;
   timelineMarkers: {
     position: number;
@@ -118,13 +121,13 @@ export class AnimationBarComponent implements OnInit {
         this.animationService.animateMechanisms(false);
         this.isAnimating = true;
         this.isPausedAnimating = true;
-        this.isStoppedAnimating = false;
+        this.isStoppedAnimating.next(false);
         break;
       case 'play':
         this.animationService.animateMechanisms(true);
         this.isAnimating = true;
         this.isPausedAnimating = false;
-        this.isStoppedAnimating = false;
+        this.isStoppedAnimating.next(false);
         this.stateService
           .getMechanism()
           .populateTrajectories(this.positionSolver);
@@ -138,7 +141,7 @@ export class AnimationBarComponent implements OnInit {
         this.animationService.reset();
         this.isAnimating = false;
         this.isPausedAnimating = true;
-        this.isStoppedAnimating = true;
+        this.isStoppedAnimating.next(true);
         this.sliderValue = 0;
         this.currentTimeStep = 0;
         this.stateService.getMechanism().clearTrajectories();
@@ -154,7 +157,7 @@ export class AnimationBarComponent implements OnInit {
     return this.isPausedAnimating;
   }
   getIsStoppedAnimating(): boolean {
-    return this.isStoppedAnimating;
+    return this.isStoppedAnimating.value;
   }
   sendNotification(text: string) {
     console.log(text);
