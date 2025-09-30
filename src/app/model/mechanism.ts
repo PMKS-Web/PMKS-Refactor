@@ -515,6 +515,12 @@ addPos(positionIndex: number) {
     //check if the joint knows it can be an input
     if (!joint.canAddInput()) return false;
 
+    for (const joint of this.getJoints()) {
+      if (joint.isInput) {
+        return false;
+      }
+    }
+
     let numberOfEffectiveConnectedLinks =
       this.getNumberOfEffectiveConnectedLinksForJoint(joint);
     //If a revolute grounded joint is connected to more than one link and isn't welded to all of them it cannot be an input.
