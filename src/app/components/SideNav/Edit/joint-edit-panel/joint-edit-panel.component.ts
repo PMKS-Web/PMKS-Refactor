@@ -19,7 +19,7 @@ import {UndoRedoService} from "src/app/services/undo-redo.service";
 
 })
 
-export class jointEditPanelComponent implements OnDestroy{
+export class jointEditPanelComponent implements OnInit, OnDestroy{
 
   graphExpanded: { [key: string]: boolean } = {
     basicBasic: true,
@@ -51,7 +51,7 @@ export class jointEditPanelComponent implements OnDestroy{
     })
 
     //subscript to listen for angle suffix from stateService
-    this.angleSuffixSubscription = this.stateService.globalAnglesCurrent.subscribe((angleSuffix)=>{
+    this.angleSuffixSubscription = this.stateService.globalASuffixCurrent.subscribe((angleSuffix)=>{
       this.angleSuffix = angleSuffix;
     })
   }
@@ -383,15 +383,25 @@ export class jointEditPanelComponent implements OnDestroy{
     let xDiff = otherJoint.coords.x - currentJoint.coords.x;
     let yDiff = otherJoint.coords.y - currentJoint.coords.y;
 
-    const angleInRadians = Math.atan2(yDiff, xDiff);
+    let angleInRadians = Math.atan2(yDiff, xDiff);
     let angleInDegrees = angleInRadians * (180 / Math.PI);
 
     // Normalize the angle to be within [0, 360] degrees
-    if (angleInDegrees < 0) {
-      angleInDegrees += 360;
+    if (this.angleSuffix === 'º') {
+      if (angleInDegrees < 0) {
+        angleInDegrees += 360;
+      }
+  
+      return parseFloat(angleInDegrees.toFixed(3));
+    } else if(this.angleSuffix === 'rad') {
+      if (angleInRadians < 0) {
+        angleInRadians += 2 * (Math.PI); // Normalize to be within [0, 2pi]
+      }
+
+      return parseFloat(angleInRadians.toFixed(3));
     }
 
-    return parseFloat(angleInDegrees.toFixed(3));
+    return 0;
   }
 
   // Handles the toggle for grounding the joint

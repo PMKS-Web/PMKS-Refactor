@@ -268,7 +268,7 @@ export class StateService {
     const toFractor = conversionFactor[suffix];
     const conversionRatio = toFractor/fromFractor;
 
-    //Read example above to understand
+    //Read example above to understand the logic below for coords x and y
     this.mechanism.getArrayOfJoints().forEach(joint=>{ // loop through each "joint" in the "mechanism"
       joint.coords.x *= conversionRatio;
       joint.coords.y *= conversionRatio;
@@ -276,13 +276,30 @@ export class StateService {
       console.log(`new 'y' coordinate conversion: ${joint.coords.y}`);
     });    
 
-    this.mechanism.notifyChange();
+    this.mechanism.notifyChange(); //notify the mechanism
     this.globalUnits.next(units);
     this.globalUnitsSuffix.next(suffix);
   }
 
   // Updates the global angle units and their suffix based on user selection.
   public changeAngles(angles: string, suffix: string) {
+    const oldSuffix = this.globalAnglesSuffix.value;
+    if (oldSuffix === suffix) return;
+
+    const conversionFactor: {[key: string]: number} = {
+      'º': 1,
+      'rad': Math.PI/180
+    }
+
+    const fromFractor = conversionFactor[oldSuffix];
+    const toFractor = conversionFactor[suffix];
+    const conversionRatio = toFractor / fromFractor;
+
+    this.mechanism.getArrayOfLinks().forEach(link => {
+      link.angle *= conversionRatio;
+    });
+
+    this.mechanism.notifyChange(); //notify the mechanism
     this.globalAngles.next(angles);
     this.globalAnglesSuffix.next(suffix);
   }
