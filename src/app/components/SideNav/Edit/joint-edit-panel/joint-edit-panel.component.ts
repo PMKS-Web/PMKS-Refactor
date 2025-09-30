@@ -199,7 +199,7 @@ export class jointEditPanelComponent implements OnDestroy{
   // to make sure that the mechanism is not in a state of animation, before making changes.
   confirmCanEdit(): boolean {
     if (this._preventToggle) {
-      this.notificationService.showNotification(
+      this.notificationService.showWarning(
         'Cannot edit joint while Animation is in play or paused state!'
       );
       return false;

@@ -43,6 +43,8 @@ export class LinkEditPanelComponent implements OnDestroy {
   units: string = 'cm';
   angles: string = 'º';
 
+  _preventDualButtons: boolean = false;
+
   constructor(
     private stateService: StateService,
     private interactionService: InteractionService,
@@ -50,7 +52,12 @@ export class LinkEditPanelComponent implements OnDestroy {
     private linkHoverService: LinkEditHoverService,
     private undoRedoService: UndoRedoService,
     private notificationService: NotificationService
-  ) {}
+  ) {
+    this.stateService.getAnimationBarComponent().stoppedAnimating.subscribe((isStopped) => {
+      this._preventDualButtons = !isStopped;
+    })
+  }
+
   ngOnDestroy() {
     this.linkHoverService.clearHover();
   }
@@ -192,8 +199,8 @@ export class LinkEditPanelComponent implements OnDestroy {
   // Any function that will make changes to the link should call this.confirmCanEdit() first,
   // to make sure that the mechanism is not in a state of animation, before making changes.
   confirmCanEdit(): boolean {
-    if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()) {
-      this.notificationService.showNotification(
+    if (this._preventDualButtons) {
+      this.notificationService.showWarning(
         'Cannot edit link while Animation is in play or paused state!'
       );
       return false;
@@ -308,23 +315,30 @@ export class LinkEditPanelComponent implements OnDestroy {
     this.isEditingTitle = false;
   }
 
+  // called when a click on dual button has been prevented.
+  // used to show a notification to the user
+  dualButtonClickStopped(stopped: boolean) {
+    if (stopped) {
+      this.confirmCanEdit();
+    }
+  }
+
   //will create a tracer at the center of mass of the link
   addTracer(): void {
-    let canEdit = this.confirmCanEdit();
-    if (!canEdit) {
+    /*if (this.btn1Disabled) {
+      this.actionPrevented.emit(true);
       return;
-    }
+    }*/
 
     let CoM = this.getSelectedObject().centerOfMass;
     let linkID = this.getSelectedObject().id;
     this.getMechanism().addJointToLink(linkID, CoM);
   }
   addForce(): void {
-    let canEdit = this.confirmCanEdit();
-    if (!canEdit) {
-      this.pendingLinkLength = undefined;
+    /*if (this.btn2Disabled) {
+      this.actionPrevented.emit(true);
       return;
-    }
+    }*/
 
     let CoM = this.getSelectedObject().centerOfMass;
     let linkID = this.getSelectedObject().id;

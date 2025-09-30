@@ -48,7 +48,7 @@ export class LinkInteractor extends Interactor {
 
       if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
       ) {
-        this.notificationService.showNotification(
+        this.notificationService.showWarning(
           'Cannot edit while Animation is in play or paused state!'
         );
         return;
@@ -150,7 +150,7 @@ export class LinkInteractor extends Interactor {
     }
     if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
     ) {
-      this.notificationService.showNotification(
+      this.notificationService.showWarning(
         'Cannot edit while Animation is in play or paused state!'
       );
       return availableContext;

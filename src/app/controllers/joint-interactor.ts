@@ -44,7 +44,7 @@ export class JointInteractor extends Interactor {
       }
       if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
       ) {
-        this.notificationService.showNotification(
+        this.notificationService.showWarning(
           'Cannot edit while Animation is in play or paused state!'
         );
         return;
@@ -124,7 +124,7 @@ export class JointInteractor extends Interactor {
     }
     if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
     ) {
-      this.notificationService.showNotification(
+      this.notificationService.showWarning(
         'Cannot edit while Animation is in play or paused state!'
       );
       return availableContext;
@@ -166,6 +166,12 @@ export class JointInteractor extends Interactor {
           icon: 'assets/contextMenuIcons/addInput.svg',
           label: 'Add Input',
           action: () => {
+            for (const joint of this.stateService.getMechanism().getJoints()) {
+              if (joint.isInput) {
+                return;
+              }
+            }
+
             const actionObj: Action = {
               type: 'addInput',
               jointId: this.joint.id,
@@ -175,7 +181,7 @@ export class JointInteractor extends Interactor {
 
             mechanism.addInput(this.joint.id);
           },
-          disabled: !mechanism.canAddInput(this.joint),
+          disabled: !mechanism.canAddInput(this.joint) ,
         });
       }
       //Logic for Grounding option
