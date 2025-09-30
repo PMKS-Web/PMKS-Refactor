@@ -35,6 +35,7 @@ export class jointEditPanelComponent implements OnDestroy{
   _isGround: boolean = false;
   _isWeld: boolean = false;
   _preventToggle: boolean = true;
+  _canBeInput: boolean = true;
   public pendingJointDistance?: number;
   public pendingJointAngle?: number;
   constructor(
@@ -52,6 +53,7 @@ export class jointEditPanelComponent implements OnDestroy{
 
   ngOnInit() {
     this.displayInputSpeed();
+    this._canBeInput = this.canBeInput();
   }
 
   ngOnDestroy() {
@@ -79,6 +81,7 @@ export class jointEditPanelComponent implements OnDestroy{
         this.getCurrentJoint().getWeldedObservable().subscribe(value => {
           this._isWeld = value;
         })
+        this._canBeInput = this.canBeInput();
       }
     });
 
@@ -459,11 +462,21 @@ export class jointEditPanelComponent implements OnDestroy{
     return this.getCurrentJoint().isWelded;
   }
 
+  canBeInput() {
+    // || this._isInput
+    console.log("isInput: ", this._isInput)
+    return this.getMechanism().canAddInput(this.getCurrentJoint()) || this._isInput;
+  }
+
   // called when a click on toggle has been prevented.
   // used to show a notification to the user
-  toggleClickStopped(stopped: boolean) {
-    if (stopped) {
+  toggleClickStopped(stopped: number) {
+    if (stopped == 0) {
       this.confirmCanEdit();
+    } else if (stopped == 1) {
+      this.notificationService.showWarning(
+        'A mechanism can only have 1 input joint! Please remove the previous input joint before adding in a new one.'
+      );
     }
   }
 
@@ -471,7 +484,6 @@ export class jointEditPanelComponent implements OnDestroy{
   handleToggleGroundChange(stateChange: boolean) {
     /*let canEdit = this.confirmCanEdit();
     if (!canEdit) {
-      console.log("HERE")
       return;
     }*/
 

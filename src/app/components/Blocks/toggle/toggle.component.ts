@@ -11,8 +11,10 @@ export class ToggleComponent {
   @Input() initialValue: boolean = false;
   @Input() iconClass: string = ''; // Add this line
   @Input() disabled: boolean = false;
+  @Input() canBeInput: boolean = true;
+  @Input() inputToggle: boolean = false;
   @Output() valueChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() actionPrevented: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() actionPrevented: EventEmitter<number> = new EventEmitter<number>();
 
   public value: boolean = this.initialValue;
 
@@ -27,11 +29,22 @@ export class ToggleComponent {
     if (changes['disabled']) {
       this.disabled = changes['disabled'].currentValue;
     }
+    if (changes['canBeInput']) {
+      this.canBeInput = changes['canBeInput'].currentValue;
+    }
+    if (changes['inputToggle']) {
+      this.inputToggle = changes['inputToggle'].currentValue;
+    }
   }
 
   toggle() {
+    if (this.inputToggle && !this.canBeInput) {
+      this.actionPrevented.emit(1);
+      this.disabled = true;
+      return;
+    }
     if (this.disabled) {
-      this.actionPrevented.emit(true);
+      this.actionPrevented.emit(0);
       return;
     }
     this.value = !this.value;

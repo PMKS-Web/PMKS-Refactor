@@ -215,7 +215,8 @@ export class Joint {
   }
 
   canAddInput(): boolean {
-    return !(!this._isGrounded.value && this._type == JointType.Revolute);
+    //return !(!this._isGrounded.value && this._type == JointType.Revolute);
+    return this._isGrounded.value;
   }
 
   canRemoveInput(): boolean {

@@ -223,6 +223,8 @@
           [initialValue]="_isInput"
           [iconClass]="'toggle-input-icon'"
           [disabled] = "_preventToggle"
+          [canBeInput] = "_canBeInput"
+          [inputToggle] = "true"
           (valueChanged)="handleToggleInputChange($event)"
           (actionPrevented) = "toggleClickStopped($event)"
         ></app-toggle>

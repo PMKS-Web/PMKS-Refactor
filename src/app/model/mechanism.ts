@@ -521,10 +521,11 @@ addPos(positionIndex: number) {
       }
     }
 
-    let numberOfEffectiveConnectedLinks =
+    /*let numberOfEffectiveConnectedLinks =
       this.getNumberOfEffectiveConnectedLinksForJoint(joint);
     //If a revolute grounded joint is connected to more than one link and isn't welded to all of them it cannot be an input.
-    return !(joint.isGrounded && numberOfEffectiveConnectedLinks > 1);
+    return !(joint.isGrounded && numberOfEffectiveConnectedLinks > 1);*/
+    return true;
   }
   canRemoveInput(joint: Joint): boolean {
     return joint.canRemoveInput();
