@@ -82,16 +82,16 @@ export function buildTourSteps(
   return [
     {
       popover: {
-        title: 'Welcome',
-        description: 'Let us show you around Planar Mechanism Kinematic Simulator Plus!',
+        title: 'Welcome to PMKS+',
+        description: 'PMKS+ stands for Planar Mechanism Kinematic Simulator Plus. This is an analysis and synthesis tool for linkages with revolute and grounded prismatic joints.',
         position: 'center'
       }
     },
     {
       element: '#side-nav',
       popover: {
-        title: 'Three Modes',
-        description: 'PMKS+ is divided into 3 modes: Synthesis, Editing, and Analysis.',
+        title: 'Three Design Modes',
+        description: 'PMKS+ can be used in three modes: Synthesis, Edit and Analysis. These are accessible from the side panel.',
         position: 'right',
         onNextClick: async (_el: any, _step: any, { driver }: any) => {
           await spawnAndSelectLink(stateService,
@@ -105,8 +105,8 @@ export function buildTourSteps(
     {
       element: '#sidenav-edit-button',
       popover: {
-        title: 'Edit Mode',
-        description: 'When in Edit mode, you can create a new link and see its joint or link properties here.',
+        title: 'Edit',
+        description: 'The Edit model allows creating a linkage by adding and editing joints and links.',
         position: 'left'
       }
     },
@@ -115,7 +115,7 @@ export function buildTourSteps(
       popover: {
         title: 'Edit Link',
         description:
-          'Edit Link lets you edit the selected link: length, angle, tracers, forces, etc.',
+          'Clicking on a link opens the Edit Link panel and allows editing various link properties',
         position: 'right',
         onNextClick: async (_el: any, _step: any, { driver }: any) => {
           selectJointFromCurrentLink(
@@ -137,7 +137,7 @@ export function buildTourSteps(
       element: '#edit-joint-panel',
       popover: {
         title: 'Edit Joint',
-        description: 'Edit Joint lets you edit the selected joint: position, angle, and distance to another joint.',
+        description: 'Clicking on a joint opens the Edit Joint panel and allows editing various joint properties',
         position: 'right',
         onNextClick: async (_el: any, _step: any, { driver }: any) => {
           const mech = stateService.getMechanism();
@@ -157,8 +157,8 @@ export function buildTourSteps(
     {
       element: '#sidenav-synthesis-button',
       popover: {
-        title: 'Synthesis Mode',
-        description: 'Synthesis Mode\'s description',
+        title: 'Synthesis',
+        description: 'Synthesis panel allows users to synthesize a four-bar and a six-bar linkage using the Three Position Synthesis technique',
         position: 'right',
         onNextClick: async (_el: any, _step: any, { driver }: any) => {
           const subsectionCmp = (window as any).ng?.getComponent(
@@ -177,8 +177,8 @@ export function buildTourSteps(
     {
       element: '.app-synthesis-panel-container',
       popover: {
-        title: 'Synthesis Panel',
-        description: 'Synthesis Panel\'s description',
+        title: 'Three Position Synthesis',
+        description: 'Three positions of the coupler link can be specified using length & angle or the end points',
         position: 'right',
         onNextClick: async (_el: any, _step: any, { driver }: any) => {
 
@@ -194,8 +194,8 @@ export function buildTourSteps(
     {
       element: '#sidenav-analysis-button',
       popover: {
-        title: 'Analysis Mode',
-        description: 'Analysis Mode\'s description',
+        title: 'Analysis',
+        description: 'Analysis panel can be used to obtain the kinematics and forces at various joints and links.',
         position: 'right',
         onNextClick: async (_el: any, _step: any, { driver }: any) => {
 
@@ -211,8 +211,8 @@ export function buildTourSteps(
     {
       element: '.app-analysis-panel-container',
       popover: {
-        title: 'Analysis Panel',
-        description: 'Analysis Panel\'s description',
+        title: 'Analysis',
+        description: 'Clicking on a link or joint summarizes  results at a particular time along with the graph',
         position: 'right',
         onHighlightStarted: (element: HTMLElement) => {
           // Force safe styles for complex panels like Analysis
@@ -236,7 +236,7 @@ export function buildTourSteps(
       popover: {
         title: 'Animation Bar',
         description:
-          ' add description for animation bar',
+          'PMKS+ is able to simulate 1 degree of freedom mechanisms with revolute and grounded prismatic joints.',
         side: 'top',
         align: 'center'
       }
@@ -246,7 +246,7 @@ export function buildTourSteps(
 
     {
       element: '[data-tour="templates-btn"]',
-      popover: { title: 'Templates', description: 'Browse starter mechanisms.', side: 'bottom' },
+      popover: { title: 'Templates', description: 'Various example linkages are available to get you started on PMKS+', side: 'bottom' },
       onNextClick: async (_el: any, _step: any, { driver }: any) => {
         (document.querySelector('[data-tour="templates-btn"]') as HTMLElement)?.click();
         for (let i = 0; i < 40; i++) {
@@ -259,8 +259,30 @@ export function buildTourSteps(
 
 
     {
+      element: '[data-tour="share-btn"]',
+      popover: {
+        title: 'Share',
+        description: 'Click here to generate a copyable URL of the linkage on the grid.',
+        side: 'bottom'
+      },
+      allowInteractions: false
+    },
+
+
+    {
+      element: '[data-tour="undo-redo-panel"], app-undo-redo-panel',
+      popover: {
+        title: 'Undo & Redo',
+        description: 'These buttons allow you to undo the last action or redo a previously undone action. You can use them to revert or restore changes such as adding or removing links or joints.',
+        side: 'bottom'
+      },
+      allowInteractions: false
+    },
+
+
+    {
       element: '[data-tour="settings-btn"]',
-      popover: { title: 'Settings', description: 'Adjust options.', side: 'bottom' },
+      popover: { title: 'Settings', description: 'This can be used to select appropriate unit system for creating and analyzing linkages.', side: 'bottom' },
       onNextClick: async (_el: any, _step: any, { driver }: any) => {
         (document.querySelector('[data-tour="settings-btn"]') as HTMLElement)?.click();
         for (let i = 0; i < 40; i++) {
@@ -274,7 +296,7 @@ export function buildTourSteps(
 
     {
       element: '[data-tour="feedback-btn"]',
-      popover: { title: 'Feedback', description: 'Send us feedback.', side: 'bottom' },
+      popover: { title: 'Feedback', description: 'Click here to report any bugs or issues you encounter.', side: 'bottom' },
       onNextClick: async (_el: any, _step: any, { driver }: any) => {
         (document.querySelector('[data-tour="feedback-btn"]') as HTMLElement)?.click();
         for (let i = 0; i < 40; i++) {

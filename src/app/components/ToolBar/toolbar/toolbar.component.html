@@ -51,7 +51,9 @@
   </button>
 
   <!-- SHARE -->
-  <button mat-button class="toolbar-button" (click)="handleShare();"
+  <button mat-button class="toolbar-button"
+          data-tour="share-btn"
+          (click)="handleShare();"
           matTooltip='Copy a URL to clipboard that contains your linakge'
           matTooltipShowDelay='1000'>
     <mat-icon>link</mat-icon>
@@ -61,7 +63,7 @@
   <span class="spacer"></span>
 
   <!-- UNDO/REDO PANEL -->
-  <app-undo-redo-panel></app-undo-redo-panel>
+  <app-undo-redo-panel data-tour="undo-redo-panel"></app-undo-redo-panel>
 
   <!-- SETTINGS -->
   <button
