@@ -23,7 +23,7 @@ export class Mechanism {
   private _forceIDCount: number;
   private _compoundLinkIDCount: number;
   private _mechanismChange: BehaviorSubject<Mechanism> =
-  new BehaviorSubject<Mechanism>(this);
+    new BehaviorSubject<Mechanism>(this);
   public _mechanismChange$ = this._mechanismChange.asObservable();
   private _trajectories: Map<number, Trajectory> = new Map();
   private _refIdCount: number = -1;
@@ -93,23 +93,23 @@ export class Mechanism {
     //console.log(this);
   }
 
-addPos(positionIndex: number) {
+  addPos(positionIndex: number) {
     // Get the current coupler length from positionLengthChange
     const couplerLength = this._positionLengthChange.value;
 
     let coord1: Coord, coord2: Coord;
 
     if (positionIndex === 1) {
-        coord1 = new Coord(-couplerLength / 2, 0);
-        coord2 = new Coord(couplerLength / 2, 0);
+      coord1 = new Coord(-couplerLength / 2, 0);
+      coord2 = new Coord(couplerLength / 2, 0);
     } else if (positionIndex === 2) {
-        coord1 = new Coord(-couplerLength / 2 - 1.5 * couplerLength, 0);
-        coord2 = new Coord(couplerLength / 2 - 1.5 * couplerLength, 0);
+      coord1 = new Coord(-couplerLength / 2 - 1.5 * couplerLength, 0);
+      coord2 = new Coord(couplerLength / 2 - 1.5 * couplerLength, 0);
     } else if (positionIndex === 3) {
-        coord1 = new Coord(-couplerLength / 2 + 1.5 * couplerLength, 0);
-        coord2 = new Coord(couplerLength / 2 + 1.5 * couplerLength, 0);
+      coord1 = new Coord(-couplerLength / 2 + 1.5 * couplerLength, 0);
+      coord2 = new Coord(couplerLength / 2 + 1.5 * couplerLength, 0);
     } else {
-        throw new Error(`Invalid position index: ${positionIndex}`);
+      throw new Error(`Invalid position index: ${positionIndex}`);
     }
 
     // Create two joints for the new position
@@ -131,18 +131,18 @@ addPos(positionIndex: number) {
     this._joints.set(jointC.id, jointC);
 
     let position = new Position(positionIndex, [
-        jointA,
-        jointB,
-        jointC,
+      jointA,
+      jointB,
+      jointC,
     ]);
 
     // Set position properties based on index
     if (positionIndex === 1) {
-        position.name = 'Position 1';
+      position.name = 'Position 1';
     } else if (positionIndex === 2) {
-        position.name = 'Position 2';
+      position.name = 'Position 2';
     } else if (positionIndex === 3) {
-        position.name = 'Position 3';
+      position.name = 'Position 3';
     }
 
     position.setReference(this._positionReference);
@@ -152,7 +152,7 @@ addPos(positionIndex: number) {
     this.notifyChange();
 
     return position;
-}
+  }
 
   populateTrajectories(positionSolver: PositionSolverService): void {
     const animationFrames = positionSolver.getAnimationFrames();
@@ -515,7 +515,8 @@ addPos(positionIndex: number) {
     //check if the joint knows it can be an input
     if (!joint.canAddInput()) return false;
 
-    for (const joint of this.getJoints()) {
+    let connectedJoints = this.getJointsConnectedForJoint(joint);
+    for (const joint of connectedJoints) {
       if (joint.isInput) {
         return false;
       }
@@ -1167,6 +1168,72 @@ addPos(positionIndex: number) {
     return [...connectedLinks, ...connectedCompoundLinks] as RigidBody[];
   }
 
+  // gets all the joints a joint is connected to through its links
+  private getJointsConnectedForJoint(joint: Joint): Joint[] {
+    let attachedJoints: Joint[] = []; // this will be all the joints the joint is connected to
+
+    let allSubMechs: Array<Map<Joint, RigidBody[]>> = this.getSubMechanisms();
+    if (allSubMechs.length <= 0) {
+      return attachedJoints;
+    }
+    let subMech: Map<Joint, RigidBody[]> = new Map();
+    let found = false;
+    let i = 0;
+    while (!found && i < allSubMechs.length) {
+      if (allSubMechs[i].has(joint)) {
+        subMech = allSubMechs[i];
+        found = true;
+      }
+      i++;
+    }
+    if (!found) {
+      return attachedJoints;
+    }
+
+    for (let keyJ of subMech.keys()) {
+      if (!attachedJoints.includes(keyJ)) {
+        attachedJoints.push(keyJ);
+      }
+    }
+
+    /*let allJoints: IterableIterator<Joint> = this.getJoints(); // these are all the joints in the application
+    let connectedLinks: Link[] = this.getConnectedLinksForJoint(joint); // these are all the links a joint is connected to
+    let connectedCompoundLinks: CompoundLink[] = this.getConnectedCompoundLinks(joint); // these are all the compound links a joint is connected to
+    //console.log(joint)
+    console.log(connectedLinks);
+    console.log(connectedCompoundLinks);
+
+    // looking through all the joints and seeing if they are in one of the links the joint is attached to
+    for (const oneJoint of allJoints) {
+      let passed = false;
+      let i = 0;
+      let j = 0;
+      while (!passed && oneJoint.id != joint.id) {
+        if (i < connectedLinks.length.valueOf()) {
+          // looking through links to see if this joint is part of any of them
+          if (connectedLinks[i].containsJoint(joint.id)) {
+            attachedJoints.push(oneJoint);
+            passed = true;
+          }
+          i += 1;
+        } else if (j < connectedCompoundLinks.length.valueOf()) {
+          // looking through compound links to see if this joint is part of any of them
+          if (connectedCompoundLinks[i].containsJoint(joint.id)) {
+            attachedJoints.push(oneJoint);
+            passed = true;
+          }
+          j += 1;
+        } else {
+          // the joint was in none of them, moving onto next joint
+          passed = true;
+        }
+      }
+    }*/
+
+    console.log(attachedJoints);
+    return attachedJoints;
+  }
+
   public hasPositionWithId(id: number): boolean {
     return this._positions.has(id);
   }
@@ -1260,10 +1327,10 @@ addPos(positionIndex: number) {
     this._trajectories.set(jointId, trajectory);
   }
   setCouplerLength(length: number){
-  this._positionLengthChange.next(length);
-  this._positions.forEach(pos => {
-    pos.setLength(length);
-  });
+    this._positionLengthChange.next(length);
+    this._positions.forEach(pos => {
+      pos.setLength(length);
+    });
   }
   setPositionAngle(angle: number, id: number){
     let pos = this._positions.get(id);
