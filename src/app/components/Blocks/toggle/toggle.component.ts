@@ -38,7 +38,10 @@ export class ToggleComponent {
   }
 
   toggle() {
-    if (this.inputToggle && !this.canBeInput) {
+    if (this.inputToggle && !this.canBeInput && !this.value) {
+      console.log("in toggle, cannot add input");
+      console.log("isInput: ", this.inputToggle);
+      console.log("canBeInput: ", this.canBeInput);
       this.actionPrevented.emit(1);
       this.disabled = true;
       return;

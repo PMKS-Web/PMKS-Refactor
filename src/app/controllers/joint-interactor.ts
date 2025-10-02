@@ -166,8 +166,8 @@ export class JointInteractor extends Interactor {
           icon: 'assets/contextMenuIcons/addInput.svg',
           label: 'Add Input',
           action: () => {
-            for (const joint of this.stateService.getMechanism().getJoints()) {
-              if (joint.isInput) {
+            for (const cJoint of this.stateService.getMechanism().getJointsConnectedForJoint(this.joint)) {
+              if (cJoint.isInput && cJoint.id != this.joint.id) {
                 return;
               }
             }

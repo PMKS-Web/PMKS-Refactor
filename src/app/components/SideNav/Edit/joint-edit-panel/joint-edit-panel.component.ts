@@ -34,7 +34,7 @@ export class jointEditPanelComponent implements OnDestroy{
   _isInput: boolean = false;
   _isGround: boolean = false;
   _isWeld: boolean = false;
-  _preventToggle: boolean = true;
+  _preventToggle: boolean = true; // stops toggle when animation is running
   _canBeInput: boolean = true;
   public pendingJointDistance?: number;
   public pendingJointAngle?: number;
@@ -82,6 +82,11 @@ export class jointEditPanelComponent implements OnDestroy{
           this._isWeld = value;
         })
         this._canBeInput = this.canBeInput();
+        console.log("preventToggle: ", this._preventToggle);
+        if (!this._preventToggle) {
+          this._preventToggle = true;
+          this._preventToggle = false;
+        }
       }
     });
 
@@ -532,6 +537,7 @@ export class jointEditPanelComponent implements OnDestroy{
       this.getMechanism().removeInput(this.getCurrentJoint().id);
     }
     this._isInput = stateChange;
+    this._canBeInput = this.canBeInput();
   }
 
   // Determines whether welding should be shown for this joint

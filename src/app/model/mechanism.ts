@@ -516,8 +516,9 @@ export class Mechanism {
     if (!joint.canAddInput()) return false;
 
     let connectedJoints = this.getJointsConnectedForJoint(joint);
-    for (const joint of connectedJoints) {
-      if (joint.isInput) {
+    for (const currentJoint of connectedJoints) {
+      if (currentJoint.isInput && currentJoint.id != joint.id) {
+        console.log("Joint with input is: ", currentJoint)
         return false;
       }
     }
@@ -1169,7 +1170,7 @@ export class Mechanism {
   }
 
   // gets all the joints a joint is connected to through its links
-  private getJointsConnectedForJoint(joint: Joint): Joint[] {
+  getJointsConnectedForJoint(joint: Joint): Joint[] {
     let attachedJoints: Joint[] = []; // this will be all the joints the joint is connected to
 
     let allSubMechs: Array<Map<Joint, RigidBody[]>> = this.getSubMechanisms();
@@ -1230,7 +1231,7 @@ export class Mechanism {
       }
     }*/
 
-    console.log(attachedJoints);
+    //console.log(attachedJoints);
     return attachedJoints;
   }
 
