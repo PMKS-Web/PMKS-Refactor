@@ -14,7 +14,7 @@ import { Coord } from '../../../model/coord';
 import { PanZoomService } from '../../../services/pan-zoom.service';
 import { Mechanism } from '../../../model/mechanism';
 import { StateService } from 'src/app/services/state.service';
-import { FormControl } from '@angular/forms';
+import { FormControl, FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-animation-bar',
@@ -23,6 +23,8 @@ import { FormControl } from '@angular/forms';
 })
 export class AnimationBarComponent implements OnInit {
   public sliderControl = new FormControl(0);
+  public _currentTimeStep = 0;
+  public _displayTS = '';
 
   constructor(
     public interactionService: InteractionService,
@@ -36,6 +38,10 @@ export class AnimationBarComponent implements OnInit {
         this.sliderValue = progress * 100;
       }
     });
+    this.animationService.timeStep$.subscribe((timeStep) => {
+      // rounds timeStep to the nearest hundredths place
+      this.currentTimeStep = Math.round(timeStep * 1e2) / 1e2;
+    })
   }
 
   zoomIn() {
@@ -66,6 +72,26 @@ export class AnimationBarComponent implements OnInit {
 
   ngOnInit() {
     this.stateService.setAnimationBarComponent(this);
+
+    const inputTSDisplay = document.getElementById('animationBar-input');
+    const observer = new MutationObserver(changesList => {
+      changesList.forEach(singleChange => {
+        if (singleChange.attributeName === 'disabled') {
+          // checking that disabled attribute has been altered
+          // is also checking that inputTSDisplay is not null and that disabled is true
+          if (inputTSDisplay instanceof HTMLInputElement && inputTSDisplay.disabled) {
+            this._displayTS = '';
+          }
+        }
+      });
+    });
+
+    if (inputTSDisplay !== null && inputTSDisplay !== undefined) {
+      // if inputTSDisplay exists the mutation observer will check and update the value when
+      // it becomes disabled (so when the mechanism becomes invalid)
+      // function is called when attributes of inputTSDisplay are altered, added, or deleted
+      observer.observe(inputTSDisplay, { attributes: true });
+    }
   }
 
   @Input() mechanism!: Mechanism;
@@ -110,6 +136,7 @@ export class AnimationBarComponent implements OnInit {
         this.isAnimating = false;
         this.isPausedAnimating = true;
         this.sliderValue = 0;
+        this.currentTimeStep = 0;
         this.stateService.getMechanism().clearTrajectories();
         //Clear the trajectories
         break;
@@ -239,5 +266,29 @@ export class AnimationBarComponent implements OnInit {
     }
 
     console.log('Final timelineMarkers array:', this.timelineMarkers);
+  }
+
+  onTimeStepInput(event: any): void {
+    const inputElement = event.target as HTMLInputElement;
+    let numericValue = parseFloat(inputElement.value);
+    //this.currentTimeStep = this.animationService.getClosestTimeStep(numericValue);
+    numericValue = this.animationService.getClosestTimeStep(numericValue);
+    const fraction = numericValue / this.animationService.maxTimeStep;
+    this.sliderValue = Math.floor(fraction * 100);
+    this.animationService.setAnimationProgress(fraction);
+    this.currentTimeStep = Math.round(numericValue * 1e2) / 1e2;
+  }
+
+  public set displayTS(value : number) {
+    if (this.invalidMechanism()) {
+      this._displayTS = '';
+    } else {
+      this._displayTS = value.toString();
+    }
+  }
+
+  private set currentTimeStep(value: number) {
+    this._currentTimeStep = value;
+    this.displayTS = value;
   }
 }

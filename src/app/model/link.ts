@@ -255,7 +255,7 @@ export class Link implements RigidBody {
   }
 
   // Neither does this
-  // find the first tow non-empty joints in map. Calculate angle between them
+  // find the first two non-empty joints in map. Calculate angle between them
   // using trigonometry (arctan)
   calculateAngle(): number | null {
     // Get the first two non-empty keys from the joints map
