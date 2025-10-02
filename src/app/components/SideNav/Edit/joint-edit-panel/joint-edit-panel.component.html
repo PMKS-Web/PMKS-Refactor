@@ -200,7 +200,7 @@
           label="Toggle Ground"
           [initialValue]="_isGround"
           [iconClass]="'toggle-ground-icon'"
-          [disabled] = "_preventToggle"
+          [disabled] = "_preventForAni"
           (valueChanged)="handleToggleGroundChange($event)"
           (actionPrevented) = "toggleClickStopped($event)"
         ></app-toggle>
@@ -211,7 +211,7 @@
           label="Toggle Weld"
           [initialValue]="_isWeld"
           [iconClass]="'toggle-weld-icon'"
-          [disabled] = "_preventToggle"
+          [disabled] = "_preventForAni"
           (valueChanged)="handleToggleWeldChange($event)"
           (actionPrevented) = "toggleClickStopped($event)"
         ></app-toggle>
@@ -222,7 +222,7 @@
           label="Toggle Input"
           [initialValue]="_isInput"
           [iconClass]="'toggle-input-icon'"
-          [disabled] = "_preventToggle"
+          [disabled] = "_preventForInput || _preventForAni"
           [canBeInput] = "_canBeInput"
           [inputToggle] = "true"
           (valueChanged)="handleToggleInputChange($event)"

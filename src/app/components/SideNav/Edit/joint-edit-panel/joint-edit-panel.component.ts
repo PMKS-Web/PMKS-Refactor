@@ -34,7 +34,8 @@ export class jointEditPanelComponent implements OnDestroy{
   _isInput: boolean = false;
   _isGround: boolean = false;
   _isWeld: boolean = false;
-  _preventToggle: boolean = true; // stops toggle when animation is running
+  _preventForAni: boolean = true; // stops toggle when animation is running
+  _preventForInput: boolean = false; // stops input toggle if there is already an input joint
   _canBeInput: boolean = true;
   public pendingJointDistance?: number;
   public pendingJointAngle?: number;
@@ -47,7 +48,7 @@ export class jointEditPanelComponent implements OnDestroy{
   ) {
     console.log('joint-edit-panel.constructor');
     this.stateService.getAnimationBarComponent().stoppedAnimating.subscribe((isStopped) => {
-      this._preventToggle = !isStopped;
+      this._preventForAni = !isStopped;
     })
   }
 
@@ -82,11 +83,6 @@ export class jointEditPanelComponent implements OnDestroy{
           this._isWeld = value;
         })
         this._canBeInput = this.canBeInput();
-        console.log("preventToggle: ", this._preventToggle);
-        if (!this._preventToggle) {
-          this._preventToggle = true;
-          this._preventToggle = false;
-        }
       }
     });
 
@@ -206,7 +202,7 @@ export class jointEditPanelComponent implements OnDestroy{
   // Any function that will make changes to the joint should call this.confirmCanEdit() first,
   // to make sure that the mechanism is not in a state of animation, before making changes.
   confirmCanEdit(): boolean {
-    if (this._preventToggle) {
+    if (this._preventForAni) {
       this.notificationService.showWarning(
         'Cannot edit joint while Animation is in play or paused state!'
       );
@@ -468,9 +464,8 @@ export class jointEditPanelComponent implements OnDestroy{
   }
 
   canBeInput() {
-    // || this._isInput
-    console.log("isInput: ", this._isInput)
-    return this.getMechanism().canAddInput(this.getCurrentJoint()) || this._isInput;
+    this._preventForInput = !(this.getMechanism().canAddInput(this.getCurrentJoint()) || this._isInput)
+    return !this._preventForInput;
   }
 
   // called when a click on toggle has been prevented.
