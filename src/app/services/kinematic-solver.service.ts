@@ -198,8 +198,8 @@ export class PositionSolverService {
 
     N += links.size + addGround; // +1 accounts for ground, +0 if no ground present
 
-    //console.log(`N = ${N}, J = ${J}`);
-    //console.log(`3 * (${N} - 1) - 2 * ${J}`)
+    console.log(`N = ${N}, J = ${J}`);
+    console.log(`3 * (${N} - 1) - 2 * ${J}`)
     return 3 * (N - 1) - 2 * J;
   }
 
