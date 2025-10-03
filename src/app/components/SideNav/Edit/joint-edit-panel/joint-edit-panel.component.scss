@@ -17,13 +17,15 @@
   box-shadow: 3px 3px 3px gray;
   width: 100%;
   max-height: calc(90vh - 30px);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .scroll-container {
-  max-height: none;
+  max-height: 83vh;
+  overflow: hidden;
   overflow-y: auto;
-  width: 100%;
-  overflow-x: hidden;
 }
 .scroll-container::-webkit-scrollbar {
   width: 8px;
@@ -136,7 +138,7 @@ button {
 .dar-cell {
   display: flex;
   align-items: center;
-  margin-top: 8px;
+  margin-top: 6px;
   margin-bottom: 5px;
 }
 
@@ -169,6 +171,7 @@ button {
   }
 }
 
+// xy-block
 .xy-block {
   margin-bottom: 12px;
   margin-left: 10px;
@@ -178,7 +181,7 @@ button {
   display: block;
   font: inherit;
   color: inherit;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .xy-row {
@@ -200,5 +203,40 @@ button {
 }
 
 .xy-cell input {
+  width: 3rem;
+}
+
+// styling for input speed
+.speed-block {
+  margin-bottom: 12px;
+  margin-left: 10px;
+}
+
+.speed-label {
+  display: block;
+  font: inherit;
+  color: inherit;
+  margin-bottom: 2px;
+}
+
+.speed-row {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.speed-cell {
+  display: flex;
+  align-items: center;
+  margin-left: 4px;
+}
+
+.speed-unit {
+  margin-left: 4px;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.speed-cell input {
   width: 3rem;
 }

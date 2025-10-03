@@ -1,4 +1,4 @@
-import { Component, Input, EventEmitter, Output } from '@angular/core';
+import {Component, Input, EventEmitter, Output, SimpleChanges} from '@angular/core';
 
 @Component({
   selector: 'app-toggle',
@@ -13,6 +13,16 @@ export class ToggleComponent {
   @Output() valueChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   public value: boolean = this.initialValue;
+
+  ngOnInit() {
+    this.value = this.initialValue;
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['initialValue']) {
+      this.value = changes['initialValue'].currentValue;
+    }
+  }
 
   toggle() {
     this.value = !this.value;

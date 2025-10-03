@@ -1,10 +1,10 @@
-@use 'sass:map';
-@use '@angular/material' as mat;
+@use "sass:map";
+@use "@angular/material" as mat;
 
 .scroll-container {
-  max-height: none;
-  overflow:hidden;
-  overflow-y:auto;
+  max-height: 83vh;
+  overflow: hidden;
+  overflow-y: auto;
 }
 .scroll-container::-webkit-scrollbar {
   width: 8px;
@@ -33,9 +33,10 @@
   background-color: white;
   border-top: 5px solid #ffc107;
   border-radius: 3px;
-  box-shadow: 0 9px 5px 0 gray, 0 9px 5px 0 gray, 12px 0 15px -4px gray, -12px 0 15px -4px gray;
-  width:100%;
-  max-height:calc(90vh - 30px);;
+  box-shadow: 0 9px 5px 0 gray, 0 9px 5px 0 gray, 12px 0 15px -4px gray,
+    -12px 0 15px -4px gray;
+  width: 100%;
+  max-height: calc(90vh - 10px);
   //overflow-y:scroll;
 }
 
@@ -49,7 +50,6 @@
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-start;
-
 }
 
 .left-aligned {
@@ -74,7 +74,7 @@ div.colors {
 }
 
 p.colors {
-  padding:0;
+  padding: 0;
   margin-top: 5px;
   margin-bottom: 0;
 }
@@ -151,7 +151,6 @@ button {
   align-items: center;
 }
 
-
 /* Wrapper for link length+angle section */
 .length-angle-block {
   margin-bottom: 12px;
@@ -192,8 +191,6 @@ button {
   color: #000000;
 }
 
-
-
 .xy-block {
   margin-bottom: 12px;
   margin-top: 5px;
@@ -227,5 +224,3 @@ button {
 .xy-cell input {
   width: 3.5rem;
 }
-
-

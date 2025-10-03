@@ -27,6 +27,8 @@ export class Mechanism {
   public _mechanismChange$ = this._mechanismChange.asObservable();
   private _trajectories: Map<number, Trajectory> = new Map();
   private _refIdCount: number = -1;
+  private _inputSpeed = new BehaviorSubject<number>(10);
+  public mechanismRPMSpeed = this._inputSpeed.asObservable();
 
   private _positionIDCount: number = 0;
   private _positions: Map<number, Position> = new Map();
@@ -94,9 +96,9 @@ export class Mechanism {
 addPos(positionIndex: number) {
     // Get the current coupler length from positionLengthChange
     const couplerLength = this._positionLengthChange.value;
-    
+
     let coord1: Coord, coord2: Coord;
-    
+
     if (positionIndex === 1) {
         coord1 = new Coord(-couplerLength / 2, 0);
         coord2 = new Coord(couplerLength / 2, 0);
@@ -115,7 +117,7 @@ addPos(positionIndex: number) {
     this._jointIDCount++;
     let jointB = new Joint(this._jointIDCount, coord2);
     this._jointIDCount++;
-    
+
     // Create pseudo joint for fixed reference point, do not add to maps, default to center
     const centerX = (jointA.coords.x + jointB.coords.x) / 2;
     const centerY = (jointA.coords.y + jointB.coords.y) / 2;
@@ -123,17 +125,17 @@ addPos(positionIndex: number) {
     jointC.hidden = true;
     jointC.reference = true;
     this._refIdCount--;
-    
+
     this._joints.set(jointA.id, jointA);
     this._joints.set(jointB.id, jointB);
     this._joints.set(jointC.id, jointC);
-    
+
     let position = new Position(positionIndex, [
         jointA,
         jointB,
         jointC,
     ]);
-    
+
     // Set position properties based on index
     if (positionIndex === 1) {
         position.name = 'Position 1';
@@ -142,13 +144,13 @@ addPos(positionIndex: number) {
     } else if (positionIndex === 3) {
         position.name = 'Position 3';
     }
-    
+
     position.setReference(this._positionReference);
-    
+
     this._positionIDCount++;
     this._positions.set(position.id, position);
     this.notifyChange();
-    
+
     return position;
 }
 
@@ -711,7 +713,7 @@ addPos(positionIndex: number) {
   }
 
   /**
-   * attaches a tracer point(effectively a joint) to a an existing link.
+   * attaches a tracer point(effectively a joint) to an existing link.
    *
    * @param {number} linkID
    * @param {Coord} coord
@@ -727,7 +729,7 @@ addPos(positionIndex: number) {
   }
 
   /**
-   * attaches a tracer point(effectively a joint) to a an existing link.
+   * attaches a tracer point(effectively a joint) to an existing link.
    *
    * @param {number} linkID
    * @param {Coord} coord
@@ -1238,6 +1240,11 @@ addPos(positionIndex: number) {
   getArrayOfForces(): Array<Force> {
     return Array.from(this._forces.values());
   }
+
+  getInputSpeed(): number {
+    return this._inputSpeed.value;
+  }
+
   //----------------------------SET FUNCTIONS----------------------------
   set_jointIDCount(count: number) {
     this._jointIDCount = count;
@@ -1277,6 +1284,9 @@ addPos(positionIndex: number) {
     }
   }
 
+  setInputSpeed(speed: number) {
+    this._inputSpeed.next(speed);
+  }
 
   //----------------------------CLEAR FUNCTIONS----------------------------
   clearTrajectories(): void {
