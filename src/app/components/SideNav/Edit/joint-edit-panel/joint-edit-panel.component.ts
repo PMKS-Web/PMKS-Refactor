@@ -496,6 +496,7 @@ export class jointEditPanelComponent implements OnDestroy{
       this._isInput = false;
     }
     this._isGround = stateChange;
+    this._canBeInput = this.canBeInput();
   }
 
   // Handles the toggle for welding the joint
@@ -514,6 +515,7 @@ export class jointEditPanelComponent implements OnDestroy{
       this.getMechanism().removeWeld(this.getCurrentJoint().id);
     }
     this._isWeld = stateChange;
+    this._canBeInput = this.canBeInput();
   }
 
   // Handles the toggle for marking the joint as an input
