@@ -512,7 +512,8 @@ export class Mechanism {
   //----------------------------JOINT CONTEXT MENU ACTIONS VERIFIERS----------------------------
 
   canAddInput(joint: Joint): boolean {
-    //check if the joint knows it can be an input
+    // check if the joint knows it can be an input
+    // doesn't take into account if the current joint is an input joint already
     if (!joint.canAddInput()) return false;
 
     let connectedJoints = this.getJointsConnectedForJoint(joint);
@@ -1169,69 +1170,39 @@ export class Mechanism {
     return [...connectedLinks, ...connectedCompoundLinks] as RigidBody[];
   }
 
-  // gets all the joints a joint is connected to through its links
+  // gets all the joints a joint is connected to through its submechanism/linkage
   getJointsConnectedForJoint(joint: Joint): Joint[] {
     let attachedJoints: Joint[] = []; // this will be all the joints the joint is connected to
 
-    let allSubMechs: Array<Map<Joint, RigidBody[]>> = this.getSubMechanisms();
+    let allSubMechs: Array<Map<Joint, RigidBody[]>> = this.getSubMechanisms(); // this gives back all the sub mechanisms/full linkages
+
     if (allSubMechs.length <= 0) {
       return attachedJoints;
     }
+
     let subMech: Map<Joint, RigidBody[]> = new Map();
     let found = false;
     let i = 0;
     while (!found && i < allSubMechs.length) {
+      // find the submechanism with the joint in it
       if (allSubMechs[i].has(joint)) {
         subMech = allSubMechs[i];
         found = true;
       }
       i++;
     }
+
     if (!found) {
       return attachedJoints;
     }
 
+    // from the submechanism, extract all the joints in it besides the joint we are looking at
     for (let keyJ of subMech.keys()) {
       if (!attachedJoints.includes(keyJ)) {
         attachedJoints.push(keyJ);
       }
     }
 
-    /*let allJoints: IterableIterator<Joint> = this.getJoints(); // these are all the joints in the application
-    let connectedLinks: Link[] = this.getConnectedLinksForJoint(joint); // these are all the links a joint is connected to
-    let connectedCompoundLinks: CompoundLink[] = this.getConnectedCompoundLinks(joint); // these are all the compound links a joint is connected to
-    //console.log(joint)
-    console.log(connectedLinks);
-    console.log(connectedCompoundLinks);
-
-    // looking through all the joints and seeing if they are in one of the links the joint is attached to
-    for (const oneJoint of allJoints) {
-      let passed = false;
-      let i = 0;
-      let j = 0;
-      while (!passed && oneJoint.id != joint.id) {
-        if (i < connectedLinks.length.valueOf()) {
-          // looking through links to see if this joint is part of any of them
-          if (connectedLinks[i].containsJoint(joint.id)) {
-            attachedJoints.push(oneJoint);
-            passed = true;
-          }
-          i += 1;
-        } else if (j < connectedCompoundLinks.length.valueOf()) {
-          // looking through compound links to see if this joint is part of any of them
-          if (connectedCompoundLinks[i].containsJoint(joint.id)) {
-            attachedJoints.push(oneJoint);
-            passed = true;
-          }
-          j += 1;
-        } else {
-          // the joint was in none of them, moving onto next joint
-          passed = true;
-        }
-      }
-    }*/
-
-    //console.log(attachedJoints);
     return attachedJoints;
   }
 

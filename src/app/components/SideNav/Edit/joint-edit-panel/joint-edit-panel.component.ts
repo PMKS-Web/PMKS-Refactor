@@ -31,12 +31,12 @@ export class jointEditPanelComponent implements OnDestroy{
   isEditingTitle: boolean = false;
   units: string = 'cm';
   angles: string = 'º';
-  _isInput: boolean = false;
-  _isGround: boolean = false;
-  _isWeld: boolean = false;
-  _preventForAni: boolean = true; // stops toggle when animation is running
-  _preventForInput: boolean = false; // stops input toggle if there is already an input joint
-  _canBeInput: boolean = true;
+  _isInput: boolean = false; // true if current joint is an input
+  _isGround: boolean = false; // true if current joint is grounded
+  _isWeld: boolean = false; // true if current joint is welded
+  _preventForAni: boolean = true; // stops toggle when animation is running, true if animation is running
+  _preventForInput: boolean = false; // stops input toggle if there is already an input joint, true if joint can't become/stop being an input
+  _canBeInput: boolean = true; // true if joint can become/is an input
   public pendingJointDistance?: number;
   public pendingJointAngle?: number;
   constructor(
@@ -70,6 +70,7 @@ export class jointEditPanelComponent implements OnDestroy{
       // when nothing is selected (i.e. after delete), wipe out our buffers
       if (!sel) this.resetPanel();
       else {
+        // recalculates necessary variables for when selected joint changes
         this.getCurrentJoint();
         this.displayInputSpeed();
         this.getCurrentJoint().getInputObservable().subscribe(value => {
@@ -463,6 +464,7 @@ export class jointEditPanelComponent implements OnDestroy{
     return this.getCurrentJoint().isWelded;
   }
 
+  // checks if the current joint can become an input/be toggled off from input
   canBeInput() {
     this._preventForInput = !(this.getMechanism().canAddInput(this.getCurrentJoint()) || this._isInput)
     return !this._preventForInput;
@@ -482,10 +484,6 @@ export class jointEditPanelComponent implements OnDestroy{
 
   // Handles the toggle for grounding the joint
   handleToggleGroundChange(stateChange: boolean) {
-    /*let canEdit = this.confirmCanEdit();
-    if (!canEdit) {
-      return;
-    }*/
 
     console.log('Toggle State Changed: ', stateChange);
     this.getCurrentJoint();
@@ -501,11 +499,6 @@ export class jointEditPanelComponent implements OnDestroy{
 
   // Handles the toggle for welding the joint
   handleToggleWeldChange(stateChange: boolean) {
-    /*let canEdit = this.confirmCanEdit();
-    if (!canEdit) {
-      this._isWeld = !stateChange;
-      return;
-    }*/
 
     console.log('Toggle State Changed: ', stateChange);
     this.getCurrentJoint();
@@ -520,11 +513,6 @@ export class jointEditPanelComponent implements OnDestroy{
 
   // Handles the toggle for marking the joint as an input
   handleToggleInputChange(stateChange: boolean) {
-    /*let canEdit = this.confirmCanEdit();
-    if (!canEdit) {
-      this._isInput = !stateChange;
-      return;
-    }*/
 
     console.log('Toggle State Changed: ', stateChange);
     this.getCurrentJoint();
@@ -572,6 +560,7 @@ export class jointEditPanelComponent implements OnDestroy{
     this.pendingY = undefined;
   }
 
+  // changes how input joint speed in edit panel is styled depending on whether it in the panel or not
   displayInputSpeed() {
     const inputSpeedHTML = document.getElementById('inputJointSpeed');
     const xyBlockHTML = document.getElementById('jointPositions');
@@ -593,7 +582,6 @@ export class jointEditPanelComponent implements OnDestroy{
 
   getInputSpeed() {
     return this.getCurrentJoint().rpmSpeed;
-    //return this.getMechanism().getInputSpeed();
   }
 
   setInputSpeed(newSpeed: number): void {
