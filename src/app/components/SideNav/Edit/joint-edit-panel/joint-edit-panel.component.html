@@ -145,8 +145,12 @@
                       />
                       <input
                         type="number"
-                        [value]="getJointDistance(joint)"
-                        (change)="
+                        id="angleInputElement"
+                        [value]="pendingJointDistance ?? getJointDistance(joint)"
+                        (input)="
+                          pendingJointDistance = $any($event.target).valueAsNumber
+                        "
+                        (keydown.enter)="
                           changeJointDistance(
                             joint.id,
                             $any($event.target).valueAsNumber
@@ -172,7 +176,8 @@
                       />
                       <input
                         type="number"
-                        [ngModel]="getJointAngle(joint)"
+                        [ngModel]="pendingJointAngle ?? getJointAngle(joint)"
+                        (input) = "pendingJointAngle = $any($event.target).valueAsNumber"
                         (keydown.enter)="
                           onAngleEnter(joint.id, $any($event.target).value)
                         "
@@ -208,7 +213,9 @@
           label="Add Ground"
           [initialValue]="_isGround"
           [iconClass]="'toggle-ground-icon'"
+          [disabled] = "_preventForAni"
           (valueChanged)="handleToggleGroundChange($event)"
+          (actionPrevented) = "toggleClickStopped($event)"
         ></app-toggle>
         <!-- TOGGLE BLOCK FOR WELDING -->
         <app-toggle
@@ -217,7 +224,9 @@
           label="Add Weld"
           [initialValue]="_isWeld"
           [iconClass]="'toggle-weld-icon'"
+          [disabled] = "_preventForAni"
           (valueChanged)="handleToggleWeldChange($event)"
+          (actionPrevented) = "toggleClickStopped($event)"
         ></app-toggle>
         <!-- TOGGLE BLOCK FOR INPUT -->
         <app-toggle
@@ -226,7 +235,11 @@
           label="Add Input"
           [initialValue]="_isInput"
           [iconClass]="'toggle-input-icon'"
+          [disabled] = "_preventForInput || _preventForAni"
+          [canBeInput] = "_canBeInput"
+          [inputToggle] = "true"
           (valueChanged)="handleToggleInputChange($event)"
+          (actionPrevented) = "toggleClickStopped($event)"
         ></app-toggle>
       </collapsible-subsection>
     </div>
