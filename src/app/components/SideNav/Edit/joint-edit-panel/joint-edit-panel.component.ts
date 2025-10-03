@@ -1,9 +1,9 @@
-import { Component, OnDestroy } from '@angular/core';
+import {Component, Input, OnDestroy} from '@angular/core';
 import { StateService } from 'src/app/services/state.service';
 import { InteractionService } from 'src/app/services/interaction.service';
 import { JointInteractor } from 'src/app/controllers/joint-interactor';
 import { Mechanism } from 'src/app/model/mechanism';
-import { Joint } from 'src/app/model/joint';
+import {Joint, JointType} from 'src/app/model/joint';
 import { Link } from 'src/app/model/link';
 import {
   LinkEditHoverService,
@@ -19,7 +19,6 @@ import {UndoRedoService} from "src/app/services/undo-redo.service";
 })
 
 export class jointEditPanelComponent implements OnDestroy{
-
   graphExpanded: { [key: string]: boolean } = {
     basicBasic: true,
     basicVisual: false,
@@ -53,6 +52,7 @@ export class jointEditPanelComponent implements OnDestroy{
 
   public pendingX?: number;
   public pendingY?: number;
+  public pendingAngle?: number;
 
   private _selSub = this.interactorService._selectionChange$
     .subscribe(sel => {
@@ -127,6 +127,13 @@ export class jointEditPanelComponent implements OnDestroy{
     this.stateService.getMechanism().notifyChange();
 
     this.pendingY = undefined;
+  }
+
+  confirmJointAngle(): void {
+    if (this.pendingAngle == null) return;
+
+    this.setJointAngle(this.pendingAngle);
+    this.pendingAngle = undefined;
   }
 
   // Handles input of angle values when pressing Enter
@@ -245,6 +252,24 @@ export class jointEditPanelComponent implements OnDestroy{
       this.getCurrentJoint().id,
       parseFloat(yCoordInput.toFixed(3))
     );
+  }
+
+  setJointAngle(angleInput: number): void {
+    const joint = this.getCurrentJoint();
+    const oldAngle = joint.angle;
+    const newAngle = parseFloat(angleInput.toFixed(3));
+
+    if (newAngle !== oldAngle) {
+      this.undoRedoService.recordAction({
+        type: "setJointAngle",
+        jointId: joint.id,
+        oldAngle,
+        newAngle,
+      });
+      joint.angle = newAngle;
+    }
+
+    console.log(`Joint ${joint.id} angle set to ${newAngle}`);
   }
 
   onTitleBlockClick(event: MouseEvent): void {
@@ -395,6 +420,8 @@ export class jointEditPanelComponent implements OnDestroy{
     return parseFloat(angleInDegrees.toFixed(3));
   }
 
+  getJointAngle2(): number {
+    return this.getCurrentJoint().angle;
   getJointGround() {
     return this.getCurrentJoint().isGrounded;
   }
@@ -477,6 +504,14 @@ export class jointEditPanelComponent implements OnDestroy{
   private resetPanel(): void {
     this.pendingX = undefined;
     this.pendingY = undefined;
+    this.pendingAngle = undefined;
+  }
+
+  get currentJointType(): 'slider' | 'slider-input' | 'other' {
+    if (!this.getCurrentJoint()) return 'slider-input';
+    if (!this.getCurrentJoint().isInput && this.getCurrentJoint().type === JointType.Prismatic) return 'slider';
+    if (this.getCurrentJoint().isInput && this.getCurrentJoint().type === JointType.Prismatic) return 'slider-input';
+    return 'other';
   }
 
   displayInputSpeed() {
