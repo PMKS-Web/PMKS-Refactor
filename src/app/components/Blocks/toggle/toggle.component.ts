@@ -1,4 +1,4 @@
-import { Component, Input, EventEmitter, Output } from '@angular/core';
+import {Component, Input, EventEmitter, Output, SimpleChanges} from '@angular/core';
 
 @Component({
   selector: 'app-toggle',
@@ -10,11 +10,49 @@ export class ToggleComponent {
   @Input() label: string = '';
   @Input() initialValue: boolean = false;
   @Input() iconClass: string = ''; // Add this line
-  @Output() valueChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Input() disabled: boolean = false; // if this is true, will disable the toggle
+  @Input() canBeInput: boolean = true; // this is for an input toggle, if true, the current joint can be an input and toggle works
+  @Input() inputToggle: boolean = false; // this is to see whether the current toggle is an input joint toggle
+  @Output() valueChanged: EventEmitter<boolean> = new EventEmitter<boolean>(); // if the toggle's value changes, the new value will be emitted
+  @Output() actionPrevented: EventEmitter<number> = new EventEmitter<number>(); // emits when preventing toggle action; used for notifications
 
   public value: boolean = this.initialValue;
 
+  ngOnInit() {
+    this.value = this.initialValue;
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    // checks for any changes in these input values
+    if (changes['initialValue']) {
+      this.value = changes['initialValue'].currentValue;
+    }
+    if (changes['disabled']) {
+      this.disabled = changes['disabled'].currentValue;
+    }
+    if (changes['canBeInput']) {
+      this.canBeInput = changes['canBeInput'].currentValue;
+    }
+    if (changes['inputToggle']) {
+      this.inputToggle = changes['inputToggle'].currentValue;
+    }
+  }
+
   toggle() {
+    if (this.inputToggle && !this.canBeInput && !this.value) {
+      // checks if this current toggle is an input toggle
+      // if input toggle, then checks if current joint can become an input joint
+      // if it cannot become an input joint and is not already an input joint, will prevent action
+      this.actionPrevented.emit(1);
+      this.disabled = true;
+      return;
+    }
+    if (this.disabled) {
+      // for when toggle is disabled (probably due to animation running)
+      this.actionPrevented.emit(0);
+      return;
+    }
+    // if not prevented, change value
     this.value = !this.value;
     this.valueChanged.emit(this.value);
   }

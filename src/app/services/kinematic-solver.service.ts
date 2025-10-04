@@ -4,6 +4,7 @@ import { Joint, JointType } from '../model/joint';
 import { RigidBody } from '../model/link';
 import { Coord } from '../model/coord';
 import { BehaviorSubject } from 'rxjs';
+import {add, has} from "lodash";
 
 export enum SolveType {
   Ground,
@@ -138,7 +139,11 @@ export class PositionSolverService {
       inputJoint!,
       subMechanism
     );
-    return minDistanceFromGround == 4;
+    console.log("Loop: " + minDistanceFromGround)
+    //allows mechanism with open loop
+    return minDistanceFromGround == Number.MAX_VALUE || minDistanceFromGround == 4;
+
+
   }
 
   // Finds the single input joint in a submechanism and ensures it is grounded; returns null if invalid.
@@ -164,6 +169,9 @@ export class PositionSolverService {
   private getDegreesOfFreedom(subMechanism: Map<Joint, RigidBody[]>): number {
     let N: number = 0; // number of links
     let J: number = 0; //counting full pair connections
+    let hasGround = false;
+    let addGround = 0;
+
     let links: Set<RigidBody> = new Set();
     for (let joint of subMechanism.keys()) {
       for (let rigidBody of subMechanism.get(joint)!) {
@@ -174,6 +182,7 @@ export class PositionSolverService {
           J += subMechanism.get(joint)!.length - 1;
           if (joint.isGrounded) {
             J += 1;
+            hasGround = true;
           }
           break;
         case JointType.Prismatic:
@@ -182,9 +191,16 @@ export class PositionSolverService {
           break;
       }
     }
-    N += links.size + 1; // +1 accounts for ground that is assumed
-    console.log(`N = ${N}, J = ${J}`);
-    return 3 * (N - 1) - 2 * J; //
+
+    if (hasGround) {
+      addGround++; // 0 or 1
+    }
+
+    N += links.size + addGround; // +1 accounts for ground, +0 if no ground present
+
+    // console.log(`N = ${N}, J = ${J}`);
+    // console.log(`3 * (${N} - 1) - 2 * ${J}`)
+    return 3 * (N - 1) - 2 * J;
   }
 
   // Recursively computes the minimum link‐distance from a given input joint back to the grounded joint.
@@ -723,4 +739,39 @@ export class PositionSolverService {
   public getAnimationPositions(): Coord[][] {
     return this.animationPositions.flatMap((entry) => entry.positions);
   }
+
+  public isMechanism(subMechanism: Map<Joint, RigidBody[]>): boolean {
+    let hasGround = false;
+    let addGround: number = 0;
+
+    let links: Set<RigidBody> = new Set();
+    for (let joint of subMechanism.keys()) {
+      if (joint.isGrounded) {
+        hasGround = true;
+      }
+      for (let rigidBody of subMechanism.get(joint)!) {
+        links.add(rigidBody);
+      }
+    }
+    if (hasGround) {
+      addGround++;
+    }
+    // At least one submechanism, number of links minimum 2 (ground counts if applicable)
+    return (subMechanism.size > 0 && links.size + addGround >= 2)
+
+  }
+
+  public getDegrees(): string | number {
+    const subMechanisms = this.stateService.getMechanism().getSubMechanisms();
+    if (subMechanisms.length === 0) {
+      return "N/A";
+    }
+
+    if (!this.isMechanism(subMechanisms[0])) {
+      return "N/A";
+    }
+
+    return this.getDegreesOfFreedom(subMechanisms[0]);
+  }
+
 }

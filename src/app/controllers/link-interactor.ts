@@ -46,6 +46,14 @@ export class LinkInteractor extends Interactor {
         return;
       }
 
+      if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
+      ) {
+        this.notificationService.showWarning(
+          'Cannot edit while Animation is in play or paused state!'
+        );
+        return;
+      }
+
       this.link.joints.forEach((joint: Joint, id: number) => {
         this.linkStartPositions.set(id, joint.coords.clone());
       });
@@ -86,6 +94,11 @@ export class LinkInteractor extends Interactor {
 
     // On drag end, inside LinkInteractor:
     this.onDragEnd$.subscribe(() => {
+      if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
+      ) {
+        return;
+      }
+
       //Snapshot the old positions from your Map<number,Coord>
       const oldPositions = Array.from(this.linkStartPositions.entries()).map(
         ([jointId, coords]) => ({
@@ -132,6 +145,13 @@ export class LinkInteractor extends Interactor {
     if (this.stateService.getCurrentActivePanel === 'Synthesis') {
       this.notificationService.showNotification(
         'Cannot edit in the Synthesis mode! Switch to Edit mode to edit.'
+      );
+      return availableContext;
+    }
+    if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
+    ) {
+      this.notificationService.showWarning(
+        'Cannot edit while Animation is in play or paused state!'
       );
       return availableContext;
     }

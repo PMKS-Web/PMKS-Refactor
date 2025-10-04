@@ -155,6 +155,9 @@
             [btn1SVGPath]="addTracerIconPath"
             [btn2SVGPath]="addForceIconPath"
             [mechanism]="getMechanism()"
+            [btn1Disabled] = "_preventDualButtons"
+            [btn2Disabled] = "_preventDualButtons"
+            (actionPrevented) = "dualButtonClickStopped($event)"
           >
           </dual-button>
         </div>
