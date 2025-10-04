@@ -286,20 +286,6 @@ export class StateService {
     const oldSuffix = this.globalAnglesSuffix.value;
     if (oldSuffix === suffix) return;
 
-    const conversionFactor: {[key: string]: number} = {
-      'º': 1,
-      'rad': Math.PI/180
-    }
-
-    const fromFractor = conversionFactor[oldSuffix];
-    const toFractor = conversionFactor[suffix];
-    const conversionRatio = toFractor / fromFractor;
-
-    this.mechanism.getArrayOfLinks().forEach(link => {
-      link.angle *= conversionRatio;
-    });
-
-    this.mechanism.notifyChange(); //notify the mechanism
     this.globalAngles.next(angles);
     this.globalAnglesSuffix.next(suffix);
   }

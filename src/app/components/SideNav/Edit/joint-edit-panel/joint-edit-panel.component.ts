@@ -385,19 +385,16 @@ export class jointEditPanelComponent implements OnInit, OnDestroy{
 
     let angleInRadians = Math.atan2(yDiff, xDiff);
     let angleInDegrees = angleInRadians * (180 / Math.PI);
-
     // Normalize the angle to be within [0, 360] degrees
     if (this.angleSuffix === 'º') {
       if (angleInDegrees < 0) {
         angleInDegrees += 360;
       }
-  
       return parseFloat(angleInDegrees.toFixed(3));
     } else if(this.angleSuffix === 'rad') {
       if (angleInRadians < 0) {
         angleInRadians += 2 * (Math.PI); // Normalize to be within [0, 2pi]
       }
-
       return parseFloat(angleInRadians.toFixed(3));
     }
 

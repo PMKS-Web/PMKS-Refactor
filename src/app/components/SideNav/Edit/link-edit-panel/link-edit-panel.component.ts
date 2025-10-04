@@ -158,8 +158,8 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
 
   // Saves the new pending link angle
   confirmLinkAngle(): void {
-    setTimeout(() => {
-      let raw = this.pendingLinkAngle;
+    // setTimeout(() => {
+      let raw = this.pendingLinkAngle; 
       if (raw == null) return;
 
       if (this.angleSuffix === 'rad') { //need to convert the 'raw' into degrees if the current unit is 'rad', we have to convert it because the logic in backend only works with unit in degrees.
@@ -167,8 +167,7 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
       }
 
       const link = this.getSelectedObject();
-      const oldAng = link.calculateAngle() ?? 0;
-      
+      const oldAng = this.getLinkAngle(); 
       const newAng = raw;
       if (Math.abs(oldAng - newAng) < 1e-6) {
         this.pendingLinkAngle = undefined;
@@ -186,7 +185,7 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
       this.setLinkAngle(newAng);
       this.getMechanism().notifyChange();
       this.pendingLinkAngle = undefined;
-    }, 0);
+    // }, 0);
   }
 
   onLengthHover(isHovering: boolean) {
@@ -239,8 +238,9 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
           angleInDegrees += 360; // Normalize to be within [0, 360]
         }
         // Round to the nearest hundredth
-        return parseFloat(angleInDegrees.toFixed(3));
-      } else if (this.angleSuffix === 'rad') { // Radians
+        const x = angleInDegrees.toFixed(3)
+        return parseFloat(x);
+    } else if (this.angleSuffix === 'rad') { // Radians
         let angleInRadians = angleInDegrees * (Math.PI)/180;
 
         if (angleInRadians < 0) {
