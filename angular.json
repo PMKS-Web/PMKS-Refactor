@@ -25,6 +25,7 @@
               "src/assets"
             ],
             "styles": [
+              "node_modules/driver.js/dist/driver.css",
               "src/theme.scss",
               "src/styles.css"
             ],
@@ -89,6 +90,7 @@
               "src/assets"
             ],
             "styles": [
+              "node_modules/driver.js/dist/driver.css",
               "src/styles.css"
             ],
             "scripts": []

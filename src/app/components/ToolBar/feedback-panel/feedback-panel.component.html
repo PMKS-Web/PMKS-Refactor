@@ -1,7 +1,6 @@
-
 <div class="remover" *ngIf="true" (click)="closePanel($event)">
 
-  <div class="panel panel-feedback" (click)="$event.stopPropagation()">
+  <div class="panel panel-feedback" data-tour="feedback-panel" (click)="$event.stopPropagation()">
     <panel-section-collapsible>
       <title-block description="" class="feedbackHeader">
         <h3>Feedback</h3>
