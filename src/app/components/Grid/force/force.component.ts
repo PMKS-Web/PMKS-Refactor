@@ -23,6 +23,7 @@ import { ForceInteractor } from 'src/app/controllers/force-interactor';
 import { Force } from 'src/app/model/force';
 import { PanZoomService } from 'src/app/services/pan-zoom.service';
 import { AnimationService } from 'src/app/services/animation.service';
+import { UndoRedoService } from 'src/app/services/undo-redo.service';
 
 @Component({
   selector: '[app-force]',
@@ -50,6 +51,7 @@ export class ForceComponent
     private unitConversionService: UnitConversionService,
     private cdr: ChangeDetectorRef,
     private panZoomService: PanZoomService,
+    private undoRedoService: UndoRedoService,
     animationService: AnimationService
   ) {
     super(interactionService, animationService);
@@ -60,7 +62,8 @@ export class ForceComponent
       this.force,
       this.stateService,
       this.interactionService,
-      this.notificationService
+      this.notificationService,
+      this.undoRedoService
     );
   }
 

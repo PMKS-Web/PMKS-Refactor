@@ -74,7 +74,7 @@ import { RouterModule } from '@angular/router';
 import { NotificationComponent } from './components/Blocks/notification/notification.component';
 import { ForceEditPanelComponent } from './components/SideNav/Edit/force-edit-panel/force-edit-panel.component';
 import { ForceComponent } from './components/Grid/force/force.component';
-import {FeedbackPanelComponent} from "./components/ToolBar/feedback-panel/feedback-panel.component";
+import { FeedbackPanelComponent } from './components/ToolBar/feedback-panel/feedback-panel.component';
 
 @NgModule({
   declarations: [
@@ -132,8 +132,7 @@ import {FeedbackPanelComponent} from "./components/ToolBar/feedback-panel/feedba
     NotificationComponent,
     ForceEditPanelComponent,
     ForceComponent,
-
-
+    FeedbackPanelComponent,
   ],
   imports: [
     BrowserModule,
@@ -157,7 +156,6 @@ import {FeedbackPanelComponent} from "./components/ToolBar/feedback-panel/feedba
     MatSliderModule,
     NgOptimizedImage,
     RouterModule.forRoot([]),
-    FeedbackPanelComponent,
   ],
   providers: [],
   exports: [PanelSectionCollapsibleComponent, TitleBlock],

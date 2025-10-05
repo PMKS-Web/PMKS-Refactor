@@ -121,7 +121,7 @@ export class InteractionService {
       const joint = object as JointInteractor;
       if (joint.joint.id < 0) {
         console.log(
-          'This join is invalid or is a reference point. Cannot be right clicked.'
+          'This joint is invalid or is a reference point. Cannot be right clicked.'
         );
         return;
       }
@@ -318,10 +318,14 @@ export class InteractionService {
   // Deselects any currently selected Interactor.
   public deselectObject() {
     this.lastSelected = undefined;
+    this._selectionChange.next(undefined);
   }
 
   // Selects the specified Interactor and deselects all others.
   public setSelectedObject(interactor: Interactor): void {
     this.selectNewObject(interactor);
   }
+
+
+
 }

@@ -13,15 +13,53 @@
 <body class="mat-typography" style='width: 100vw; height: 100vh; overflow: hidden !important;'>
   <app-root style='width: 100vw; height: 100vh; overflow: hidden !important; display: block;'></app-root>
   <script>
-    window.addEventListener('resize', checkWindowSize);
-    function checkWindowSize() {
-      const minWidth = 400;
-      const minHeight = 400;
+    let resizeTimer;
 
-      if (window.innerWidth < minWidth || window.innerHeight < minHeight) {
-        alert('Your window is too small!');
+    const MIN_W = 400;
+    const MIN_H = 400;
+
+    let sizeWarningActive = false;
+    let wasTooSmall = false;
+
+
+    const TOAST_LIFETIME_MS = 2600;
+
+    function triggerSizeWarningIfNeeded() {
+      const tooNarrow = window.innerWidth < MIN_W;
+      const tooShort  = window.innerHeight < MIN_H;
+      const isTooSmall = tooNarrow || tooShort;
+
+
+      if (isTooSmall && !wasTooSmall && !sizeWarningActive) {
+        const reason = [
+          tooNarrow ? `width < ${MIN_W}px` : null,
+          tooShort  ? `height < ${MIN_H}px` : null
+        ].filter(Boolean).join(' & ');
+
+        const msg = `Your window is too small (${reason}). For the best experience, enlarge the window.`;
+
+
+        if (window.pmksNotify) {
+          window.pmksNotify(msg, 'warning');
+        }
+
+
+        sizeWarningActive = true;
+        setTimeout(() => { sizeWarningActive = false; }, TOAST_LIFETIME_MS);
       }
+
+      wasTooSmall = isTooSmall;
     }
+
+    function onResize() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(triggerSizeWarningIfNeeded, 150);
+    }
+
+    window.addEventListener('resize', onResize);
+    window.addEventListener('DOMContentLoaded', triggerSizeWarningIfNeeded);
   </script>
+
+
 </body>
 </html>

@@ -150,10 +150,14 @@
             btn1Text="Add Tracer"
             btn2Text="Add Force"
             [btn1Action]="addTracer"
+            [btn2Action]="addForce"
             [Link]="getSelectedObject()"
             [btn1SVGPath]="addTracerIconPath"
             [btn2SVGPath]="addForceIconPath"
             [mechanism]="getMechanism()"
+            [btn1Disabled] = "_preventDualButtons"
+            [btn2Disabled] = "_preventDualButtons"
+            (actionPrevented) = "dualButtonClickStopped($event)"
           >
           </dual-button>
         </div>
@@ -229,16 +233,17 @@
       >
         <div class="input-container">
           <div class="label-group">
-            <span class="label" style="margin-left: 12px">Link Mass</span>
+            <span class="label" style="margin-left: 12px; margin-top: -20px">Link Mass</span>
             <mat-icon
               id="linkMassTooltip"
               matTooltip="Enter tooltip here"
               [matTooltipShowDelay]="1000"
               class="label-help"
+              [ngStyle]="{ 'margin-top': '-10px' }"
               >help_outline</mat-icon
             >
           </div>
-          <div class="input-group">
+          <div class="input-group"  style="margin-top: -20px">
             <single-input-block
               class="right-aligned"
               [showIcon]="false"
@@ -250,11 +255,12 @@
         <dual-input-block
           label1="X"
           label2="Y"
-          unit1=""
-          unit2=""
+          unit1="cm"
+          unit2="cm"
           tooltip="Enter tooltip here"
+          [ngStyle]="{ 'margin-bottom': '8px', 'margin-top': '-20px' }"
         >
-          Center of Mass Position
+          <span style="margin-bottom: 12px; display: inline-block;">Center of Mass Position</span>
         </dual-input-block>
       </collapsible-subsection>
       <!-- VISUAL SETTINGS -->

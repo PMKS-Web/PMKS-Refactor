@@ -9,6 +9,7 @@ import { Action } from '../components/ToolBar/undo-redo-panel/action';
 import { NotificationService } from '../services/notification.service';
 import { UndoRedoService } from '../services/undo-redo.service';
 
+
 /*
 This interactor defines the following behaviors:
 - Dragging the joint moves it
@@ -39,6 +40,13 @@ export class JointInteractor extends Interactor {
           this.notificationService.showNotification(
             'Please change the length and angle from the Synthesis Panel.'
           );
+        return;
+      }
+      if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
+      ) {
+        this.notificationService.showWarning(
+          'Cannot edit while Animation is in play or paused state!'
+        );
         return;
       }
 
@@ -78,6 +86,10 @@ export class JointInteractor extends Interactor {
     });
 
     this.onDragEnd$.subscribe(() => {
+      if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
+      ) {
+        return;
+      }
       if (this.jointStartCoords) {
         const oldPos = this.jointStartCoords;
         const newPos = this.joint.coords.clone();
@@ -109,6 +121,13 @@ export class JointInteractor extends Interactor {
       this.notificationService.showNotification(
         'Cannot edit in the Synthesis mode! Switch to Edit mode to edit.'
       );
+    }
+    if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
+    ) {
+      this.notificationService.showWarning(
+        'Cannot edit while Animation is in play or paused state!'
+      );
+      return availableContext;
     }
     if (this.stateService.getCurrentActivePanel === 'Analysis') {
       this.notificationService.showNotification(
@@ -147,6 +166,12 @@ export class JointInteractor extends Interactor {
           icon: 'assets/contextMenuIcons/addInput.svg',
           label: 'Add Input',
           action: () => {
+            for (const cJoint of this.stateService.getMechanism().getJointsConnectedForJoint(this.joint)) {
+              if (cJoint.isInput && cJoint.id != this.joint.id) {
+                return;
+              }
+            }
+
             const actionObj: Action = {
               type: 'addInput',
               jointId: this.joint.id,
@@ -156,7 +181,7 @@ export class JointInteractor extends Interactor {
 
             mechanism.addInput(this.joint.id);
           },
-          disabled: !mechanism.canAddInput(this.joint),
+          disabled: !mechanism.canAddInput(this.joint) ,
         });
       }
       //Logic for Grounding option
@@ -330,8 +355,11 @@ export class JointInteractor extends Interactor {
           };
 
           this.undoRedoService.recordAction(actionObj);
+          this.interactionService.deselectObject();
         },
         disabled: false,
+
+
       });
     }
     return availableContext;

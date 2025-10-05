@@ -39,8 +39,11 @@
     <div id='timeInputWrapper'>
       <div id='tLabel'>T:</div>
       <form>
+        <!--[value]="invalidMechanism() ? '' : currentTimeStep"-->
         <input
+          [(ngModel)]="_displayTS"
           [disabled]='invalidMechanism()'
+          (keyup.enter)="onTimeStepInput($event)"
           id='animationBar-input'
           name='timestep'
           type='number'
