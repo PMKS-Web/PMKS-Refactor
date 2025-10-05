@@ -42,8 +42,11 @@ export class jointEditPanelComponent implements OnInit, OnDestroy{
   _preventForAni: boolean = true; // stops toggle when animation is running, true if animation is running
   _preventForInput: boolean = false; // stops input toggle if there is already an input joint, true if joint can't become/stop being an input
   _canBeInput: boolean = true; // true if joint can become/is an input
-  public pendingJointDistance?: number;
-  public pendingJointAngle?: number;
+  public pendingJointDistance?: number; 
+  public pendingJointAngle?: number; // This is for angle of a normal Joint
+  public pendingX?: number;
+  public pendingY?: number;
+  public pendingAngle?: number; // This is for angle of a Joint attached to Slider
 
   constructor(
     private undoRedoService: UndoRedoService,
@@ -79,11 +82,6 @@ export class jointEditPanelComponent implements OnInit, OnDestroy{
     this.unitSuffixSubscription.unsubscribe();
     this.angleSuffixSubscription.unsubscribe();
   }
-
-
-  public pendingX?: number;
-  public pendingY?: number;
-  public pendingAngle?: number;
 
   private _selSub = this.interactorService._selectionChange$
     .subscribe(sel => {
@@ -174,6 +172,7 @@ export class jointEditPanelComponent implements OnInit, OnDestroy{
     this.pendingY = undefined;
   }
 
+  // This is for angle of a Joint attached to Slider
   confirmJointAngle(): void {
     if (this.pendingAngle == null) return;
 
@@ -182,12 +181,12 @@ export class jointEditPanelComponent implements OnInit, OnDestroy{
   }
 
   // Handles input of angle values when pressing Enter
-  onAngleEnter(jointId: number, raw: string) {
-    this.pendingJointAngle = parseFloat(raw);
+  onAngleEnter(jointId: number) {
+    let newAngle = this.pendingJointAngle;
+    if(newAngle == null) return;
 
-    const newAngle = parseFloat(raw);
-    if (isNaN(newAngle)) {
-      return;
+    if (this.angleSuffix === 'rad') { //need to convert the 'raw' into degrees if the current unit is 'rad', we have to convert it because the logic in backend only works with unit in degrees.
+      newAngle = newAngle * 180 / Math.PI;
     }
 
     // figure out which link & compute oldAngle
@@ -212,6 +211,7 @@ export class jointEditPanelComponent implements OnInit, OnDestroy{
 
     // only record if it really changed
     if (Math.abs(oldAngle - newAngle) < 1e-3) {
+      this.pendingJointAngle = undefined;
       return;
     }
 
@@ -225,6 +225,7 @@ export class jointEditPanelComponent implements OnInit, OnDestroy{
 
     link.setAngle(newAngle, current);
     this.getMechanism().notifyChange();
+    this.pendingJointAngle = undefined;
   }
 
   // Any function that will make changes to the joint should call this.confirmCanEdit() first,
@@ -507,7 +508,7 @@ export class jointEditPanelComponent implements OnInit, OnDestroy{
   getJointAngle2(): number {
     return this.getCurrentJoint().angle;
   }
-  
+
   getJointGround() {
     return this.getCurrentJoint().isGrounded;
   }
@@ -615,6 +616,7 @@ export class jointEditPanelComponent implements OnInit, OnDestroy{
     this.pendingX = undefined;
     this.pendingY = undefined;
     this.pendingAngle = undefined;
+    this.pendingJointAngle = undefined;
   }
 
   get currentJointType(): 'slider' | 'slider-input' | 'other' {
