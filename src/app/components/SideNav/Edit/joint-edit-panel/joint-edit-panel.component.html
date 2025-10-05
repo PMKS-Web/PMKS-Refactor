@@ -12,7 +12,7 @@
           <ng-container *ngIf="isEditingTitle; else jointNameDisplay">
             <input
               #jointNameInput
-              [(ngModel)]="getCurrentJoint().name"
+              [value]="getCurrentJoint().name"
               (blur)="setJointName(jointNameInput.value)"
               (keyup.enter)="setJointName(jointNameInput.value)"
             />
