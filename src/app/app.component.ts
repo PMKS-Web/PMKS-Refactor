@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component,AfterViewInit } from '@angular/core';
+import { DriverTourService } from './services/driver-tour.service';
+
 
 @Component({
   selector: 'app-root',
@@ -8,7 +10,15 @@ import { Component } from '@angular/core';
 export class AppComponent {
   title = 'PMKS+';
 
-  constructor(){
-    
+  constructor(private tour: DriverTourService){
+
   }
+
+  ngAfterViewInit() {
+    setTimeout(() => {
+      this.tour.start();
+    }, 0);
+  }
+
+
 }
