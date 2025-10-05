@@ -1,4 +1,5 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core'
+import {Component, EventEmitter, Input, Output, OnInit, OnDestroy} from '@angular/core'
+import { Subscription } from 'rxjs';
 import { ToolbarComponent } from 'src/app/components/ToolBar/toolbar/toolbar.component';
 import {StateService} from "../../../services/state.service";
 import { AnimationService } from 'src/app/services/animation.service';
@@ -16,7 +17,7 @@ interface panel{
   styleUrls: ['./settings-panel.component.scss'],
 
 })
-export class SettingsPanelComponent{
+export class SettingsPanelComponent implements OnInit, OnDestroy{
   public open = true;
 
   sectionExpanded: { [key: string]: boolean } = {
@@ -28,12 +29,15 @@ export class SettingsPanelComponent{
   minorGridEnabled: boolean = true;
   units: string = "Metric (cm)";
   angles: string = "Degree (º)";
+  unitSubscription: Subscription = new Subscription();
+  anglesSubscription: Subscription = new Subscription();
 
   @Input() iconClass: string = ''; // Add this line
 
   constructor(private gridToggleService: GridToggleService, public toolbarComponent: ToolbarComponent, private stateService: StateService, public animationService: AnimationService) {
-
+  
   }
+
   @Output() valueChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
   public value: boolean = this.gridEnabled;
   public onDirectionChanged(selection: string): void {
@@ -41,6 +45,22 @@ export class SettingsPanelComponent{
     this.animationService.reset();
     this.animationService.startDirectionCounterclockwise = (selection === 'Counterclockwise');
     this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
+  }
+
+  // listen to current unit and angle from stateService and assign them to this class variable to show on screen correctly
+  ngOnInit(): void {
+      this.unitSubscription = this.stateService.globalUnitsCurrent.subscribe((currentUnit) => {
+        this.units = currentUnit; 
+      });
+
+      this.anglesSubscription = this.stateService.globalAnglesCurrent.subscribe((currentAngle)=>{
+        this.angles = currentAngle;
+      })
+  }
+
+  ngOnDestroy(): void {
+      this.unitSubscription.unsubscribe();
+      this.anglesSubscription.unsubscribe();
   }
 
   //Controls when the user changes the unit

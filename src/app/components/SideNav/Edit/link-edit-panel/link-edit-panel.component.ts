@@ -1,4 +1,5 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { LinkInteractor } from 'src/app/controllers/link-interactor';
 import { Link } from 'src/app/model/link';
 import { Mechanism } from 'src/app/model/mechanism';
@@ -18,7 +19,7 @@ import { Coord } from 'src/app/model/coord';
   templateUrl: './link-edit-panel.component.html',
   styleUrls: ['./link-edit-panel.component.scss'],
 })
-export class LinkEditPanelComponent implements OnDestroy {
+export class LinkEditPanelComponent implements OnDestroy, OnInit {
   //map of each of the variables that determine whether each collapsible subsection is open
   sectionExpanded: { [key: string]: boolean } = {
     LBasic: true,
@@ -40,8 +41,11 @@ export class LinkEditPanelComponent implements OnDestroy {
   /** Buffers for component edits */
   public pendingCompX: Record<number, number> = {};
   public pendingCompY: Record<number, number> = {};
-  units: string = 'cm';
-  angles: string = 'º';
+  unitSuffix: string = 'cm';
+  angleSuffix: string = 'º';
+
+  unitSuffixSubscription: Subscription = new Subscription();
+  angleSuffixSubscription: Subscription = new Subscription();
 
   _preventDualButtons: boolean = false;
 
@@ -53,12 +57,26 @@ export class LinkEditPanelComponent implements OnDestroy {
     private undoRedoService: UndoRedoService,
     private notificationService: NotificationService
   ) {
-    this.stateService.getAnimationBarComponent().stoppedAnimating.subscribe((isStopped) => {
+      this.stateService.getAnimationBarComponent().stoppedAnimating.subscribe((isStopped) => {
       this._preventDualButtons = !isStopped;
     })
   }
+  
+  ngOnInit(){
+    //subscript to listen for unit suffix from stateService
+    this.unitSuffixSubscription = this.stateService.globalUSuffixCurrent.subscribe((unitSuffix)=>{
+      this.unitSuffix = unitSuffix;
+    })
 
+    //subscript to listen for angle suffix from stateService
+    this.angleSuffixSubscription = this.stateService.globalASuffixCurrent.subscribe((angleSuffix)=>{
+      this.angleSuffix = angleSuffix;
+    })
+  }
+    
   ngOnDestroy() {
+    this.unitSuffixSubscription.unsubscribe();
+    this.angleSuffixSubscription.unsubscribe();
     this.linkHoverService.clearHover();
   }
 
@@ -166,11 +184,15 @@ export class LinkEditPanelComponent implements OnDestroy {
 
   // Saves the new pending link angle
   confirmLinkAngle(): void {
-    const raw = this.pendingLinkAngle;
+    let raw = this.pendingLinkAngle; 
     if (raw == null) return;
 
+    if (this.angleSuffix === 'rad') { //need to convert the 'raw' into degrees if the current unit is 'rad', we have to convert it because the logic in backend only works with unit in degrees.
+      raw = raw * 180 / Math.PI;
+    }
+
     const link = this.getSelectedObject();
-    const oldAng = this.getLinkAngle();
+    const oldAng = this.getLinkAngle(); 
     const newAng = raw;
     if (Math.abs(oldAng - newAng) < 1e-6) {
       this.pendingLinkAngle = undefined;
@@ -255,15 +277,25 @@ export class LinkEditPanelComponent implements OnDestroy {
 
   //I think this is getting called continuously, should probably find a way to amend that
   getLinkAngle(): number {
-    let angle = this.getSelectedObject().calculateAngle();
+    let angleInDegrees = this.getSelectedObject().calculateAngle();
     //console.log(`Angle in degrees from calculateAngle: ${angle}`);
-    if (angle !== null) {
-      if (angle < 0) {
-        angle += 360;
+    if (angleInDegrees !== null) {
+      if (this.angleSuffix === 'º') { // Degree
+        if (angleInDegrees < 0) {
+          angleInDegrees += 360; // Normalize to be within [0, 360]
+        }
+        // Round to the nearest hundredth
+        const x = angleInDegrees.toFixed(3)
+        return parseFloat(x);
+    } else if (this.angleSuffix === 'rad') { // Radians
+        let angleInRadians = angleInDegrees * (Math.PI)/180;
+
+        if (angleInRadians < 0) {
+          angleInRadians += 2 * (Math.PI); // Normalize to be within [0, 2pi]
+        }
+
+        return parseFloat(angleInRadians.toFixed(3));
       }
-      // Round to the nearest hundredth
-      const x = angle.toFixed(3);
-      return parseFloat(x);
     }
     return 0;
   }

@@ -12,7 +12,7 @@
           <ng-container *ngIf="isEditingTitle; else jointNameDisplay">
             <input
               #jointNameInput
-              [(ngModel)]="getCurrentJoint().name"
+              [value]="getCurrentJoint().name"
               (blur)="setJointName(jointNameInput.value)"
               (keyup.enter)="setJointName(jointNameInput.value)"
             />
@@ -66,7 +66,7 @@
                   (keydown.enter)="confirmJointX()"
                   [disabled]="getJointLockState()"
                 />
-                <span class="xy-unit">{{ units }}</span>
+                <span class="xy-unit">{{ unitSuffix }}</span>
               </div>
 
             <!-- Y position input -->
@@ -79,9 +79,10 @@
                 (keydown.enter)="confirmJointY()"
                 [disabled]="getJointLockState()"
               />
-              <span class="xy-unit">{{ units }}</span>
+              <span class="xy-unit">{{ unitSuffix }}</span>
             </div>
           </div>
+          <!-- This ONLY appears if we add slider to a Joint -->
           <div class="xy-row" *ngIf="currentJointType === 'slider' || currentJointType === 'slider-input'" style="margin-top: 16px;">
             <div class="xy-cell">
               <label style="margin-right: 5px;">Angle</label>
@@ -162,7 +163,7 @@
                         (blur)="onLengthHover(false, joint.id)"
                         [disabled]="joint.locked"
                       />
-                      <span class="dar-unit">{{ units }}</span>
+                      <span class="dar-unit">{{ unitSuffix }}</span>
                     </div>
 
                     <div class="dar-cell">
@@ -176,18 +177,16 @@
                       />
                       <input
                         type="number"
-                        [ngModel]="pendingJointAngle ?? getJointAngle(joint)"
+                        [value]="pendingJointAngle ?? getJointAngle(joint)"
                         (input) = "pendingJointAngle = $any($event.target).valueAsNumber"
-                        (keydown.enter)="
-                          onAngleEnter(joint.id, $any($event.target).value)
-                        "
+                        (keydown.enter)="onAngleEnter(joint.id)"
                         (mouseenter)="onAngleHover(true, joint.id)"
                         (mouseleave)="onAngleHover(false, joint.id)"
                         (focus)="onAngleHover(true, joint.id)"
                         (blur)="onAngleHover(false, joint.id)"
                         [disabled]="joint.locked"
                       />
-                      <span class="dar-unit">{{ angles }}</span>
+                      <span class="dar-unit">{{ angleSuffix }}</span>
                     </div>
                   </div>
                 </div>

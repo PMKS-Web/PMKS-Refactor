@@ -418,7 +418,14 @@ export class LinkComponent
   }
 
   getAngle(): string {
-    return this.link.angle.toString();
+    let angleInDegrees = this.link.angle;
+
+    if (this.unitsAngle === 'rad') { //if unitAngle is 'rad'
+      const angleInRadians = angleInDegrees * Math.PI / 180;
+      return angleInRadians.toFixed(3); // show 3 decimals
+    }
+    // else unitAngle is degree
+    return angleInDegrees.toFixed(3); // show 3 decimals
   }
 
   getName(): string {
