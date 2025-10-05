@@ -36,12 +36,7 @@ export class SettingsPanelComponent{
   }
   @Output() valueChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
   public value: boolean = this.gridEnabled;
-  public onDirectionChanged(selection: string): void {
-    this.animationService.animateMechanisms(false);
-    this.animationService.reset();
-    this.animationService.startDirectionCounterclockwise = (selection === 'Counterclockwise');
-    this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
-  }
+
 
   //Controls when the user changes the unit
   changeUnits(newUnits: string){
