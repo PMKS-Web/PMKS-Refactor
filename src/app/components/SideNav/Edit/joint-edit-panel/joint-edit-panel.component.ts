@@ -479,6 +479,9 @@ export class jointEditPanelComponent implements OnDestroy{
 
   getJointAngle2(): number {
     return this.getCurrentJoint().angle;
+
+  }
+
   getJointGround() {
     return this.getCurrentJoint().isGrounded;
   }
