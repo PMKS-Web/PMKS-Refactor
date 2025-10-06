@@ -31,7 +31,7 @@ export class LinkEditPanelComponent implements OnDestroy {
   isEditingTitle: boolean = false;
   isLocked: boolean = this.getSelectedObject().locked;
   selectedIndex: number = this.getColorIndex();
-  //icon paths for dual button for addFracer and addForce
+  //icon paths for dual button for addTracer and addForce
   public addTracerIconPath: string = 'assets/icons/addTracer.svg';
   public addForceIconPath: string = 'assets/icons/addForce.svg';
   public pendingLinkLength?: number;

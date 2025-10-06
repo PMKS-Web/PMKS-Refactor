@@ -138,7 +138,7 @@ button {
 .dar-cell {
   display: flex;
   align-items: center;
-  margin-top: 8px;
+  margin-top: 6px;
   margin-bottom: 5px;
 }
 
@@ -171,6 +171,7 @@ button {
   }
 }
 
+// xy-block
 .xy-block {
   margin-bottom: 12px;
   margin-left: 10px;
@@ -180,7 +181,7 @@ button {
   display: block;
   font: inherit;
   color: inherit;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .xy-row {
@@ -202,5 +203,40 @@ button {
 }
 
 .xy-cell input {
+  width: 3rem;
+}
+
+// styling for input speed
+.speed-block {
+  margin-bottom: 12px;
+  margin-left: 10px;
+}
+
+.speed-label {
+  display: block;
+  font: inherit;
+  color: inherit;
+  margin-bottom: 2px;
+}
+
+.speed-row {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.speed-cell {
+  display: flex;
+  align-items: center;
+  margin-left: 4px;
+}
+
+.speed-unit {
+  margin-left: 4px;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.speed-cell input {
   width: 3rem;
 }

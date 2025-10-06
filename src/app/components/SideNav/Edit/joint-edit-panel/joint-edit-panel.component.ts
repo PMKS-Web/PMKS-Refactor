@@ -30,6 +30,9 @@ export class jointEditPanelComponent implements OnDestroy{
   isEditingTitle: boolean = false;
   units: string = 'cm';
   angles: string = 'º';
+  _isInput: boolean = false;
+  _isGround: boolean = false;
+  _isWeld: boolean = false;
   constructor(
     private undoRedoService: UndoRedoService,
     private stateService: StateService,
@@ -37,6 +40,10 @@ export class jointEditPanelComponent implements OnDestroy{
     private linkHoverService: LinkEditHoverService
   ) {
     console.log('joint-edit-panel.constructor');
+  }
+
+  ngOnInit() {
+    this.displayInputSpeed();
   }
 
   ngOnDestroy() {
@@ -51,6 +58,20 @@ export class jointEditPanelComponent implements OnDestroy{
     .subscribe(sel => {
       // when nothing is selected (i.e. after delete), wipe out our buffers
       if (!sel) this.resetPanel();
+      else {
+        this.getCurrentJoint();
+        this.displayInputSpeed();
+        this.getCurrentJoint().getInputObservable().subscribe(value => {
+          this._isInput = value;
+          this.displayInputSpeed();
+        });
+        this.getCurrentJoint().getGroundedObservable().subscribe(value => {
+          this._isGround = value;
+        })
+        this.getCurrentJoint().getWeldedObservable().subscribe(value => {
+          this._isWeld = value;
+        })
+      }
     });
 
   // Confirms and saves the X coordinate input
@@ -374,6 +395,18 @@ export class jointEditPanelComponent implements OnDestroy{
     return parseFloat(angleInDegrees.toFixed(3));
   }
 
+  getJointGround() {
+    return this.getCurrentJoint().isGrounded;
+  }
+
+  getJointInput() {
+    return this.getCurrentJoint().isInput;
+  }
+
+  getJointWeld() {
+    return this.getCurrentJoint().isWelded;
+  }
+
   // Handles the toggle for grounding the joint
   handleToggleGroundChange(stateChange: boolean) {
     console.log('Toggle State Changed: ', stateChange);
@@ -382,7 +415,9 @@ export class jointEditPanelComponent implements OnDestroy{
       this.getMechanism().addGround(this.getCurrentJoint().id);
     } else {
       this.getMechanism().removeGround(this.getCurrentJoint().id);
+      this._isInput = false;
     }
+    this._isGround = stateChange;
   }
 
   // Handles the toggle for welding the joint
@@ -394,6 +429,7 @@ export class jointEditPanelComponent implements OnDestroy{
     } else {
       this.getMechanism().removeWeld(this.getCurrentJoint().id);
     }
+    this._isWeld = stateChange;
   }
 
   // Handles the toggle for marking the joint as an input
@@ -405,6 +441,7 @@ export class jointEditPanelComponent implements OnDestroy{
     } else {
       this.getMechanism().removeInput(this.getCurrentJoint().id);
     }
+    this._isInput = stateChange;
   }
 
   // Determines whether welding should be shown for this joint
@@ -440,6 +477,35 @@ export class jointEditPanelComponent implements OnDestroy{
   private resetPanel(): void {
     this.pendingX = undefined;
     this.pendingY = undefined;
+  }
+
+  displayInputSpeed() {
+    const inputSpeedHTML = document.getElementById('inputJointSpeed');
+    const xyBlockHTML = document.getElementById('jointPositions');
+    if (inputSpeedHTML == null) {
+      return;
+    }
+    if (this.getCurrentJoint().isInput) {
+      inputSpeedHTML.style.display = 'block';
+      if (xyBlockHTML != null) {
+        xyBlockHTML.style.marginBottom = '0px';
+      }
+    } else {
+      inputSpeedHTML.style.display = 'none';
+      if (xyBlockHTML != null) {
+        xyBlockHTML.style.marginBottom = '12px';
+      }
+    }
+  }
+
+  getInputSpeed() {
+    return this.getCurrentJoint().rpmSpeed;
+    //return this.getMechanism().getInputSpeed();
+  }
+
+  setInputSpeed(newSpeed: number): void {
+    this.getCurrentJoint().rpmSpeed = newSpeed; // sets the specific input joint speed
+    this.getMechanism().setInputSpeed(newSpeed); // sets whole mechanism input speed
   }
 
 }

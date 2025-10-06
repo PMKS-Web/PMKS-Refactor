@@ -3,7 +3,8 @@ import { StateService } from './state.service';
 import { Coord } from '../model/coord';
 import { PositionSolverService } from './kinematic-solver.service';
 import { AnimationPositions } from './kinematic-solver.service';
-import { BehaviorSubject } from 'rxjs';
+import {BehaviorSubject, Subscription} from 'rxjs';
+import {iteratee} from "lodash";
 
 export interface JointAnimationState {
   mechanismIndex: number;
@@ -14,6 +15,7 @@ export interface JointAnimationState {
   jointIDs: number[];
   animationFrames: Coord[][];
   inputSpeed: number;
+  timeStepFrames: number[];
 }
 
 @Injectable({
@@ -25,7 +27,12 @@ export class AnimationService {
   private invaldMechanism: boolean;
   private animationProgressSource = new BehaviorSubject<number>(0);
   private speedMultiplier: number = 1;
+  private mechInputSpeed: number = 10; // Input speed in RPM -> editable for each mechanism in edit
+  private timeStepSource = new BehaviorSubject<number>(0);
+  private _maxTimeStep = -1;
+  private _intervalTimeStep: number = -1;
   animationProgress$ = this.animationProgressSource.asObservable();
+  timeStep$ = this.timeStepSource.asObservable();
 
   // Initializes the AnimationService, sets up state array, and subscribes to kinematic updates.
   constructor(
@@ -37,6 +44,11 @@ export class AnimationService {
     this.positionSolver.getKinematicsObservable().subscribe(() => {
       this.initializeAnimations();
     });
+
+    this.stateService.getMechanism().mechanismRPMSpeed.subscribe(mechanismRPMSpeed => {
+      this.mechInputSpeed = mechanismRPMSpeed;
+      this.initializeAnimations();
+    })
   }
 
   private frameIndexSource = new BehaviorSubject<number>(0);
@@ -99,6 +111,20 @@ export class AnimationService {
           frames[subMechanismIndex].correspondingJoints[jointIndex]
         );
       }
+
+      // calculate timeSteps for each frame
+      let timeStepFrames: number[] = [];
+      let secPerAnimationFrame: number = ((60 / this.mechInputSpeed) / (totalFrames - 1));
+      this._intervalTimeStep = secPerAnimationFrame;
+      for(let iTimeStep = 0; iTimeStep < totalFrames; iTimeStep++) {
+        // totalFrames is the number of steps to get 1 revolution.
+        // can figure out seconds by dividing rpm by this number
+        timeStepFrames.push(secPerAnimationFrame * iTimeStep);
+        if (iTimeStep == totalFrames - 1) {
+          this._maxTimeStep = secPerAnimationFrame * iTimeStep;
+        }
+      }
+
       this.animationStates.push({
         mechanismIndex: mechanismIndex,
         currentFrameIndex: currentFrameIndex,
@@ -108,6 +134,7 @@ export class AnimationService {
         jointIDs: jointIDs,
         animationFrames: animationFrames,
         inputSpeed: inputSpeed,
+        timeStepFrames: timeStepFrames
       });
     }
 
@@ -159,6 +186,9 @@ export class AnimationService {
 
       // Send that to the timeline
       this.updateProgress(displayProgress);
+
+      // Send timestep to Behavior Subject
+      this.updateTimeStep(state.timeStepFrames[state.currentFrameIndex]);
 
       // Update each joint's position for this frame
       for (
@@ -213,6 +243,11 @@ export class AnimationService {
     this.animationProgressSource.next(progress);
   }
 
+  // Sends out current time in animation to subscribers
+  updateTimeStep(timeStep: number) {
+    this.timeStepSource.next(timeStep);
+  }
+
   // Sets joint positions to correspond to a specific normalized progress value across all frames.
   setAnimationProgress(progress: number) {
     if (progress < 0 || progress > 1) {
@@ -222,6 +257,8 @@ export class AnimationService {
     for (let state of this.animationStates) {
       const frameIndex = Math.floor(progress * (state.totalFrames - 1));
       state.currentFrameIndex = frameIndex;
+
+      this.updateTimeStep(state.timeStepFrames[frameIndex]);
 
       for (
         let jointIndex = 0;
@@ -393,10 +430,39 @@ export class AnimationService {
     return this.animationStates.some(s => !s.isPaused);
   }
 
+  public get maxTimeStep() {
+    return this._maxTimeStep;
+  }
+
   public currentDegreesOfFreedom() {
     return this.positionSolver.getDegrees();
   }
 
+  public get intervalTimeStep() {
+    return this._intervalTimeStep;
+  }
 
+  public getClosestTimeStep(time: number) {
+    let tSFrames = this.animationStates[0].timeStepFrames;
+    if (tSFrames === undefined) {
+      return -1;
+    }
+    if (time < 0) {
+      // entered value lower than 0
+      time = 0
+    } else if (time > this.maxTimeStep) {
+      // entered value higher than max time
+      time = this.maxTimeStep;
+    } else {
+      // entered value that is valid, but need to round to the nearest timestep
+      let nearest = Math.floor(time / this.intervalTimeStep) * this.intervalTimeStep;
+      if (Math.round(time * 1e2) / 1e2 == Math.round((nearest + this.intervalTimeStep) * 1e2) / 1e2) {
+        time = nearest + this.intervalTimeStep;
+      } else {
+        time = nearest;
+      }
+    }
+    return time
+  }
 
 }
