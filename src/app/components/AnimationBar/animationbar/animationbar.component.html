@@ -57,7 +57,7 @@
       <mat-slider>
         <input matSliderThumb
                [value]="sliderValue"
-               [disabled]="!getIsAnimating()"
+               [disabled]="!allowSliderMovement()"
                (mousedown)="onSliderDragStart()"
                (mouseup)="onSliderDragEnd()"
                (input)="onSliderInput($event)"
