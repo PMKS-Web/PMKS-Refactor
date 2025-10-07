@@ -234,7 +234,7 @@
           label="Add Input"
           [initialValue]="_isInput"
           [iconClass]="'toggle-input-icon'"
-          [disabled] = "_preventForInput || _preventForAni"
+          [disabled] = "_preventForInput"
           [canBeInput] = "_canBeInput"
           [inputToggle] = "true"
           (valueChanged)="handleToggleInputChange($event)"

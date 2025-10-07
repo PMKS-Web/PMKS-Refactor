@@ -39,12 +39,21 @@ export class ToggleComponent {
   }
 
   toggle() {
+    // this is for a delay when showing disabled input
+    /*if (this.aboutToDisable) {
+      return;
+    }*/
+
     if (this.inputToggle && !this.canBeInput && !this.value) {
       // checks if this current toggle is an input toggle
       // if input toggle, then checks if current joint can become an input joint
       // if it cannot become an input joint and is not already an input joint, will prevent action
+      this.value = true;
+      setTimeout(() => { // this timeout makes sure that the switch flips back and forth
+        this.value = false;
+        this.disabled = true;
+      }, 200);
       this.actionPrevented.emit(1);
-      this.disabled = true;
       return;
     }
     if (this.disabled) {
