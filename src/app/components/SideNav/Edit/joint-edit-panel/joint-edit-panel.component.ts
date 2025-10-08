@@ -534,7 +534,7 @@ export class jointEditPanelComponent implements OnInit, OnDestroy{
       this.confirmCanEdit();
     } else if (stopped == 1) {
       this.notificationService.showWarning(
-        'A mechanism can only have 1 input joint! Please remove the previous input joint before adding in a new one.'
+        'A mechanism can only have 1 input joint! Please remove the previous input joint before adding a new one.'
       );
     }
   }
