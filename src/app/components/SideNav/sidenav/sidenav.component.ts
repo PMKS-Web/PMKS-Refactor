@@ -6,6 +6,7 @@ interface Tab {
   selected: boolean;
   label: string;
   icon: string;
+  id: string;
 }
 
 @Component({
@@ -20,9 +21,20 @@ export class SidenavComponent {
       selected: false,
       label: 'Synthesis',
       icon: 'assets/sidenav/synthesize.svg',
+      id: 'sidenav-synthesis-button'
     },
-    { selected: true, label: 'Edit', icon: 'assets/sidenav/edit.svg' },
-    { selected: false, label: 'Analysis', icon: 'assets/sidenav/analyze.svg' },
+    {
+      selected: true,
+      label: 'Edit',
+      icon: 'assets/sidenav/edit.svg',
+      id: 'sidenav-edit-button'
+    },
+    {
+      selected: false,
+      label: 'Analysis',
+      icon: 'assets/sidenav/analyze.svg',
+      id: 'sidenav-analysis-button'
+    },
   ];
 
   generatedCheck: boolean = false;

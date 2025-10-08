@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit} from '@angular/core';
 
 @Component({
   selector: 'radio-block',
@@ -12,20 +12,20 @@ export class RadioComponent {
   @Input() initialSelection: string | undefined;
   @Output() selectionChanged = new EventEmitter<string>();
 
-  selectedOption: string | undefined;
-
   constructor() {
+    // not use constructor for now, maybe 
+  }
+
+  ngOnInit(): void { //Initializing with @Input Data, "constructor" cannot do this
     this.initializeSelection();
   }
 
   private initializeSelection() {
     if (this.initialSelection && this.options.includes(this.initialSelection)) {
-      this.selectedOption = this.initialSelection;
       this.emitSelection();
     } else {
       // If no valid initialSelection provided or it's not in options, select the first option
       if (this.options.length > 0) {
-        this.selectedOption = this.options[0];
         this.emitSelection();
       }
     }

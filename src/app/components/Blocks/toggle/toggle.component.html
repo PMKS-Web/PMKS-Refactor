@@ -6,7 +6,7 @@
   </span>
   <div class="switch-container">
     <label class="switch" (click)="toggle()">
-      <input type="checkbox" [(ngModel)]="value" (change)="toggle()">
+      <input type="checkbox" [disabled] = 'disabled' [(ngModel)]="value" (change)="toggle()">
       <span class="slider"></span>
     </label>
   </div>

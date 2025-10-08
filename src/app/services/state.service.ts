@@ -249,14 +249,43 @@ export class StateService {
     return this.globalActivePanel.value;
   }
 
-  // Updates the global measurement units and their suffix based on user selection.
+  // Updates the global measurement "units" and their "suffix" based on user selection.
   public changeUnits(units: string, suffix: string) {
+    const oldSuffix = this.globalUnitsSuffix.value; 
+    if (oldSuffix === suffix) return;
+    
+    // bring whatever current unit to 'cm'
+    // 1cm = 1cm, 1cm = 0.01m, 1cm = 1/2.54in
+    // Example: 1in = (?)m. 1in / (1/2.54in) = 2.54cm -> 2.54cm*0.01m = 0.025m. Finish convertion 1in = 0.025m
+    const conversionFactor: {[key:string]: number} = {
+      'cm': 1,
+      'm': 0.01,
+      'in': 1/2.54,
+    }
+
+    //Read example above to understand
+    const fromFractor = conversionFactor[oldSuffix];
+    const toFractor = conversionFactor[suffix];
+    const conversionRatio = toFractor/fromFractor;
+
+    //Read example above to understand the logic below for coords x and y
+    this.mechanism.getArrayOfJoints().forEach(joint=>{ // loop through each "joint" in the "mechanism"
+      joint.coords.x *= conversionRatio;
+      joint.coords.y *= conversionRatio;
+      console.log(`new 'x' coordinate conversion: ${joint.coords.x}`);
+      console.log(`new 'y' coordinate conversion: ${joint.coords.y}`);
+    });    
+
+    this.mechanism.notifyChange(); //notify the mechanism
     this.globalUnits.next(units);
     this.globalUnitsSuffix.next(suffix);
   }
 
   // Updates the global angle units and their suffix based on user selection.
   public changeAngles(angles: string, suffix: string) {
+    const oldSuffix = this.globalAnglesSuffix.value;
+    if (oldSuffix === suffix) return;
+
     this.globalAngles.next(angles);
     this.globalAnglesSuffix.next(suffix);
   }

@@ -389,7 +389,7 @@ export class Link implements RigidBody {
         angleDifference += 360;
       }
 
-      this._angle = parseFloat(angleDifference.toFixed(3));
+      this._angle = parseFloat(newAngle.toFixed(3));
 
       // Calculate the new coordinates of jointTwo
       const newX =

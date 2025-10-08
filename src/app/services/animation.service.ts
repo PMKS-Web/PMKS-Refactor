@@ -430,12 +430,12 @@ export class AnimationService {
     return this.animationStates.some(s => !s.isPaused);
   }
 
-  public get maxTimeStep() {
-    return this._maxTimeStep;
-  }
-
   public currentDegreesOfFreedom() {
     return this.positionSolver.getDegrees();
+  }
+
+  public get maxTimeStep() {
+    return this._maxTimeStep;
   }
 
   public get intervalTimeStep() {

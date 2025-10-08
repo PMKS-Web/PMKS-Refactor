@@ -25,6 +25,7 @@
               "src/assets"
             ],
             "styles": [
+              "node_modules/driver.js/dist/driver.css",
               "src/theme.scss",
               "src/styles.css"
             ],
@@ -36,7 +37,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "500kb",
-                  "maximumError": "2mb"
+                  "maximumError": "3mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -89,6 +90,7 @@
               "src/assets"
             ],
             "styles": [
+              "node_modules/driver.js/dist/driver.css",
               "src/styles.css"
             ],
             "scripts": []
