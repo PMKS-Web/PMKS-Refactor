@@ -215,6 +215,10 @@ export class AnimationBarComponent implements OnInit {
     this.isDragging = false;
   }
 
+  allowSliderMovement() {
+    return this.getIsAnimating() || !this.invalidMechanism();
+  }
+
   toggleAnimationSpeed(): void {
     const speedOptions = [0.5, 1, 2];
     const index = speedOptions.indexOf(this.animationSpeed);
