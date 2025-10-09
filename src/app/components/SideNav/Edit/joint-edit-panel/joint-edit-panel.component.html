@@ -114,16 +114,22 @@
         </div>
 
         <!-- INPUT DIRECTION -->
-        <div class="option-row" *ngIf="_isInput" >
-            <label class="speed-label" style ="margin-left: 3px; margin-bottom: 6px;margin-top: 5px">Input Direction</label>
+          <div id="inputDirectionBlock" class="speed-block" *ngIf="_isInput">
+            <label class="speed-label" style="margin-left: 3px; margin-bottom: 6px; margin-top: 5px">
+              Input Direction
+            </label>
 
 
-          <radio-block
-            id="inputDirection"
-            [options]="['Clockwise', 'Counterclockwise']"
-            [initialSelection]="animationService.startDirectionCounterclockwise ? 'Counterclockwise' : 'Clockwise'"
-            (selectionChanged)="onDirectionChanged($event)"
-          ></radio-block>
+            <div class="speed-row">
+              <div class="speed-cell">
+                <radio-block
+                  id="inputDirection"
+                  [options]="['Clockwise', 'Counterclockwise']"
+                  [initialSelection]="animationService.startDirectionCounterclockwise ? 'Counterclockwise' : 'Clockwise'"
+                  (selectionChanged)="onDirectionChanged($event)"
+                ></radio-block>
+              </div>
+            </div>
         </div>
 
 
