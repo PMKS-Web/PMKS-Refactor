@@ -32,7 +32,7 @@ export class jointEditPanelComponent implements OnInit, OnDestroy{
 
   unitSuffix: string = 'cm';
   angleSuffix: string = 'º';
-  
+
   unitSuffixSubscription: Subscription = new Subscription();
   angleSuffixSubscription: Subscription = new Subscription();
 
@@ -42,7 +42,7 @@ export class jointEditPanelComponent implements OnInit, OnDestroy{
   _preventForAni: boolean = true; // stops toggle when animation is running, true if animation is running
   _preventForInput: boolean = false; // stops input toggle if there is already an input joint, true if joint can't become/stop being an input
   _canBeInput: boolean = true; // true if joint can become/is an input
-  public pendingJointDistance?: number; 
+  public pendingJointDistance?: number;
   public pendingJointAngle?: number; // This is for angle of a normal Joint
   public pendingX?: number;
   public pendingY?: number;
@@ -534,7 +534,7 @@ export class jointEditPanelComponent implements OnInit, OnDestroy{
       this.confirmCanEdit();
     } else if (stopped == 1) {
       this.notificationService.showWarning(
-        'A mechanism can only have 1 input joint! Please remove the previous input joint before adding in a new one.'
+        'A mechanism can only have 1 input joint! Please remove the previous input joint before adding a new one.'
       );
     }
   }
@@ -542,7 +542,7 @@ export class jointEditPanelComponent implements OnInit, OnDestroy{
   // Handles the toggle for grounding the joint
   handleToggleGroundChange(stateChange: boolean) {
 
-    console.log('Toggle State Changed: ', stateChange);
+    console.log('Ground Toggle State Changed: ', stateChange);
     this.getCurrentJoint();
     if (stateChange) {
       this.getMechanism().addGround(this.getCurrentJoint().id);
@@ -557,7 +557,7 @@ export class jointEditPanelComponent implements OnInit, OnDestroy{
   // Handles the toggle for welding the joint
   handleToggleWeldChange(stateChange: boolean) {
 
-    console.log('Toggle State Changed: ', stateChange);
+    console.log('Weld Toggle State Changed: ', stateChange);
     this.getCurrentJoint();
     if (stateChange) {
       this.getMechanism().addWeld(this.getCurrentJoint().id);
@@ -571,7 +571,7 @@ export class jointEditPanelComponent implements OnInit, OnDestroy{
   // Handles the toggle for marking the joint as an input
   handleToggleInputChange(stateChange: boolean) {
 
-    console.log('Toggle State Changed: ', stateChange);
+    console.log('Input Toggle State Changed: ', stateChange);
     this.getCurrentJoint();
     if (stateChange) {
       this.getMechanism().addInput(this.getCurrentJoint().id);
