@@ -1,5 +1,5 @@
 <div class="remover" *ngIf="open" (click)="closePanel($event)">
-  <div class="settings">
+  <div class="settings" data-tour="settings-panel">
     <panel-section-collapsible>
       <title-block description="" class="settingsHeader">
         <h3>Settings</h3>
@@ -75,7 +75,6 @@
         ></radio-block>
       </div>
     </collapsible-subsection>
-
 
     <!-- VISUAL DROPDOWN -->
     <collapsible-subsection

@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component,OnDestroy, OnInit } from '@angular/core';
+import {Subscription} from 'rxjs'
 import { Action } from 'rxjs/internal/scheduler/Action';
 import { ForceInteractor } from 'src/app/controllers/force-interactor';
 import { Coord } from 'src/app/model/coord';
@@ -18,7 +19,7 @@ import { UndoRedoService } from 'src/app/services/undo-redo.service';
   templateUrl: './force-edit-panel.component.html',
   styleUrl: './force-edit-panel.component.scss',
 })
-export class ForceEditPanelComponent {
+export class ForceEditPanelComponent implements OnDestroy, OnInit{
   //map of each of the variables that determine whether each collapsible subsection is open
   sectionExpanded: { [key: string]: boolean } = {
     LBasic: true,
@@ -42,8 +43,10 @@ export class ForceEditPanelComponent {
 
   public pendingPosX?: number;
   public pendingPosY?: number;
-  units: string = 'cm';
-  angles: string = 'º';
+
+  angleSuffix: string = 'º';
+  angleSuffixSubscription: Subscription = new Subscription();
+
   isGlobalCoordinates: boolean = true;
   constructor(
     private stateService: StateService,
@@ -51,6 +54,18 @@ export class ForceEditPanelComponent {
     private colorService: ColorService,
     private undoRedoService: UndoRedoService
   ) {}
+
+  ngOnInit(){
+    //subscript to listen for angle suffix from stateService
+    this.angleSuffixSubscription = this.stateService.globalASuffixCurrent.subscribe((angleSuffix)=>{
+      this.angleSuffix = angleSuffix;
+    })
+  }
+
+  ngOnDestroy() {
+    //unsubscribe 
+    this.angleSuffixSubscription.unsubscribe();
+  }
 
   //helper function to access current selected object (will always be a link here)
   getSelectedObject(): Force {
@@ -97,9 +112,14 @@ export class ForceEditPanelComponent {
     return 0;
   }
   getForceAngle(): number {
-    const angle = this.getSelectedObject().angle;
-    if (angle !== null) {
-      const x = angle.toFixed(3);
+    const angleInDegrees = this.getSelectedObject().angle;
+    if (angleInDegrees !== null) {
+      if (this.angleSuffix === 'rad') {
+        const angleInRadians = (angleInDegrees * Math.PI / 180).toFixed(3);
+        return parseFloat(angleInRadians);
+      }
+
+      const x = angleInDegrees.toFixed(3);
       return parseFloat(x);
     }
     return 0;

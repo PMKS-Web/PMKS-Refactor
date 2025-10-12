@@ -12,7 +12,7 @@
           <ng-container *ngIf="isEditingTitle; else jointNameDisplay">
             <input
               #jointNameInput
-              [(ngModel)]="getCurrentJoint().name"
+              [value]="getCurrentJoint().name"
               (blur)="setJointName(jointNameInput.value)"
               (keyup.enter)="setJointName(jointNameInput.value)"
             />
@@ -54,7 +54,7 @@
           (closed)="graphExpanded['basicBasic'] = false"
           >
           <div id="jointPositions" class="xy-block">
-            <label class="xy-label" style ="margin-left: 3px; margin-bottom: 10px;margin-top: 5px">Input X and Y positions</label>
+            <label class="xy-label" style ="margin-left: 3px; margin-bottom: 6px;margin-top: 5px">Input X and Y positions</label>
             <div class="xy-row">
               <!-- X position input -->
               <div class="xy-cell">
@@ -66,7 +66,7 @@
                   (keydown.enter)="confirmJointX()"
                   [disabled]="getJointLockState()"
                 />
-                <span class="xy-unit">{{ units }}</span>
+                <span class="xy-unit">{{ unitSuffix }}</span>
               </div>
 
             <!-- Y position input -->
@@ -79,7 +79,37 @@
                 (keydown.enter)="confirmJointY()"
                 [disabled]="getJointLockState()"
               />
-              <span class="xy-unit">{{ units }}</span>
+              <span class="xy-unit">{{ unitSuffix }}</span>
+            </div>
+          </div>
+          <!-- This ONLY appears if we add slider to a Joint -->
+          <div class="xy-row" *ngIf="currentJointType === 'slider' || currentJointType === 'slider-input'" style="margin-top: 16px;">
+            <div class="xy-cell">
+              <label style="margin-right: 5px;">Angle</label>
+              <input
+                type="number"
+                [value]="pendingAngle ?? getJointAngle2()"
+                (input)="pendingAngle = $any($event.target).valueAsNumber"
+                (keydown.enter)="confirmJointAngle()"
+                [disabled]="getJointLockState()"
+              />
+              <span class="xy-unit">deg</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="inputJointSpeed" class="speed-block">
+          <label class="speed-label" style ="margin-left: 3px; margin-bottom: 6px;margin-top: 5px">Input Joint Speed</label>
+          <div class="speed-row">
+            <!-- changes input joint speed in rpm -->
+            <div class="speed-cell">
+              <input
+                type="number"
+                [value]="getInputSpeed()"
+                (input)="setInputSpeed($any($event.target).valueAsNumber)"
+                [disabled]="getJointLockState()"
+              />
+              <span class="speed-unit">rpm</span>
             </div>
           </div>
         </div>
@@ -116,8 +146,12 @@
                       />
                       <input
                         type="number"
-                        [value]="getJointDistance(joint)"
-                        (change)="
+                        id="angleInputElement"
+                        [value]="pendingJointDistance ?? getJointDistance(joint)"
+                        (input)="
+                          pendingJointDistance = $any($event.target).valueAsNumber
+                        "
+                        (keydown.enter)="
                           changeJointDistance(
                             joint.id,
                             $any($event.target).valueAsNumber
@@ -129,7 +163,7 @@
                         (blur)="onLengthHover(false, joint.id)"
                         [disabled]="joint.locked"
                       />
-                      <span class="dar-unit">{{ units }}</span>
+                      <span class="dar-unit">{{ unitSuffix }}</span>
                     </div>
 
                     <div class="dar-cell">
@@ -143,17 +177,16 @@
                       />
                       <input
                         type="number"
-                        [ngModel]="getJointAngle(joint)"
-                        (keydown.enter)="
-                          onAngleEnter(joint.id, $any($event.target).value)
-                        "
+                        [value]="pendingJointAngle ?? getJointAngle(joint)"
+                        (input) = "pendingJointAngle = $any($event.target).valueAsNumber"
+                        (keydown.enter)="onAngleEnter(joint.id)"
                         (mouseenter)="onAngleHover(true, joint.id)"
                         (mouseleave)="onAngleHover(false, joint.id)"
                         (focus)="onAngleHover(true, joint.id)"
                         (blur)="onAngleHover(false, joint.id)"
                         [disabled]="joint.locked"
                       />
-                      <span class="dar-unit">{{ angles }}</span>
+                      <span class="dar-unit">{{ angleSuffix }}</span>
                     </div>
                   </div>
                 </div>
@@ -176,28 +209,36 @@
         <!-- TOGGLE BLOCK FOR GROUNDING -->
         <app-toggle
           tooltip="This toggle will ground or remove the ground on the joint"
-          label="Toggle Ground"
-          [initialValue]="false"
+          label="Add Ground"
+          [initialValue]="_isGround"
           [iconClass]="'toggle-ground-icon'"
+          [disabled] = "_preventForAni"
           (valueChanged)="handleToggleGroundChange($event)"
+          (actionPrevented) = "toggleClickStopped($event)"
         ></app-toggle>
         <!-- TOGGLE BLOCK FOR WELDING -->
         <app-toggle
           *ngIf="canAddWeld()"
           tooltip="This toggle will weld or unweld the joint"
-          label="Toggle Weld"
-          [initialValue]="false"
+          label="Add Weld"
+          [initialValue]="_isWeld"
           [iconClass]="'toggle-weld-icon'"
+          [disabled] = "_preventForAni"
           (valueChanged)="handleToggleWeldChange($event)"
+          (actionPrevented) = "toggleClickStopped($event)"
         ></app-toggle>
         <!-- TOGGLE BLOCK FOR INPUT -->
         <app-toggle
           *ngIf="canAddInput()"
           tooltip="This toggle will make the joint an input or remove the input"
-          label="Toggle Input"
-          [initialValue]="true"
+          label="Add Input"
+          [initialValue]="_isInput"
           [iconClass]="'toggle-input-icon'"
+          [disabled] = "_preventForInput"
+          [canBeInput] = "_canBeInput"
+          [inputToggle] = "true"
           (valueChanged)="handleToggleInputChange($event)"
+          (actionPrevented) = "toggleClickStopped($event)"
         ></app-toggle>
       </collapsible-subsection>
     </div>

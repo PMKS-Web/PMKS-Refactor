@@ -1,4 +1,5 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { LinkInteractor } from 'src/app/controllers/link-interactor';
 import { Link } from 'src/app/model/link';
 import { Mechanism } from 'src/app/model/mechanism';
@@ -7,6 +8,7 @@ import { StateService } from 'src/app/services/state.service';
 import { Joint } from 'src/app/model/joint';
 import { ColorService } from 'src/app/services/color.service';
 import { UndoRedoService } from 'src/app/services/undo-redo.service';
+import { NotificationService } from 'src/app/services/notification.service';
 
 import { LinkEditHoverService } from 'src/app/services/link-edit-hover.service';
 import { PositionEditHoverService } from 'src/app/services/position-edit-hover.service';
@@ -17,7 +19,7 @@ import { Coord } from 'src/app/model/coord';
   templateUrl: './link-edit-panel.component.html',
   styleUrls: ['./link-edit-panel.component.scss'],
 })
-export class LinkEditPanelComponent implements OnDestroy {
+export class LinkEditPanelComponent implements OnDestroy, OnInit {
   //map of each of the variables that determine whether each collapsible subsection is open
   sectionExpanded: { [key: string]: boolean } = {
     LBasic: true,
@@ -31,7 +33,7 @@ export class LinkEditPanelComponent implements OnDestroy {
   isEditingTitle: boolean = false;
   isLocked: boolean = this.getSelectedObject().locked;
   selectedIndex: number = this.getColorIndex();
-  //icon paths for dual button for addFracer and addForce
+  //icon paths for dual button for addTracer and addForce
   public addTracerIconPath: string = 'assets/icons/addTracer.svg';
   public addForceIconPath: string = 'assets/icons/addForce.svg';
   public pendingLinkLength?: number;
@@ -39,23 +41,55 @@ export class LinkEditPanelComponent implements OnDestroy {
   /** Buffers for component edits */
   public pendingCompX: Record<number, number> = {};
   public pendingCompY: Record<number, number> = {};
-  units: string = 'cm';
-  angles: string = 'º';
+  unitSuffix: string = 'cm';
+  angleSuffix: string = 'º';
+
+  unitSuffixSubscription: Subscription = new Subscription();
+  angleSuffixSubscription: Subscription = new Subscription();
+
+  _preventDualButtons: boolean = false;
 
   constructor(
     private stateService: StateService,
     private interactionService: InteractionService,
     private colorService: ColorService,
     private linkHoverService: LinkEditHoverService,
-    private undoRedoService: UndoRedoService
-  ) {}
+    private undoRedoService: UndoRedoService,
+    private notificationService: NotificationService
+  ) {
+      this.stateService.getAnimationBarComponent().stoppedAnimating.subscribe((isStopped) => {
+      this._preventDualButtons = !isStopped;
+    })
+  }
+  
+  ngOnInit(){
+    //subscript to listen for unit suffix from stateService
+    this.unitSuffixSubscription = this.stateService.globalUSuffixCurrent.subscribe((unitSuffix)=>{
+      this.unitSuffix = unitSuffix;
+    })
+
+    //subscript to listen for angle suffix from stateService
+    this.angleSuffixSubscription = this.stateService.globalASuffixCurrent.subscribe((angleSuffix)=>{
+      this.angleSuffix = angleSuffix;
+    })
+  }
+    
   ngOnDestroy() {
+    this.unitSuffixSubscription.unsubscribe();
+    this.angleSuffixSubscription.unsubscribe();
     this.linkHoverService.clearHover();
   }
+
   // Saves the new X value for a joint component
   confirmCompX(jointId: number): void {
     const raw = this.pendingCompX[jointId];
     if (raw == null) return;
+
+    let canEdit = this.confirmCanEdit();
+    if (!canEdit) {
+      delete this.pendingCompX[jointId];
+      return;
+    }
 
     const joint = this.getLinkComponents().find((j) => j.id === jointId)!;
     const oldX = joint.coords.x;
@@ -84,6 +118,12 @@ export class LinkEditPanelComponent implements OnDestroy {
   confirmCompY(jointId: number): void {
     const raw = this.pendingCompY[jointId];
     if (raw == null) return;
+
+    let canEdit = this.confirmCanEdit();
+    if (!canEdit) {
+      delete this.pendingCompY[jointId];
+      return;
+    }
 
     const joint = this.getLinkComponents().find((j) => j.id === jointId)!;
     const oldY = joint.coords.y;
@@ -119,6 +159,12 @@ export class LinkEditPanelComponent implements OnDestroy {
       return;
     }
 
+    let canEdit = this.confirmCanEdit();
+    if (!canEdit) {
+      this.pendingLinkLength = undefined;
+      return;
+    }
+
     // Record exactly one undo entry
     this.undoRedoService.recordAction({
       type: 'changeJointDistance',
@@ -138,13 +184,23 @@ export class LinkEditPanelComponent implements OnDestroy {
 
   // Saves the new pending link angle
   confirmLinkAngle(): void {
-    const raw = this.pendingLinkAngle;
+    let raw = this.pendingLinkAngle; 
     if (raw == null) return;
 
+    if (this.angleSuffix === 'rad') { //need to convert the 'raw' into degrees if the current unit is 'rad', we have to convert it because the logic in backend only works with unit in degrees.
+      raw = raw * 180 / Math.PI;
+    }
+
     const link = this.getSelectedObject();
-    const oldAng = this.getLinkAngle();
+    const oldAng = this.getLinkAngle(); 
     const newAng = raw;
     if (Math.abs(oldAng - newAng) < 1e-6) {
+      this.pendingLinkAngle = undefined;
+      return;
+    }
+
+    let canEdit = this.confirmCanEdit();
+    if (!canEdit) {
       this.pendingLinkAngle = undefined;
       return;
     }
@@ -160,6 +216,19 @@ export class LinkEditPanelComponent implements OnDestroy {
     this.setLinkAngle(newAng);
     this.getMechanism().notifyChange();
     this.pendingLinkAngle = undefined;
+  }
+
+  // Any function that will make changes to the link should call this.confirmCanEdit() first,
+  // to make sure that the mechanism is not in a state of animation, before making changes.
+  confirmCanEdit(): boolean {
+    if (this._preventDualButtons) {
+      this.notificationService.showWarning(
+        'Cannot edit link while Animation is in play or paused state!'
+      );
+      return false;
+    } else {
+      return true;
+    }
   }
 
   onLengthHover(isHovering: boolean) {
@@ -188,6 +257,10 @@ export class LinkEditPanelComponent implements OnDestroy {
 
   // Toggles the lock state of the link
   lockLink(): void {
+    let canEdit = this.confirmCanEdit();
+    if (!canEdit) {
+      return;
+    }
     this.isLocked = !this.isLocked;
     this.getSelectedObject().locked = this.isLocked;
   }
@@ -204,15 +277,25 @@ export class LinkEditPanelComponent implements OnDestroy {
 
   //I think this is getting called continuously, should probably find a way to amend that
   getLinkAngle(): number {
-    let angle = this.getSelectedObject().calculateAngle();
+    let angleInDegrees = this.getSelectedObject().calculateAngle();
     //console.log(`Angle in degrees from calculateAngle: ${angle}`);
-    if (angle !== null) {
-      if (angle < 0) {
-        angle += 360;
+    if (angleInDegrees !== null) {
+      if (this.angleSuffix === 'º') { // Degree
+        if (angleInDegrees < 0) {
+          angleInDegrees += 360; // Normalize to be within [0, 360]
+        }
+        // Round to the nearest hundredth
+        const x = angleInDegrees.toFixed(3)
+        return parseFloat(x);
+    } else if (this.angleSuffix === 'rad') { // Radians
+        let angleInRadians = angleInDegrees * (Math.PI)/180;
+
+        if (angleInRadians < 0) {
+          angleInRadians += 2 * (Math.PI); // Normalize to be within [0, 2pi]
+        }
+
+        return parseFloat(angleInRadians.toFixed(3));
       }
-      // Round to the nearest hundredth
-      const x = angle.toFixed(3);
-      return parseFloat(x);
     }
     return 0;
   }
@@ -264,13 +347,31 @@ export class LinkEditPanelComponent implements OnDestroy {
     this.isEditingTitle = false;
   }
 
+  // called when a click on dual button has been prevented.
+  // used to show a notification to the user
+  dualButtonClickStopped(stopped: boolean) {
+    if (stopped) {
+      this.confirmCanEdit();
+    }
+  }
+
   //will create a tracer at the center of mass of the link
   addTracer(): void {
+    /*if (this.btn1Disabled) {
+      this.actionPrevented.emit(true);
+      return;
+    }*/
+
     let CoM = this.getSelectedObject().centerOfMass;
     let linkID = this.getSelectedObject().id;
     this.getMechanism().addJointToLink(linkID, CoM);
   }
   addForce(): void {
+    /*if (this.btn2Disabled) {
+      this.actionPrevented.emit(true);
+      return;
+    }*/
+
     let CoM = this.getSelectedObject().centerOfMass;
     let linkID = this.getSelectedObject().id;
     this.getMechanism().addForceToLink(
@@ -287,6 +388,10 @@ export class LinkEditPanelComponent implements OnDestroy {
 
   //deletes the link and calls deselectObject to close the panel
   deleteLink() {
+    let canEdit = this.confirmCanEdit();
+    if (!canEdit) {
+      return;
+    }
     console.log('link ' + this.getSelectedObject().id + ' has been deleted');
     this.stateService.getMechanism().removeLink(this.getSelectedObject().id);
     this.interactionService.deselectObject();

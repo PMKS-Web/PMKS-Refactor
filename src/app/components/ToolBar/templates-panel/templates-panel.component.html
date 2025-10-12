@@ -1,7 +1,7 @@
 <!-- *ngIf= open will make the panel "close" when you open a template but makes it so you have to
 double click templates to open again, works for now, will need a better fix later -->
 <div *ngIf=open class="focusEffect" (click)="togglePanel($event)">
-  <div class="app-templates-panel-container">
+  <div class="app-templates-panel-container" data-tour="templates-panel">
     <panel-section-collapsible>
       <title-block description=''>
         <h3><b>Templates</b></h3>
