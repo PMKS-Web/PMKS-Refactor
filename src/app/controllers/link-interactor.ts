@@ -270,6 +270,13 @@ export class LinkInteractor extends Interactor {
           label: this.link.locked ? 'Unlock Link' : 'Lock Link',
           action: () => {
             this.link.locked = !this.link.locked;
+            //whenever locking happens record an undoRedo action to allow it to be undone
+            const linkId = this.link.id
+            this.undoRedoService.recordAction({
+              //specifies that it only needs the action name and link id
+              type: "lockLink",
+              linkId
+            });
           },
           disabled: false,
         },

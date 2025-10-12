@@ -290,6 +290,14 @@ export class UndoRedoService {
         link.setAngle(ca.newAngle!, joint);
         break;
       }
+      case 'lockLink': {
+        //gets the linked specified from action
+        const link = this.mechanism.getLink(action.linkId!)!;
+        const locked = link.locked
+        //reverses the lock
+        link.locked = !locked
+        break;
+      }
 
       default:
         console.error('No inverse defined for action type:', action.type);
@@ -521,6 +529,14 @@ export class UndoRedoService {
         const link = this.mechanism.getLink(ca.linkId!)!;
         const joint = this.mechanism.getJoint(ca.jointId!)!;
         link.setAngle(ca.oldAngle!, joint);
+        break;
+      }
+      case 'lockLink': {
+        //get the specified link from the action and see if its locked
+        const link = this.mechanism.getLink(action.linkId!)!;
+        const locked = link.locked
+        //reverse the lock
+        link.locked = !locked
         break;
       }
       default:
