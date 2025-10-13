@@ -58,25 +58,17 @@
       (closed)="sectionExpanded['FBasic'] = false"
     >
       <div>
-        <!-- Local/Global Toggle -->
-        <div class="toggle-container">
-          <div class="toggle-label" style="margin-left: 12px">
-            Coordinate System
-          </div>
-          <div class="toggle-row">
-            <mat-slide-toggle
-              [(ngModel)]="isGlobalCoordinates"
-              (change)="updateCoordinateSystem()"
-            >
-              {{ isGlobalCoordinates ? "Global" : "Local" }}
-            </mat-slide-toggle>
-          </div>
-        </div>
+
 
         <!-- Magnitude and Angle input -->
         <div class="length-angle-block">
           <!-- Label on its own line -->
-          <div class="la-label">Force Magnitude and Angle</div>
+          <div class="la-label label-with-icon">
+            <span>Force Magnitude and Angle</span>
+            <mat-icon class="tooltip" matTooltip="Content" [matTooltipShowDelay]="600">
+              help_outline
+            </mat-icon>
+          </div>
 
           <!-- Inputs side-by-side -->
           <div class="length-angle-row">
@@ -115,7 +107,12 @@
         <!-- Components -->
         <div class="length-angle-block">
           <!-- Label on its own line -->
-          <div class="la-label">Force Components</div>
+          <div class="la-label label-with-icon">
+            <span>Force Components</span>
+            <mat-icon class="tooltip" matTooltip="Content" [matTooltipShowDelay]="600">
+              help_outline
+            </mat-icon>
+          </div>
 
           <!-- Inputs side-by-side -->
           <div class="length-angle-row">
@@ -145,7 +142,12 @@
 
                 <!-- Position -->
         <div class="length-angle-block">
-          <div class="la-label">Force Position</div>
+          <div class="la-label label-with-icon">
+            <span>Force Position</span>
+            <mat-icon class="tooltip" matTooltip="Content" [matTooltipShowDelay]="600">
+              help_outline
+            </mat-icon>
+          </div>
 
           <div class="length-angle-row">
             <div class="la-cell">
@@ -176,7 +178,31 @@
       </div>
     </collapsible-subsection>
 
-    
+    <!-- Local/Global Buttons -->
+    <div class="coord-selector">
+      <div class="coord-label label-with-icon">
+        <span>Coordinate System</span>
+        <mat-icon class="tooltip" matTooltip="Content" [matTooltipShowDelay]="600">
+          help_outline
+        </mat-icon>
+      </div>
+
+      <div class="coord-buttons">
+        <button
+          mat-raised-button
+          [color]="!isGlobalCoordinates ? 'primary' : undefined"
+          (click)="isGlobalCoordinates = false; updateCoordinateSystem()">
+          Local
+        </button>
+        <button
+          mat-raised-button
+          [color]="isGlobalCoordinates ? 'primary' : undefined"
+          (click)="isGlobalCoordinates = true; updateCoordinateSystem()">
+          Global
+        </button>
+      </div>
+
+    </div>
 
     <!-- COLOR SETTINGS -->
     <collapsible-subsection

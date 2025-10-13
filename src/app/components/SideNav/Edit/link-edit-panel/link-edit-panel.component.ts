@@ -61,7 +61,7 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
       this._preventDualButtons = !isStopped;
     })
   }
-  
+
   ngOnInit(){
     //subscript to listen for unit suffix from stateService
     this.unitSuffixSubscription = this.stateService.globalUSuffixCurrent.subscribe((unitSuffix)=>{
@@ -73,7 +73,7 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
       this.angleSuffix = angleSuffix;
     })
   }
-    
+
   ngOnDestroy() {
     this.unitSuffixSubscription.unsubscribe();
     this.angleSuffixSubscription.unsubscribe();
@@ -184,7 +184,7 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
 
   // Saves the new pending link angle
   confirmLinkAngle(): void {
-    let raw = this.pendingLinkAngle; 
+    let raw = this.pendingLinkAngle;
     if (raw == null) return;
 
     if (this.angleSuffix === 'rad') { //need to convert the 'raw' into degrees if the current unit is 'rad', we have to convert it because the logic in backend only works with unit in degrees.
@@ -192,7 +192,7 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
     }
 
     const link = this.getSelectedObject();
-    const oldAng = this.getLinkAngle(); 
+    const oldAng = this.getLinkAngle();
     const newAng = raw;
     if (Math.abs(oldAng - newAng) < 1e-6) {
       this.pendingLinkAngle = undefined;
@@ -263,6 +263,13 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
     }
     this.isLocked = !this.isLocked;
     this.getSelectedObject().locked = this.isLocked;
+    //whenever locking happens record an undoRedo action to allow it to be undone
+    const linkId = this.getSelectedObject().id;
+    this.undoRedoService.recordAction({
+      //specifies that it only needs the action name and link id
+      type: "lockLink",
+      linkId
+    });
   }
 
   // Returns the length of the selected link

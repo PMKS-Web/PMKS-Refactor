@@ -518,7 +518,6 @@ export class Mechanism {
     let connectedJoints = this.getJointsConnectedForJoint(joint);
     for (const currentJoint of connectedJoints) {
       if (currentJoint.isInput && currentJoint.id != joint.id) {
-        console.log("Joint with input is: ", currentJoint)
         return false;
       }
     }
