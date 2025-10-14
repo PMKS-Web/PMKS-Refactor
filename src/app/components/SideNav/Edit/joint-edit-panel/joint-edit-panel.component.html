@@ -98,7 +98,15 @@
         </div>
 
         <div id="inputJointSpeed" class="speed-block">
-          <label class="speed-label" style ="margin-left: 3px; margin-bottom: 6px;margin-top: 5px">Input Joint Speed</label>
+          <label class="speed-label" style ="margin-left: 3px; margin-bottom: 6px;margin-top: 5px">
+            Input Speed and Direction
+            <mat-icon
+              class="label-help"
+              matTooltip="CW = Clockwise, CCW = Counterclockwise"
+              [matTooltipShowDelay]="600"
+            >help_outline</mat-icon>
+
+          </label>
           <div class="speed-row">
             <!-- changes input joint speed in rpm -->
             <div class="speed-cell">
@@ -110,24 +118,33 @@
               />
               <span class="speed-unit">rpm</span>
             </div>
-          </div>
-        </div>
-
-        <!-- INPUT DIRECTION -->
-          <div id="inputDirectionBlock" class="speed-block" *ngIf="_isInput">
-            <label class="speed-label" style="margin-left: 3px; margin-bottom: 6px; margin-top: 5px">
-              Input Direction
-            </label>
 
 
-            <div class="speed-row">
               <div class="speed-cell">
-                <radio-block
-                  id="inputDirection"
-                  [options]="['Clockwise', 'Counterclockwise']"
-                  [initialSelection]="animationService.startDirectionCounterclockwise ? 'Counterclockwise' : 'Clockwise'"
-                  (selectionChanged)="onDirectionChanged($event)"
-                ></radio-block>
+
+                <!-- Clockwise -->
+                <button
+                  type="button"
+                  class="dir-btn"
+                  [class.selected]="!animationService.startDirectionCounterclockwise"
+                  [disabled]="getJointLockState()"
+                  (click)="onDirectionChanged('Clockwise')"
+                  matTooltip="Clockwise"
+                  [matTooltipShowDelay]="600"
+                >CW</button>
+
+
+                <!-- Counterclockwise -->
+                <button
+                  type="button"
+                  class="dir-btn"
+                  [class.selected]="animationService.startDirectionCounterclockwise"
+                  [disabled]="getJointLockState()"
+                  (click)="onDirectionChanged('Counterclockwise')"
+                  matTooltip="Counterclockwise"
+                  [matTooltipShowDelay]="600"
+                >CCW</button>
+
               </div>
             </div>
         </div>
