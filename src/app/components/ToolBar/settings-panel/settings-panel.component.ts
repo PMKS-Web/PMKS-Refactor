@@ -40,12 +40,7 @@ export class SettingsPanelComponent implements OnInit, OnDestroy{
 
   @Output() valueChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
   public value: boolean = this.gridEnabled;
-  public onDirectionChanged(selection: string): void {
-    this.animationService.animateMechanisms(false);
-    this.animationService.reset();
-    this.animationService.startDirectionCounterclockwise = (selection === 'Counterclockwise');
-    this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
-  }
+
 
   // listen to current unit and angle from stateService and assign them to this class variable to show on screen correctly
   ngOnInit(): void {

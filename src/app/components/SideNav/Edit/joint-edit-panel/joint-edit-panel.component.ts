@@ -12,7 +12,7 @@ import {
 } from 'src/app/services/link-edit-hover.service';
 import {UndoRedoService} from "src/app/services/undo-redo.service";
 import { NotificationService } from 'src/app/services/notification.service';
-
+import { AnimationService } from "src/app/services/animation.service";
 @Component({
   selector: 'app-joint-edit-panel',
   templateUrl: './joint-edit-panel.component.html',
@@ -53,7 +53,8 @@ export class jointEditPanelComponent implements OnInit, OnDestroy{
     private stateService: StateService,
     private interactorService: InteractionService,
     private linkHoverService: LinkEditHoverService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    public animationService: AnimationService
   ) {
     console.log('joint-edit-panel.constructor');
     this.stateService.getAnimationBarComponent().stoppedAnimating.subscribe((isStopped) => {
@@ -657,6 +658,14 @@ export class jointEditPanelComponent implements OnInit, OnDestroy{
     }
     this.getCurrentJoint().rpmSpeed = newSpeed; // sets the specific input joint speed
     this.getMechanism().setInputSpeed(newSpeed); // sets whole mechanism input speed
+  }
+
+
+  public onDirectionChanged(selection: string): void {
+    this.animationService.animateMechanisms(false);
+    this.animationService.reset();
+    this.animationService.startDirectionCounterclockwise = (selection === 'Counterclockwise');
+    this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
   }
 
 }
