@@ -175,9 +175,23 @@ export class jointEditPanelComponent implements OnInit, OnDestroy{
 
   // This is for angle of a Joint attached to Slider
   confirmJointAngle(): void {
-    if (this.pendingAngle == null) return;
+    let newAngle = this.pendingAngle;
+    
+    if (newAngle == null) return;
 
-    this.setJointAngle(this.pendingAngle);
+    if (this.angleSuffix === 'rad') { //need to convert the 'raw' into degrees if the current unit is 'rad', we have to convert it because the logic in backend only works with unit in degrees.
+      newAngle = newAngle * 180 / Math.PI;
+    }
+
+    const currJoint = this.getCurrentJoint();
+    const oldAngle = currJoint.angle; //get angle of current joint
+
+    if (Math.abs(oldAngle - newAngle) < 1e-6) { //return right away if the new and old angle are the same
+      this.pendingAngle = undefined;
+      return;
+    }
+
+    this.setJointAngle(newAngle); //setJointAngle already recorded undoRedoService 
     this.getMechanism().notifyChange();
     this.pendingAngle = undefined;
   }
@@ -507,8 +521,23 @@ export class jointEditPanelComponent implements OnInit, OnDestroy{
     return 0;
   }
 
-  getJointAngle2(): number {
-    return this.getCurrentJoint().angle;
+  getSliderJointAngle(): number {
+    let angleInDegrees = this.getCurrentJoint().angle; //angle in backend system always return in degrees
+    let angleInRadians = angleInDegrees * Math.PI / 180;
+
+    if (this.angleSuffix === 'º') {
+      if (angleInDegrees < 0) {  // Normalize the angle to be within [0, 360] degrees
+        angleInDegrees += 360;
+      }
+      return parseFloat(angleInDegrees.toFixed(3));
+    } else if(this.angleSuffix === 'rad') {
+      if (angleInRadians < 0) {
+        angleInRadians += 2 * (Math.PI); // Normalize to be within [0, 2pi]
+      }
+      return parseFloat(angleInRadians.toFixed(3));
+    }
+    
+    return 0;
   }
 
   getJointGround() {
