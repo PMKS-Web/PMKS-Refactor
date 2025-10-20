@@ -178,6 +178,7 @@ export class jointEditPanelComponent implements OnInit, OnDestroy{
     if (this.pendingAngle == null) return;
 
     this.setJointAngle(this.pendingAngle);
+    this.getMechanism().notifyChange();
     this.pendingAngle = undefined;
   }
 

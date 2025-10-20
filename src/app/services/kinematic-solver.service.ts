@@ -652,15 +652,15 @@ export class PositionSolverService {
       nextPositions[solveOrder.indexOf(solvePrerequisite.knownJointOne!.id)!].y;
 
     let m = Math.tan((solvePrerequisite.jointToSolve!.angle * Math.PI) / 180);
+    console.log(`angle of slider in radians: ${(solvePrerequisite.jointToSolve!.angle * Math.PI) / 180}`);
     if (m > 1000 || m < -1000) {
       m = Number.MAX_VALUE;
     }
     const prevJointPosition: Coord =
       prevPositions[solveOrder.indexOf(solvePrerequisite.jointToSolve.id)];
-    const n =
-      solvePrerequisite.jointToSolve!.coords.y -
-      m *
-        prevPositions[solveOrder.indexOf(solvePrerequisite.jointToSolve.id)].x;
+    
+    const n = prevJointPosition.y - m * prevJointPosition.x;
+
     // get a, b, c values
     const a = 1 + Math.pow(m, 2);
     const b = -h * 2 + m * (n - k) * 2;
