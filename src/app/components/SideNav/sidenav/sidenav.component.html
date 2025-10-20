@@ -1,10 +1,11 @@
 <div class="app-sidenav-container">
 
   <!-- SIDE NAVIGATION BAR -->
-  <nav class="side-nav">
+  <nav class="side-nav" id="side-nav">
     @for(tab of this.tabs; track $index){
       <button
-        class ="sidenav-button"
+        class = "sidenav-button"
+        [id] = "tab.id"
         [ngClass]="{ 'selected': isSelected(tab.label) }"
         (click)="togglePanel(tab.label)">
 

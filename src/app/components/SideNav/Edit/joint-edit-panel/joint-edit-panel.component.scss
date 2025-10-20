@@ -138,7 +138,7 @@ button {
 .dar-cell {
   display: flex;
   align-items: center;
-  margin-top: 8px;
+  margin-top: 6px;
   margin-bottom: 5px;
 }
 
@@ -171,6 +171,7 @@ button {
   }
 }
 
+// xy-block
 .xy-block {
   margin-bottom: 12px;
   margin-left: 10px;
@@ -180,7 +181,7 @@ button {
   display: block;
   font: inherit;
   color: inherit;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .xy-row {
@@ -203,4 +204,74 @@ button {
 
 .xy-cell input {
   width: 3rem;
+}
+
+// styling for input speed
+.speed-block {
+  margin-bottom: 12px;
+  margin-left: 10px;
+}
+
+.speed-label {
+  display: block;
+  font: inherit;
+  color: inherit;
+  margin-bottom: 2px;
+}
+
+.speed-row {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.speed-cell {
+  display: flex;
+  align-items: center;
+  margin-left: 4px;
+}
+
+.speed-unit {
+  margin-left: 4px;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.speed-cell input {
+  width: 3rem;
+}
+
+.dir-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  height: 32px;
+  padding: 0 10px;
+  font-size: 14px;
+  line-height: 1;
+  white-space: nowrap;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: #fff;
+  color: #000;
+  cursor: pointer;
+  transition: box-shadow 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+
+.dir-btn:hover {
+  background: #eef2ff;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.18);
+}
+
+.dir-btn.selected {
+  border-color: #3f51b5;
+  color: #fff;
+  background: #3f51b5;
+  box-shadow: none;
+}
+
+.dir-btn[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
 }

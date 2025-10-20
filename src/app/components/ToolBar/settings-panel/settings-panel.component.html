@@ -1,5 +1,5 @@
 <div class="remover" *ngIf="open" (click)="closePanel($event)">
-  <div class="settings">
+  <div class="settings" data-tour="settings-panel">
     <panel-section-collapsible>
       <title-block description="" class="settingsHeader">
         <h3>Settings</h3>
@@ -14,26 +14,7 @@
       (closed)="sectionExpanded['LBasic'] = false"
     >
 
-      <!-- INPUT DIRECTION (row) -->
-      <div class="option-row">
-        <p class="label-with-icon">
-          <span style="flex: 0 0 auto; margin-right: 5px;">Input Direction</span>
-          <mat-icon
-            matTooltip="Toggles the input direction between clockwise and counterclockwise"
-            [matTooltipShowDelay]="1000"
-            class="tooltip"
-            [ngClass]="iconClass"
-          >
-            help_outline
-          </mat-icon>
-        </p>
-        <radio-block
-          id="inputDirection"
-          [options]="['Clockwise', 'Counterclockwise']"
-          [initialSelection]="animationService.startDirectionCounterclockwise ? 'Counterclockwise' : 'Clockwise'"
-          (selectionChanged)="onDirectionChanged($event)"
-        ></radio-block>
-      </div>
+
 
       <!-- GLOBAL UNITS (row) -->
       <div class="option-row">
@@ -75,7 +56,6 @@
         ></radio-block>
       </div>
     </collapsible-subsection>
-
 
     <!-- VISUAL DROPDOWN -->
     <collapsible-subsection

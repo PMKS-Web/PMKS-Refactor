@@ -38,7 +38,7 @@ export class SvgComponent extends AbstractInteractiveComponent {
     super(interactionService, animationService);
   }
 
-  override async ngOnInit(): Promise<void> {
+  override ngOnInit(): void {
     this.unitSubscription = this.stateService.globalUnitsCurrent.subscribe((units) => {this.units = units;});
     this.angleSubscription = this.stateService.globalAnglesCurrent.subscribe((angles) => {this.angles = angles;});
     super.ngOnInit();

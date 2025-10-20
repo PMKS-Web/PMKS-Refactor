@@ -31,9 +31,13 @@
   </button>
 
   <!-- TEMPLATES -->
-  <button mat-button class="toolbar-button" (click)="setCurrentTab('Templates');"
-          matTooltip='Show the library of available linkages'
-          matTooltipShowDelay='1000'>
+  <button
+    mat-button
+    class="toolbar-button"
+    data-tour="templates-btn"
+    (click)="setCurrentTab('Templates');"
+    matTooltip='Show the library of available linkages'
+    matTooltipShowDelay='1000'>
     <mat-icon>apps</mat-icon>
     <span class="button-text">Templates</span>
   </button>
@@ -47,7 +51,9 @@
   </button>
 
   <!-- SHARE -->
-  <button mat-button class="toolbar-button" (click)="handleShare();"
+  <button mat-button class="toolbar-button"
+          data-tour="share-btn"
+          (click)="handleShare();"
           matTooltip='Copy a URL to clipboard that contains your linakge'
           matTooltipShowDelay='1000'>
     <mat-icon>link</mat-icon>
@@ -57,20 +63,28 @@
   <span class="spacer"></span>
 
   <!-- UNDO/REDO PANEL -->
-  <app-undo-redo-panel></app-undo-redo-panel>
+  <app-undo-redo-panel data-tour="undo-redo-panel"></app-undo-redo-panel>
 
   <!-- SETTINGS -->
-  <button mat-button class="toolbar-button" (click)="setCurrentTab('Settings');"
-          matTooltip='Change Linkage Settings'
-          matTooltipShowDelay='1000'>
+  <button
+    mat-button
+    class="toolbar-button"
+    data-tour="settings-btn"
+    (click)="setCurrentTab('Settings');"
+    matTooltip='Change Linkage Settings'
+    matTooltipShowDelay='1000'>
     <mat-icon>settings</mat-icon>
     <span class="button-text">Settings</span>
   </button>
 
   <!-- FEEDBACK -->
-  <button mat-button class="toolbar-button" (click)="setCurrentTab('Feedback');"
-          matTooltip='Send Us Feedback'
-          matTooltipShowDelay='1000'>
+  <button
+    mat-button
+    class="toolbar-button"
+    data-tour="feedback-btn"
+    (click)="setCurrentTab('Feedback');"
+    matTooltip='Send Us Feedback'
+    matTooltipShowDelay='1000'>
     <mat-icon>feedback</mat-icon>
     <span class="button-text">Feedback</span>
   </button>

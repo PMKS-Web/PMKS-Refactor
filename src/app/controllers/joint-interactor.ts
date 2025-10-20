@@ -44,6 +44,13 @@ export class JointInteractor extends Interactor {
           );
         return;
       }
+      if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
+      ) {
+        this.notificationService.showWarning(
+          'Cannot edit while Animation is in play or paused state!'
+        );
+        return;
+      }
 
       if (
         (!this.joint.locked ||
@@ -86,9 +93,11 @@ export class JointInteractor extends Interactor {
     });
 
     this.onDragEnd$.subscribe(() => {
-
       this.stateService.getMechanism().clearTrajectories(); // Hide trajectories when not moving joint
-
+      if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
+      ) {
+        return;
+      }
       if (this.jointStartCoords) {
         const oldPos = this.jointStartCoords;
         const newPos = this.joint.coords.clone();
@@ -120,6 +129,13 @@ export class JointInteractor extends Interactor {
       this.notificationService.showNotification(
         'Cannot edit in the Synthesis mode! Switch to Edit mode to edit.'
       );
+    }
+    if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
+    ) {
+      this.notificationService.showWarning(
+        'Cannot edit while Animation is in play or paused state!'
+      );
+      return availableContext;
     }
     if (this.stateService.getCurrentActivePanel === 'Analysis') {
       this.notificationService.showNotification(
@@ -158,6 +174,12 @@ export class JointInteractor extends Interactor {
           icon: 'assets/contextMenuIcons/addInput.svg',
           label: 'Add Input',
           action: () => {
+            for (const cJoint of this.stateService.getMechanism().getJointsConnectedForJoint(this.joint)) {
+              if (cJoint.isInput && cJoint.id != this.joint.id) {
+                return;
+              }
+            }
+
             const actionObj: Action = {
               type: 'addInput',
               jointId: this.joint.id,
@@ -167,7 +189,7 @@ export class JointInteractor extends Interactor {
 
             mechanism.addInput(this.joint.id);
           },
-          disabled: !mechanism.canAddInput(this.joint),
+          disabled: !mechanism.canAddInput(this.joint) ,
         });
       }
       //Logic for Grounding option

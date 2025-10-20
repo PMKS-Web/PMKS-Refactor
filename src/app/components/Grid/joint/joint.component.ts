@@ -55,6 +55,10 @@ export class JointComponent extends AbstractInteractiveComponent {
     return this.unitConversionService.modelCoordToSVGCoord(this.joint._coords).y;
   }
 
+  public getAngle(): number {
+    return this.joint.angle ?? 0;
+  }
+
   public getRadius(): number {
     if (this.joint.isHidden) return 0;
     else return 18;
