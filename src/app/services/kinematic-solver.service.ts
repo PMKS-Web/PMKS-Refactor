@@ -657,10 +657,9 @@ export class PositionSolverService {
     }
     const prevJointPosition: Coord =
       prevPositions[solveOrder.indexOf(solvePrerequisite.jointToSolve.id)];
-    const n =
-      solvePrerequisite.jointToSolve!.coords.y -
-      m *
-        prevPositions[solveOrder.indexOf(solvePrerequisite.jointToSolve.id)].x;
+
+    const n = prevJointPosition.y - m * prevJointPosition.x;
+    
     // get a, b, c values
     const a = 1 + Math.pow(m, 2);
     const b = -h * 2 + m * (n - k) * 2;
