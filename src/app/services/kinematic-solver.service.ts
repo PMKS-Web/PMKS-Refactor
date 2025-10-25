@@ -652,7 +652,8 @@ export class PositionSolverService {
       nextPositions[solveOrder.indexOf(solvePrerequisite.knownJointOne!.id)!].y;
 
     let m = Math.tan((solvePrerequisite.jointToSolve!.angle * Math.PI) / 180);
-    if (m > 1000 || m < -1000) {
+    
+    if (m > 1000 || m < -1000) { // when angle is 90 degrees, tan will be 1/0 = undefined
       m = Number.MAX_VALUE;
     }
     const prevJointPosition: Coord =
@@ -666,18 +667,17 @@ export class PositionSolverService {
     const c = Math.pow(h, 2) + Math.pow(n - k, 2) - Math.pow(r, 2);
     // get discriminant
     const d = Math.pow(b, 2) - 4 * a * c;
+    
+    console.log('value of disciminant: ', d);
 
-    //if discriminant is too big or not a number, use alternative method
+    //if discriminant is too big or not a number (NaN), use alternative method. We will see this case when angle of slider = 90 degrees
     if (isNaN(d) || !isFinite(d)) {
-      let temp_a: number = 1;
-      let temp_b: number = -2 * solvePrerequisite.knownJointOne!._coords.y;
-      let temp_c: number =
-        Math.pow(solvePrerequisite.knownJointOne!._coords.y, 2) +
-        Math.pow(
-          solvePrerequisite.knownJointOne!._coords.x - prevJointPosition.x,
-          2
-        ) -
-        Math.pow(r, 2);
+      // Line (vertical slider): x = t
+      // Circle: (x - h)^2 + (y - k)^2 = r^2
+      const t = prevJointPosition.x;
+      const temp_a: number = 1;
+      const temp_b: number = -2 * k;
+      const temp_c: number = Math.pow(k, 2) + Math.pow(t-h,2) - Math.pow(r, 2);
       let temp_d: number = Math.pow(temp_b, 2) - 4 * temp_a * temp_c;
       if (temp_d < 0) {
         return undefined;
@@ -697,8 +697,7 @@ export class PositionSolverService {
         y = y_2;
       }
       x = prevJointPosition.x;
-      //if discriminant is normal, calculate intersection points and return closest.
-    } else {
+    } else { //if discriminant is normal, calculate intersection points and return closest.
       if (d >= 0) {
         const x_1 = (-b + Math.sqrt(Math.pow(b, 2) - 4 * a * c)) / (2 * a);
         const y_1 = m * x_1 + n;
@@ -722,6 +721,7 @@ export class PositionSolverService {
           y = intersectionPoints[0].y;
         }
       } else {
+        console.log('something weird happens to calculation logic with solveCircleLine() in kinematic-solver.service.ts')
         return undefined;
       }
     }
