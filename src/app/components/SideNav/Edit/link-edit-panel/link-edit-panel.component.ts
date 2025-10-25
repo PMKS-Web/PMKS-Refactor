@@ -31,8 +31,11 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
     FVisual: false,
   };
   isEditingTitle: boolean = false;
-  isLocked: boolean = this.getSelectedObject().locked;
   selectedIndex: number = this.getColorIndex();
+  //makes it a getter instead of a variable so that you can see it update whenever it gets called
+  get isLocked(): boolean {
+    return this.getSelectedObject().locked;
+  }
   //icon paths for dual button for addTracer and addForce
   public addTracerIconPath: string = 'assets/icons/addTracer.svg';
   public addForceIconPath: string = 'assets/icons/addForce.svg';
@@ -261,10 +264,11 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
     if (!canEdit) {
       return;
     }
-    this.isLocked = !this.isLocked;
-    this.getSelectedObject().locked = this.isLocked;
+    const link = this.getSelectedObject();
+    //locks the actual link instead of locking the reference to the link
+    link.locked = !link.locked;
     //whenever locking happens record an undoRedo action to allow it to be undone
-    const linkId = this.getSelectedObject().id;
+    const linkId = link.id;
     this.undoRedoService.recordAction({
       //specifies that it only needs the action name and link id
       type: "lockLink",
