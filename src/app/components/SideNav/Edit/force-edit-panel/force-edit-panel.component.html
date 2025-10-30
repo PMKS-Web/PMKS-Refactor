@@ -76,7 +76,17 @@
         <!-- Magnitude and Angle input -->
         <div class="length-angle-block">
           <!-- Label on its own line -->
-          <div class="la-label">Force Magnitude and Angle</div>
+          <div class="la-label">Force Magnitude and Angle
+            <mat-icon
+              id="ForceMagnitudeToolTip"
+              style="margin-bottom:-10px"
+              matTooltip="Enter tooltip here"
+              [matTooltipShowDelay]="1000"
+              class="label-help"
+              [ngStyle]="{ 'margin-top': '-10px' }"
+            >help_outline</mat-icon
+            >
+          </div>
 
           <!-- Inputs side-by-side -->
           <div class="length-angle-row">
@@ -115,7 +125,17 @@
         <!-- Components -->
         <div class="length-angle-block">
           <!-- Label on its own line -->
-          <div class="la-label">Force Components</div>
+          <div class="la-label">Force Components
+            <mat-icon
+              id="ForceComponentsToolTip"
+              style="margin-bottom:-10px"
+              matTooltip="Enter tooltip here"
+              [matTooltipShowDelay]="1000"
+              class="label-help"
+              [ngStyle]="{ 'margin-top': '-10px' }"
+            >help_outline</mat-icon
+            >
+          </div>
 
           <!-- Inputs side-by-side -->
           <div class="length-angle-row">
@@ -145,7 +165,17 @@
 
                 <!-- Position -->
         <div class="length-angle-block">
-          <div class="la-label">Force Position</div>
+          <div class="la-label">Force Position
+            <mat-icon
+              id="ForcePositionsToolTip"
+              style="margin-bottom:-10px"
+              matTooltip="Enter tooltip here"
+              [matTooltipShowDelay]="1000"
+              class="label-help"
+              [ngStyle]="{ 'margin-top': '-10px' }"
+            >help_outline</mat-icon
+            >
+          </div>
 
           <div class="length-angle-row">
             <div class="la-cell">
@@ -176,7 +206,7 @@
       </div>
     </collapsible-subsection>
 
-    
+
 
     <!-- COLOR SETTINGS -->
     <collapsible-subsection
@@ -187,7 +217,7 @@
     >
       <!-- changes the color of the force -->
       <div>
-        <p class="colors" style="margin-left: 15px">Force Color:</p>
+        <p class="colors" style="margin-left: 15px">Force Color</p>
         <div class="row" style="justify-content: center">
           <div
             *ngFor="let color of getColors(); let i = index"

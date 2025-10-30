@@ -20,7 +20,7 @@
         <!--      <p class="subtitle">Y Coordinate of Joint: {{ this.getJointYCoord() }} </p>-->
 
         <!--Position: -->
-        <analysis-graph-button [dynamicText]="'Position:'"
+        <analysis-graph-button [dynamicText]="'Position'"
                                [explainText]="'Joint Position'"
                                [btn1Action]="toggleGraph.bind(this, GraphType.JointPosition)"
                                [graphText]="currentGraphType === GraphType.JointPosition ? 'Close Graph' : 'Show Graph'"></analysis-graph-button>
@@ -40,7 +40,7 @@
         </ng-container>
 
         <!--Velocity: -->
-        <analysis-graph-button [dynamicText]="'Velocity:'"
+        <analysis-graph-button [dynamicText]="'Velocity'"
                                [explainText]="'Joint Velocity'"
                                [btn1Action]="toggleGraph.bind(this, GraphType.JointVelocity)"
                                [graphText]="currentGraphType === GraphType.JointVelocity ? 'Close Graph' : 'Show Graph'"></analysis-graph-button>
@@ -59,7 +59,7 @@
         </ng-container>
 
         <!--Acceleration: -->
-        <analysis-graph-button [dynamicText]="'Acceleration:'"
+        <analysis-graph-button [dynamicText]="'Acceleration'"
                                [explainText]="'Joint Acceleration'"
                                [btn1Action]="toggleGraph.bind(this, GraphType.JointAcceleration)"
                                [graphText]= "currentGraphType === GraphType.JointAcceleration ? 'Close Graph' : 'Show Graph'"></analysis-graph-button>

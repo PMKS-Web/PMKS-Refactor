@@ -108,6 +108,7 @@ PMKS+ is based on PMKS, developed by Prof. Matthew I. Campbell, Professor, Mecha
 ### Contributors
 - David Peterson (CS '28)
 - Randy Gomez (CS '28)
+- Huy Ho (CS '27)
 - Jeremy Bornstein (CS '25)
 - Jagruti Chitte (CS '25)
 - Gabriel Curet-Irizarry (CS '25)

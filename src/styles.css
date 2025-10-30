@@ -22,7 +22,7 @@ input[type=number] {
 }
 
   input {
-    width: 40%;
+    width: 45%;
     border: none;
     border-bottom: 1px solid rgba(0,0,0, 75%);
     background-color: rgba(63,81,181, 10%);
