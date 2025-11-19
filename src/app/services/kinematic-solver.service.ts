@@ -100,6 +100,11 @@ export class PositionSolverService {
     return validMechanisms;
   }
 
+  // validate a sub-mechanism
+  public validateSubmechanism (subMechanism: Map<Joint, RigidBody[]>): boolean {
+    return this.isValidMechanism(subMechanism);
+  }
+
   // Updates the internal list of solve orders by determining how to solve each valid submechanism.
   updateSolveOrders(mechanisms: Map<Joint, RigidBody[]>[]) {
     this.solveOrders = [];
