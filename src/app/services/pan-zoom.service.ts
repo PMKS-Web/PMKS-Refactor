@@ -35,7 +35,9 @@ constructor() {
 
 }
   // Handles zooming in or out based on mouse scroll events and updates the viewBox accordingly.
+  // Note: "mouse-wheel-event" will be automatically transferred to "pinch-event" by the browser if we use touchpad on laptop
   public _onMouseScrollWheel(event: WheelEvent){
+      event.preventDefault(); // This tell the browser to stop using its default zoom function and use our zoom function code below instead
       event.stopPropagation();
 
       let zoomDirection: number = event.deltaY;
