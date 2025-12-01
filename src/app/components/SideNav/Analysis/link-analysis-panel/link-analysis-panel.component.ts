@@ -30,6 +30,7 @@ export class LinkAnalysisPanelComponent {
   referenceJoint: Joint = this.getCurrentLink().joints.get(0) as Joint;
   currentGlobalUSuffix: any;
   currentGlobalAngleSuffix: any;
+
   constructor(private stateService: StateService, private interactorService: InteractionService,
               private analysisSolverService: AnalysisSolveService){
                 this.stateService.globalUSuffixCurrent.subscribe(value => {
@@ -180,6 +181,7 @@ export class LinkAnalysisPanelComponent {
           let joints = this.getMechanism().getArrayOfJoints();
           let jointIds = joints.map(joint => joint.id);
           let linkKinematics = this.analysisSolverService.getLinkKinematics(jointIds, linkIndex);
+
           return this.analysisSolverService.transformLinkKinematicGraph(linkKinematics, "Velocity");
         }
         return {
@@ -211,6 +213,7 @@ export class LinkAnalysisPanelComponent {
   public GraphType = GraphType;
 
   downloadCSV() {
+    console.log("DOWNLOAD CSV====================================")
     const table = document.querySelector(".table-auto");
     if (!table) return;
 
@@ -257,4 +260,5 @@ export class LinkAnalysisPanelComponent {
     const link = this.getCurrentLink();
     return link ? link.id : null;
   }
+
 }

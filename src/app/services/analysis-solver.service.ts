@@ -306,19 +306,14 @@ export class AnalysisSolveService {
   // Computes center-of-mass and angular kinematics for a link given its associated joint IDs.
   getLinkKinematics(jointIDs: number[], linkIndex: number): LinkAnalysis {
     let subJoints: JointAnalysis[] = [];
-    console.log('=== getLinkKinematics called ===');
-    console.log('Joint IDs passed in:', jointIDs);
 
     for (let id of jointIDs) {
       const jointData = this.jointKinematics.get(id);
-      console.log(
-        `  JointID=${id}`,
-        'first pos =', jointData?.positions[0]
-      );
       subJoints.push(jointData!);
     }
     let com_solutions: { pos: Coord[], vel: Coord[], acc: Coord[] } = this.getLinkCOMSolutions(subJoints);
     let angle_solutions: { ang: number[], vel: number[], acc: number[] } = this.getLinkAngularSolutions(subJoints, linkIndex);
+
     return {
       timeIncrement: subJoints[0].timeIncrement,
       COMpositions: com_solutions.pos,
