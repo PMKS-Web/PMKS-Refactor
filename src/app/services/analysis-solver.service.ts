@@ -381,8 +381,11 @@ export class AnalysisSolveService {
         subJoints[2].positions[time].x - subJoints[1].positions[time].x
       );
       const theta4 = Math.atan2(
-        subJoints[3].positions[time].y - subJoints[2].positions[time].y,
-        subJoints[3].positions[time].x - subJoints[2].positions[time].x
+        // Quick fix for proper sign, once loop selection is implemented, that will determine the order
+        subJoints[2].positions[time].y - subJoints[3].positions[time].y,
+        subJoints[2].positions[time].x - subJoints[3].positions[time].x
+        // subJoints[3].positions[time].y - subJoints[2].positions[time].y,
+        // subJoints[3].positions[time].x - subJoints[2].positions[time].x
       );
 
       // Get angular velocity for links at postions at current time interval
