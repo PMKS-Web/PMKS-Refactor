@@ -4,7 +4,7 @@ import {InteractionService} from "src/app/services/interaction.service";
 import {Mechanism} from "src/app/model/mechanism";
 import {LinkInteractor} from "src/app/controllers/link-interactor";
 import {Joint} from "src/app/model/joint";
-import {AnalysisSolveService, JointAnalysis} from "src/app/services/analysis-solver.service";
+import {AnalysisSolveService, JointAnalysis, LinkAnalysis} from "src/app/services/analysis-solver.service";
 
 // enum contains every kind of graph this panel can open.
 export enum GraphType {
@@ -53,11 +53,11 @@ export class LinkAnalysisPanelComponent {
     getCOMYCoord(): number {return this.getCurrentLink()?.centerOfMass.y.toFixed(3) as unknown as number;}
   openAnalysisGraph(graphType: GraphType): void {
     this.currentGraphType = graphType;
-    if(this.currentGraphType == GraphType.CoMPosition ||
-      this.currentGraphType == GraphType.CoMVelocity ||
-      this.currentGraphType == GraphType.CoMAcceleration){
-      this.addPlaceholderCoMJoint();
-    }
+    // if(this.currentGraphType == GraphType.CoMPosition ||
+    //   this.currentGraphType == GraphType.CoMVelocity ||
+    //   this.currentGraphType == GraphType.CoMAcceleration){
+    //   this.addPlaceholderCoMJoint();
+    // }
     this.getGraphData();
   }
 
@@ -87,11 +87,11 @@ export class LinkAnalysisPanelComponent {
       case GraphType.CoMAcceleration:
         return 'Center of Mass Acceleration(' + this.currentGlobalUSuffix + '/s²)';
       case GraphType.referenceJointAngle:
-        return 'Reference Joint Angle(' + this.currentGlobalAngleSuffix + ')'; 
+        return 'Reference Joint Angle(' + this.currentGlobalAngleSuffix + ')';
       case GraphType.referenceJointAngularVelocity:
-        return 'Reference Joint Angular Velocity(' + this.currentGlobalAngleSuffix + '/s)'; 
+        return 'Reference Joint Angular Velocity(' + this.currentGlobalAngleSuffix + '/s)';
       case GraphType.referenceJointAngularAcceleration:
-        return 'Reference Joint Angular Acceleration(' + this.currentGlobalAngleSuffix + '/s²)'; 
+        return 'Reference Joint Angular Acceleration(' + this.currentGlobalAngleSuffix + '/s²)';
       // Add more cases as needed
       default:
         return ''; // Handle unknown cases or add a default value
@@ -173,7 +173,7 @@ export class LinkAnalysisPanelComponent {
 
       case GraphType.referenceJointAngularVelocity:
         if(this.getReferenceJoint() !== undefined) {
-          let joints = this.getCurrentLink().getJoints();
+          let joints = this.getMechanism().getArrayOfJoints();
           let jointIds = joints.map(joint => joint.id);
           let linkKinematics = this.analysisSolverService.getLinkKinematics(jointIds);
           return this.analysisSolverService.transformLinkKinematicGraph(linkKinematics, "Velocity");
@@ -248,4 +248,6 @@ export class LinkAnalysisPanelComponent {
     link.click();
     document.body.removeChild(link);
   }
+
+
 }

@@ -39,8 +39,8 @@
                              [btn1Action]="toggleGraph.bind(this, GraphType.referenceJointAngularVelocity)"
                              [graphText]= "currentGraphType === GraphType.referenceJointAngularVelocity ? 'Close Graph' : 'Show Graph'">></analysis-graph-button>
 
-      <p style="margin-left: 10px; margin-top: 1px;">ω: N/A rad/s</p>
-
+      <p style="margin-left: 10px; margin-top: 1px;">ω: rad/s</p>
+<!--      getCurrentLinkAnalysis()-->
       <ng-container *ngIf="currentGraphType === GraphType.referenceJointAngularVelocity">
           <div class="modal" (keyup.escape)="closeAnalysisGraph()">
             <app-analysis-graph-block class="large-graph"
