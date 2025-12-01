@@ -162,7 +162,7 @@ export class LinkAnalysisPanelComponent {
         if(this.getReferenceJoint() !== undefined) {
           let joints = this.getCurrentLink().getJoints();
           let jointIds = joints.map(joint => joint.id);
-          let linkKinematics = this.analysisSolverService.getLinkKinematics(jointIds);
+          let linkKinematics = this.analysisSolverService.getLinkKinematics(jointIds, -1);
           return this.analysisSolverService.transformLinkKinematicGraph(linkKinematics, "Angle");
         }
         return {
@@ -173,9 +173,13 @@ export class LinkAnalysisPanelComponent {
 
       case GraphType.referenceJointAngularVelocity:
         if(this.getReferenceJoint() !== undefined) {
+          let currentLinkId = this.getCurrentLink().id;
+          const links = this.getMechanism().getArrayOfLinks();
+          const linkIndex = links.findIndex(link => link.id === currentLinkId);
+
           let joints = this.getMechanism().getArrayOfJoints();
           let jointIds = joints.map(joint => joint.id);
-          let linkKinematics = this.analysisSolverService.getLinkKinematics(jointIds);
+          let linkKinematics = this.analysisSolverService.getLinkKinematics(jointIds, linkIndex);
           return this.analysisSolverService.transformLinkKinematicGraph(linkKinematics, "Velocity");
         }
         return {
@@ -188,7 +192,7 @@ export class LinkAnalysisPanelComponent {
         if(this.getReferenceJoint() !== undefined) {
           let joints = this.getCurrentLink().getJoints();
           let jointIds = joints.map(joint => joint.id);
-          let linkKinematics = this.analysisSolverService.getLinkKinematics(jointIds);
+          let linkKinematics = this.analysisSolverService.getLinkKinematics(jointIds, -1);
           return this.analysisSolverService.transformLinkKinematicGraph(linkKinematics, "Acceleration");
         }
         return {
@@ -249,5 +253,8 @@ export class LinkAnalysisPanelComponent {
     document.body.removeChild(link);
   }
 
-
+  getCurrentLinkId(): number | null {
+    const link = this.getCurrentLink();
+    return link ? link.id : null;
+  }
 }

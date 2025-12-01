@@ -304,7 +304,7 @@ export class AnalysisSolveService {
   }
 
   // Computes center-of-mass and angular kinematics for a link given its associated joint IDs.
-  getLinkKinematics(jointIDs: number[]): LinkAnalysis {
+  getLinkKinematics(jointIDs: number[], linkIndex: number): LinkAnalysis {
     let subJoints: JointAnalysis[] = [];
     console.log('=== getLinkKinematics called ===');
     console.log('Joint IDs passed in:', jointIDs);
@@ -318,7 +318,7 @@ export class AnalysisSolveService {
       subJoints.push(jointData!);
     }
     let com_solutions: { pos: Coord[], vel: Coord[], acc: Coord[] } = this.getLinkCOMSolutions(subJoints);
-    let angle_solutions: { ang: number[], vel: number[], acc: number[] } = this.getLinkAngularSolutions(subJoints);
+    let angle_solutions: { ang: number[], vel: number[], acc: number[] } = this.getLinkAngularSolutions(subJoints, linkIndex);
     return {
       timeIncrement: subJoints[0].timeIncrement,
       COMpositions: com_solutions.pos,
@@ -360,7 +360,7 @@ export class AnalysisSolveService {
   }
 
   // Calculates angular positions, velocities, and accelerations for all links.
-  getLinkAngularSolutions(subJoints: JointAnalysis[]) {
+  getLinkAngularSolutions(subJoints: JointAnalysis[], linkIndex: number) {
 
     let ang_pos: number[] = [];
     let ang_vel: number[] = [];
@@ -397,11 +397,14 @@ export class AnalysisSolveService {
         omega2
       );
 
-      // ang_vel.push(omega3);
-      // ang_pos.push(theta2, theta3, theta4);
-      // ang_vel.push(omega2, omega3, omega4);
-      ang_vel.push(omega2);
+      const thetas = [theta2, theta3, theta4];
+      const omegas = [omega2, omega3, omega4];
 
+      const thetaForLink = thetas[linkIndex] ?? 0;
+      const omegaForLink = omegas[linkIndex] ?? 0;
+
+      ang_pos.push(thetaForLink);
+      ang_vel.push(omegaForLink);
       ang_acc.push(0);
     }
     return {ang: ang_pos, vel: ang_vel, acc: ang_acc};
