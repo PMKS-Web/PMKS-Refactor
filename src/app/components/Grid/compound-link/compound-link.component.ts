@@ -49,7 +49,8 @@ export class CompoundLinkComponent extends AbstractInteractiveComponent {
   let allCoordsAsArray: Coord[] = Array.from(allUniqueJointCoords,(coord,index) =>{
     return this.unitConversionService.modelCoordToSVGCoord(coord);
   });
-	return this.svgPathService.getSingleLinkDrawnPath(allCoordsAsArray, radius);
+    return this.svgPathService.calculateCompoundPath(this.compoundLink.links, allCoordsAsArray, radius);
+	//return this.svgPathService.getSingleLinkDrawnPath(allCoordsAsArray, radius);
   }
   getStrokeColor(): string{
     if (this.getInteractor().isSelected) {
