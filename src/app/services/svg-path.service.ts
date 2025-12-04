@@ -781,6 +781,25 @@ export class SVGPathService {
       }
     }
 
+    // checking if there are any duplicate intersection points for each line
+    let duplicatePoints: number[] = [];
+    allIntersectionPoints.forEach((point, index) => {
+      for (let j = index + 1; j < allIntersectionPoints.length; j++) {
+        if (this.twoNumsLooselyEquals(point.point.x, allIntersectionPoints[j].point.x) && this.twoNumsLooselyEquals(point.point.y, allIntersectionPoints[j].point.y) && point.i === allIntersectionPoints[j].i) {
+          duplicatePoints.push(index);
+          break;
+        }
+      }
+    });
+
+    // removing the duplicate intersection points, if any
+    let removedDuplicatePoints: {point: Coord, i: number}[] = [];
+    allIntersectionPoints.forEach((point, index) => {
+      if (!duplicatePoints.includes(index)) {
+        removedDuplicatePoints.push(point);
+      }
+    });
+
     return externalLines;
   }
 
