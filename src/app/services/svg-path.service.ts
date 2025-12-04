@@ -653,6 +653,83 @@ export class SVGPathService {
     }
   }
 
+  // splits the intersections by which lines each one was in
+  groupIntersectionsByPath(lines: [Coord, Coord, Coord | null, Link][], intersections: {point: Coord, i: number}[]): Coord[][] {
+    return lines.map((_, index) => {
+      return intersections.filter(p => p.i === index)
+        .map(p => (p.point));
+    });
+  }
+
+  // calculates projection of a point on a line
+  projectPointOnLine(p: Coord, lineStart: Coord, lineEnd: Coord) {
+    const startEndX = lineEnd.x - lineStart.x;
+    const startEndY = lineEnd.y - lineStart.y;
+
+    const startPX = p.x - lineStart.x;
+    const startPY = p.y - lineStart.y;
+
+    const startEndLenSq = startEndX * startEndX + startEndY * startEndY;
+    // is normalized, so between 0 and 1
+    return (startPX * startEndX + startPY * startEndY) / startEndLenSq;
+  }
+
+  // split a line by the intersection points
+  splitLineByIntersections(line: [Coord, Coord, Coord | null, Link], points: Coord[]): [Coord, Coord, Coord | null, Link][] {
+    // calculate the projection and filter out any points with t below 0 or above 1
+    let tPoints = points.map(point => {
+      let t = this.projectPointOnLine(point, line[0], line[1]);
+      return {p: point, t: t};
+    }).filter(point => {
+      return point.t > 0 && point.t < 1;
+    });
+
+    // sort according to t, the projection
+    tPoints.sort((a, b) => {
+      return a.t - b.t;
+    });
+
+    // add endpoints
+    const orderedPoints = [{p: line[0], t: 0}, ...tPoints, {p: line[1], t: 1}];
+
+    // rebuild line segments
+    let segments: [Coord, Coord, Coord | null, Link][] = [];
+    for (let i = 0; i < orderedPoints.length - 1; i++) {
+      const pointOne = orderedPoints[i];
+      const pointTwo = orderedPoints[i + 1];
+      segments.push([pointOne.p, pointTwo.p, line[2], line[3]]);
+    }
+    return segments;
+  }
+
+  // split an arc along intersection points
+  splitArcByIntersection(arc: [Coord, Coord, Coord | null, Link], points: Coord[]): [Coord, Coord, Coord | null, Link][] {
+    if (arc[2] !== null) {
+      let intersectionsWithAngles:{p:Coord, angle: number}[] = points.map((p) => ({
+        p: p,
+        angle: Math.atan2(p.y - (arc[2]?.y ?? 0), p.x - (arc[2]?.x ?? 0))
+      }));
+      let resultOrderedPoints = intersectionsWithAngles.sort((a, b) => a.angle - b.angle);
+
+      // removes any intersection points that are at the end points
+      resultOrderedPoints = resultOrderedPoints.filter((point) => {
+        return !((this.twoNumsLooselyEquals(point.p.x, arc[0].x) && this.twoNumsLooselyEquals(point.p.y, arc[0].y)) || (this.twoNumsLooselyEquals(point.p.x, arc[1].x) && this.twoNumsLooselyEquals(point.p.y, arc[1].y)));
+      });
+
+      resultOrderedPoints = [{p: arc[0], angle: 0}, ...resultOrderedPoints, {p: arc[1], angle: Math.atan2(arc[1].y - arc[2].y, arc[1].x - arc[2].x)}];
+
+      let segments: [Coord, Coord, Coord | null, Link][] = [];
+      for (let i = 0; i < resultOrderedPoints.length - 1; i++) {
+        const pointOne = resultOrderedPoints[i];
+        const pointTwo = resultOrderedPoints[i + 1];
+        segments.push([pointOne.p, pointTwo.p, arc[2], arc[3]]);
+      }
+      return segments;
+    } else {
+      return [];
+    }
+  }
+
   // This function returns the lines used to calculate and save the lines of a link
   solveForExternalLines(subLinks: Map<number, Link>, radius: number): [Coord, Coord, Coord | null, Link][] {
     // create a list of all the external lines of all the sublinks
@@ -799,6 +876,25 @@ export class SVGPathService {
         removedDuplicatePoints.push(point);
       }
     });
+
+    // grouping intersections by line
+    let intersectionsByCoords: Coord[][] = this.groupIntersectionsByPath(externalLines, removedDuplicatePoints);
+
+    // will hold the new external lines with the intersections considered
+    let intersectionExternalLines: [Coord, Coord, Coord | null, Link][] = [];
+
+    // splitting each line by intersections
+    for (let i = 0; i < externalLines.length; i++) {
+      if (externalLines[i][2] === null) {
+        // segment is a line
+        let lineSegments = this.splitLineByIntersections(externalLines[i], intersectionsByCoords[i]);
+        intersectionExternalLines.push(...lineSegments);
+      } else {
+        // segment is an arc
+        let arcSegments = this.splitArcByIntersection(externalLines[i], intersectionsByCoords[i]);
+        intersectionExternalLines.push(...arcSegments);
+      }
+    }
 
     return externalLines;
   }
