@@ -1028,7 +1028,7 @@ export class SVGPathService {
       });
       if (!found) {
         const lineToAdd = duplicateLines.find((line2) => {
-          return line2[0].equals(pointToSearch, 1);
+          return line2[0].looselyEquals(pointToSearch, 1);
         });
         if (lineToAdd !== undefined) {
           newLinesToAdd.push(lineToAdd);
