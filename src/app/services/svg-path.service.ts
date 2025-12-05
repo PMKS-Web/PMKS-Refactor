@@ -323,7 +323,7 @@ export class SVGPathService {
   // checks if a point is on a line
   // return true if the point is on the line segment defined by lineStart and lineEnd
   // return false otherwise
-  isPointOnLine(point: Coord, lineStart: Coord, lineEnd: Coord): boolean {
+  isPointOnLine(point: Coord, lineStart: Coord, lineEnd: Coord, delta: number = 0.000001): boolean {
     // check if the point is within a small range of the line segment.
     let range = 0.00001;
     if (
@@ -334,15 +334,46 @@ export class SVGPathService {
     ) {
       return false;
     }
+
+    // check if three points are collinear
+    const crossProduct =
+      (point.x - lineStart.x) * (lineEnd.y - lineStart.y) -
+      (point.y - lineStart.y) * (lineEnd.x - lineStart.x);
+
+    if (Math.abs(crossProduct) > delta) {
+      return false;
+    }
+
+    // point is collinear and in between the range
     return true;
   }
 
   // checks if a point is on an arc
   // return true if the point is within the arc
   // return false if the point is outside the circle or if the point is on the circle, but not within the arc
-  isPointInArc(intersection: Coord, arcStart: Coord, arcEnd: Coord): boolean {
-    // the arc always goes from the start point to the end point in a counter-clockwise direction.
-    // use the cross product to determine if the point is on the left or right side of the line from the start point to the end point.
+  isPointInArc(intersection: Coord, arcStart: Coord, arcEnd: Coord, arcCenter: Coord, radius: number, delta: number = 0.0001): boolean {
+    // the arc always goes from the start point to the end point in a clockwise direction.
+    const dx = intersection.x - arcCenter.x;
+    const dy = intersection.y - arcCenter.y;
+
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    // is point on the circle the arc is on?
+    if (Math.abs(dist - radius) > delta) {
+      return false;
+    }
+
+    const crossProduct1 =
+      (arcStart.x - arcCenter.x) * (intersection.y - arcCenter.y) -
+      (arcStart.y - arcCenter.y) * (intersection.x - arcCenter.x);
+    const crossProduct2 =
+      (intersection.x - arcCenter.x) * (arcEnd.y - arcCenter.y) -
+      (intersection.y - arcCenter.y) * (arcEnd.x - arcCenter.x);
+
+    // assuming clockwise rotation, sweep flag equals 1
+    return crossProduct1 >= -delta && crossProduct2 >= -delta;
+
+    /*// use the cross product to determine if the point is on the left or right side of the line from the start point to the end point.
     // if the point is on the left side, then it is within the arc.
     // if the point is on the right side, then it is outside the arc.
     let crossProduct =
@@ -350,7 +381,7 @@ export class SVGPathService {
       (intersection.x - arcStart.x) * (arcEnd.y - arcStart.y);
 
     // check if the point is on the left side of the line from the start point to the end point
-    return crossProduct < 0;
+    return crossProduct < 0;*/
   }
 
   // https://stackoverflow.com/questions/13937782/calculating-the-point-of-intersection-of-two-lines
@@ -501,7 +532,7 @@ export class SVGPathService {
     let closestIntersection: Coord | undefined;
     for (let intersection of intersections) {
       if (
-        this.isPointInArc(intersection, arcStart, arcEnd) &&
+        this.isPointInArc(intersection, arcStart, arcEnd, arcCenter, arcRadius) &&
         !intersection.equals(arcStart, this.scale) &&
         !intersection.equals(arcEnd, this.scale)
       ) {
@@ -572,16 +603,16 @@ export class SVGPathService {
 
       let allImportantIntersections: Coord[] = [];
 
-      if (this.isPointInArc(startPosition, startPosition2, endPosition2)) {
+      if (this.isPointInArc(startPosition, startPosition2, endPosition2, center, radius)) {
         allImportantIntersections.push(startPosition);
       }
-      if (this.isPointInArc(endPosition, startPosition2, endPosition2)) {
+      if (this.isPointInArc(endPosition, startPosition2, endPosition2, center, radius)) {
         allImportantIntersections.push(endPosition);
       }
-      if (this.isPointInArc(startPosition2, startPosition, endPosition)) {
+      if (this.isPointInArc(startPosition2, startPosition, endPosition, center, radius)) {
         allImportantIntersections.push(startPosition2);
       }
-      if (this.isPointInArc(endPosition2, startPosition, endPosition)) {
+      if (this.isPointInArc(endPosition2, startPosition, endPosition, center, radius)) {
         allImportantIntersections.push(endPosition2);
       }
 
@@ -614,8 +645,8 @@ export class SVGPathService {
 
     for (let intersection of intersections) {
       if (
-        this.isPointInArc(intersection, startPosition, endPosition) &&
-        this.isPointInArc(intersection, startPosition2, endPosition2) &&
+        this.isPointInArc(intersection, startPosition, endPosition, center, radius) &&
+        this.isPointInArc(intersection, startPosition2, endPosition2, center, radius) &&
         !intersection.equals(startPosition, this.scale) &&
         !intersection.equals(endPosition, this.scale) &&
         !intersection.equals(startPosition2, this.scale) &&
@@ -728,6 +759,80 @@ export class SVGPathService {
     } else {
       return [];
     }
+  }
+
+  // determines whether two lines have the same contents, so they are equal
+  equalLines(line1: [Coord, Coord, Coord | null, Link], line2: [Coord, Coord, Coord | null, Link]): boolean {
+    if (
+      line1[0].equals(line2[0], 1) &&
+      line1[1].equals(line2[1], 1)
+    ) {
+      if (line1[2] === null && line2[2] === null) {
+        return true;
+      } else if (line1[2] !== null &&
+        line2[2] !== null &&
+        line1[2].equals(line2[2], 1)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // checks if point is on the shape outline
+  isPointOnLink(point: Coord, externalLines:[Coord, Coord, Coord | null, Link][], radius: number): boolean {
+    let pointOnLink = false;
+    externalLines.forEach((line) => {
+      let isSegmentOnLine: boolean;
+      if (line[2] !== null) {
+        isSegmentOnLine = this.isPointInArc(point, line[0], line[1], line[2], radius);
+      } else {
+        isSegmentOnLine = this.isPointOnLine(point, line[0], line[1]);
+      }
+      if (isSegmentOnLine) {
+        pointOnLink = true;
+      }
+    })
+    return pointOnLink;
+  }
+
+  isPointInsideLink(startPosition: Coord, startLink: Link, externalLines:[Coord, Coord, Coord | null, Link][], radius: number): boolean {
+    // check if the point is inside the shape created by the lines
+    // draw a line that is infinitely long and check if it intersects with the shape an odd number of times
+    const infiniteLine: [Coord, Coord, Coord | null, Link] = [startPosition, new Coord(startPosition.x + 10000, startPosition.y), null, startLink];
+    const reverseInfiniteLine: [Coord, Coord, Coord | null, Link] = [new Coord(startPosition.x + 10000, startPosition.y), startPosition, null, startLink];
+
+    let intersections = 0;
+    externalLines.forEach((line) => {
+      const intersectionPoint = this.intersectsWith(infiniteLine, line, radius);
+      const otherIntersectionPoint = this.intersectsWith(reverseInfiniteLine, line, radius);
+
+      //Add two to the intersection count if intersectionPoint and otherIntersectionPoint are not equal
+      if (intersectionPoint && otherIntersectionPoint) {
+        if (!intersectionPoint.equals(otherIntersectionPoint, this.scale)) {
+          intersections += 2;
+        } else {
+          intersections += 1;
+        }
+      } else if (intersectionPoint || otherIntersectionPoint) {
+        intersections += 1;
+      }
+    });
+
+    //If the number of intersections is odd, then the point is inside the shape
+    return intersections % 2 === 1;
+  }
+
+  // calculates whether a line is contained within a link
+  // used to determine whether to get rid of a line
+  isLineContained(line: [Coord, Coord, Coord | null, Link], linkExternalLines: [Coord, Coord, Coord | null, Link][], radius: number, intersectionPoints: {point: Coord, i: number}[]): boolean {
+    /*let lineAngle = Math.atan2(
+      line[1].y - line[0].y,
+      line[1].x - line[0].x
+    );*/
+
+    // check if both endpoints of line are inside the link
+    return (this.isPointInsideLink(line[0], line[3], linkExternalLines, radius) || this.isPointOnLink(line[0], linkExternalLines, radius)) &&
+      (this.isPointInsideLink(line[1], line[3], linkExternalLines, radius) || this.isPointOnLink(line[1], linkExternalLines, radius));
   }
 
   // This function returns the lines used to calculate and save the lines of a link
@@ -896,7 +1001,62 @@ export class SVGPathService {
       }
     }
 
-    return externalLines;
+    // check for duplicate lines
+    let duplicateLines: [Coord, Coord, Coord | null, Link][] = [];
+    for (const line of intersectionExternalLines) {
+      const duplicateFound = intersectionExternalLines.find(line2 => {
+        return line !== line2 && this.equalLines(line, line2);
+      });
+      const inDuplicateLines = duplicateLines.find((line2) => {
+        return this.equalLines(line2, line);
+      });
+      if (duplicateFound && !inDuplicateLines) {
+        duplicateLines.push(line);
+      }
+    }
+
+    // if a segment is fully inside another link, remove it
+    intersectionExternalLines = intersectionExternalLines.filter((line) => {
+      return ![... subLinks.values()].some((link) => {
+        if (link === line[3]) {
+          return false;
+        } else {
+          let linkLines = allLinkExternalLines.get(link);
+          if (linkLines) {
+            return this.isLineContained(line, linkLines, radius, allIntersectionPoints);
+          } else {
+            return false;
+          }
+        }
+      })
+    });
+
+    // duplicate lines are only added if we detect a gap in the path
+    const newLinesToAdd: [Coord, Coord, Coord | null, Link][] = [];
+    for (let i = 0; i < intersectionExternalLines.length; i++) {
+      const pointToSearch: Coord = intersectionExternalLines[i][1];
+      const found = intersectionExternalLines.find((line2) => {
+        return line2[0].equals(pointToSearch, 1);
+      });
+      if (!found) {
+        const lineToAdd = duplicateLines.find((line2) => {
+          return line2[0].equals(pointToSearch, 1);
+        });
+        if (lineToAdd !== undefined) {
+          newLinesToAdd.push(lineToAdd);
+        }
+      }
+    }
+
+    // add in the new lines
+    intersectionExternalLines.push(...newLinesToAdd);
+
+    //Remove very short lines
+    intersectionExternalLines = intersectionExternalLines.filter((line) => {
+      return (line[0].getDistanceTo(line[1]) > 0.00001 * 1);
+    });
+
+    return intersectionExternalLines;
   }
 
   calculateCompoundPath(subLinks: Map<number, Link>, allCoordsList: Coord[], r: number) {
@@ -923,11 +1083,12 @@ export class SVGPathService {
 
       while (!currentLine[1].equals(beginningPoint, 1) || this.isNewShape(pathString)) {
         if (timeoutCounter-- < 0) {
+          console.log("Timeout counter reached!")
           return pathString;
         }
 
         // find the next line that starts at the end of the current line
-        const nextLine = [...externalLinesSet].find((line) => {
+        const nextLine: [Coord, Coord, Coord | null, Link] | undefined = [...externalLinesSet].find((line) => {
           return line[0].looselyEquals(currentLine[1], 1);
         });
         //console.log(nextLine);
@@ -938,7 +1099,7 @@ export class SVGPathService {
         externalLinesSet.delete(nextLine);
 
         // when there are two lines intersecting, create a fillet between them
-        if (currentLine[2] === null && nextLine[2] == null &&
+        /*if (currentLine[2] === null && nextLine[2] == null &&
           // checking if angle between the two lines is greater than 10 degrees
           Math.abs(this.angleToPI(nextLine, currentLine)) > (10 * Math.PI / 180)) {
           let [currentLineOffsetPoint, nextLineOffsetPoint, radius] = this.computeArcPointsAndRadius(currentLine, nextLine, 1);
@@ -954,14 +1115,15 @@ export class SVGPathService {
 
           // !!! is 0 0 0 correct?
           pathString += 'A ' + radius + ', ' + radius + ' 0 0 0 ' + nextLine[0].x + ', ' + nextLine[0].y + ' ';
+        } else {*/
+
+        // otherwise, just draw a line between the two points
+        if (this.isNewShape(pathString)) {
+          pathString += 'M ' + currentLine[1].x + ', ' + currentLine[1].y + ' ';
         } else {
-          // otherwise, just draw a line between the two points
-          if (this.isNewShape(pathString)) {
-            pathString += 'M ' + currentLine[1].x + ', ' + currentLine[1].y + ' ';
-          } else {
-            pathString = this.pathStringForLine(currentLine, pathString);
-          }
+          pathString = this.pathStringForLine(currentLine, pathString);
         }
+        // }
         currentLine = nextLine;
       }
       pathString = this.pathStringForLine(currentLine, pathString);
