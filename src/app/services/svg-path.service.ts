@@ -363,6 +363,7 @@ export class SVGPathService {
       return false;
     }
 
+    // use cross product to determine whether the point is within the arc
     const crossProduct1 =
       (arcStart.x - arcCenter.x) * (intersection.y - arcCenter.y) -
       (arcStart.y - arcCenter.y) * (intersection.x - arcCenter.x);
@@ -370,18 +371,8 @@ export class SVGPathService {
       (intersection.x - arcCenter.x) * (arcEnd.y - arcCenter.y) -
       (intersection.y - arcCenter.y) * (arcEnd.x - arcCenter.x);
 
-    // assuming clockwise rotation, sweep flag equals 1
+    // assuming clockwise rotation, so sweep flag equals 1
     return crossProduct1 >= -delta && crossProduct2 >= -delta;
-
-    /*// use the cross product to determine if the point is on the left or right side of the line from the start point to the end point.
-    // if the point is on the left side, then it is within the arc.
-    // if the point is on the right side, then it is outside the arc.
-    let crossProduct =
-      (arcEnd.x - arcStart.x) * (intersection.y - arcStart.y) -
-      (intersection.x - arcStart.x) * (arcEnd.y - arcStart.y);
-
-    // check if the point is on the left side of the line from the start point to the end point
-    return crossProduct < 0;*/
   }
 
   // https://stackoverflow.com/questions/13937782/calculating-the-point-of-intersection-of-two-lines
@@ -539,39 +530,6 @@ export class SVGPathService {
     }
     return returnIntersection;
   }
-  /*lineArcIntersect(lineStart: Coord, lineEnd: Coord, arcStart: Coord, arcEnd: Coord, arcCenter: Coord, findIntersectionCloseTo: Coord, arcRadius: number): Coord[] | undefined {
-    // find the intersection points between the line and the circle defined by the arc
-    let intersections: Coord[] | undefined = this.lineCircleIntersect(lineStart, lineEnd, arcCenter, arcRadius);
-
-    intersections = intersections?.filter((intersection) => {
-      return this.isPointOnLine(intersection, lineStart, lineEnd);
-    });
-
-    if (intersections === undefined || intersections.length === 0) {
-      return undefined;
-    }
-
-    // check if the intersection points are within the arc
-    let closestIntersection: Coord | undefined;
-    for (let intersection of intersections) {
-      if (
-        this.isPointInArc(intersection, arcStart, arcEnd, arcCenter, arcRadius) &&
-        !intersection.equals(arcStart, this.scale) &&
-        !intersection.equals(arcEnd, this.scale)
-      ) {
-        // if it is, return closest intersection point
-        if (closestIntersection === undefined) {
-          closestIntersection = intersection;
-        } else if (
-          closestIntersection.getDistanceTo(findIntersectionCloseTo) >
-          intersection.getDistanceTo(findIntersectionCloseTo)
-        ) {
-          closestIntersection = intersection;
-        }
-      }
-    }
-    return closestIntersection;
-  }*/
 
   // return the intersection points between two circles.
   // if the circles do not intersect, return undefined.
@@ -644,18 +602,6 @@ export class SVGPathService {
         return undefined;
       }
 
-      // else find the intersection closest to the startPosition.
-      /*let closestIntersection: Coord | undefined;
-      for (let intersection of allImportantIntersections) {
-        if (closestIntersection === undefined) {
-          closestIntersection = intersection;
-        } else if (
-          intersection.getDistanceTo(startPosition) < closestIntersection.getDistanceTo(startPosition)
-        ) {
-          closestIntersection = intersection;
-        }
-      }
-      return closestIntersection;*/
       return allImportantIntersections;
     }
 
@@ -862,33 +808,6 @@ export class SVGPathService {
     return intersections % 2 === 1;
   }
 
-  /*isPointInsideLink(startPosition: Coord, startLink: Link, externalLines:[Coord, Coord, Coord | null, Link][], radius: number): boolean {
-    // check if the point is inside the shape created by the lines
-    // draw a line that is infinitely long and check if it intersects with the shape an odd number of times
-    const infiniteLine: [Coord, Coord, Coord | null, Link] = [startPosition, new Coord(startPosition.x + 10000, startPosition.y), null, startLink];
-    const reverseInfiniteLine: [Coord, Coord, Coord | null, Link] = [new Coord(startPosition.x + 10000, startPosition.y), startPosition, null, startLink];
-
-    let intersections = 0;
-    externalLines.forEach((line) => {
-      const intersectionPoint = this.intersectsWith(infiniteLine, line, radius);
-      const otherIntersectionPoint = this.intersectsWith(reverseInfiniteLine, line, radius);
-
-      //Add two to the intersection count if intersectionPoint and otherIntersectionPoint are not equal
-      if (intersectionPoint && otherIntersectionPoint) {
-        if (!intersectionPoint.equals(otherIntersectionPoint, this.scale)) {
-          intersections += 2;
-        } else {
-          intersections += 1;
-        }
-      } else if (intersectionPoint || otherIntersectionPoint) {
-        intersections += 1;
-      }
-    });
-
-    //If the number of intersections is odd, then the point is inside the shape
-    return intersections % 2 === 1;
-  }*/
-
   // calculates whether a line is contained within a link
   // used to determine whether to get rid of a line
   isLineContained(line: [Coord, Coord, Coord | null, Link], linkExternalLines: [Coord, Coord, Coord | null, Link][], radius: number, intersectionPoints: {point: Coord, i: number}[]): boolean {
@@ -1027,12 +946,6 @@ export class SVGPathService {
               allIntersectionPoints.push({point: point, i: j});
             }
           });
-          /*if (!(line1[1].equals(intersection, this.scale) || line1[0].equals(intersection, this.scale))) {
-            allIntersectionPoints.push({point: intersection, i: i});
-          }
-          if (!(line2[0].equals(intersection, this.scale) || line2[1].equals(intersection, this.scale))) {
-            allIntersectionPoints.push({point: intersection, i: j});
-          }*/
         }
 
       }
