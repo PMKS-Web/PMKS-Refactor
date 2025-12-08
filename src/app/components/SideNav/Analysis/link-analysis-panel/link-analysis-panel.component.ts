@@ -145,6 +145,12 @@ export class LinkAnalysisPanelComponent {
   getGraphData() {
     this.analysisSolverService.updateKinematics();
     let jointKinematics: JointAnalysis;
+    let currentLinkId = this.getCurrentLink().id;
+    const links = this.getMechanism().getArrayOfLinks();
+    const linkIndex = links.findIndex(link => link.id === currentLinkId);
+    let joints = this.getMechanism().getArrayOfJoints();
+    let jointIds = joints.map(joint => joint.id);
+
     switch(this.currentGraphType) {
       case GraphType.CoMPosition:
         jointKinematics = this.analysisSolverService.getJointKinematics(this.getPlaceholderCoMJoint().id);
@@ -161,9 +167,7 @@ export class LinkAnalysisPanelComponent {
 
       case GraphType.referenceJointAngle:
         if(this.getReferenceJoint() !== undefined) {
-          let joints = this.getCurrentLink().getJoints();
-          let jointIds = joints.map(joint => joint.id);
-          let linkKinematics = this.analysisSolverService.getLinkKinematics(jointIds, -1);
+          let linkKinematics = this.analysisSolverService.getLinkKinematics(jointIds, linkIndex);
           return this.analysisSolverService.transformLinkKinematicGraph(linkKinematics, "Angle");
         }
         return {
@@ -174,14 +178,7 @@ export class LinkAnalysisPanelComponent {
 
       case GraphType.referenceJointAngularVelocity:
         if(this.getReferenceJoint() !== undefined) {
-          let currentLinkId = this.getCurrentLink().id;
-          const links = this.getMechanism().getArrayOfLinks();
-          const linkIndex = links.findIndex(link => link.id === currentLinkId);
-
-          let joints = this.getMechanism().getArrayOfJoints();
-          let jointIds = joints.map(joint => joint.id);
           let linkKinematics = this.analysisSolverService.getLinkKinematics(jointIds, linkIndex);
-
           return this.analysisSolverService.transformLinkKinematicGraph(linkKinematics, "Velocity");
         }
         return {
@@ -192,8 +189,6 @@ export class LinkAnalysisPanelComponent {
 
       case GraphType.referenceJointAngularAcceleration:
         if(this.getReferenceJoint() !== undefined) {
-          let joints = this.getCurrentLink().getJoints();
-          let jointIds = joints.map(joint => joint.id);
           let linkKinematics = this.analysisSolverService.getLinkKinematics(jointIds, -1);
           return this.analysisSolverService.transformLinkKinematicGraph(linkKinematics, "Acceleration");
         }

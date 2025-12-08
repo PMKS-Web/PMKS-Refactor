@@ -3,7 +3,6 @@ import { Coord } from '../model/coord';
 import { PositionSolverService, SolveOrder, SolvePrerequisite, SolveType } from './kinematic-solver.service';
 import { AnimationPositions } from './kinematic-solver.service';
 import { create, all, MathJsInstance } from 'mathjs'
-import {link} from "d3-shape";
 
 export interface JointAnalysis {
   timeIncrement: number,
@@ -400,7 +399,8 @@ export class AnalysisSolveService {
 
       const thetaForLink = thetas[linkIndex] ?? 0;
       const omegaForLink = omegas[linkIndex] ?? 0;
-
+      console.log("THETAS: " + thetaForLink);
+      // ang_pos.push(thetaForLink);
       ang_pos.push(thetaForLink);
       ang_vel.push(omegaForLink);
       ang_acc.push(0);
