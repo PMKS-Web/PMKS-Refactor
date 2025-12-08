@@ -3,6 +3,7 @@ import { Coord } from '../model/coord';
 import { PositionSolverService, SolveOrder, SolvePrerequisite, SolveType } from './kinematic-solver.service';
 import { AnimationPositions } from './kinematic-solver.service';
 import { create, all, MathJsInstance } from 'mathjs'
+import {StateService} from "./state.service";
 
 export interface JointAnalysis {
   timeIncrement: number,
@@ -32,8 +33,7 @@ export class AnalysisSolveService {
   private jointPositions: AnimationPositions[] = [];
   private jointKinematics: Map<number, JointAnalysis> = new Map();
 
-  constructor(private positionSolver: PositionSolverService) {
-
+  constructor(private positionSolver: PositionSolverService, private stateService: StateService,) {
   }
 
   // Updates kinematic data by fetching solve orders and joint positions, then solving submechanism kinematics.
@@ -355,7 +355,6 @@ export class AnalysisSolveService {
 
   // Calculates angular positions, velocities, and accelerations for all links.
   getLinkAngularSolutions(subJoints: JointAnalysis[], linkIndex: number) {
-
     let ang_pos: number[] = [];
     let ang_vel: number[] = [];
     let ang_acc: number[] = [];
@@ -366,8 +365,11 @@ export class AnalysisSolveService {
     const r4 = this.distance(subJoints[3].positions[0], subJoints[2].positions[0]);
 
     // Input angular velocity ω2
-    const omega2 = 1.0472; // CHANGE TO BE SYSTEM
+    const mechanism = this.stateService.getMechanism();
+    const rpm = mechanism.getInputSpeed();
+    const omega2 = 2 * Math.PI * (rpm / 60);
 
+    console.log("RPM: " + rpm + ", Omega2: " + omega2);
     for (let time = 0; time < subJoints[0].positions.length; time++) {
 
       const theta2 = Math.atan2(
@@ -399,8 +401,7 @@ export class AnalysisSolveService {
 
       const thetaForLink = thetas[linkIndex] ?? 0;
       const omegaForLink = omegas[linkIndex] ?? 0;
-      console.log("THETAS: " + thetaForLink);
-      // ang_pos.push(thetaForLink);
+      // console.log("THETAS: " + thetaForLink);
       ang_pos.push(thetaForLink);
       ang_vel.push(omegaForLink);
       ang_acc.push(0);
