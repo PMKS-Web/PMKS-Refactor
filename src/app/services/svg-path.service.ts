@@ -389,7 +389,7 @@ export class SVGPathService {
     let x4 = line2End.x;
     let y4 = line2End.y;
 
-    let delta = 0.
+    let delta = 0
 
     // check if none of the lines are of length 0
     if ((this.twoNumsLooselyEquals(x1, x2) && this.twoNumsLooselyEquals(y1, y2)) || (this.twoNumsLooselyEquals(x3, x4) && this.twoNumsLooselyEquals(y3, y4))) {
@@ -418,10 +418,10 @@ export class SVGPathService {
     let intersection = new Coord(x, y);
 
     // checks if the intersection is an end point of the segments
-    if (intersection.looselyEquals(line1Start, this.scale) ||
-    intersection.looselyEquals(line1End, this.scale) ||
-    intersection.looselyEquals(line2Start, this.scale) ||
-    intersection.looselyEquals(line2End, this.scale)) {
+    if (intersection.equals(line1Start, this.scale) ||
+    intersection.equals(line1End, this.scale) ||
+    intersection.equals(line2Start, this.scale) ||
+    intersection.equals(line2End, this.scale)) {
       return undefined;
     }
 
