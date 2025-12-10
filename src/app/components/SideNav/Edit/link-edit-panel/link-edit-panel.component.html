@@ -248,6 +248,9 @@
               class="right-aligned"
               [showIcon]="false"
               unit1="kg"
+              [disabled]="isLocked"
+              [input1Value]="pendingLinkMass ?? getLinkMass()"
+              (input1Change)="confirmLinkMass($event)"
             ></single-input-block>
           </div>
         </div>

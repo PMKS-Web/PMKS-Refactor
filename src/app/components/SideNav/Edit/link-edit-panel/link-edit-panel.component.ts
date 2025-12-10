@@ -38,6 +38,8 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
   public addForceIconPath: string = 'assets/icons/addForce.svg';
   public pendingLinkLength?: number;
   public pendingLinkAngle?: number;
+  public pendingLinkMass?: number;
+
   /** Buffers for component edits */
   public pendingCompX: Record<number, number> = {};
   public pendingCompY: Record<number, number> = {};
@@ -218,6 +220,35 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
     this.pendingLinkAngle = undefined;
   }
 
+  // Saves the new pending link mass
+  confirmLinkMass(newMassValue: number): void {
+    const raw = newMassValue;
+    if (raw == null || raw < 0) {
+      this.pendingLinkMass = undefined;
+      return; // Prevent saving null or negative mass
+    }
+
+    let canEdit = this.confirmCanEdit();
+    if (!canEdit) {
+      this.pendingLinkMass = undefined;
+      return; 
+    }
+
+    const oldMass = this.getLinkMass();
+    const newMass = raw;
+
+    if (Math.abs(oldMass - newMass) < 1e-6) {
+      this.pendingLinkMass = undefined;
+      return;
+    }
+
+    // Apply the change directly to the Link object
+    this.setLinkMass(newMass);
+
+    // Notify mechanism to trigger static analysis update
+    this.getMechanism().notifyChange();
+  }
+
   // Any function that will make changes to the link should call this.confirmCanEdit() first,
   // to make sure that the mechanism is not in a state of animation, before making changes.
   confirmCanEdit(): boolean {
@@ -307,6 +338,12 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
     return 0;
   }
 
+  // Helper to get the current mass value from the link
+  getLinkMass(): number {
+    const mass = this.getSelectedObject().mass;
+    return parseFloat(mass.toFixed(3));
+  }
+
   //Returns the joints attached to the selected link
   getLinkJoints(): Map<number, Joint> {
     return this.getSelectedObject().joints;
@@ -347,6 +384,11 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
     if (refJoint) {
       this.getSelectedObject().setAngle(newAngle, refJoint);
     }
+  }
+
+  // Helper to set the mass value on the link and notify
+  setLinkMass(newMass: number): void {
+    this.getSelectedObject().mass = newMass;
   }
 
   setLinkName(newName: string) {
