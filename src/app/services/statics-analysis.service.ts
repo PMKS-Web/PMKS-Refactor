@@ -71,6 +71,23 @@ export interface TorqueSignConvention {
 }
 
 /**
+ * Enum for pivot point options. Pivot point is the point that user cn choose to calculate moment
+ */
+ export enum PivotPoint {
+    CenterOfMass = 'CENTER_OF_MASS',
+    Joint = 'JOINT'
+}
+
+/**
+ * Interface to store pivot point selection for a rigid body
+ */
+export interface PivotPointConvention {
+    rigidBodyId: number;
+    pivotType: PivotPoint;
+    jointId?: number; // Only used if pivotType is Joint
+}
+
+/**
  * This interface represent an equation. 
  * For example, sum of forces in x direction at A and B joints: Fx_A + Fx_B = 0
  * rigidId = id of the link (compound link)
@@ -104,11 +121,13 @@ export interface ReactionForce {
 })
 export class StaticsAnalysisService {
     private gravityMagnitude: number = 9.81; // m/s^2, can be changed if needed
-    private signConventions: Map<number, RigidBodySignConventions>[] = []; // Store MANY sub-mechanism where each sub-mechanism is a Map<> storing its all rigid bodies
+
+    private signConventions: Map<number, RigidBodySignConventions>[] = []; // Store MANY sub-mechanism where each sub-mechanism is a Map <rigidBodyId, RigidBodySignConventions> storing its all rigid bodies
     private torqueConventions: TorqueSignConvention[] = []; // Store torque direction for each sub-mechanism [submechIndex]
     private freeEndJointSet: Set<Joint> = new Set<Joint>(); //list to save all the free-end Joints 
     private gravityConventions: GravityConvention[] = []; // Store gravity direction for each sub-mechanism [submechIndex]
-    
+    private pivotPointConventions: Map<number, PivotPointConvention>[] = []; // pivotPointConventions[submechIndex] = Map<rigidBodyId, PivotPointConvention>
+
     constructor(private positionSolver: PositionSolverService) {}
 
     /**
@@ -134,6 +153,8 @@ export class StaticsAnalysisService {
         console.log('All torque conventions cleared');
         this.gravityConventions = [];
         console.log('All gravity conventions cleared');
+        this.pivotPointConventions = [];
+        console.log('All pivot point conventions cleared');
     }
 
     /**
@@ -180,6 +201,9 @@ export class StaticsAnalysisService {
             };
             console.log(`Torque convention initialized for Input Joint ${inputJoint.name}: +1 (counterclockwise, default)`);
         }
+        
+        // Initialize pivot point conventions for all rigid bodies (default: at Center of Mass)
+        const newPivotPointConvention = new Map<number, PivotPointConvention>();
 
         rigidBodies.forEach(rigidBody => {
             const conventions: Map<number, JointSignConvention> = new Map();
@@ -206,17 +230,27 @@ export class StaticsAnalysisService {
 
                 visitedJoints.add(joint.id); //add to visited joint set
             });
-
+            
+            
             const rigidBodyName = rigidBody instanceof Link ? `Link ${rigidBody.name}` : `CompoundLink ${rigidBody.name}`;
-
+            
+            // save the sign convention into the Map
             newSignConvention.set(rigidBody.id, {
                 rigidBodyId: rigidBody.id,
                 rigidBodyName: rigidBodyName,
                 jointConventions: conventions
             });
+
+            // save the pivot point convention into the Map (center of mass by default)
+            newPivotPointConvention.set(rigidBody.id, {
+                rigidBodyId: rigidBody.id,
+                pivotType: PivotPoint.CenterOfMass
+            });
         });
 
         this.signConventions[submechIndex] = newSignConvention;
+        this.pivotPointConventions[submechIndex] = newPivotPointConvention;
+
         console.log(`Initialization complete for Sub-Mechanism ${submechIndex}`);
         console.log(`size of memory for sub-mechanisms array is ${this.signConventions.length}`);
 
@@ -512,6 +546,121 @@ export class StaticsAnalysisService {
 
 
     /**
+     * Set pivot point for moment calculation for a specific rigid body
+     * Main API for the front-end
+     * Note that we have to use PivotPoint enum to set for pivot type
+     * 
+     * @param submechIndex - sub-mechanism index
+     * @param rigidBody - the rigid body (Link or CompoundLink)
+     * @param pivotType - PivotPoint enum (CenterOfMass or Joint)
+     * @param joint - if pivotType is Joint, specify which joint (optional for CenterOfMass)
+     * @returns true if successfully changed, false otherwise
+     */
+    public setPivotPoint(
+        submechIndex: number,
+        rigidBody: RigidBody,
+        pivotType: PivotPoint,
+        joint?: Joint
+    ): boolean {
+        // console.log(`Updating pivot point for RigidBody ${rigidBody.id} in Sub-Mechanism ${submechIndex}`);
+
+        // Check if sub-mechanism has pivot conventions initialized
+        if (!this.pivotPointConventions[submechIndex]) {
+            console.error(`Sub-Mechanism ${submechIndex} not initialized`);
+            return false;
+        }
+
+        // Validate if Joint is pivot, user must provide a joint
+        if (pivotType === PivotPoint.Joint && !joint) {
+            console.error('Please provide a joint when using Joint pivot type!');
+            return false;
+        }
+
+        // Validate if Joint is pivot, joint must belong to this rigid body
+        if (pivotType === PivotPoint.Joint && joint) {
+            const rigidBodyJoints = rigidBody.getJoints();
+            if (!rigidBodyJoints.some(j => j.id === joint.id)) { // this is hard to happen but we still need to check
+                console.error(`Joint ${joint.name} (ID ${joint.id}) does not belong to this rigid body`);
+                return false;
+            }
+
+            // Cannot use free-end joint as pivot
+            if (this.isFreeEndJoint(joint)) {
+                console.error(`Cannot use free-end joint ${joint.name} as pivot point`);
+                return false;
+            }
+        }
+
+        // Will DELETE this later, this is just for testing by printing out
+        const rigidBodyName = rigidBody instanceof Link ? `Link ${rigidBody.name}` : `CompoundLink ${rigidBody.name}`;
+
+        const oldConvention = this.pivotPointConventions[submechIndex].get(rigidBody.id);
+        const oldPivotLabel = oldConvention 
+            ? (oldConvention.pivotType === PivotPoint.CenterOfMass 
+                ? 'Center of Mass' 
+                : `Joint ID ${oldConvention.jointId}`)
+            : 'Unknown';
+
+        // Update pivot point convention
+        if (pivotType === PivotPoint.CenterOfMass) {
+            this.pivotPointConventions[submechIndex].set(rigidBody.id, {
+                rigidBodyId: rigidBody.id,
+                pivotType: PivotPoint.CenterOfMass
+            });
+            console.log(`Pivot point updated for ${rigidBodyName}`);
+            console.log(`>> Old: ${oldPivotLabel}`);
+            console.log(`>> New: Center of Mass`);
+        } else {
+            this.pivotPointConventions[submechIndex].set(rigidBody.id, {
+                rigidBodyId: rigidBody.id,
+                pivotType: PivotPoint.Joint,
+                jointId: joint!.id
+            });
+            console.log(`Pivot point updated for ${rigidBodyName}`);
+            console.log(`>> Old: ${oldPivotLabel}`);
+            console.log(`>> New: Joint ${joint!.name} (ID ${joint!.id})`);
+        }
+
+        return true;
+    }
+
+    /**
+     * Get current pivot point convention for a rigid body
+     * @param submechIndex - sub-mechanism index
+     * @param rigidBodyId - rigid body ID
+     * @returns PivotPointConvention or null if not found
+     */
+    public getPivotPoint(submechIndex: number, rigidBodyId: number): PivotPointConvention | null {
+        if (!this.pivotPointConventions[submechIndex]) {
+            return null;
+        }
+        return this.pivotPointConventions[submechIndex].get(rigidBodyId) || null;
+    }
+
+    /**
+     * Get the coordinate of the pivot point in a rigid body
+     * @param rigidBody - the rigid body
+     * @param pivotConvention - the pivot point convention
+     * @returns Coord of the pivot point
+     */
+    private getPivotCoordinate(rigidBody: RigidBody, pivotConvention: PivotPointConvention): Coord {
+        if (pivotConvention.pivotType === PivotPoint.CenterOfMass) {
+            return rigidBody.centerOfMass;
+        } else {
+            // Find the pivot joint in the rigid body
+            const joints = rigidBody.getJoints();
+            const pivotJoint = joints.find(j => j.id === pivotConvention.jointId);
+            
+            if (!pivotJoint) { // if the pivot joint is not valid
+                throw new Error(`Pivot joint ${pivotConvention.jointId} not found in rigid body`);
+            }
+            
+            return pivotJoint.coords;
+        }
+    }
+
+
+    /**
      * Print all current sign conventions to console
      * JUST FOR TESTING, WILL DELETE IT IN OFFICIAL VERSION
      */
@@ -601,6 +750,10 @@ export class StaticsAnalysisService {
         return Array.from(rigidBodySet);
     }   
 
+    //Delete this later
+    public useGetUniqueBody(subMechanism: Map<Joint, RigidBody[]>):RigidBody[] {
+        return this.getUniqueRigidBodies(subMechanism);
+    }
 
     /**
      * Set gravity constant (default is 9.81 m/s^2)
@@ -673,8 +826,8 @@ export class StaticsAnalysisService {
 
 
     /**
-     * The idea is we will use this one combine with other ones to feed into matrix later.
-     * Build the 3 equilibrium equations for ONLY ONE single rigid body (ONE Link or ONE CompoundLink):
+     * The idea is we will use this function to build equilibrium equations for EACH rigid body to feed into matrix later
+     * This function will build the 3 equilibrium equations for ONLY ONE SINGLE RIGID body (ONE Link or ONE CompoundLink):
      * Equation 1: ΣFx = 0
      * Equation 2: ΣFy = 0
      * Equation 3: ΣM = 0 (Moments about center of mass = 0)
@@ -696,6 +849,14 @@ export class StaticsAnalysisService {
         // console.log(`  Mass: ${mass} kg`);
         // console.log(`  COM: (${CoM.x.toFixed(3)}, ${CoM.y.toFixed(3)})`);
 
+        // Identify the pivot point for this rigid
+        const pivotConvention = this.pivotPointConventions[submechIndex].get(rigidBody.id);
+        if (!pivotConvention) {
+            throw new Error(`pivot convention not found for rigid body ${rigidBody.id}`);
+        }
+
+        // extract the coordinate of the pivot point
+        const pivotPointCoord = this.getPivotCoordinate(rigidBody, pivotConvention);
 
         //Extract gravitational force (Fg) component in a rigid
         const gravityForce = this.getGravityForceComponents(submechIndex, mass);
@@ -712,14 +873,14 @@ export class StaticsAnalysisService {
         const fxEquation: EquilibriumEquation = {
             rigidId: rigidBody.id,
             coefficients: new Map(),
-            constant: -Fg_x // Move gravity to RHS: ΣFx = -Fg_x => ΣFx + Fg_x = 0
+            constant: -Fg_x // Move gravity to RHS: ΣFx + Fg_x = 0 => ΣFx = -Fg_x
         };
 
         //Equation 2: ΣFy = 0 
         const fyEquation: EquilibriumEquation = {
             rigidId: rigidBody.id,
             coefficients: new Map(),
-            constant: -Fg_y  // Move gravity to RHS: ΣFy = -Fg_y => ΣFy + Fg_y = 0
+            constant: -Fg_y  // Move gravity to RHS: ΣFy + Fg_y = 0 => ΣFy = -Fg_y 
         };
 
         // Equation 3: ΣM = 0 (about center of mass)
@@ -736,6 +897,7 @@ export class StaticsAnalysisService {
             throw new Error(`Sign convention not found for rigid body ${rigidBody.id}`);
         }
         
+        // MAIN LOGIC for putting coeffecients of each Joints in this ONE Rigid Body into the 3 equations ΣFx = 0, ΣFy = 0 and ΣM = 0
         joints.forEach((joint) => {
             // Skip free-end joints
             if (this.isFreeEndJoint(joint)) {
@@ -757,7 +919,7 @@ export class StaticsAnalysisService {
             const xSign = jointConv.xDirection;
             const ySign = jointConv.yDirection; 
 
-            // Add variables to list if not already present
+            // Add variables to list if not already present, we will use this list for setting up matrix later
             if (!variableList.includes(rxVar)) {
                 variableList.push(rxVar);
             }
@@ -769,9 +931,9 @@ export class StaticsAnalysisService {
             fxEquation.coefficients.set(rxVar, xSign);
             fyEquation.coefficients.set(ryVar, ySign);
 
-            // Calculate moment for this link from this joint. We want to calculate moment about center of mass, so every joint will contribute to this moment.
+            // Calculate moment for this link from this joint. We want to calculate moment about the pivot point, so every joint will contribute to this moment.
             // Add to moment equation (r × F) at a joint
-            const r = joint.coords.subtract(CoM); // Position vector from COM to this joint. E.g. joint(13, 14) and CoM(10, 10) => r = joint - CoM = (13 - 10)i^ + (14 - 10)j^ = 3i^ + 4j^
+            const r = joint.coords.subtract(pivotPointCoord); // Position vector from COM to this joint. E.g. joint(13, 14) and CoM(10, 10) => r = joint - CoM = (13 - 10)i^ + (14 - 10)j^ = 3i^ + 4j^
             
             // Moment (r × F) = r_x * Fy - r_y * Fx (2D cross product, positive counter-clockwise). Note: F here is reaction force
             // -> r_x is coefficient of Fy and (-r_y) is coefficient of Fx
@@ -781,22 +943,44 @@ export class StaticsAnalysisService {
 
         // Add applied forces from the rigid body if exist
         // For forces in CompoundLink, we need to iterate through all links in that CompoundLink
-        forces.forEach(force => {
-            const fx = force.calculateXComp();
-            const fy = force.calculateYComp();
+        if (forces) {
+            forces.forEach(force => {
+                const fx = force.calculateXComp();
+                const fy = force.calculateYComp();
+    
+                // console.log(` Applied Force ${force.name}: Fx=${fx.toFixed(3)} N, Fy=${fy.toFixed(3)} N`);
+    
+                // Add to constants (move to RHS)
+                fxEquation.constant -= fx;
+                fyEquation.constant -= fy;
+                
+                // Add moment contribution
+                const r = force.start.subtract(pivotPointCoord);
+                const moment = r.x * fy - r.y * fx; // constant
+                momentEquation.constant -= moment;
+            });
+        } else {
+            console.log('NO External Forces Found')
+        }
 
-            // console.log(` Applied Force ${force.name}: Fx=${fx.toFixed(3)} N, Fy=${fy.toFixed(3)} N`);
-
-            // Add to constants (move to RHS)
-            fxEquation.constant -= fx;
-            fyEquation.constant -= fy;
-
-            // Add moment contribution
-            const r = force.start.subtract(CoM);
-            const moment = r.x * fy - r.y * fx; // constant
-            momentEquation.constant -= moment;
-        });
-
+        // Check if gravity effect calculation, only the pivot point at the Joint will affect make the gravity affect in the calculation
+        // IMPORTANT: Gravity acts at CENTER OF MASS, so we need r from PIVOT POINT to CoM
+        if (this.doesGravityAffectCalculations(submechIndex)) {
+            const gravityForce = this.getGravityForceComponents(submechIndex, mass);
+            if (gravityForce) {
+                const Fg_x = gravityForce.Fx;
+                const Fg_y = gravityForce.Fy;
+                
+                // r from pivot point to center of mass
+                const r_gravity = CoM.subtract(pivotPointCoord);
+                const moment_gravity = r_gravity.x * Fg_y - r_gravity.y * Fg_x;
+                
+                momentEquation.constant -= moment_gravity;
+                
+                console.log(`  Gravity moment about pivot: ${moment_gravity.toFixed(6)} N⋅m`);
+            }
+        }
+        
         //if this rigidBody is connected to a input joint (motor), we need to add this motor torque
         // can change the "name" to "id" if needed
         if (joints.includes(inputJoint)) {
@@ -809,7 +993,7 @@ export class StaticsAnalysisService {
 
             // Get torque sign convention
             const torqueConv = this.torqueConventions[submechIndex];
-            const torqueSign = torqueConv ? torqueConv.torqueDirection : 1; // torque direction by default is 1
+            const torqueSign = torqueConv ? torqueConv.torqueDirection : 1; // torque direction by default is +1
 
             momentEquation.coefficients.set(torqueVar, torqueSign);
             // console.log(`  Motor torque added: sign = ${torqueSign > 0 ? '+' : '-'}`);
@@ -841,6 +1025,22 @@ export class StaticsAnalysisService {
         };
     }
 
+    /**
+     * Check if gravity affects the 2D calculations for a sub-mechanism
+     * Z-direction gravity does NOT affect calculation because we work with 2D planar
+     * @param submechIndex - sub-mechanism index
+     * @returns true if gravity affects calculations, false if Z-direction (no effect)
+     */
+    public doesGravityAffectCalculations(submechIndex: number): boolean {
+        //extract gravity convention
+        const gravityConv = this.gravityConventions[submechIndex];
+        if (!gravityConv) {
+            return false;
+        }
+        
+        // Z-direction means gravity is perpendicular to 2D plane, therefore, no affect and return false
+        return gravityConv.direction !== GravityDirection.NegativeZ && gravityConv.direction !== GravityDirection.PositiveZ;
+    }
 
     private getAllForcesOnRigidBody(rigidBody: RigidBody): Force[] {
         const forces: Force[] = [];
