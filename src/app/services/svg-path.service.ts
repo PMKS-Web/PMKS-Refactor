@@ -511,6 +511,12 @@ export class SVGPathService {
     // find the intersection points between the line and the circle defined by the arc
     let intersections: Coord[] | undefined = this.lineCircleIntersect(lineStart, lineEnd, arcCenter, arcRadius);
 
+    let isTangent: boolean = false;
+    if (intersections !== undefined && intersections.length === 1) {
+      // checks if only one intersection was returned for tangent line
+      isTangent = true;
+    }
+
     intersections = intersections?.filter((intersection) => {
       return this.isPointOnLine(intersection, lineStart, lineEnd);
     });
