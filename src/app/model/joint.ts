@@ -16,6 +16,8 @@ export class Joint {
   private _isInput: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   private _inputSpeed: number;
   private _isWelded: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  //allows tracking of multiple links to locking the joint
+  private _lockCount: number = 0;
   private _parentLocked: boolean;
   private _isHidden: boolean;
   private _isReference: boolean;
@@ -137,7 +139,13 @@ export class Joint {
     this._inputSpeed = newSpeed;
   }
   set locked(value: boolean) {
-    this._parentLocked = value;
+    //value determines if we add or break a lock
+    if(value){
+      this.addLock();
+    }
+    else{
+      this.breakLock();
+    }
   }
 
   set rpmSpeed(newSpeed: number) {
@@ -198,11 +206,16 @@ export class Joint {
   }
 
   addLock() {
-    console.log('setting lock in child');
-    this._parentLocked = true;
+    //add a lock to the joint
+    this._lockCount++;
+    //set parent locked to see if there is more than one lock on joint
+    this._parentLocked = this._lockCount > 0;
   }
   breakLock() {
-    this._parentLocked = false;
+    //subtracts a lock and ensures it doesn't go negative
+    this._lockCount = Math.max(0, this._lockCount - 1);
+    //sets parent locked
+    this._parentLocked = this._lockCount > 0;
   }
 
   //----------------------------Joint Modification Querying----------------------------
@@ -268,7 +281,7 @@ export class Joint {
     if (this._isInput.value) newJoint.addInput();
     if (this._isWelded.value) newJoint.addWeld();
     newJoint.speed = this._inputSpeed;
-    newJoint.locked = this._parentLocked;
+    newJoint.locked = this.locked;
     newJoint.hidden = this._isHidden;
     newJoint.reference = this._isReference;
     return newJoint;
