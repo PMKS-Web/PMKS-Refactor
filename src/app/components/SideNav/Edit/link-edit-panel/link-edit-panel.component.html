@@ -255,16 +255,27 @@
           </div>
         </div>
 
-        <dual-input-block
-          label1="X"
-          label2="Y"
-          unit1="cm"
-          unit2="cm"
-          tooltip="Enter tooltip here"
-          [ngStyle]="{ 'margin-bottom': '8px', 'margin-top': '-20px' }"
-        >
-          <span style="margin-bottom: 12px; display: inline-block;">Center of Mass Position</span>
-        </dual-input-block>
+        <div style="margin-bottom: 8px; margin-top: -20px;">
+          <dual-input-block
+            label1="X"
+            label2="Y"
+            unit1="{{unitSuffix}}"
+            unit2="{{unitSuffix}}"
+            tooltip="Set a custom center of mass location for a link"
+            [disabled]="isLocked"
+            [input1Value]="pendingCOMX ?? getLinkCOMX()"
+            [input2Value]="pendingCOMY ?? getLinkCOMY()"
+            (input1Change)="confirmCOMX($event)"
+            (input2Change)="confirmCOMY($event)"
+          >
+            <span style="margin-bottom: 12px; display: inline-block;">Center of Mass Position
+              <!-- <button (click)="resetCenterOfMass()" style="margin-left: 8px;">
+                Reset
+              </button> -->
+            </span>
+          </dual-input-block>
+
+        </div>
       </collapsible-subsection>
       <!-- VISUAL SETTINGS -->
       <collapsible-subsection

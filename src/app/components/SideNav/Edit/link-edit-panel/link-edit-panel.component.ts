@@ -39,6 +39,8 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
   public pendingLinkLength?: number;
   public pendingLinkAngle?: number;
   public pendingLinkMass?: number;
+  public pendingCOMX?: number; // x of center of mass location
+  public pendingCOMY?: number; // y of center of mass location
 
   /** Buffers for component edits */
   public pendingCompX: Record<number, number> = {};
@@ -359,6 +361,68 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
     return this.getSelectedObject().name;
   }
 
+  // Getters for Center of Mass Position
+  getLinkCOMX(): number {
+    const CoM = this.getSelectedObject().centerOfMass;
+    return this.roundToThree(CoM.x);
+  }
+
+  getLinkCOMY(): number {
+    const CoM = this.getSelectedObject().centerOfMass;
+    return this.roundToThree(CoM.y);
+  }
+
+  // Confirm X inputs for Center of Mass
+  confirmCOMX(newX: number): void {
+    if (newX == null) return;
+    let canEdit = this.confirmCanEdit();
+    if (!canEdit) return;
+
+    this.pendingCOMX = newX;
+    this.confirmCenterOfMass();
+  }
+
+  // Confirm Y inputs for Center of Mass
+  confirmCOMY(newY: number): void {
+    if (newY == null) return;
+    let canEdit = this.confirmCanEdit();
+    if (!canEdit) return;
+    
+    this.pendingCOMY = newY;
+    this.confirmCenterOfMass();
+  }
+
+  // Confirm to apply COM update
+  confirmCenterOfMass(): void {
+    const link = this.getSelectedObject();
+    
+    // Determine the current values to use if one input is pending but the other is not
+    const newX = this.pendingCOMX ?? link.centerOfMass.x;
+    const newY = this.pendingCOMY ?? link.centerOfMass.y;
+
+    // Check if change is significant
+    if (Math.abs(link.centerOfMass.x - newX) < 1e-6 && Math.abs(link.centerOfMass.y - newY) < 1e-6) {
+      this.pendingCOMX = undefined;
+      this.pendingCOMY = undefined;
+      return;
+    }
+
+    // Direct update to the Link's _centerOfMass property
+    link.setCenterOfMass(newX, newY); 
+
+    this.getMechanism().notifyChange();
+    
+    this.pendingCOMX = undefined;
+    this.pendingCOMY = undefined;
+  }
+
+  // // Uncomment this if want to design a reset button for Center of Mass in the future
+  // resetCenterOfMass(): void {
+  //   const link = this.getSelectedObject();
+  //   link.resetCenterOfMass();
+  //   this.getMechanism().notifyChange();
+  // }
+
   // Sets the length of the selected Link
   setLinkLength(newLength: number): void {
     let refJoint = this.getSelectedObject().joints.get(0);
@@ -456,7 +520,7 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
     }
   }
 
-  //helper function to quickly round to 3 decimals :)
+  // because toFixed() return a string so we need this helper function to quickly round to 3 decimals :)
   roundToThree(round: number): number {
     return parseFloat(round.toFixed(3));
   }
