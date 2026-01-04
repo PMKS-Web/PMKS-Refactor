@@ -15,6 +15,7 @@ export class Link implements RigidBody {
   private _name: string;
   private _mass: number;
   private _centerOfMass: Coord;
+  private _customCenterOfMass: boolean = false; // Track if COM is custom
   _joints: Map<number, Joint>;
   _forces: Map<number, Force>;
   private _color: string = '';
@@ -85,6 +86,11 @@ export class Link implements RigidBody {
 
   get centerOfMass(): Coord {
     // ensures that the center of mass is always updating, specifically when adding tracer points is useful
+    // If custom COM is set, return it; otherwise calculate from joints
+    if (this._customCenterOfMass) {
+      return this._centerOfMass;
+    }
+
     return this.calculateCenterOfMass();
   }
 
@@ -132,9 +138,22 @@ export class Link implements RigidBody {
     this._angle = ((value % 360) + 360) % 360;
   }
 
+  setCenterOfMass(newX: number, newY: number) {
+    this._centerOfMass.x = newX;
+    this._centerOfMass.y = newY;
+    this._customCenterOfMass = true; // Mark as custom
+  }
+
+  // Reset to calculated COM
+  resetCenterOfMass() {
+    this._customCenterOfMass = false;
+    this._centerOfMass = this.calculateCenterOfMass();
+  }
+
   addTracer(newJoint: Joint) {
     this._joints.set(newJoint.id, newJoint);
-    this.calculateCenterOfMass();
+    this.resetCenterOfMass();// Reset to calculated COM when adding tracers (optional behavior)
+
     this._name = '';
     for (let joint of this._joints.values()) {
       this._name += joint.name;
@@ -170,7 +189,7 @@ export class Link implements RigidBody {
       //may need to throw error here in future
     }
 
-    this.calculateCenterOfMass();
+    this.resetCenterOfMass();
     if (this._joints.size === 1) {
       throw new Error('Link now only contains 1 Joint');
     }
@@ -205,7 +224,8 @@ export class Link implements RigidBody {
     }
   }
 
-  //I don't think this works TODO
+  // MQP 24-25: I don't think this works
+  // MQP 25-26: No, this doesn't work for all shapes, it only works if we have solid filled nice shapes like triangle, square,... need to design another in the future
   calculateCenterOfMass(): Coord {
     let totalX = 0;
     let totalY = 0;
@@ -220,8 +240,12 @@ export class Link implements RigidBody {
     const numberOfJoints = this._joints.size;
     const centerX = totalX / numberOfJoints;
     const centerY = totalY / numberOfJoints;
+    
+    // Only update _centerOfMass if not using custom
+    if (!this._customCenterOfMass) {
+      this._centerOfMass = new Coord(centerX, centerY);
+    }
 
-    this._centerOfMass = new Coord(centerX, centerY);
     return this._centerOfMass;
   }
 
