@@ -152,9 +152,11 @@ export class Force {
     this._end = coord.clone();
   }
   updateAfterMovement() {
-    if (this._frameOfReference === ForceFrame.Local)
-      this.angle =
-        (this.parentLink?.calculateAngle() || 0) + this._relativeAngle;
+    if (this._frameOfReference === ForceFrame.Local) {
+      this.angle = (this.parentLink?.calculateAngle() || 0) + this._relativeAngle;
+      // console.log('local angle now is: ', this.angle)
+    }
+      
     const parentCenter = this.parentLink.calculateCenterOfMass();
     const storedDistance = this._posInLink[0];
     const storedAngle = this._posInLink[1];

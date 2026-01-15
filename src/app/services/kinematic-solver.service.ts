@@ -494,6 +494,15 @@ export class PositionSolverService {
     }
   }
 
+  // // round to the closest 12 decimals, e.g. -5.084....71281e-15 => 0  OR  2.9999999999...97 => 3  OR  4.499999999999..9 => 4.5
+  // private roundCoord(val: number, decimals = 12): number {
+  //   const k = Math.pow(10, decimals);
+  //   const rounded = Math.round(val * k) / k;
+
+  //   // remove negative zero
+  //   return Object.is(rounded, -0) ? 0 : rounded;
+  // }
+
   // Calculates the next position of a joint driven by a grounded revolute input, advancing or reversing by 1°.
   private solveRevInput(
     prevPositions: Coord[],
@@ -626,6 +635,12 @@ export class PositionSolverService {
     const py = firstKnownJointY + a * yDiffBetweenKnowns;
 
     const h = Math.sqrt(distFromFirstJoint * distFromFirstJoint - a * a);
+    
+    // one intersection, because h is too small, so the offset vector vx, vy becomes 0, 0. And the intersection point simply P2(point2_x, point2_y)
+    if (h < 1e-9) {
+      console.log('1 intersection between circles in amination frame');
+      return [new Coord(px, py)];
+  }
 
     const p1x = px + h * yDiffBetweenKnowns;
     const p1y = py - h * xDiffBetweenKnowns;
