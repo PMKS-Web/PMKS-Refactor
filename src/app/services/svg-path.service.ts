@@ -798,14 +798,38 @@ export class SVGPathService {
           }
         });
 
-        let removedDuplicateIntersectionPoints: {x: number, y: number}[] = [];
+        let removedDuplicateIntersectionPoints: Coord[] = [];
         intersectionPoints.forEach((point, i) => {
           if (!duplicatePoints.includes(i)) {
             removedDuplicateIntersectionPoints.push(point);
           }
-        })
+        });
 
-        intersections += removedDuplicateIntersectionPoints.length;
+        // check if the line from the link is an arc and the intersection is perpendicular (tangent)
+        let tangentIntersectionPoints: number[] = [];
+        removedDuplicateIntersectionPoints.forEach((point, index) => {
+          let infiniteLineSlope: number = (point.y - startPosition.y) / (point.x - startPosition.x);
+          let arcSlope: number = 0;
+          if (line[2] !== null) {
+            arcSlope = (point.y - line[2].y) / (point.x - line[2].x);
+          }
+          if (this.twoNumsLooselyEquals(arcSlope * infiniteLineSlope, -1)) {
+            tangentIntersectionPoints.push(index);
+          } else if (arcSlope === 0 && infiniteLineSlope === Number.NEGATIVE_INFINITY) {
+            tangentIntersectionPoints.push(index);
+          } else if (arcSlope === Number.NEGATIVE_INFINITY && infiniteLineSlope === 0) {
+            tangentIntersectionPoints.push(index);
+          }
+        });
+
+        let finalIntersectionPoints: {x: number, y: number}[] = [];
+        removedDuplicateIntersectionPoints.forEach((point, i) => {
+          if (!tangentIntersectionPoints.includes(i)) {
+            finalIntersectionPoints.push(point);
+          }
+        });
+
+        intersections += finalIntersectionPoints.length;
       }
 
     });
