@@ -371,8 +371,23 @@ export class SVGPathService {
       (intersection.x - arcCenter.x) * (arcEnd.y - arcCenter.y) -
       (intersection.y - arcCenter.y) * (arcEnd.x - arcCenter.x);
 
+    // use angles to determine whether point is within the arc
+    // angles are calculated to degrees and is counter clockwise
+    /*const zeroDegrees = arcCenter.clone()
+    zeroDegrees.x = zeroDegrees.x + radius;*/
+    /*const startAngle = Math.atan2(arcStart.y - arcCenter.y, arcStart.x - arcCenter.x);
+    const endAngle = Math.atan2(arcEnd.y - arcCenter.y, arcEnd.x - arcCenter.x);
+    const pointAngle = Math.atan2(intersection.y - arcCenter.y, intersection.x - arcCenter.x);
+
+    let angleIsBetween: boolean;
+    if (startAngle > endAngle) {
+      angleIsBetween = endAngle >= pointAngle || startAngle <= pointAngle;
+    } else {
+      angleIsBetween = startAngle <= pointAngle && endAngle >= pointAngle;
+    }*/
+
     // assuming clockwise rotation, so sweep flag equals 1
-    return crossProduct1 >= -delta && crossProduct2 >= -delta;
+    return (crossProduct1 >= -delta && crossProduct2 >= -delta); //&& (angleIsBetween);
   }
 
   // https://stackoverflow.com/questions/13937782/calculating-the-point-of-intersection-of-two-lines
@@ -622,7 +637,7 @@ export class SVGPathService {
     for (let intersection of intersections) {
       if (
         this.isPointInArc(intersection, startPosition, endPosition, center, radius) &&
-        this.isPointInArc(intersection, startPosition2, endPosition2, center, radius) &&
+        this.isPointInArc(intersection, startPosition2, endPosition2, center2, radius) &&
         !intersection.equals(startPosition, this.scale) &&
         !intersection.equals(endPosition, this.scale) &&
         !intersection.equals(startPosition2, this.scale) &&
