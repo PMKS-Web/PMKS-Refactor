@@ -1065,24 +1065,35 @@ export class SVGPathService {
     });
 
     // duplicate lines are only added if we detect a gap in the path
-    const newLinesToAdd: [Coord, Coord, Coord | null, Link][] = [];
-    for (let i = 0; i < intersectionExternalLines.length; i++) {
-      const pointToSearch: Coord = intersectionExternalLines[i][1];
-      const found = intersectionExternalLines.find((line2) => {
-        return line2[0].equals(pointToSearch, 1);
-      });
-      if (!found) {
-        const lineToAdd = duplicateLines.find((line2) => {
-          return line2[0].looselyEquals(pointToSearch, 1);
+    let addedNewLines: boolean = false;
+    let firstTime: boolean = true;
+    let linesToCheck: [Coord, Coord, Coord | null, Link][] = intersectionExternalLines;
+    let newLinesToAdd: [Coord, Coord, Coord | null, Link][];
+    while (firstTime || addedNewLines) {
+      firstTime = false;
+      addedNewLines = false;
+
+      newLinesToAdd = [];
+      for (let i = 0; i < linesToCheck.length; i++) {
+        const pointToSearch: Coord = linesToCheck[i][1];
+        const found = intersectionExternalLines.find((line2) => {
+          return line2[0].equals(pointToSearch, 1);
         });
-        if (lineToAdd !== undefined) {
-          newLinesToAdd.push(lineToAdd);
+        if (!found) {
+          const lineToAdd = duplicateLines.find((line2) => {
+            return line2[0].looselyEquals(pointToSearch, 1);
+          });
+          if (lineToAdd !== undefined) {
+            newLinesToAdd.push(lineToAdd);
+            addedNewLines = true;
+          }
         }
       }
-    }
+      linesToCheck = newLinesToAdd;
 
-    // add in the new lines
-    intersectionExternalLines.push(...newLinesToAdd);
+      // add in the new lines
+      intersectionExternalLines.push(...newLinesToAdd);
+    }
 
     //Remove very short lines
     intersectionExternalLines = intersectionExternalLines.filter((line) => {
