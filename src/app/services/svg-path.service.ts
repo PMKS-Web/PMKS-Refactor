@@ -830,9 +830,9 @@ export class SVGPathService {
           }
           if (this.twoNumsLooselyEquals(arcSlope * infiniteLineSlope, -1)) {
             tangentIntersectionPoints.push(index);
-          } else if (arcSlope === 0 && infiniteLineSlope === Number.NEGATIVE_INFINITY) {
+          } else if (arcSlope === 0 && (infiniteLineSlope === Number.NEGATIVE_INFINITY || infiniteLineSlope === Number.POSITIVE_INFINITY)) {
             tangentIntersectionPoints.push(index);
-          } else if (arcSlope === Number.NEGATIVE_INFINITY && infiniteLineSlope === 0) {
+          } else if ((arcSlope === Number.NEGATIVE_INFINITY || arcSlope === Number.POSITIVE_INFINITY) && infiniteLineSlope === 0) {
             tangentIntersectionPoints.push(index);
           }
         });
