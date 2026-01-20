@@ -371,29 +371,14 @@ export class SVGPathService {
       (intersection.x - arcCenter.x) * (arcEnd.y - arcCenter.y) -
       (intersection.y - arcCenter.y) * (arcEnd.x - arcCenter.x);
 
-    // use angles to determine whether point is within the arc
-    // angles are calculated to degrees and is counter clockwise
-    /*const zeroDegrees = arcCenter.clone()
-    zeroDegrees.x = zeroDegrees.x + radius;*/
-    /*const startAngle = Math.atan2(arcStart.y - arcCenter.y, arcStart.x - arcCenter.x);
-    const endAngle = Math.atan2(arcEnd.y - arcCenter.y, arcEnd.x - arcCenter.x);
-    const pointAngle = Math.atan2(intersection.y - arcCenter.y, intersection.x - arcCenter.x);
-
-    let angleIsBetween: boolean;
-    if (startAngle > endAngle) {
-      angleIsBetween = endAngle >= pointAngle || startAngle <= pointAngle;
-    } else {
-      angleIsBetween = startAngle <= pointAngle && endAngle >= pointAngle;
-    }*/
-
-    // assuming clockwise rotation, so sweep flag equals 1
-    return (crossProduct1 >= -delta && crossProduct2 >= -delta); //&& (angleIsBetween);
+    // if the crossProducts are both greater than negative delta, then the point is within the arc
+    return (crossProduct1 >= -delta && crossProduct2 >= -delta);
   }
 
   // https://stackoverflow.com/questions/13937782/calculating-the-point-of-intersection-of-two-lines
   // line intercept math by Paul Bourke http://paulbourke.net/geometry/pointlineplane/
   // Determine the intersection point of two line segments
-  // Return undefiend if the lines don't intersect
+  // Return undefined if the lines don't intersect
   lineLineIntersect(line1Start: Coord, line1End: Coord, line2Start: Coord, line2End: Coord): Coord[] | undefined {
     let x1 = line1Start.x;
     let y1 = line1Start.y;
@@ -526,12 +511,6 @@ export class SVGPathService {
     // find the intersection points between the line and the circle defined by the arc
     let intersections: Coord[] | undefined = this.lineCircleIntersect(lineStart, lineEnd, arcCenter, arcRadius);
 
-    let isTangent: boolean = false;
-    if (intersections !== undefined && intersections.length === 1) {
-      // checks if only one intersection was returned for tangent line
-      isTangent = true;
-    }
-
     intersections = intersections?.filter((intersection) => {
       return this.isPointOnLine(intersection, lineStart, lineEnd);
     });
@@ -576,10 +555,10 @@ export class SVGPathService {
 
     // Circles are coincident
     if (d === 0 && radius === radius2) {
-      // console.log('Circles are coincident');
       return [undefined, true];
     }
 
+    // calculate intersection points
     let a = (radius * radius - radius2 * radius2 + d * d) / (2 * d);
     let h = Math.sqrt(radius * radius - a * a);
     let x3 = x1 + (a * dx) / d;
@@ -794,12 +773,10 @@ export class SVGPathService {
     // check if the point is inside the shape created by the lines
     // draw a line that is infinitely long and check if it intersects with the shape an odd number of times
     const infiniteLine: [Coord, Coord, Coord | null, Link] = [startPosition, new Coord(startPosition.x + 10000, startPosition.y), null, startLink];
-    //const reverseInfiniteLine: [Coord, Coord, Coord | null, Link] = [new Coord(startPosition.x + 10000, startPosition.y), startPosition, null, startLink];
 
     let intersections = 0;
     externalLines.forEach((line) => {
       const intersectionPoints = this.intersectsWith(infiniteLine, line, radius);
-      //const otherIntersectionPoint = this.intersectsWith(reverseInfiniteLine, line, radius);
 
       if (intersectionPoints !== undefined) {
         // check for duplicate intersection points
@@ -849,18 +826,13 @@ export class SVGPathService {
 
     });
 
-    //If the number of intersections is odd, then the point is inside the shape
+    // If the number of intersections is odd, then the point is inside the shape
     return intersections % 2 === 1;
   }
 
   // calculates whether a line is contained within a link
   // used to determine whether to get rid of a line
   isLineContained(line: [Coord, Coord, Coord | null, Link], linkExternalLines: [Coord, Coord, Coord | null, Link][], radius: number, intersectionPoints: {point: Coord, i: number}[]): boolean {
-    /*let lineAngle = Math.atan2(
-      line[1].y - line[0].y,
-      line[1].x - line[0].x
-    );*/
-
     // check if both endpoints of line are inside the link
     return (this.isPointInsideLink(line[0], line[3], linkExternalLines, radius) || this.isPointOnLink(line[0], linkExternalLines, radius)) &&
       (this.isPointInsideLink(line[1], line[3], linkExternalLines, radius) || this.isPointOnLink(line[1], linkExternalLines, radius));
@@ -874,7 +846,6 @@ export class SVGPathService {
       boolean is true if the line is an arc
       Last is the center Coord of an arc, null if it is just a line
     */
-    //radius = 0.15;
     let externalLines: [Coord, Coord, Coord | null, Link][] = [];
     let allLinkExternalLines: Map<Link, [Coord, Coord, Coord | null, Link][]> = new Map();
 
@@ -919,7 +890,6 @@ export class SVGPathService {
         const point5: Coord = new Coord(collinearCoords[0].x + dirFirstToSecond.x * radius, collinearCoords[0].y + dirFirstToSecond.y * radius);
         externalLines.push([point4.clone(), point5.clone(), collinearCoords[0].clone(), link]);
         linkExternalLines.push([point4.clone(), point5.clone(), collinearCoords[0].clone(), link]);
-        //console.log(externalLines);
       } else {
         if (hullPoints.length < 3) {
           throw new Error('At least three points are required to create a path with rounded corners.');
@@ -982,6 +952,8 @@ export class SVGPathService {
         // check if lines intersect, if they do save the intersections
         const intersection = this.intersectsWith(line1, line2, radius);
 
+        // make sure intersection is not the end points of a segment before adding in the intersection for each segment
+        // intersection points are saved along with the segment the intersection is on
         if (intersection !== undefined) {
           intersection.forEach((point: Coord) => {
             if (!(line1[1].equals(point, this.scale) || line1[0].equals(point, this.scale))) {
@@ -1065,6 +1037,7 @@ export class SVGPathService {
     });
 
     // duplicate lines are only added if we detect a gap in the path
+    // need to loop again and check for a gap if a new segment was added
     let addedNewLines: boolean = false;
     let firstTime: boolean = true;
     let linesToCheck: [Coord, Coord, Coord | null, Link][] = intersectionExternalLines;
@@ -1175,7 +1148,6 @@ export class SVGPathService {
       pathString = this.pathStringForLine(currentLine, pathString);
       pathString += 'Z ';
     }
-    //console.log(pathString);
     return pathString;
   }
 
