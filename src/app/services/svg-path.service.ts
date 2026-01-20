@@ -1119,6 +1119,9 @@ export class SVGPathService {
 
     let timeoutCounter = 1000;
 
+    // this is the offset for concave curve radius
+    const offsetRadius = 3;
+
     while (externalLinesSet.size > 1) {
       // this is the first line from the set
       let currentLine: [Coord, Coord, Coord | null, Link] = externalLinesSet.values().next().value;
@@ -1143,10 +1146,10 @@ export class SVGPathService {
         externalLinesSet.delete(nextLine);
 
         // when there are two lines intersecting, create a fillet between them
-        /*if (currentLine[2] === null && nextLine[2] == null &&
+        if (currentLine[2] === null && nextLine[2] === null &&
           // checking if angle between the two lines is greater than 10 degrees
           Math.abs(this.angleToPI(nextLine, currentLine)) > (10 * Math.PI / 180)) {
-          let [currentLineOffsetPoint, nextLineOffsetPoint, radius] = this.computeArcPointsAndRadius(currentLine, nextLine, 1);
+          let [currentLineOffsetPoint, nextLineOffsetPoint, radius] = this.computeArcPointsAndRadius(currentLine, nextLine, r * offsetRadius);
 
           currentLine[1] = currentLineOffsetPoint;
           nextLine[0] = nextLineOffsetPoint;
@@ -1157,17 +1160,16 @@ export class SVGPathService {
             pathString = this.pathStringForLine(currentLine, pathString);
           }
 
-          // !!! is 0 0 0 correct?
           pathString += 'A ' + radius + ', ' + radius + ' 0 0 0 ' + nextLine[0].x + ', ' + nextLine[0].y + ' ';
-        } else {*/
-
-        // otherwise, just draw a line between the two points
-        if (this.isNewShape(pathString)) {
-          pathString += 'M ' + currentLine[1].x + ', ' + currentLine[1].y + ' ';
         } else {
-          pathString = this.pathStringForLine(currentLine, pathString);
+
+          // otherwise, just draw a line between the two points
+          if (this.isNewShape(pathString)) {
+            pathString += 'M ' + currentLine[1].x + ', ' + currentLine[1].y + ' ';
+          } else {
+            pathString = this.pathStringForLine(currentLine, pathString);
+          }
         }
-        // }
         currentLine = nextLine;
       }
       pathString = this.pathStringForLine(currentLine, pathString);
