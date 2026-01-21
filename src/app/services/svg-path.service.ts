@@ -710,11 +710,24 @@ export class SVGPathService {
   // split an arc along intersection points
   splitArcByIntersection(arc: [Coord, Coord, Coord | null, Link], points: Coord[]): [Coord, Coord, Coord | null, Link][] {
     if (arc[2] !== null) {
+      // getting angles of every point from the center of the arc
       let intersectionsWithAngles:{p:Coord, angle: number}[] = points.map((p) => ({
         p: p,
         angle: Math.atan2(p.y - (arc[2]?.y ?? 0), p.x - (arc[2]?.x ?? 0))
       }));
-      let resultOrderedPoints = intersectionsWithAngles.sort((a, b) => a.angle - b.angle);
+
+      // change range from [0 to 2pi] and compare angle distance from start angle of arc
+      const twoPI = 2 * Math.PI;
+      // making sure arc angle is between [0, 2pi]
+      const startArcAngle = (Math.atan2(arc[0].y - (arc[2]?.y ?? 0), arc[0].x - (arc[2]?.x ?? 0)) % twoPI + twoPI) % twoPI;
+      let resultOrderedPoints = intersectionsWithAngles.sort((a, b) => {
+        const aFromStart = (a.angle % twoPI + twoPI) % twoPI - startArcAngle;
+        const bFromStart = (b.angle % twoPI + twoPI) % twoPI - startArcAngle;
+
+        const posAAngle = (aFromStart + twoPI) % twoPI;
+        const posBAngle = (bFromStart + twoPI) % twoPI;
+        return posAAngle - posBAngle;
+      });
 
       // removes any intersection points that are at the end points
       resultOrderedPoints = resultOrderedPoints.filter((point) => {
@@ -895,8 +908,8 @@ export class SVGPathService {
           throw new Error('At least three points are required to create a path with rounded corners.');
         }
 
-        console.log("hull points");
-        console.log(hullPoints);
+        // console.log("hull points");
+        // console.log(hullPoints);
 
         // Start the path, moving the pointer to the first correct point
         const dirFirstToSecondInit = this.perpendicularDirection(hullPoints[0], hullPoints[1]);
@@ -1111,7 +1124,6 @@ export class SVGPathService {
         const nextLine: [Coord, Coord, Coord | null, Link] | undefined = [...externalLinesSet].find((line) => {
           return line[0].looselyEquals(currentLine[1], 1);
         });
-        //console.log(nextLine);
 
         if (!nextLine) {
           break;
