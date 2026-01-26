@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Coord } from '../model/coord';
+import { Link } from "../model/link";
 import { PositionSolverService, SolveOrder, SolvePrerequisite, SolveType } from './kinematic-solver.service';
 import { AnimationPositions } from './kinematic-solver.service';
 import { create, all, MathJsInstance } from 'mathjs'
@@ -11,7 +12,10 @@ export interface JointAnalysis {
   velocities: Coord[],
   accelerations: Coord[],
 }
-
+interface LinkSegmentInfo {
+  linkId: number;
+  jointIndices: number[];   // indices into jointIDs/subJoints
+}
 export interface LinkAnalysis {
   timeIncrement: number,
   COMpositions: Coord[],
@@ -35,6 +39,7 @@ export class AnalysisSolveService {
 
   constructor(private positionSolver: PositionSolverService, private stateService: StateService,) {
   }
+
 
   // Updates kinematic data by fetching solve orders and joint positions, then solving submechanism kinematics.
   updateKinematics() {
@@ -311,7 +316,7 @@ export class AnalysisSolveService {
       subJoints.push(jointData!);
     }
     let com_solutions: { pos: Coord[], vel: Coord[], acc: Coord[] } = this.getLinkCOMSolutions(subJoints);
-    let angle_solutions: { ang: number[], vel: number[], acc: number[] } = this.getLinkAngularSolutions(subJoints, linkIndex);
+    let angle_solutions = this.getLinkAngularSolutions(subJoints, jointIDs, linkIndex);
 
     return {
       timeIncrement: subJoints[0].timeIncrement,
@@ -354,65 +359,77 @@ export class AnalysisSolveService {
   }
 
   // Calculates angular positions, velocities, and accelerations for all links.
-  getLinkAngularSolutions(subJoints: JointAnalysis[], linkIndex: number) {
+  getLinkAngularSolutions(subJoints: JointAnalysis[], jointIDs: number[], linkIndex: number) {
+    const mech = this.stateService.getMechanism();
+    const links = mech.getArrayOfLinks();
+    const link = links[linkIndex];
+
     let ang_pos: number[] = [];
     let ang_vel: number[] = [];
     let ang_acc: number[] = [];
 
-    // Compute link lengths (r2 = AB, r3 = BC, r4 = CD)
-    const r2 = this.distance(subJoints[1].positions[0], subJoints[0].positions[0]);
-    const r3 = this.distance(subJoints[2].positions[0], subJoints[1].positions[0]);
-    const r4 = this.distance(subJoints[3].positions[0], subJoints[2].positions[0]);
+    const numSteps = subJoints?.[0]?.positions?.length ?? 0;
+    if (!numSteps || !link) return { ang: ang_pos, vel: ang_vel, acc: ang_acc };
 
-    // Input angular velocity ω2
-    const mechanism = this.stateService.getMechanism();
-    const rpm = mechanism.getInputSpeed();
+    // Link lengths from mechanism
+    const r2 = links[0]?.length ?? 0;
+    const r3 = links[1]?.length ?? 0;
+    const r4 = links[2]?.length ?? 0;
+
+    // Known input speed -> omega2
+    const rpm = mech.getInputSpeed();
     const omega2 = 2 * Math.PI * (rpm / 60);
 
-    console.log("RPM: " + rpm + ", Omega2: " + omega2);
-    for (let time = 0; time < subJoints[0].positions.length; time++) {
+    for (let t = 0; t < numSteps; t++) {
+      // Theta for the CURRENT exported link
+      const thisLink = this.findJointPair(link, subJoints, jointIDs, t);
+      if (!thisLink) {
+        ang_pos.push(0); ang_vel.push(0); ang_acc.push(0);
+        continue;
+      }
 
-      const theta2 = Math.atan2(
-        subJoints[1].positions[time].y - subJoints[0].positions[time].y,
-        subJoints[1].positions[time].x - subJoints[0].positions[time].x
-      );
+      const thisA = subJoints[thisLink.idxA].positions[t];
+      const thisB = subJoints[thisLink.idxB].positions[t];
+      const thisTheta = Math.atan2(thisB.y - thisA.y, thisB.x - thisA.x);
+      ang_pos.push(thisTheta);
 
-      const theta3 = Math.atan2(
-        subJoints[2].positions[time].y - subJoints[1].positions[time].y,
-        subJoints[2].positions[time].x - subJoints[1].positions[time].x
-      );
-      const theta4 = Math.atan2(
-        // Quick fix for proper sign, once loop selection is implemented, that will determine the order
-        subJoints[2].positions[time].y - subJoints[3].positions[time].y,
-        subJoints[2].positions[time].x - subJoints[3].positions[time].x
-        // subJoints[3].positions[time].y - subJoints[2].positions[time].y,
-        // subJoints[3].positions[time].x - subJoints[2].positions[time].x
-      );
+      // Thetas for matrix solver
+      const p2 = this.findJointPair(links[0], subJoints, jointIDs, t);
+      const p3 = this.findJointPair(links[1], subJoints, jointIDs, t);
+      const p4 = this.findJointPair(links[2], subJoints, jointIDs, t);
 
-      // Get angular velocity for links at postions at current time interval
-      const [omega3, omega4] = this.getAngularVelocities(
-        r2, r3, r4,
-        theta2, theta3, theta4,
-        omega2
-      );
+      if (!p2 || !p3 || !p4 || !r2 || !r3 || !r4) {
+        ang_vel.push(linkIndex === 0 ? omega2 : 0);
+        ang_acc.push(0);
+        continue;
+      }
 
-      const thetas = [theta2, theta3, theta4];
+      // Current timestep positions for each link
+      const A2 = subJoints[p2.idxA].positions[t];
+      const B2 = subJoints[p2.idxB].positions[t];
+      const theta2 = Math.atan2(B2.y - A2.y, B2.x - A2.x);
+
+      const A3 = subJoints[p3.idxA].positions[t];
+      const B3 = subJoints[p3.idxB].positions[t];
+      const theta3 = Math.atan2(B3.y - A3.y, B3.x - A3.x);
+
+      const A4 = subJoints[p4.idxA].positions[t];
+      const B4 = subJoints[p4.idxB].positions[t];
+      const theta4 = Math.atan2(B4.y - A4.y, B4.x - A4.x);
+
+      // Matrix solution for unknown omegas
+      const { omega3, omega4 } = this.getAngularVelocities(r2, r3, r4, theta2, theta3, theta4, omega2);
+
       const omegas = [omega2, omega3, omega4];
-
-      const thetaForLink = thetas[linkIndex] ?? 0;
-      const omegaForLink = omegas[linkIndex] ?? 0;
-      // console.log("THETAS: " + thetaForLink);
-      ang_pos.push(thetaForLink);
-      ang_vel.push(omegaForLink);
-      ang_acc.push(0);
+      ang_vel.push(omegas[linkIndex] ?? 0); // Push the selected link velocity
+      ang_acc.push(0); // Placeholder for now
     }
-    return {ang: ang_pos, vel: ang_vel, acc: ang_acc};
+
+    return { ang: ang_pos, vel: ang_vel, acc: ang_acc };
   }
 
   // Calculate unknown angular velocities of a 4 bar linkage // ω2k×r2+ω3k×r3−ω4k×r4=0
   getAngularVelocities( r2: number, r3: number, r4: number, theta2: number, theta3: number, theta4: number, omega2: number ) {
-    let ang_vel: number[] = [];
-
     // Build A matrix (2x2) for unknowns
     const A = math.matrix([ [-r3 * Math.sin(theta3), r4 * Math.sin(theta4)], [ r3 * Math.cos(theta3), -r4 * Math.cos(theta4)], ]);
     // Build right-hand side B (2x1)
@@ -424,15 +441,50 @@ export class AnalysisSolveService {
     // get each row (0, 1) in sol matrix
     const omega3 = sol.get([0, 0]) as number;
     const omega4 = sol.get([1, 0]) as number;
-    ang_vel.push(omega3);
-    ang_vel.push(omega4);
-    return ang_vel;
+    return { omega2, omega3, omega4 };
   }
 
-  // Calculate position distance between 2 joints
-  distance(a: Coord, b: Coord) {
-    return Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2);
+  private findJointPair(link: any, subJoints: JointAnalysis[], jointIDs: number[], t: number): { idxA: number; idxB: number } | null {
+    const linkJointIds = Array.from(link.joints.keys())
+      .map(j => Number(j))
+      .sort((a, b) => a - b);
+
+    // Map link joint ids -> indices into subJoints (aligned with jointIDs)
+    const idxs: number[] = [];
+    for (const jid of linkJointIds) {
+      const idx = jointIDs.indexOf(jid);
+      if (idx >= 0) idxs.push(idx);
+    }
+
+    let bestI = -1, bestJ = -1;
+    let bestD2 = -Infinity;
+
+    for (let a = 0; a < idxs.length; a++) {
+      for (let b = a + 1; b < idxs.length; b++) {
+        const i = idxs[a];
+        const j = idxs[b];
+
+        const p = subJoints[i]?.positions?.[t];
+        const q = subJoints[j]?.positions?.[t];
+        if (!p || !q) continue;
+
+        const dx = q.x - p.x;
+        const dy = q.y - p.y;
+        const d2 = dx * dx + dy * dy;
+
+        if (d2 > bestD2) {
+          bestD2 = d2;
+          bestI = i;
+          bestJ = j;
+        }
+      }
+    }
+
+    if (bestI < 0 || bestJ < 0) return null;
+    return { idxA: bestI, idxB: bestJ };
   }
+
+
 
 }
 

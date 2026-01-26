@@ -5,6 +5,7 @@ import {Mechanism} from "src/app/model/mechanism";
 import {LinkInteractor} from "src/app/controllers/link-interactor";
 import {Joint} from "src/app/model/joint";
 import {AnalysisSolveService, JointAnalysis, LinkAnalysis} from "src/app/services/analysis-solver.service";
+import {Coord} from "../../../../model/coord";
 
 // enum contains every kind of graph this panel can open.
 export enum GraphType {
@@ -207,53 +208,111 @@ export class LinkAnalysisPanelComponent {
   }
   public GraphType = GraphType;
 
-  downloadCSV() {
-    console.log("DOWNLOAD CSV====================================")
-    const table = document.querySelector(".table-auto");
-    if (!table) return;
+  // Re-write from original
+  downloadCSV(): void {
+    console.log("DOWNLOAD CSV (multi-link angular data)");
 
-    const headers: string[] = [];
-    const data: string[][] = [];
+    // 1. Make sure kinematics are up to date
+    this.analysisSolverService.updateKinematics();
 
-    const ths = table.querySelectorAll("thead td");
-    ths.forEach((th, colIndex) => {
-      if (colIndex > 0) {
-        headers.push(th.textContent?.trim() || "");
-      }
-    });
+    const mechanism = this.getMechanism();
+    const allLinks = mechanism.getArrayOfLinks();          // all Link objects
+    const allJoints = mechanism.getArrayOfJoints();
+    const jointIds = allJoints.map(j => j.id);
 
-    const rows = table.querySelectorAll("tbody tr");
-    rows.forEach((row) => {
-      const cells = row.querySelectorAll("td");
-      const rowHeader = cells[0].textContent?.trim() || "";
-
-      cells.forEach((cell, index) => {
-        const checkbox = cell.querySelector("input[type='checkbox']") as HTMLInputElement;
-        if (checkbox && checkbox.checked) {
-          data.push([`${headers[index - 1]} ${rowHeader}`]);
-        }
-      });
-    });
-
-    if (data.length === 0) {
-      alert("No selections made");
+    if (!allLinks.length) {
+      alert("No links in mechanism.");
       return;
     }
 
-    const csvContent = ["Time," + data.map(d => d[0]).join(",")].join("\n");
+    // OPTIONAL: if you want to skip a ground link, you can filter here.
+    // Example heuristic: ignore links whose joints are all grounded.
+    // (Assumes your Joint class has `isGrounded`.)
+    const movingLinks = allLinks.filter(link =>
+      !link.getJoints().every(j => (j as any).isGrounded)
+    );
 
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "selected_data.csv";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const linksToExport = movingLinks.length ? movingLinks : allLinks;
+
+    // 2. For each link, get its LinkAnalysis (angle + angularVelocity arrays)
+    const perLinkData = linksToExport.map(link => {
+      const linkIndex = allLinks.findIndex(l => l.id === link.id);
+      const analysis = this.analysisSolverService.getLinkKinematics(
+        jointIds,
+        linkIndex
+      );
+
+      return {
+        link,
+        analysis,                           // LinkAnalysis
+        name: link.name || `Link ${link.id}`
+      };
+    });
+
+    const EPS = 1e-6;
+    const movingPerLinkData = perLinkData.filter(d =>
+      d.analysis.angularVelocity.some(w => Math.abs(w) > EPS)
+    );
+
+    if (!perLinkData.length) {
+      alert("No link kinematics available.");
+      return;
+    }
+
+    // Assume all links share same timeIncrement & number of steps
+    const numSteps = movingPerLinkData[0].analysis.angularVelocity.length;
+    const dt       = movingPerLinkData[0].analysis.timeIncrement;
+
+    if (!numSteps) {
+      alert("No time steps in kinematic solution.");
+      return;
+    }
+
+    // 3. Build header row
+    const header: string[] = ["Current Time"];
+    for (const d of movingPerLinkData) {
+      header.push(`${d.name} angle degree`);
+      header.push(`${d.name} angVel rad/s`);
+    }
+
+    const rows: string[] = [];
+    rows.push(header.join(","));
+
+    // 4. Build data rows: one row per time step
+    for (let i = 0; i < numSteps; i++) {
+      const t = i.toString();      // match your screenshot precision
+      const row: string[] = [t];
+
+      for (const d of perLinkData) {
+        const angRad = d.analysis.angle[i] ?? 0;
+        const omega  = d.analysis.angularVelocity[i] ?? 0;
+
+        const angDeg = (angRad * 180 / Math.PI).toFixed(4);
+        const omegaStr = omega.toFixed(4);
+
+        row.push(angDeg, omegaStr);
+      }
+
+      rows.push(row.join(","));
+    }
+
+    const csvContent = rows.join("\n");
+
+    // 5. Download as CSV
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const linkEl = document.createElement("a");
+    linkEl.href = url;
+    linkEl.download = "link_angular_kinematics.csv";
+    document.body.appendChild(linkEl);
+    linkEl.click();
+    document.body.removeChild(linkEl);
+    URL.revokeObjectURL(url);
   }
+
 
   getCurrentLinkId(): number | null {
     const link = this.getCurrentLink();
     return link ? link.id : null;
   }
-
 }
