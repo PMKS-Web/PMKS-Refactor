@@ -52,26 +52,6 @@
         />
     }
 
-
-    @if(isWelded()){
-      <image xlink:href='../../../assets/icons/weld.svg' class="weld-icon"
-             [attr.x]="getX()-getRadius()*2+12"
-             [attr.y]="getY()-getRadius()*2+12"
-             [attr.height]="getRadius()*2"
-      />
-
-      <!-- OLD WELD, MEANT TO BE NEW TRACER ICON- TODO PUT INTO ADD TRACER FUNCTIONALITY
-        <path
-            d='M -5.5 -5.5 H-16.5 V4.5 H-5.5 V15.5 H4.5 V4.5 H15.5 V-5.5 H4.5 V-16.5 H-5.5 V-5.5 Z'
-            [attr.fill]="getColor()"
-            stroke="#FFCA26"
-            [attr.stroke-width]="getStrokeWidth()"
-            [attr.transform]="getTranslation()"
-        ></path>
-        -->
-
-
-    }
   @if (isRef() && !this.joint.isHidden){
     <!-- Need more elegant way to do this WITHOUT using <image> -->
     <svg width="65" height="65" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
@@ -91,6 +71,26 @@
             [attr.stroke-width]="getStrokeWidth()"
         />
     }
+
+  @if(isWelded()){
+    <image xlink:href='../../../assets/icons/weld.svg' class="weld-icon"
+           [attr.x]="getX()-getRadius()*2+15"
+           [attr.y]="getY()-getRadius()*2+18"
+           [attr.height]="getRadius()*2"
+    />
+
+    <!-- OLD WELD, MEANT TO BE NEW TRACER ICON- TODO PUT INTO ADD TRACER FUNCTIONALITY
+      <path
+          d='M -5.5 -5.5 H-16.5 V4.5 H-5.5 V15.5 H4.5 V4.5 H15.5 V-5.5 H4.5 V-16.5 H-5.5 V-5.5 Z'
+          [attr.fill]="getColor()"
+          stroke="#FFCA26"
+          [attr.stroke-width]="getStrokeWidth()"
+          [attr.transform]="getTranslation()"
+      ></path>
+      -->
+
+
+  }
 
     @if(isHovered() || isSelected() || showIDLabels) {
     <!-- Joint name -->
