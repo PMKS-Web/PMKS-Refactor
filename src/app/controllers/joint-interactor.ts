@@ -8,6 +8,7 @@ import { ContextMenuOption, Interactor } from './interactor';
 import { Action } from '../components/ToolBar/undo-redo-panel/action';
 import { NotificationService } from '../services/notification.service';
 import { UndoRedoService } from '../services/undo-redo.service';
+import {CompoundLinkInteractor} from "./compound-link-interactor";
 
 
 /*
@@ -93,6 +94,17 @@ export class JointInteractor extends Interactor {
       if (this.jointStartCoords) {
         const oldPos = this.jointStartCoords;
         const newPos = this.joint.coords.clone();
+
+        /*let currentCompoundLinkInteractor = this.interactionService.getSelectedObject();
+        if (currentCompoundLinkInteractor instanceof CompoundLinkInteractor) {
+          const compoundPath = currentCompoundLinkInteractor.getPath();
+
+        }*/
+
+        // this.stateService.getMechanism()
+        // const point = svg.createSVGPoint();
+        // pointObj.x = point[0];
+        // pointObj.y = point[1];
 
         if (oldPos.x !== newPos.x || oldPos.y !== newPos.y) {
           this.undoRedoService.recordAction({
@@ -373,6 +385,7 @@ export class JointInteractor extends Interactor {
     // ── after ──
     capture.onClick$.subscribe((mousePos) => {
       const mech = this.stateService.getMechanism();
+      this.joint.isTracer = false;
 
       // make the link (and possibly a new joint)
       const hovered = capture.getHoveringJoint();
