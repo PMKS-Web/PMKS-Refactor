@@ -52,7 +52,7 @@
         />
     }
 
-  @if (isRef() && !this.joint.isHidden){
+  @if (isRef() && !this.joint.isHidden && !this.joint.isTracer){
     <!-- Need more elegant way to do this WITHOUT using <image> -->
     <svg width="65" height="65" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
          [attr.x]="getX()-23"
@@ -60,23 +60,33 @@
     <!-- This centers it where the joints would regularly be, I don't know why -->
       <path d="M7.07 0V14M0 6.79H14M11.62 6.72C11.62 9.27156 9.55156 11.34 7 11.34C4.44844 11.34 2.38 9.27156 2.38 6.72C2.38 4.16844 4.44844 2.1 7 2.1C9.55156 2.1 11.62 4.16844 11.62 6.72Z" stroke="black"/>
     </svg>
+  } @else if (this.joint.isTracer) {
+      <svg:circle
+          [attr.cx]="getX()"
+          [attr.cy]="getY()"
+          [attr.r]="getRadius()"
+          [attr.fill]="getColor()"
+          stroke="#000000"
+          [attr.stroke-width]="3"
+          stroke-dasharray="9.4247 9.4247"
+      />
+  } @else {
+      <svg:circle
+          [attr.cx]="getX()"
+          [attr.cy]="getY()"
+          [attr.r]="getRadius()"
+          [attr.fill]="getColor()"
+          stroke="#FFCA26"
+          [attr.stroke-width]="getStrokeWidth()"
+      />
+
   }
-    @else {
-        <svg:circle
-            [attr.cx]="getX()"
-            [attr.cy]="getY()"
-            [attr.r]="getRadius()"
-            [attr.fill]="getColor()"
-            stroke="#FFCA26"
-            [attr.stroke-width]="getStrokeWidth()"
-        />
-    }
 
   @if(isWelded()){
     <image xlink:href='../../../assets/icons/weld.svg' class="weld-icon"
-           [attr.x]="getX()-getRadius()*2+15"
+           [attr.x]="getX()-getRadius()*2+14"
            [attr.y]="getY()-getRadius()*2+18"
-           [attr.height]="getRadius()*2"
+           [attr.height]="getRadius()*2.1",
     />
 
     <!-- OLD WELD, MEANT TO BE NEW TRACER ICON- TODO PUT INTO ADD TRACER FUNCTIONALITY
