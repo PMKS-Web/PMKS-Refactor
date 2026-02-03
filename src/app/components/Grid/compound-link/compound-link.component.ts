@@ -33,24 +33,23 @@ export class CompoundLinkComponent extends AbstractInteractiveComponent {
   }
 
   override registerInteractor(): Interactor {
-    return new CompoundLinkInteractor(this.compoundLink, this.stateService, this.notificationService);
+    return new CompoundLinkInteractor(this.compoundLink, this.stateService, this.notificationService, this.getCompoundDrawnPath());
   }
 
   getColor():string{
-	return this.colorService.getLinkColorFromID(this.compoundLink.id);
+	  return this.colorService.getLinkColorFromID(this.compoundLink.id);
   }
 	getCompoundDrawnPath(): string{
-	const radius: number = 30;
-  let allUniqueJointCoords: Set<Coord> = new Set();
-  for(let link of this.compoundLink.links.values()){
-    for(let joint of link.joints.values())
-    allUniqueJointCoords.add(joint._coords);
-  }
-  let allCoordsAsArray: Coord[] = Array.from(allUniqueJointCoords,(coord,index) =>{
-    return this.unitConversionService.modelCoordToSVGCoord(coord);
-  });
+    const radius: number = 30;
+    let allUniqueJointCoords: Set<Coord> = new Set();
+    for(let link of this.compoundLink.links.values()){
+      for(let joint of link.joints.values())
+      allUniqueJointCoords.add(joint._coords);
+    }
+    let allCoordsAsArray: Coord[] = Array.from(allUniqueJointCoords,(coord,index) =>{
+      return this.unitConversionService.modelCoordToSVGCoord(coord);
+    });
     return this.svgPathService.calculateCompoundPath(this.compoundLink.links, allCoordsAsArray, radius);
-	//return this.svgPathService.getSingleLinkDrawnPath(allCoordsAsArray, radius);
   }
   getStrokeColor(): string{
     if (this.getInteractor().isSelected) {
@@ -87,4 +86,8 @@ export class CompoundLinkComponent extends AbstractInteractiveComponent {
   getCOMY(): number {
     return this.unitConversionService.modelCoordToSVGCoord(this.compoundLink.centerOfMass).y;
   }
+
+  /*getCompoundID(): number {
+    return this.compoundLink.id;
+  }*/
 }

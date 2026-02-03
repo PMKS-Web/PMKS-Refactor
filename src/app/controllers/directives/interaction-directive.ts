@@ -5,7 +5,7 @@ import { PanZoomService } from 'src/app/services/pan-zoom.service';
 
 /*
 InteractionDirectives are attached to some component that MUST extend AbstractInteractiveComponent.
-They consume raw mouse events and send them to the global Interaction service, which will handle the 
+They consume raw mouse events and send them to the global Interaction service, which will handle the
 events as needed.
 */
 
