@@ -15,6 +15,7 @@ import { Coord } from '../model/coord';
 import { AnimationPositions, PositionSolverService } from './kinematic-solver.service';
 import * as math from 'mathjs';
 import { link } from 'd3-shape';
+import { throwError } from 'rxjs';
 
 /**
  * Each JOINT has the directions of reaction force. The user will define which directions for those forces.
@@ -134,12 +135,22 @@ interface ForceMeta {
     // Force magnitude (never changes)
     magnitude: number;  // Newtons (N)
     
-    // Position of force application point relative to link's COM
-    // Stored in polar coordinates relative to the link's reference frame
-    posInLink: [number, number];  // [distance, angleInRadians]
-    // posInLink[0] = distance from COM to force start point (scalar)
-    // posInLink[1] = angle from COM to force start (radians, in link's original frame)
+    // // Position of force application point relative to link's COM
+    // // Stored in polar coordinates relative to the link's reference frame
+    // posInLink: [number, number];  // [distance, angleInRadians]
+    // // posInLink[0] = distance from COM to force start point (scalar)
+    // // posInLink[1] = angle from COM to force start (radians, in link's original frame)
+
+    // Reference joints for circle intersection
+    // The force start point is at fixed distances from these two joints
+    referenceJoint1Id: number;  // First reference joint
+    referenceJoint2Id: number;  // Second reference joint
+    distanceFromJoint1: number;  // Distance from joint1 to force start
+    distanceFromJoint2: number;  // Distance from joint2 to force start
     
+    // Force start position at t=0 (for choosing correct intersection)
+    startPositionAtT0: Coord;
+
     // Angle of force direction relative to link's orientation
     relativeAngle: number;  // degrees (force angle - link angle at t=0)
     
@@ -167,6 +178,17 @@ interface ForceMeta {
     angleAtTimestep: number;  // Force direction at this timestep (degrees)
 }
 
+/**
+ * This interface will be just for exporting data into Excel
+*/
+export interface ComprehensiveFrameData {
+    time: number;
+    jointPositions: Map<number, Coord>;
+    comPositions: Map<number, Coord>;
+    // forceComponents: Map<number, { fx: number, fy: number }>;
+    forcePositions: Map<number, Coord>;
+    solution: StaticSolution;
+}
 
 @Injectable({
     providedIn: 'root'
@@ -179,6 +201,9 @@ export class StaticsAnalysisService {
     private freeEndJointSet: Set<Joint> = new Set<Joint>(); //list to save all the free-end Joints 
     private gravityConventions: GravityConvention[] = []; // Store gravity direction for each sub-mechanism [submechIndex]
     private pivotPointConventions: Map<number, PivotPointConvention>[] = []; // pivotPointConventions[submechIndex] = Map<rigidBodyId, PivotPointConvention>. Every sub-mechanism will use one Map<..>, if we have 2 sub-mechanism on the screen, we will have 2 element for this array and each Map will be for one sub-mechanism.
+
+    // lastAnalysisResults[submechIndex][frameIndex]
+    private lastAnalysisResults: ComprehensiveFrameData[][] = []; // store the analysis result to print out in Excel sheet
 
     constructor(private positionSolver: PositionSolverService) {}
 
@@ -1126,33 +1151,83 @@ export class StaticsAnalysisService {
     }
 
 
-    // ---------------- ANALYSIS AT DIFFERENT TIMESTEP ------------------
+    // =================== ANALYSIS AT DIFFERENT TIMESTEP =================================
+
+    /**
+    *  JUST FOR TESTING, WILL CONVERT IT TO A FUNCTION TO CALL WITH THE BUTTON FROM THE FRONT-END
+    * Step 1: Find mechanism from state service: const mechanism = this.stateService.getMechanism();
+    * Step 2: Find sub-mechanism: const subMechanisms = mechanism.getSubMechanisms();
+    * Step 3: clear all the data array: this.staticsAnalysis.clearSignConventions();
+    * Step 4: solve all time steps and extract necessary information
+    */
+    public testPrintJointsForcesForAllTimesteps(subMechanisms: Map<Joint, RigidBody[]>[]): void { 
+        const start = performance.now();
+        subMechanisms.forEach((subMechanism, index) => {
+            let isValid = true;
+
+            //only initialize when the we don't have signConvention yet         
+            if (!this.signConventions[index]) {
+                isValid = this.initializeSignConventions(subMechanism, index);
+            }
+
+            if (isValid) {
+                this.printSignConventions(index);
+                const solutions = this.solveAllTimesteps(subMechanism, index);
+                
+                // for (const solution of solutions) {
+                //     console.log(`Torque at motor = ${solution.motorTorque} (Nm)`);
+                //     solution.reactionForces.forEach((recforce, id) => {
+                //     console.log(`   Fx_${id} = ${recforce.Fx} (N) & Fy_${id} = ${recforce.Fy} (N)`);
+                // })
+                // } 
+
+                // We suppose to have 360 solutions corresponding to 360 degrees, however, I just want to print 30 of them out on the console
+                for (let s = 0; s < 30; s++) {
+                    console.log(`At timestep t = ${s}. Torque at motor = ${solutions[s].motorTorque} (Nm)`);
+                }
+
+            } else {
+                console.log(`Skipping Sub-Mechanism ${index} (invalid for static analysis)\n`);
+            }
+        })
+
+        const end = performance.now();
+        console.log(`Elapsed: ${(end - start) / 1000} seconds`);
+    }
 
     public solveAllTimesteps(
-        subMechanisms: Map<Joint, RigidBody[]>[],
+        subMechanism: Map<Joint, RigidBody[]>, // only ONE sub-mechanism
         submechIndex: number
     ) : StaticSolution[] {  
-        // one sub-mechanism
-        const subMechanism = subMechanisms[submechIndex];
-        
         // Get all unique rigid bodies
         const uniqueRigidBodies = this.getUniqueRigidBodies(subMechanism);
 
-        // Each rigid body will have none, one or more than one applied forces (applied forces are created by pull, push,... NOT gravitational force)
-        // We need an array to save the applied forces for each link
-        // We need a map to save each array above according to rigid body (link)'s id
+        // Each rigid body will have none, one or more of applied forces (applied forces are created by pull, push,... NOT gravitational force)
+        // We need an array to save the applied forces for each rigid body (link)
+        // Then, we create a map to save rigidID with corresponding applied forces. 
         const cachedForcesMetaMap = new Map<number, ForceMeta[]>(); 
         uniqueRigidBodies.forEach( rigidBody => {
             const cachedForcesMeta = this.cacheAllForcesMetaForRigidBody(rigidBody);
-            cachedForcesMetaMap.set(rigidBody.id, cachedForcesMeta);
+            if (cachedForcesMeta && cachedForcesMeta.length > 0) {
+                cachedForcesMetaMap.set(rigidBody.id, cachedForcesMeta);
+            }
         });
+
+        // TESTING, DELETE LATER-------------------
+        console.log(`We have total of : ${cachedForcesMetaMap.size} forces`);
+        for (const [key, value] of cachedForcesMetaMap) {
+            console.log('rigid ', key, ' : ', value);
+        }
+        // ----------------------------------------------------------
+
+
 
         // Get input joint for this sub-mechanism
         const inputJoint = this.findInputJoint(subMechanism);
 
         // Get animation frames from position solver (recommend to print it out to see)
         const animationFrames = this.positionSolver.getAnimationFrames();
-        // console.log(animationFrames)
+        console.log("animation frame: ",animationFrames);
 
         // Check animation frames for this sub-mechanism
         if (!animationFrames[submechIndex]) {
@@ -1165,12 +1240,21 @@ export class StaticsAnalysisService {
         const allPositions = animationData.positions;  // 2D array: positions[timestep][jointIndex]
         const jointIDs = animationData.correspondingJoints;  // array of joint IDs
 
-        const rigidBodyCOMAllTimestep: Map<number, Coord>[] = []; // This is Array of Map <rigidID, Coord>, index of Array will equal timestep "t", basically this array will have length of 360 cells equal to the timestep we have. E.g. [Map, Map, Map,...] each Map saves COM of all rigid bodies at that timestep. 
+        const rigidBodyCOMAllTimesteps: Map<number, Coord>[] = []; // This is Array of Map <rigidID, Coord>, index of Array will equal timestep "t", basically this array will have length of 360 cells equal to the timestep we have. E.g. [Map, Map, Map,...] each Map saves COM of all rigid bodies at that timestep. 
 
         const solutions: StaticSolution[] = [];
 
+        // TESTING, DELETE THIS LATER ------------------------------
         console.log(`Analyzing ${allPositions.length} timesteps for submechanism ${submechIndex}`);
         console.log(`Joint IDs order: ${jointIDs}`);
+        console.log('Animation frame: ', animationData);
+        // ----------------------------------------------------------
+
+        // Initialize or Clear the storage for this specific sub-mechanism
+        this.lastAnalysisResults[submechIndex] = [];
+
+        // Track previous forces
+        let previousForcesMap = new Map<number, ForceAtTimestep>();
 
         // Solve for each timestep
         for (let t = 0; t < allPositions.length; t++) {
@@ -1182,28 +1266,114 @@ export class StaticsAnalysisService {
                 positionMap.set(jointIDs[i], positionCoordsAtTimeT[i]);
             }
 
-            this.findAndLoadDataForCOMAtTimestep(uniqueRigidBodies, positionMap, rigidBodyCOMAllTimestep, t); //update data for rigidBodyCOMAllTimestep array
+            this.findAndLoadDataForCOMAtTimestep(uniqueRigidBodies, positionMap, rigidBodyCOMAllTimesteps, t); //update data for rigidBodyCOMAllTimestep array
 
             // After data updated for position of COM for all rigid bodies at this timestep t from function above
             // => extract that data
-            const rigidBodyCOMMap = rigidBodyCOMAllTimestep[t];
+            const rigidBodyCOMMap = rigidBodyCOMAllTimesteps[t];
 
-            const solution = this.solveSubMechanismAtTimestep(
+            // TESTING, DELETE IT LATER -------------
+            if(t < 30) {
+                console.log('COM map is ', rigidBodyCOMMap, 'at timestep t = ', t);
+                console.log('positionMap is ', positionMap, 'at timestep t = ', t);
+            }
+            // --------------------------------------
+
+            const result = this.solveSubMechanismAtTimestep(
                 submechIndex,
                 inputJoint,
                 uniqueRigidBodies,
                 positionMap,
                 rigidBodyCOMMap,
-                cachedForcesMetaMap
+                cachedForcesMetaMap,
+                previousForcesMap,  // Pass previous forces
+                t
             );
-            solutions.push(solution);
+
+            // SAVE DATA FOR EXCEL EXPORT
+            const forcePositionsAtT = new Map<number, Coord>(); //save forces
+            result.forcesMap.forEach((f, id) => {
+                forcePositionsAtT.set(id, new Coord(f.start.x, f.start.y));
+            });
+
+            this.lastAnalysisResults[submechIndex].push({ // save other results
+                time: t,
+                jointPositions: positionMap,
+                comPositions: new Map(rigidBodyCOMMap), 
+                forcePositions: forcePositionsAtT,
+                solution: result.solution
+            });
+
+            solutions.push(result.solution);      
+            previousForcesMap = result.forcesMap; // Update previous forces map for next iteration
         }
     
         return solutions;
 
     } 
 
+    /**
+     * Converts results of a specific sub-mechanism into a CSV and triggers a download.
+     */
+    public exportResultsToCSV(submechIndex: number, fileName: string = 'mechanism_analysis.csv'): void {
+        const dataToExport = this.lastAnalysisResults[submechIndex];
 
+        if (!dataToExport || dataToExport.length === 0) {
+            console.error(`No analysis data available for sub-mechanism ${submechIndex}. Run solveAllTimesteps first.`);
+            return;
+        }
+
+        const rows: string[] = [];
+        const firstFrame = dataToExport[0];
+
+        // Create headers
+        const headers = ['Frame'];
+        
+        firstFrame.jointPositions.forEach((_, id) => {
+            headers.push(`Joint${id}_X`, `Joint${id}_Y`); // add to header array
+        });
+        
+        firstFrame.comPositions.forEach((_, id) => {
+            headers.push(`Link${id}_COM_X`, `Link${id}_COM_Y`); // add to header array
+        });
+
+        firstFrame.forcePositions.forEach((_, id) => {
+            headers.push(`Force${id}_StartX`, `Force${id}_StartY`); // add to header array
+        });
+
+        headers.push('MotorTorque_Nm');
+        firstFrame.solution.reactionForces.forEach((_, id) => {
+            headers.push(`Reaction_Fx_Joint${id}_N`, `Reaction_Fy_Joint${id}_N`); // add to header array
+        });
+
+        rows.push(headers.join(',')); // Turns the header array into a single comma-separated string (CSV header row)
+
+        // Map Data Rows
+        dataToExport.forEach(frame => {
+            const data = [frame.time.toString()];
+
+            frame.jointPositions.forEach(p => data.push(p.x.toFixed(4), p.y.toFixed(4)));
+            frame.comPositions.forEach(p => data.push(p.x.toFixed(4), p.y.toFixed(4)));
+            frame.forcePositions.forEach(p => data.push(p.x.toFixed(4), p.y.toFixed(4)));
+            data.push(frame.solution.motorTorque.toFixed(6));
+            frame.solution.reactionForces.forEach(f => data.push(f.Fx.toFixed(4), f.Fy.toFixed(4)));
+
+            rows.push(data.join(','));
+        });
+
+        // Trigger Download
+        const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    // This helper function is only for load all the COM of all position into global variable map rigidBodyCOMAllTimestep
     private findAndLoadDataForCOMAtTimestep(
         uniqueRigidBodies: RigidBody[], // list of unique rigid bodies in a submechanism
         positionMap: Map<number, Coord>,
@@ -1247,18 +1417,23 @@ export class StaticsAnalysisService {
         inputJoint: Joint | null, // inputJoint is where motor locates
         uniqueRigidBodies: RigidBody[], // list of unique rigid bodies in a submechanism
         positionMap: Map<number, Coord>,
-        rigidBodyCOMMap: Map<number, Coord>, // COM map for all rigid bodies in this submechanism
-        cachedForcesMetaMap: Map<number, ForceMeta[]> 
-    ): StaticSolution {
+        rigidBodyCOMMap: Map<number, Coord>, // COM map for all rigid bodies in this submechanism at this time step
+        cachedForcesMetaMap: Map<number, ForceMeta[]> ,
+        previousForcesMap: Map<number, ForceAtTimestep>,
+        time: number
+    ): { solution: StaticSolution, forcesMap: Map<number, ForceAtTimestep> } {
         // const inputJoint = this.findInputJoint(subMechanism);
         
         // check input
         if (!inputJoint) {
             return {
-                motorTorque: 0,
-                reactionForces: new Map(),
-                isValid: false,
-                errorMessage: 'No input joint found'
+                solution: {
+                    motorTorque: 0,
+                    reactionForces: new Map(),
+                    isValid: false,
+                    errorMessage: 'No input joint found'
+                },
+                forcesMap: new Map()  // Return empty forces map
             };
         }
 
@@ -1273,24 +1448,43 @@ export class StaticsAnalysisService {
         const equations: EquilibriumEquation[] = [];
         const variableList: string[] = [];
 
+        const currentForcesMap = new Map<number, ForceAtTimestep>();
+
         uniqueRigidBodies.forEach((rigidBody) => {
             const COMAtT = rigidBodyCOMMap.get(rigidBody.id); // get COM for a rigid body
+            
+            if (!COMAtT) { // every link must have center of mass
+                throw new Error(`Center of mass is undefined`);
+            }
+
             const cachedForcesMeta = cachedForcesMetaMap.get(rigidBody.id);
-            const bodyEquations = this.buildRigidBodyEquationsAtTimestep(
+            const result = this.buildRigidBodyEquationsAtTimestep(
                 rigidBody,
                 submechIndex,
                 inputJoint,
                 variableList,
                 positionMap,
                 COMAtT,
-                cachedForcesMeta
+                time,
+                cachedForcesMeta,
+                previousForcesMap  
             );
-            equations.push(...bodyEquations); // ALL equation for whole mechanism
+            equations.push(...result.equations); // ALL equation for whole mechanism
+
+            // Collect forces from this rigid body equations function
+            result.forcesAtT.forEach((forceAtT, forceId) => {
+                currentForcesMap.set(forceId, forceAtT);
+            });
         });
+
+        
     
         const solution = this.solveMatrixEquation(equations, variableList);
         
-        return solution;
+        return {
+            solution: solution,
+            forcesMap: currentForcesMap
+        };
     }
 
 
@@ -1376,7 +1570,776 @@ export class StaticsAnalysisService {
         console.log('COM in using Circle-Cirle technique: ', rigidBodyCOMByTimestep);
     }
 
+    // --------------------- FORCE using circles intersection ------------------------------
 
+    /**
+     * Get all forces on a rigid body at a specific timestep
+     * Uses circle intersection for force position calculation
+     * 
+     * @param rigidBody - The rigid body
+     * @param positionMap - Joint positions at this timestep
+     * @param cachedForcesMeta - Pre-cached force metadata
+     * @param previousForcesMap - Map of forces from previous timestep (for continuity)
+     * @returns Map of forceId -> ForceAtTimestep
+     */
+    private getAllForcesAtTimestepForOneRigidBody(
+        rigidBody: RigidBody,
+        positionMap: Map<number, Coord>,
+        cachedForcesMeta?: ForceMeta[],
+        previousForcesMap?: Map<number, ForceAtTimestep>
+    ): Map<number, ForceAtTimestep> {
+        const forcesAtT = new Map<number, ForceAtTimestep>();
+        
+        // Calculate link angle at this timestep (for Local frame forces)
+        const linkAngleAtT = this.calculateLinkAngleAtTimestep(rigidBody, positionMap);
+        
+        if(!cachedForcesMeta) {
+            return forcesAtT;
+        }
+
+        // Compute each force at this timestep
+        for (const forceMeta of cachedForcesMeta) {
+            // Only process forces that belong to this rigid body
+            if (rigidBody.id !== forceMeta.parentLinkId) {
+                continue;
+            }
+            
+            // Get previous force position for continuity (if available)
+            const previousForceStart = previousForcesMap?.get(forceMeta.forceId)?.start;
+                   
+            const forceAtT = this.computeForceAtTimestep(
+                forceMeta,
+                positionMap,
+                linkAngleAtT,
+                previousForceStart
+            );
+
+            if (!forceAtT) {
+                throw new Error('No solution from computeForceAtTimestep() at this time step leading to this error')
+            }
+            
+            // Store in map by forceId
+            forcesAtT.set(forceMeta.forceId, forceAtT);
+        }
+        
+        return forcesAtT;
+    }
+
+    /**
+     * Extract force metadata from a live Force object
+     * Uses circle intersection approach - much simpler!
+     * 
+     * @param force - The live Force object at t=0
+     * @returns ForceMeta with reference joints and distances
+     */
+    private cacheForceMeta(force: Force): ForceMeta {
+        const parentLink = force.parentLink;
+        const joints = parentLink.getJoints();
+
+        if (joints.length < 2) {
+            throw new Error(`cacheForceMeta() show this Link ${parentLink.id} has fewer than 2 joints`);
+        }
+
+        // Use first 2 joints as reference points
+        const joint1 = joints[0];
+        const joint2 = joints[1];
+
+        const forceStart = force.start; // extract the start position at t = 0 of this force
+
+        // calculate distance from force start 
+        // Calculate distances from force start to both reference joints
+        const distanceFromJoint1 = Math.sqrt(
+            Math.pow(forceStart.x - joint1.coords.x, 2) + 
+            Math.pow(forceStart.y - joint1.coords.y, 2)
+        );
+        
+        const distanceFromJoint2 = Math.sqrt(
+            Math.pow(forceStart.x - joint2.coords.x, 2) + 
+            Math.pow(forceStart.y - joint2.coords.y, 2)
+        );
+
+        console.log(`Caching force ${force.id} on link ${parentLink.id}:`);
+        console.log(`  - Start position at t=0: (${forceStart.x}, ${forceStart.y})`);
+        console.log(`  - Reference joint 1: ${joint1.id} at (${joint1.coords.x}, ${joint1.coords.y})`);
+        console.log(`  - Reference joint 2: ${joint2.id} at (${joint2.coords.x}, ${joint2.coords.y})`);
+        console.log(`  - Distance from joint1: ${distanceFromJoint1}`);
+        console.log(`  - Distance from joint2: ${distanceFromJoint2}`);
+        console.log(`  - Frame: ${force.frameOfReference === ForceFrame.Global ? 'Global' : 'Local'}`);
+        console.log(`  - Angle at t=0: ${force.angle}°`);
+        
+        return {
+            forceId: force.id,
+            forceName: force.name,
+            parentLinkId: parentLink.id,
+            magnitude: force.magnitude,
+            
+            // Circle intersection data
+            referenceJoint1Id: joint1.id,
+            referenceJoint2Id: joint2.id,
+            distanceFromJoint1: distanceFromJoint1,
+            distanceFromJoint2: distanceFromJoint2,
+            
+            // Store t=0 position for choosing correct intersection
+            startPositionAtT0: new Coord(forceStart.x, forceStart.y), // because force.start is mutable and we don't want to create any conflict in logic
+            
+            // Angle data
+            frameOfReference: force.frameOfReference,
+            relativeAngle: force.calculateRelativeAngle(),
+            absoluteAngleAtT0: force.angle
+        };
+    }
+
+    /**
+     * Compute force at timestep using circle-circle intersection
+     * 
+     * @param forceMeta - Cached force metadata
+     * @param positionMap - Joint positions at this timestep
+     * @param linkAngleAtT - Link angle at timestep (radians) - only for when user picks "Local" frame forces // it's rare
+     * @param previousForceStart - Force start from previous timestep (for continuity)
+     * @returns Force data at this timestep
+     */
+    private computeForceAtTimestep(
+        forceMeta: ForceMeta,
+        positionMap: Map<number, Coord>,
+        linkAngleAtT: number,  // radians
+        previousForceStart?: Coord  // For choosing correct intersection
+    ): ForceAtTimestep | undefined {
+        // ----------- Calculate start position for the next force -----------------
+        
+        // Get reference joint positions at this timestep
+        const joint1Pos = positionMap.get(forceMeta.referenceJoint1Id);
+        const joint2Pos = positionMap.get(forceMeta.referenceJoint2Id);
+
+        if (!joint1Pos || !joint2Pos) {
+            throw new Error(`Reference joints NOT FOUND in positionMap for force ${forceMeta.forceId}`);
+        }
+
+        // Find intersection of two circles:
+        // Circle 1: centered at joint1, radius = distanceFromJoint1
+        // Circle 2: centered at joint2, radius = distanceFromJoint2
+        const intersections = this.circleCircleIntersection(
+            joint1Pos,
+            forceMeta.distanceFromJoint1,
+            joint2Pos,
+            forceMeta.distanceFromJoint2
+        );
+
+        // if so solution
+        if (intersections.length === 0) {
+            console.warn(`No intersection found for force ${forceMeta.forceId} at this timestep`);
+            return undefined;
+        }    
+
+        let forceStart: Coord;
+
+        if (intersections.length === 1) {
+            // Only one intersection
+            forceStart = intersections[0];
+        } else {
+            // Two intersections - choose the one closer to previousForceStart position
+            const referencePosition = previousForceStart || forceMeta.startPositionAtT0; // fall-back to startPositionAtT0 (happen only at t = 0 where it doesn't have any previous)
+            
+            const dist1 = this.distanceBetweenCoords(referencePosition, intersections[0]);
+            const dist2 = this.distanceBetweenCoords(referencePosition, intersections[1]);
+            
+            forceStart = dist1 <= dist2 ? intersections[0] : intersections[1];
+        }
+
+        // ------------ Calculate Force Angle at This Timestep ---------
+        let forceAngleDegrees: number;
+        
+        if (forceMeta.frameOfReference === ForceFrame.Local) {
+            // Local frame: force rotates with link
+            const linkAngleDegrees = linkAngleAtT * (180 / Math.PI);
+            forceAngleDegrees = linkAngleDegrees + forceMeta.relativeAngle;
+        } else {
+            // Global frame: force maintains absolute direction
+            forceAngleDegrees = forceMeta.absoluteAngleAtT0;
+        }
+        
+        // -------------- Calculate Force Components Fx, Fy-----------
+        
+        const forceAngleRadians = forceAngleDegrees * (Math.PI / 180);
+        const fx = forceMeta.magnitude * Math.cos(forceAngleRadians);
+        const fy = forceMeta.magnitude * Math.sin(forceAngleRadians);
+        
+        return {
+            start: forceStart,
+            fx: fx,
+            fy: fy,
+            magnitude: forceMeta.magnitude,
+            angleAtTimestep: forceAngleDegrees
+        };
+    }
+
+
+    // -------------------- end FORCE using circle intersection
+
+    // --------------------- FORCE using POLAR COORDINATES (ROTATION MATRIX) -------------------------
+    // /**
+    //  * Extract force metadata from a live Force object
+    //  * Call this ONCE at t=0 to cache immutable force properties
+    //  * 
+    //  * @param force - The Force object template at t = 0
+    //  * @returns ForceMeta - general info about this Force that never changed over time
+    //  */
+    // private cacheForceMeta(force: Force): ForceMeta {
+    //     // Get position in link's local coordinate system
+    //     // calculatePositionInLink() returns [distance, angleInRadians]
+    //     const posInLink = force.calculatePositionInLink();
+        
+    //     // Get force angle relative to link orientation (degrees)
+    //     const relativeAngle = force.calculateRelativeAngle();
+        
+    //     // For Global frame forces, we need to store the absolute angle at t=0
+    //     // because it doesn't change as the link rotates
+    //     const absoluteAngleAtT0 = force.angle;  // degrees
+        
+    //     return {
+    //         forceId: force.id,
+    //         forceName: force.name,
+    //         parentLinkId: force.parentLink.id,
+    //         magnitude: force.magnitude,
+    //         posInLink: posInLink,  // [distance, angleRad]
+    //         relativeAngle: relativeAngle,  // degrees
+    //         frameOfReference: force.frameOfReference,
+    //         absoluteAngleAtT0: absoluteAngleAtT0  // degrees
+    //     };
+    // }
+
+    /**
+     * Cache all force metadata for a rigid body
+     * Call only once at t=0 before running timestep analysis
+     * 
+     * @param rigidBody - Link or CompoundLink
+     * @returns Array of ForceMeta for all forces on this rigid body
+     */
+    private cacheAllForcesMetaForRigidBody(rigidBody: RigidBody): ForceMeta[] {
+        const forcesMetaArray: ForceMeta[] = [];
+        
+        if (rigidBody instanceof Link) {
+            rigidBody.forces.forEach(force => {
+                forcesMetaArray.push(this.cacheForceMeta(force));
+            });
+        } else if (rigidBody instanceof CompoundLink) {
+            rigidBody.links.forEach(link => {
+                link.forces.forEach(force => {
+                    forcesMetaArray.push(this.cacheForceMeta(force));
+                });
+            });
+        }
+        
+        return forcesMetaArray;
+    }
+
+
+
+    // /**
+    //  * Compute force state at a specific timestep
+    //  * Pure function - does not mutate any objects
+    //  * 
+    //  * @param forceMeta - Cached force metadata from t=0
+    //  * @param linkCOMAtT - Link's center of mass at timestep t
+    //  * @param linkAngleAtT - Link's orientation angle at timestep t (radians)
+    //  * @returns ForceAtTimestep - Force state at this timestep
+    //  * 
+    //  * EXPLANATION OF LOGIC (I copy this flow from Force.ts):
+    //  * 
+    //  * 1. APPLICATION POINT:
+    //  *    The force is applied at a specific point on the link.
+    //  *    This point is stored in polar coordinates relative to the link's COM:
+    //  *      - distance: how far from COM
+    //  *      - angle: direction from COM (in link's reference frame)
+    //  *    
+    //  *    At timestep t:
+    //  *      - Link has rotated by linkAngleAtT
+    //  *      - Link COM has moved to linkCOMAtT
+    //  *      - Application point rotates with the link
+    //  *    
+    //  *    Calculation:
+    //  *      absoluteAngle = storedAngle + linkAngleAtT
+    //  *      applicationPoint = COM + distance * [cos(absoluteAngle), sin(absoluteAngle)]
+    //  * 
+    //  * 2. FORCE DIRECTION:
+    //  *    Two cases based on frame of reference:
+    //  *    
+    //  *    LOCAL FRAME:
+    //  *      - Force direction rotates with the link
+    //  *      - forceAngle = linkAngle + relativeAngle
+    //  *      - Example: a perpendicular spring force stays perpendicular
+    //  *    
+    //  *    GLOBAL FRAME:
+    //  *      - Force direction stays constant in world coordinates
+    //  *      - forceAngle = absoluteAngleAtT0 (same as at t=0)
+    //  *      - Example: gravity always points down
+    //  * 
+    //  * 3. FORCE COMPONENTS:
+    //  *    Once we have the force angle, compute Fx and Fy:
+    //  *      Fx = magnitude * cos(angle)
+    //  *      Fy = magnitude * sin(angle)
+    //  */
+    // private computeForceAtTimestep(
+    //     forceMeta: ForceMeta,
+    //     linkCOMAtT: Coord,
+    //     linkAngleAtT: number  // radians
+    // ): ForceAtTimestep {
+    //     // ---- STEP 1: Compute Application Point -----
+    //     // The force start point is stored relative to COM in polar coordinates
+    //     // Currently, this code is using rotation matrix + polar coordinate to calculate the next start tip of the force. 
+    //     // In the future, I think we should use circle-circle method. Fortunately, we already circlecircle function circleCircleIntersection() for this technique in this class that we an use in the future.
+    //     const distanceFromCOM = forceMeta.posInLink[0];
+    //     const angleFromCOM_stored = forceMeta.posInLink[1];  // radians, in link's original frame
+
+    //     // At timestep t, the link has rotated by linkAngleAtT (this angle will be easy calculated by coordinates of joints in that link)
+    //     // So the application point has also rotated
+    //     const absoluteAngleToApplicationPoint = angleFromCOM_stored + linkAngleAtT;
+
+    //     // Calculate the absolute position of the application point
+    //     const startX = linkCOMAtT.x + distanceFromCOM * Math.cos(absoluteAngleToApplicationPoint);
+    //     const startY = linkCOMAtT.y + distanceFromCOM * Math.sin(absoluteAngleToApplicationPoint);
+
+    //     const start = new Coord(startX, startY);
+
+    //     // ---- STEP 2: Compute Force Angle at Timestep t ----
+    //     let forceAngleAtT_degrees: number; 
+
+    //     if (forceMeta.frameOfReference === ForceFrame.Local) {
+    //         // LOCAL FRAME: Force rotates with the link
+    //         // The force maintains its angle relative to the link
+    //         // forceAngle = linkAngle + relativeAngle
+            
+    //         const linkAngleDegrees = linkAngleAtT * (180 / Math.PI);
+    //         forceAngleAtT_degrees = linkAngleDegrees + forceMeta.relativeAngle;
+            
+    //     } else {
+    //         // GLOBAL FRAME: Force maintains absolute direction
+    //         // The force angle stays constant in world coordinates (world coordinates is the 2D planar coordinates)
+    //         // It doesn't rotate with the link
+            
+    //         forceAngleAtT_degrees = forceMeta.absoluteAngleAtT0;
+    //     } 
+
+    //     // ---- STEP 3: Compute Force Components ----        
+    //     // Standard force component calculation
+    //     // Fx = F * cos(θ), Fy = F * sin(θ)
+    //     const fx = forceMeta.magnitude * Math.cos(forceAngleAtT_degrees * (Math.PI / 180));
+    //     const fy = forceMeta.magnitude * Math.sin(forceAngleAtT_degrees * (Math.PI / 180));
+
+    //     return {
+    //         start: start,
+    //         fx: fx,
+    //         fy: fy,
+    //         magnitude: forceMeta.magnitude,
+    //         angleAtTimestep: forceAngleAtT_degrees // force angle
+    //     };
+    // }
+
+    // /**
+    //  * Get all forces on a rigid body at a specific timestep
+    //  * 
+    //  * @param rigidBody - The rigid body (Link or CompoundLink)
+    //  * @param positionMap - Joint positions at timestep t
+    //  * @param cachedForcesMeta - Pre-cached force metadata from t=0
+    //  * 
+    //  * @returns Array of ForceAtTimestep for all forces on this rigid body
+    //  */
+    //  private getAllForcesAtTimestepForOneRigidBody(
+    //     rigidBody: RigidBody,
+    //     positionMap: Map<number, Coord>,
+    //     COMAtT: Coord, // Center of Mass coordinates
+    //     cachedForcesMeta: ForceMeta[],  // pass in cached metadata
+    //     time: number
+    // ): ForceAtTimestep[] {
+    //     const forcesAtT: ForceAtTimestep[] = [];
+
+    //     // Calculate link's state at this timestep t
+    //     const linkAngleAtT = this.calculateLinkAngleAtTimestep(rigidBody, positionMap);
+
+    //     // Compute each force at this timestep using cached metadata
+    //     for (const forceMeta of cachedForcesMeta) {
+    //         // Only process forces that belong to this rigid body
+    //         if (rigidBody.id === forceMeta.parentLinkId) {
+    //             const forceAtT = this.computeForceAtTimestep(forceMeta, COMAtT, linkAngleAtT);
+    //             forcesAtT.push(forceAtT);
+    //         }
+    //     }
+
+    //     return forcesAtT;
+    // }
+
+
+    /**
+     * Helper function
+     * Calculate link's angle at a specific timestep
+     * Uses first two joints to determine link orientation, even there are more than 2 joints in a link, we still use the first two joints.
+     * @param rigidBody - The rigid body
+     * @param positionMap - Joint positions at this timestep
+     * @returns Link angle in radians 
+     */
+    private calculateLinkAngleAtTimestep(
+        rigidBody: RigidBody,
+        positionMap: Map<number, Coord>
+    ): number {
+        const joints = rigidBody.getJoints();
+    
+        if (joints.length < 2) {
+            console.error('Cannot determine angle with less than 2 joints')
+            return 0;  
+        }
+
+        // Use first two joints to define link orientation
+        const joint0 = joints[0];
+        const joint1 = joints[1];
+        
+        const pos0 = positionMap.get(joint0.id) ?? joint0.coords;
+        const pos1 = positionMap.get(joint1.id) ?? joint1.coords;
+        
+        const dx = pos1.x - pos0.x;
+        const dy = pos1.y - pos0.y;
+        
+        return Math.atan2(dy, dx);  // radians
+    }
+
+    // ------------------ END FORCE related functions ----------------------
+
+    private buildRigidBodyEquationsAtTimestep(
+        rigidBody: RigidBody,
+        submechIndex: number,
+        inputJoint: Joint,
+        variableList: string[],
+        positionMap: Map<number, Coord>,
+        COMAtT: Coord, // center of mass at timestep 
+        time: number,
+        cachedForcesMeta?: ForceMeta[], // some link doen't have any force
+        previousForcesMap?: Map<number, ForceAtTimestep>
+    ): { equations: EquilibriumEquation[], forcesAtT: Map<number, ForceAtTimestep> } {
+        const equations: EquilibriumEquation[] = [];
+        const joints = rigidBody.getJoints(); // we call this function just to extract the id of each Joint
+
+        // Calculate CoM at this timestep using positions from positionMap
+        const mass = rigidBody.mass;
+        
+        // Get pivot point for this rigid body
+        const pivotConvention = this.pivotPointConventions[submechIndex].get(rigidBody.id);
+        if (!pivotConvention) {
+            throw new Error(`Pivot convention not found for rigid body ${rigidBody.id}`);
+        }
+
+        // Get pivot coordinate at this timestep
+        const pivotPointCoord = this.getPivotCoordinateAtTimestep(
+            rigidBody,
+            pivotConvention,
+            positionMap,
+            COMAtT // center of mass at timestep
+        );
+
+        // Extract gravitational force components
+        const gravityForce = this.getGravityForceComponents(submechIndex, mass);
+        const Fg_x = gravityForce ? gravityForce.Fx : 0;
+        const Fg_y = gravityForce ? gravityForce.Fy : 0;
+
+        // Equation 1: ΣFx = 0
+        const fxEquation: EquilibriumEquation = {
+            rigidId: rigidBody.id,
+            coefficients: new Map(),
+            constant: -Fg_x // Move gravity to RHS: ΣFx + Fg_x = 0 => ΣFx = -Fg_x
+        };
+
+        // Equation 2: ΣFy = 0
+        const fyEquation: EquilibriumEquation = {
+            rigidId: rigidBody.id,
+            coefficients: new Map(),
+            constant: -Fg_y // Move gravity to RHS: ΣFx + Fg_x = 0 => ΣFx = -Fg_x
+        };
+
+        // Equation 3: ΣM = 0
+        const momentEquation: EquilibriumEquation = {
+            rigidId: rigidBody.id,
+            coefficients: new Map(),
+            constant: 0
+        };
+
+        // ---- GET SIGN CONVENTION ------ 
+        const rbConvention = this.signConventions[submechIndex].get(rigidBody.id);
+        if (!rbConvention) {
+            throw new Error(`Sign convention not found for rigid body ${rigidBody.id}`);
+        }
+
+        // ---- ADD REACTION FORCE AT EACH JOINT IN THIS LINK ----
+        // Process each joint
+        joints.forEach((joint) => {
+            // Skip free-end joints (they have no reaction forces). Free-end joints are joints that not connected to any other joint.
+            if (this.isFreeEndJoint(joint)) {
+                return;
+            }
+
+            // Create some unique variable names for reaction forces at this joint
+            const rxVar = `Fx_${joint.id}`; // "Fx_0" for joint 0
+            const ryVar = `Fy_${joint.id}`;
+
+            const jointConv = rbConvention.jointConventions.get(joint.id);
+            if (!jointConv) {
+                throw new Error(`Sign convention not found for joint ${joint.id}`);
+            }
+
+            const xSign = jointConv.xDirection;
+            const ySign = jointConv.yDirection;
+
+            if (!variableList.includes(rxVar)) {
+                variableList.push(rxVar);
+            }
+            if (!variableList.includes(ryVar)) {
+                variableList.push(ryVar);
+            }
+
+            // Add to force equations with sign conventions
+            fxEquation.coefficients.set(rxVar, xSign); // ΣFx: add coefficient for Fx_joint
+            fyEquation.coefficients.set(ryVar, ySign); // ΣFy: add coefficient for Fy_joint
+
+            // Use position from positionMap to find joint coordinates (instead of joint.coords)
+            const jointPosition = positionMap.get(joint.id) ?? joint.coords;
+            const r = jointPosition.subtract(pivotPointCoord);
+            const r_magnitude = Math.sqrt(r.x * r.x + r.y * r.y);
+
+            // Check if this joint is the pivot point, 
+            // Because if pivot joint substract its self, it should be 0, however, decimals from calculation could make it not 0. That's why we need this sanity check
+            // if r_magnitude = 0, we don't have to add it into the coefficients of the function. 
+
+            // Moment from force at this joint: M = r x F
+            // In 2D: M = rx * Fy - ry * Fx (positive counter-clockwise)
+            // So:
+            //   - Coefficient of Fx is: sign * (-ry)
+            //   - Coefficient of Fy is: sign * (rx)
+            
+            if (r_magnitude > 1e-6) { // less than 1e-6 will be considered as 0 because of error in decimal calculation
+                momentEquation.coefficients.set(rxVar, xSign * (-r.y));
+                momentEquation.coefficients.set(ryVar, ySign * r.x);
+            }
+        });
+
+        // --- ADD APPLIED FORCE ---
+
+        // Get forces transformed to this timestep using cached metadata
+        const forcesAtT = this.getAllForcesAtTimestepForOneRigidBody(rigidBody, positionMap, cachedForcesMeta, previousForcesMap);
+
+        console.log('At timestep: ', time,' with forces', forcesAtT);
+
+        // Add "applied forces" at this timestep. Applied forces are force that being applied by hand or something on the link (push, pull...).
+        if (forcesAtT.size > 0) { // if we have any applied force on the link
+            forcesAtT.forEach( forceAtT => {
+                const fx_applied = forceAtT.fx;
+                const fy_applied = forceAtT.fy;
+
+                // Add to force equations (move to RHS, hence subtract)
+                // ΣFx + fx_applied = 0 => ΣFx = -fx_applied
+                fxEquation.constant -= fx_applied;
+                fyEquation.constant -= fy_applied;
+                
+                // Calculate moment contribution from this applied force
+                // M = r x F, where r is from pivot to force application point
+                const r = forceAtT.start.subtract(pivotPointCoord);
+                const r_magnitude = Math.sqrt(r.x * r.x + r.y * r.y);
+
+                // Only add moment if force is not applied at the pivot point
+                // The logic explained similarly like a similar chunk of code above
+                if (r_magnitude > 1e-6) {
+                    // Moment = rx * Fy - ry * Fx (2D cross product)
+                    const moment = r.x * fy_applied - r.y * fx_applied;
+                    momentEquation.constant -= moment;
+                }
+            });
+        }
+
+        // --- ADD GRAVITY ---
+        // Check if gravity affects calculations (not Z-direction)
+        if (this.doesGravityAffectCalculations(submechIndex)) {
+            const gravityForce = this.getGravityForceComponents(submechIndex, mass);
+            if (gravityForce) {
+                const Fg_x = gravityForce.Fx;
+                const Fg_y = gravityForce.Fy;
+
+                // IMPORTANT: Gravity acts at CENTER OF MASS
+                // So we need r from PIVOT POINT to COM at timestep t
+                const r_gravity = COMAtT.subtract(pivotPointCoord);
+                const r_magnitude = Math.sqrt(r_gravity.x * r_gravity.x + r_gravity.y * r_gravity.y);
+
+                // If pivot is at COM, gravity produces no moment
+                // Moment from gravity = r x Fg
+                if (r_magnitude > 1e-6) {
+                    const moment_gravity = r_gravity.x * Fg_y - r_gravity.y * Fg_x;
+                    momentEquation.constant -= moment_gravity;
+                }
+            }
+        }
+
+        // ---- ADD MOTOR TORQUE ----
+        // Add motor torque if applicable
+        if (joints.includes(inputJoint)) {
+            const torqueVar = `T_motor`;
+
+            if (!variableList.includes(torqueVar)) {
+                variableList.push(torqueVar);
+            }
+
+            const torqueConv = this.torqueConventions[submechIndex];
+            const torqueSign = torqueConv ? torqueConv.torqueDirection : 1; // Default +1 (Counter Clock Wise)
+
+            momentEquation.coefficients.set(torqueVar, torqueSign);
+        }
+
+        equations.push(fxEquation, fyEquation, momentEquation);
+        
+        return {equations, forcesAtT};
+    }
+
+    /**
+     * Get pivot coordinate at a specific timestep
+     * 
+     * @param rigidBody - The rigid body
+     * @param pivotConvention - Pivot point convention (COM or Joint)
+     * @param positionMap - Joint positions at this timestep
+     * @param CoM - Center of mass at this timestep (already calculated)
+     * @returns Coordinate of the pivot point at this timestep
+     */
+    private getPivotCoordinateAtTimestep(
+        rigidBody: RigidBody,
+        pivotConvention: PivotPointConvention,
+        positionMap: Map<number, Coord>,
+        COMAtT: Coord
+    ): Coord {
+        if (pivotConvention.pivotType === PivotPoint.CenterOfMass) {
+
+            // Pivot is at center of mass
+            return COMAtT;
+        } else {
+            // Pivot is at a specific joint
+            const joints = rigidBody.getJoints(); // get list of joints from this rigid body
+            const pivotJoint = joints.find(j => j.id === pivotConvention.jointId); // find the joint that matches the pivot user chose
+
+            if (!pivotJoint) {
+                throw new Error(`Pivot joint ${pivotConvention.jointId} not found in rigid body`);
+            }
+
+            // Get the joint's position at this timestep from positionMap
+            const pivotJointFound = positionMap.get(pivotJoint.id);
+
+            if(!pivotJointFound) {
+                throw new Error(`Pivot joint ${pivotConvention.jointId} not found in the positionMap.`);
+            }
+
+            return pivotJointFound;
+        }
+    }
+
+
+    /**
+     * Convert equilibrium equations to matrix form [A]{x} = {b} and solve using mathjs
+     * @param equations - array of EquilibriumEquation
+     * @param variableList - ordered list of variable names
+     * @param inputJoint - the input joint (for extracting motor torque)
+     * @param submechIndex - sub-mechanism index
+     * @returns StaticSolution
+     */
+    private solveMatrixEquation(
+        equations: EquilibriumEquation[], // all equations we built for a sub-mechanism
+        variableList: string[] // all variables need to be found in all equations we built
+    ): StaticSolution {
+
+        const n = equations.length; // row for matrix
+        const m = variableList.length; //column for matrix
+ 
+        // "m" unknowns will need "n" equations
+        if (n !== m) {
+            return {
+                motorTorque: 0,
+                reactionForces: new Map(),
+                isValid: false,
+                errorMessage: `System is ${n > m ? 'over' : 'under'}-determined (${n} equations, ${m} unknowns)`
+            };
+        }
+
+        // build coefficient matrix A and constant vector B
+        const A: number[][] = [];
+        const b: number[] = [];
+
+        equations.forEach(eq => { 
+            const row: number[] = [];
+            variableList.forEach(varName => {
+                const coeff = eq.coefficients.get(varName)
+                row.push(coeff || 0);
+            })
+            A.push(row);
+            b.push(eq.constant);
+        })
+
+        // // Print matrix for debugging
+        // console.log('Coefficient Matrix [A]:');
+        // A.forEach((row, i) => {
+        //     console.log(`  [${row.map(v => v.toFixed(3).padStart(8)).join(', ')}]`);
+        // });
+        // console.log('Constant Vector {B}:');
+        // console.log(`  [${b.map(v => v.toFixed(3).padStart(8)).join(', ')}]`);
+
+        // Make sure no internal errors happen when using math.js
+        try {
+            // solving matrix using A*x = B
+            // we create matrix in order of variableList for each variable before, so the returned solution will follow this order too.
+            const solution = math.lusolve(A, b) as number[][]; //it will return an array of arrays, make sure to override the "any" type with "number"[][] becuase we know it should appear that way, so we can use "map" syntax for next line
+            const solutionVector = solution.map(row => row[0]); //flatten into one array
+
+            // // Test result
+            // console.log('\nSolution Vector {x}:');
+            // variableList.forEach((varName, i) => {
+            //     console.log(`  ${varName} = ${solutionVector[i].toFixed(6)}`);
+            // });
+
+            // Extract motor torque:
+            // motor torque = 0 if we cannot find in result array
+            const torqueIndex = variableList.indexOf('T_motor');
+            const motorTorque = torqueIndex >= 0 ? solutionVector[torqueIndex] : 0; 
+            
+            // Extract reaction forces
+            const reactionForces = new Map<number, ReactionForce>();
+            const jointIds = new Set<number>();
+
+            // Collect all joint IDs from variable names
+            variableList.forEach(varName => {
+                if (varName.startsWith('Fx_') || varName.startsWith('Fy_')) {
+                    const jointId = parseInt(varName.split('_')[1]);
+                    jointIds.add(jointId);
+                }
+            });
+
+            // Build reaction force map
+            jointIds.forEach(jointId => {
+                const rxVar = `Fx_${jointId}`;
+                const ryVar = `Fy_${jointId}`;
+                const rxIndex = variableList.indexOf(rxVar);
+                const ryIndex = variableList.indexOf(ryVar);
+
+                reactionForces.set(jointId, { // reaction forces result at each joint
+                    Fx: rxIndex >= 0 ? solutionVector[rxIndex] : 0,
+                    Fy: ryIndex >= 0 ? solutionVector[ryIndex] : 0
+                });
+            });
+
+            return {
+                motorTorque,
+                reactionForces,
+                isValid: true
+            };
+        } catch (error: any) {
+            return {
+                motorTorque: 0,
+                reactionForces: new Map(),
+                isValid: false,
+                errorMessage: `Matrix solution failed: ${error.message}`
+            };
+        }
+        
+    }
+
+    // ----------------------------- CENTER OF MASS ---------------------------------------
     // SOLUTION 1: Using matrix rotation
     // calculate center of mass at time-step.
     private getCenterOfMassAtTimestepSol1(
@@ -1485,7 +2448,7 @@ export class StaticsAnalysisService {
         return new Coord(0,0)
     }
 
-    // SOLUTION 2: Using circle-circle technique --------------
+    // SOLUTION 2: Using circles-intersection technique --------------
     private getCenterOfMassAtTimestepSol2(
         rigidBody: RigidBody,
         positionMap: Map<number, Coord>,
@@ -1631,559 +2594,5 @@ export class StaticsAnalysisService {
         return [p1, p2];
     }   
 
-    // Force related functions -------------------------
-    /**
-     * Extract force metadata from a live Force object
-     * Call this ONCE at t=0 to cache immutable force properties
-     * 
-     * @param force - The Force object template at t = 0
-     * @returns ForceMeta - general info about this Force that never changed over time
-     */
-    private cacheForceMeta(force: Force): ForceMeta {
-        // Get position in link's local coordinate system
-        // calculatePositionInLink() returns [distance, angleInRadians]
-        const posInLink = force.calculatePositionInLink();
-        
-        // Get force angle relative to link orientation (degrees)
-        const relativeAngle = force.calculateRelativeAngle();
-        
-        // For Global frame forces, we need to store the absolute angle at t=0
-        // because it doesn't change as the link rotates
-        const absoluteAngleAtT0 = force.angle;  // degrees
-        
-        return {
-            forceId: force.id,
-            forceName: force.name,
-            parentLinkId: force.parentLink.id,
-            magnitude: force.magnitude,
-            posInLink: posInLink,  // [distance, angleRad]
-            relativeAngle: relativeAngle,  // degrees
-            frameOfReference: force.frameOfReference,
-            absoluteAngleAtT0: absoluteAngleAtT0  // degrees
-        };
-    }
-
-    /**
-     * Cache all force metadata for a rigid body
-     * Call only once at t=0 before running timestep analysis
-     * 
-     * @param rigidBody - Link or CompoundLink
-     * @returns Array of ForceMeta for all forces on this rigid body
-     */
-    private cacheAllForcesMetaForRigidBody(rigidBody: RigidBody): ForceMeta[] {
-        const forcesMetaArray: ForceMeta[] = [];
-        
-        if (rigidBody instanceof Link) {
-            rigidBody.forces.forEach(force => {
-                forcesMetaArray.push(this.cacheForceMeta(force));
-            });
-        } else if (rigidBody instanceof CompoundLink) {
-            rigidBody.links.forEach(link => {
-                link.forces.forEach(force => {
-                    forcesMetaArray.push(this.cacheForceMeta(force));
-                });
-            });
-        }
-        
-        return forcesMetaArray;
-    }
-
-    /**
-     * Compute force state at a specific timestep
-     * Pure function - does not mutate any objects
-     * 
-     * @param forceMeta - Cached force metadata from t=0
-     * @param linkCOMAtT - Link's center of mass at timestep t
-     * @param linkAngleAtT - Link's orientation angle at timestep t (radians)
-     * @returns ForceAtTimestep - Force state at this timestep
-     * 
-     * EXPLANATION OF LOGIC (I copy this flow from Force.ts):
-     * 
-     * 1. APPLICATION POINT:
-     *    The force is applied at a specific point on the link.
-     *    This point is stored in polar coordinates relative to the link's COM:
-     *      - distance: how far from COM
-     *      - angle: direction from COM (in link's reference frame)
-     *    
-     *    At timestep t:
-     *      - Link has rotated by linkAngleAtT
-     *      - Link COM has moved to linkCOMAtT
-     *      - Application point rotates with the link
-     *    
-     *    Calculation:
-     *      absoluteAngle = storedAngle + linkAngleAtT
-     *      applicationPoint = COM + distance * [cos(absoluteAngle), sin(absoluteAngle)]
-     * 
-     * 2. FORCE DIRECTION:
-     *    Two cases based on frame of reference:
-     *    
-     *    LOCAL FRAME:
-     *      - Force direction rotates with the link
-     *      - forceAngle = linkAngle + relativeAngle
-     *      - Example: a perpendicular spring force stays perpendicular
-     *    
-     *    GLOBAL FRAME:
-     *      - Force direction stays constant in world coordinates
-     *      - forceAngle = absoluteAngleAtT0 (same as at t=0)
-     *      - Example: gravity always points down
-     * 
-     * 3. FORCE COMPONENTS:
-     *    Once we have the force angle, compute Fx and Fy:
-     *      Fx = magnitude * cos(angle)
-     *      Fy = magnitude * sin(angle)
-     */
-    private computeForceAtTimestep(
-        forceMeta: ForceMeta,
-        linkCOMAtT: Coord,
-        linkAngleAtT: number  // radians
-    ): ForceAtTimestep {
-        // ---- STEP 1: Compute Application Point -----
-        // The force start point is stored relative to COM in polar coordinates
-        // Currently, this code is using rotation matrix + polar coordinate to calculate the next start tip of the force. 
-        // In the future, I think we should use circle-circle method. Fortunately, we already circlecircle function circleCircleIntersection() for this technique in this class that we an use in the future.
-        const distanceFromCOM = forceMeta.posInLink[0];
-        const angleFromCOM_stored = forceMeta.posInLink[1];  // radians, in link's original frame
-
-        // At timestep t, the link has rotated by linkAngleAtT (this angle will be easy calculated by coordinates of joints in that link)
-        // So the application point has also rotated
-        const absoluteAngleToApplicationPoint = angleFromCOM_stored + linkAngleAtT;
-
-        // Calculate the absolute position of the application point
-        const startX = linkCOMAtT.x + distanceFromCOM * Math.cos(absoluteAngleToApplicationPoint);
-        const startY = linkCOMAtT.y + distanceFromCOM * Math.sin(absoluteAngleToApplicationPoint);
-
-        const start = new Coord(startX, startY);
-
-        // ---- STEP 2: Compute Force Angle at Timestep t ----
-        let forceAngleAtT_degrees: number; 
-
-        if (forceMeta.frameOfReference === ForceFrame.Local) {
-            // LOCAL FRAME: Force rotates with the link
-            // The force maintains its angle relative to the link
-            // forceAngle = linkAngle + relativeAngle
-            
-            const linkAngleDegrees = linkAngleAtT * (180 / Math.PI);
-            forceAngleAtT_degrees = linkAngleDegrees + forceMeta.relativeAngle;
-            
-        } else {
-            // GLOBAL FRAME: Force maintains absolute direction
-            // The force angle stays constant in world coordinates (world coordinates is the 2D planar coordinates)
-            // It doesn't rotate with the link
-            
-            forceAngleAtT_degrees = forceMeta.absoluteAngleAtT0;
-        } 
-
-        // ---- STEP 3: Compute Force Components ----        
-        // Standard force component calculation
-        // Fx = F * cos(θ), Fy = F * sin(θ)
-        const fx = forceMeta.magnitude * Math.cos(forceAngleAtT_degrees * (Math.PI / 180));
-        const fy = forceMeta.magnitude * Math.sin(forceAngleAtT_degrees * (Math.PI / 180));
-
-        return {
-            start: start,
-            fx: fx,
-            fy: fy,
-            magnitude: forceMeta.magnitude,
-            angleAtTimestep: forceAngleAtT_degrees // force angle
-        };
-    }
-
-    /**
-     * Get all forces on a rigid body at a specific timestep
-     * 
-     * @param rigidBody - The rigid body (Link or CompoundLink)
-     * @param positionMap - Joint positions at timestep t
-     * @param cachedForcesMeta - Pre-cached force metadata from t=0
-     * 
-     * @returns Array of ForceAtTimestep for all forces on this rigid body
-     */
-     private getAllForcesAtTimestepForOneRigidBody(
-        rigidBody: RigidBody,
-        positionMap: Map<number, Coord>,
-        COMAtT: Coord, // Center of Mass coordinates
-        cachedForcesMeta: ForceMeta[]  // pass in cached metadata
-    ): ForceAtTimestep[] {
-        const forcesAtT: ForceAtTimestep[] = [];
-
-        // Calculate link's state at this timestep t
-        const linkAngleAtT = this.calculateLinkAngleAtTimestep(rigidBody, positionMap);
-
-        // Compute each force at this timestep using cached metadata
-        for (const forceMeta of cachedForcesMeta) {
-            // Only process forces that belong to this rigid body
-            if (rigidBody.id === forceMeta.parentLinkId) {
-                const forceAtT = this.computeForceAtTimestep(forceMeta, COMAtT, linkAngleAtT);
-                forcesAtT.push(forceAtT);
-            }
-        }
-
-        return forcesAtT;
-    }
-
-
-    /**
-     * Helper function
-     * Calculate link's angle at a specific timestep
-     * Uses first two joints to determine link orientation, even there are more than 2 joints in a link, we still use the first two joints.
-     * @param rigidBody - The rigid body
-     * @param positionMap - Joint positions at this timestep
-     * @returns Link angle in radians 
-     */
-    private calculateLinkAngleAtTimestep(
-        rigidBody: RigidBody,
-        positionMap: Map<number, Coord>
-    ): number {
-        const joints = rigidBody.getJoints();
-    
-        if (joints.length < 2) {
-            console.error('Cannot determine angle with less than 2 joints')
-            return 0;  
-        }
-
-        // Use first two joints to define link orientation
-        const joint0 = joints[0];
-        const joint1 = joints[1];
-        
-        const pos0 = positionMap.get(joint0.id) ?? joint0.coords;
-        const pos1 = positionMap.get(joint1.id) ?? joint1.coords;
-        
-        const dx = pos1.x - pos0.x;
-        const dy = pos1.y - pos0.y;
-        
-        return Math.atan2(dy, dx);  // radians
-    }
-
-
-    private buildRigidBodyEquationsAtTimestep(
-        rigidBody: RigidBody,
-        submechIndex: number,
-        inputJoint: Joint,
-        variableList: string[],
-        positionMap: Map<number, Coord>,
-        COMAtT: Coord | undefined, // center of mass at timestep 
-        cachedForcesMeta: ForceMeta[] | undefined
-    ): EquilibriumEquation[] {
-        const equations: EquilibriumEquation[] = [];
-        const joints = rigidBody.getJoints(); // we call this function just to extract the id of each Joint
-
-        // Calculate CoM at this timestep using positions from positionMap
-        const mass = rigidBody.mass;
-
-        if (!COMAtT) {
-            throw new Error(`Center of mass is undefined`);
-        }
-
-        if (!cachedForcesMeta) {
-            throw new Error(`Need meta data for all forces in this sub-mechanism`);
-        }
-
-        // Get forces transformed to this timestep using cached metadata
-        const forcesAtT = this.getAllForcesAtTimestepForOneRigidBody(rigidBody, positionMap, COMAtT, cachedForcesMeta);
-        
-        // Get pivot point for this rigid body
-        const pivotConvention = this.pivotPointConventions[submechIndex].get(rigidBody.id);
-        if (!pivotConvention) {
-            throw new Error(`Pivot convention not found for rigid body ${rigidBody.id}`);
-        }
-
-        // Get pivot coordinate at this timestep
-        const pivotPointCoord = this.getPivotCoordinateAtTimestep(
-            rigidBody,
-            pivotConvention,
-            positionMap,
-            COMAtT // center of mass at timestep
-        );
-
-        // Extract gravitational force components
-        const gravityForce = this.getGravityForceComponents(submechIndex, mass);
-        const Fg_x = gravityForce ? gravityForce.Fx : 0;
-        const Fg_y = gravityForce ? gravityForce.Fy : 0;
-
-        // Equation 1: ΣFx = 0
-        const fxEquation: EquilibriumEquation = {
-            rigidId: rigidBody.id,
-            coefficients: new Map(),
-            constant: -Fg_x // Move gravity to RHS: ΣFx + Fg_x = 0 => ΣFx = -Fg_x
-        };
-
-        // Equation 2: ΣFy = 0
-        const fyEquation: EquilibriumEquation = {
-            rigidId: rigidBody.id,
-            coefficients: new Map(),
-            constant: -Fg_y // Move gravity to RHS: ΣFx + Fg_x = 0 => ΣFx = -Fg_x
-        };
-
-        // Equation 3: ΣM = 0
-        const momentEquation: EquilibriumEquation = {
-            rigidId: rigidBody.id,
-            coefficients: new Map(),
-            constant: 0
-        };
-
-        // ---- GET SIGN CONVENTION ------ 
-        const rbConvention = this.signConventions[submechIndex].get(rigidBody.id);
-        if (!rbConvention) {
-            throw new Error(`Sign convention not found for rigid body ${rigidBody.id}`);
-        }
-
-        // ---- ADD REACTION FORCE AT EACH JOINT IN THIS LINK ----
-        // Process each joint
-        joints.forEach((joint) => {
-            // Skip free-end joints (they have no reaction forces). Free-end joints are joints that not connected to any other joint.
-            if (this.isFreeEndJoint(joint)) {
-                return;
-            }
-
-            // Create some unique variable names for reaction forces at this joint
-            const rxVar = `Fx_${joint.id}`; // "Fx_0" for joint 0
-            const ryVar = `Fy_${joint.id}`;
-
-            const jointConv = rbConvention.jointConventions.get(joint.id);
-            if (!jointConv) {
-                throw new Error(`Sign convention not found for joint ${joint.id}`);
-            }
-
-            const xSign = jointConv.xDirection;
-            const ySign = jointConv.yDirection;
-
-            if (!variableList.includes(rxVar)) {
-                variableList.push(rxVar);
-            }
-            if (!variableList.includes(ryVar)) {
-                variableList.push(ryVar);
-            }
-
-            // Add to force equations with sign conventions
-            fxEquation.coefficients.set(rxVar, xSign); // ΣFx: add coefficient for Fx_joint
-            fyEquation.coefficients.set(ryVar, ySign); // ΣFy: add coefficient for Fy_joint
-
-            // Use position from positionMap to find joint coordinates (instead of joint.coords)
-            const jointPosition = positionMap.get(joint.id) ?? joint.coords;
-            const r = jointPosition.subtract(pivotPointCoord);
-            const r_magnitude = Math.sqrt(r.x * r.x + r.y * r.y);
-
-            // Check if this joint is the pivot point, 
-            // Because if pivot joint substract its self, it should be 0, however, decimals from calculation could make it not 0. That's why we need this sanity check
-            // if r_magnitude = 0, we don't have to add it into the coefficients of the function. 
-
-            // Moment from force at this joint: M = r x F
-            // In 2D: M = rx * Fy - ry * Fx (positive counter-clockwise)
-            // So:
-            //   - Coefficient of Fx is: sign * (-ry)
-            //   - Coefficient of Fy is: sign * (rx)
-            
-            if (r_magnitude > 1e-6) { // less than 1e-6 will be considered as 0 because of error in decimal calculation
-                momentEquation.coefficients.set(rxVar, xSign * (-r.y));
-                momentEquation.coefficients.set(ryVar, ySign * r.x);
-            }
-        });
-
-        // --- ADD APPLIED FORCE ---
-        // Add "applied forces" at this timestep. Applied forces are force that being applied by hand or something on the link (push, pull...).
-        if (forcesAtT.length > 0) { // if we have any applied force on the link
-            forcesAtT.forEach( forceAtT => {
-                const fx_applied = forceAtT.fx;
-                const fy_applied = forceAtT.fy;
-
-                // Add to force equations (move to RHS, hence subtract)
-                // ΣFx + fx_applied = 0 => ΣFx = -fx_applied
-                fxEquation.constant -= fx_applied;
-                fyEquation.constant -= fy_applied;
-                
-                // Calculate moment contribution from this applied force
-                // M = r x F, where r is from pivot to force application point
-                const r = forceAtT.start.subtract(pivotPointCoord);
-                const r_magnitude = Math.sqrt(r.x * r.x + r.y * r.y);
-
-                // Only add moment if force is not applied at the pivot point
-                // The logic explained similarly like a similar chunk of code above
-                if (r_magnitude > 1e-6) {
-                    // Moment = rx * Fy - ry * Fx (2D cross product)
-                    const moment = r.x * fy_applied - r.y * fx_applied;
-                    momentEquation.constant -= moment;
-                }
-            });
-        }
-
-        // --- ADD GRAVITY ---
-        // Check if gravity affects calculations (not Z-direction)
-        if (this.doesGravityAffectCalculations(submechIndex)) {
-            const gravityForce = this.getGravityForceComponents(submechIndex, mass);
-            if (gravityForce) {
-                const Fg_x = gravityForce.Fx;
-                const Fg_y = gravityForce.Fy;
-
-                // IMPORTANT: Gravity acts at CENTER OF MASS
-                // So we need r from PIVOT POINT to COM at timestep t
-                const r_gravity = COMAtT.subtract(pivotPointCoord);
-                const r_magnitude = Math.sqrt(r_gravity.x * r_gravity.x + r_gravity.y * r_gravity.y);
-
-                // If pivot is at COM, gravity produces no moment
-                // Moment from gravity = r x Fg
-                if (r_magnitude > 1e-6) {
-                    const moment_gravity = r_gravity.x * Fg_y - r_gravity.y * Fg_x;
-                    momentEquation.constant -= moment_gravity;
-                }
-            }
-        }
-
-        // ---- ADD MOTOR TORQUE ----
-        // Add motor torque if applicable
-        if (joints.includes(inputJoint)) {
-            const torqueVar = `T_motor`;
-
-            if (!variableList.includes(torqueVar)) {
-                variableList.push(torqueVar);
-            }
-
-            const torqueConv = this.torqueConventions[submechIndex];
-            const torqueSign = torqueConv ? torqueConv.torqueDirection : 1; // Default +1 (Counter Clock Wise)
-
-            momentEquation.coefficients.set(torqueVar, torqueSign);
-        }
-
-        equations.push(fxEquation, fyEquation, momentEquation);
-        return equations;
-    }
-
-    /**
-     * Get pivot coordinate at a specific timestep
-     * 
-     * @param rigidBody - The rigid body
-     * @param pivotConvention - Pivot point convention (COM or Joint)
-     * @param positionMap - Joint positions at this timestep
-     * @param CoM - Center of mass at this timestep (already calculated)
-     * @returns Coordinate of the pivot point at this timestep
-     */
-    private getPivotCoordinateAtTimestep(
-        rigidBody: RigidBody,
-        pivotConvention: PivotPointConvention,
-        positionMap: Map<number, Coord>,
-        COMAtT: Coord
-    ): Coord {
-        if (pivotConvention.pivotType === PivotPoint.CenterOfMass) {
-
-            // Pivot is at center of mass
-            return COMAtT;
-        } else {
-            // Pivot is at a specific joint
-            const joints = rigidBody.getJoints(); // get list of joints from this rigid body
-            const pivotJoint = joints.find(j => j.id === pivotConvention.jointId); // find the joint that matches the pivot user chose
-
-            if (!pivotJoint) {
-                throw new Error(`Pivot joint ${pivotConvention.jointId} not found in rigid body`);
-            }
-
-            // Get the joint's position at this timestep from positionMap
-            return positionMap.get(pivotJoint.id) ?? pivotJoint.coords;
-        }
-    }
-
-
-    /**
-     * Convert equilibrium equations to matrix form [A]{x} = {b} and solve using mathjs
-     * @param equations - array of EquilibriumEquation
-     * @param variableList - ordered list of variable names
-     * @param inputJoint - the input joint (for extracting motor torque)
-     * @param submechIndex - sub-mechanism index
-     * @returns StaticSolution
-     */
-    private solveMatrixEquation(
-        equations: EquilibriumEquation[], // all equations we built for a sub-mechanism
-        variableList: string[] // all variables need to be found in all equations we built
-    ): StaticSolution {
-
-        const n = equations.length; // row for matrix
-        const m = variableList.length; //column for matrix
- 
-        // "m" unknowns will need "n" equations
-        if (n !== m) {
-            return {
-                motorTorque: 0,
-                reactionForces: new Map(),
-                isValid: false,
-                errorMessage: `System is ${n > m ? 'over' : 'under'}-determined (${n} equations, ${m} unknowns)`
-            };
-        }
-
-        // build coefficient matrix A and constant vector B
-        const A: number[][] = [];
-        const b: number[] = [];
-
-        equations.forEach(eq => { 
-            const row: number[] = [];
-            variableList.forEach(varName => {
-                const coeff = eq.coefficients.get(varName)
-                row.push(coeff || 0);
-            })
-            A.push(row);
-            b.push(eq.constant);
-        })
-
-        // Print matrix for debugging
-        console.log('Coefficient Matrix [A]:');
-        A.forEach((row, i) => {
-            console.log(`  [${row.map(v => v.toFixed(3).padStart(8)).join(', ')}]`);
-        });
-        console.log('Constant Vector {B}:');
-        console.log(`  [${b.map(v => v.toFixed(3).padStart(8)).join(', ')}]`);
-
-        // Make sure no internal errors happen when using math.js
-        try {
-            // solving matrix using A*x = B
-            // we create matrix in order of variableList for each variable before, so the returned solution will follow this order too.
-            const solution = math.lusolve(A, b) as number[][]; //it will return an array of arrays, make sure to override the "any" type with "number"[][] becuase we know it should appear that way, so we can use "map" syntax for next line
-            const solutionVector = solution.map(row => row[0]); //flatten into one array
-
-            // // Test result
-            // console.log('\nSolution Vector {x}:');
-            // variableList.forEach((varName, i) => {
-            //     console.log(`  ${varName} = ${solutionVector[i].toFixed(6)}`);
-            // });
-
-            // Extract motor torque:
-            // motor torque = 0 if we cannot find in result array
-            const torqueIndex = variableList.indexOf('T_motor');
-            const motorTorque = torqueIndex >= 0 ? solutionVector[torqueIndex] : 0; 
-            
-            // Extract reaction forces
-            const reactionForces = new Map<number, ReactionForce>();
-            const jointIds = new Set<number>();
-
-            // Collect all joint IDs from variable names
-            variableList.forEach(varName => {
-                if (varName.startsWith('Fx_') || varName.startsWith('Fy_')) {
-                    const jointId = parseInt(varName.split('_')[1]);
-                    jointIds.add(jointId);
-                }
-            });
-
-            // Build reaction force map
-            jointIds.forEach(jointId => {
-                const rxVar = `Fx_${jointId}`;
-                const ryVar = `Fy_${jointId}`;
-                const rxIndex = variableList.indexOf(rxVar);
-                const ryIndex = variableList.indexOf(ryVar);
-
-                reactionForces.set(jointId, { // reaction forces result at each joint
-                    Fx: rxIndex >= 0 ? solutionVector[rxIndex] : 0,
-                    Fy: ryIndex >= 0 ? solutionVector[ryIndex] : 0
-                });
-            });
-
-            return {
-                motorTorque,
-                reactionForces,
-                isValid: true
-            };
-        } catch (error: any) {
-            return {
-                motorTorque: 0,
-                reactionForces: new Map(),
-                isValid: false,
-                errorMessage: `Matrix solution failed: ${error.message}`
-            };
-        }
-        
-    }
+    // ------ END Center Of Mass Related Functions ---------------
 }   
