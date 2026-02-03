@@ -737,6 +737,41 @@ export class Mechanism {
   }
 
   /**
+   * attaches a tracer point(effectively a joint) to an existing link, but this is from a welded link.
+   *
+   * @param {number} linkID
+   * @param {Coord} coord
+   * @memberof Mechanism
+   */
+  addTracerPointWelded(linkID: number, coord: Coord) {
+    this.executeLinkAction(linkID, (link) => {
+      let jointA = new Joint(this._jointIDCount, coord);
+      this._jointIDCount++;
+      if (this.isMechanismWelded()) {
+        jointA.addedAfterWeld = true;
+        jointA.isTracer = true;
+      }
+      this._joints.set(jointA.id, jointA);
+      link.addTracer(jointA);
+    });
+  }
+
+  /**
+   * determines whether the current mechanism is a welded linkage.
+   *
+   * @memberof Mechanism
+   * @return returns true if the mechanism has a welded joint, false otherwise
+   */
+  isMechanismWelded(): boolean {
+    for (const [id, j] of this._joints) {
+      if (j.isWelded) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * attaches a tracer point(effectively a joint) to an existing link.
    *
    * @param {number} linkID
