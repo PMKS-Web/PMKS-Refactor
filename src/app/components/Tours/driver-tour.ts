@@ -7,6 +7,7 @@ import {UndoRedoService} from "../../services/undo-redo.service";
 import {JointInteractor} from "../../controllers/joint-interactor";
 import {Joint} from "../../model/joint";
 import {driver} from "driver.js";
+import {UnitConversionService} from "../../services/unit-conversion.service";
 
 const nextFrame = () => new Promise<void>(r => requestAnimationFrame(() => r()));
 
@@ -45,7 +46,8 @@ function selectJointFromCurrentLink(
   stateService: StateService,
   interactionService: InteractionService,
   notificationService: NotificationService,
-  undoRedoService: UndoRedoService
+  undoRedoService: UndoRedoService,
+  unitConversionService: UnitConversionService
 ) {
   const selected = interactionService.getSelectedObject() as any;
   if (!selected?.link) {
@@ -66,7 +68,8 @@ function selectJointFromCurrentLink(
     stateService,
     interactionService,
     notificationService,
-    undoRedoService
+    undoRedoService,
+    unitConversionService
   );
 
   interactionService.setSelectedObject(jointInteractor);
@@ -77,7 +80,8 @@ export function buildTourSteps(
   stateService: StateService,
   interactionService: InteractionService,
   notificationService: NotificationService,
-  undoRedoService: UndoRedoService
+  undoRedoService: UndoRedoService,
+  unitConversionService: UnitConversionService
 ) {
   return [
     {
@@ -122,7 +126,8 @@ export function buildTourSteps(
             stateService,
             interactionService,
             notificationService,
-            undoRedoService
+            undoRedoService,
+            unitConversionService
           );
           for (let i = 0; i < 20; i++) {
             const panel = document.querySelector('#edit-joint-panel');

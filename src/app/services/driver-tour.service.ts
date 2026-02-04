@@ -5,6 +5,7 @@ import { StateService } from '../services/state.service';
 import { InteractionService } from '../services/interaction.service';
 import { NotificationService } from '../services/notification.service';
 import { UndoRedoService } from '../services/undo-redo.service';
+import {UnitConversionService} from "./unit-conversion.service";
 
 @Injectable({ providedIn: 'root' })
 export class DriverTourService {
@@ -23,7 +24,8 @@ export class DriverTourService {
     private stateService: StateService,
     private interactionService: InteractionService,
     private notificationService: NotificationService,
-    private undoRedoService: UndoRedoService
+    private undoRedoService: UndoRedoService,
+    private unitConversionService: UnitConversionService,
   ) {}
 
   public start(): void {
@@ -31,7 +33,8 @@ export class DriverTourService {
       this.stateService,
       this.interactionService,
       this.notificationService,
-      this.undoRedoService
+      this.undoRedoService,
+      this.unitConversionService,
     );
     this.driverInstance.setSteps(steps as any[]);
     this.driverInstance.drive();
