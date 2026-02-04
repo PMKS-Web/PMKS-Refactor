@@ -82,7 +82,24 @@ export class JointInteractor extends Interactor {
         const newPos = this.jointStartCoords
           .clone()
           .add(this.dragOffsetInModel!);
-        this.stateService.getMechanism().setJointCoord(this.joint.id, newPos);
+
+        let currentCompoundLinkInteractor = this.interactionService.getSelectedObject();
+        let canMove = true;
+          if (currentCompoundLinkInteractor !== undefined && currentCompoundLinkInteractor instanceof CompoundLinkInteractor) {
+            //const compoundPath = currentCompoundLinkInteractor.getPath();
+            const path = document.getElementById('' + currentCompoundLinkInteractor.getCompoundLink().id);
+
+            const point = new DOMPoint(newPos.x, newPos.y);
+            if (path != null && path instanceof SVGGeometryElement) {
+              const isInPath = path.isPointInFill(point);
+              if (isInPath) {
+                canMove = false;
+              }
+            }
+          }
+          if (canMove) {
+            this.stateService.getMechanism().setJointCoord(this.joint.id, newPos);
+          }
       }
     });
 
@@ -95,25 +112,38 @@ export class JointInteractor extends Interactor {
         const oldPos = this.jointStartCoords;
         const newPos = this.joint.coords.clone();
 
-        /*let currentCompoundLinkInteractor = this.interactionService.getSelectedObject();
-        if (currentCompoundLinkInteractor instanceof CompoundLinkInteractor) {
-          const compoundPath = currentCompoundLinkInteractor.getPath();
+        let currentCompoundLinkInteractor = this.interactionService.getSelectedObject();
 
-        }*/
 
         // this.stateService.getMechanism()
         // const point = svg.createSVGPoint();
         // pointObj.x = point[0];
         // pointObj.y = point[1];
+        let canMove = true;
 
-        if (oldPos.x !== newPos.x || oldPos.y !== newPos.y) {
-          this.undoRedoService.recordAction({
-            type: 'moveJoint',
-            jointId: this.joint.id,
-            oldCoords: { x: oldPos.x, y: oldPos.y },
-            newCoords: { x: newPos.x, y: newPos.y },
-          });
-        }
+        /*if (oldPos.x !== newPos.x || oldPos.y !== newPos.y) {
+          if (currentCompoundLinkInteractor !== undefined && currentCompoundLinkInteractor instanceof CompoundLinkInteractor) {
+            //const compoundPath = currentCompoundLinkInteractor.getPath();
+            const path = document.getElementById('' + currentCompoundLinkInteractor.getCompoundLink().id);
+
+            const point = new DOMPoint(newPos.x, newPos.y);
+            if (path != null && path instanceof SVGGeometryElement) {
+              const isInPath = path.isPointInFill(point);
+              if (isInPath) {
+                canMove = false;
+              }
+            }
+          }
+          if (canMove) {*/
+            this.undoRedoService.recordAction({
+              type: 'moveJoint',
+              jointId: this.joint.id,
+              oldCoords: { x: oldPos.x, y: oldPos.y },
+              newCoords: { x: newPos.x, y: newPos.y },
+            });
+          //}
+
+        //}
       }
 
       this.jointStartCoords = null;
