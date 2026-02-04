@@ -87,7 +87,7 @@ export class CompoundLinkComponent extends AbstractInteractiveComponent {
     return this.unitConversionService.modelCoordToSVGCoord(this.compoundLink.centerOfMass).y;
   }
 
-  /*getCompoundID(): number {
+  getCompoundID(): number {
     return this.compoundLink.id;
-  }*/
+  }
 }

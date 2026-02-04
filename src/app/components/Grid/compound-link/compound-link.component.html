@@ -1,13 +1,14 @@
 <svg:g appInteractable [interactor]="getInteractor()">
 
         <path
-                //[attr.id] = "getCompoundID()"
+                [attr.id] = "getCompoundID()"
                 [attr.d]="getCompoundDrawnPath()"
                 [attr.fill]="getColor()"
                 [attr.fill-opacity]=0.7
                 [attr.stroke]="getStrokeColor()"
                 [attr.stroke-width]=7
         ></path>
+  <!--[attr.id] = "getCompoundID()"-->
 @if (isHovered()) {
         @for(subLinkPath of getSubLinksPaths(); track $index){
         <path
