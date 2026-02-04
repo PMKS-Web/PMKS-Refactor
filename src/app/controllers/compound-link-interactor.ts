@@ -16,9 +16,11 @@ export class CompoundLinkInteractor extends Interactor {
 
     private jointsStartPosModel: Map<number, Coord> = new Map();
     private lastNotificationTime = 0;
+    //private linkPath: string;
 
-    constructor(public compoundLink: CompoundLink, private stateService: StateService, private notificationService: NotificationService) {
+    constructor(public compoundLink: CompoundLink, private stateService: StateService, private notificationService: NotificationService, stringPath: string) {
         super(true, true);
+        //this.linkPath = stringPath;
 
         this.onDragStart$.subscribe(() => {
             if(this.stateService.getCurrentActivePanel === "Synthesis"){
@@ -87,7 +89,7 @@ export class CompoundLinkInteractor extends Interactor {
             {
                 icon: "assets/contextMenuIcons/addTracer.svg",
                 label: "Attach Tracer Point",
-                action: () => { mechanism.addJointToLink(this.compoundLink.id, modelPosAtRightClick) },
+                action: () => { mechanism.addTracerPointWelded(this.compoundLink.id, modelPosAtRightClick) },
                 disabled: false
             },
             {
@@ -113,6 +115,11 @@ export class CompoundLinkInteractor extends Interactor {
         return availableContext;
 
     }
+
+    // returns the string path of this compound link
+    /*public getPath(): string {
+      return this.linkPath;
+    }*/
 
     // Placeholder for logic to handle adding a link to this compound link
     private enterAddLinkCaptureMode(): void {}
