@@ -1,4 +1,4 @@
-import { Coord } from './coord';
+import {Coord} from './coord';
 import {BehaviorSubject} from "rxjs";
 
 export enum JointType {
@@ -60,6 +60,7 @@ export class Joint {
       throw new Error('Invalid Constructor Parameters');
     }
   }
+
   //----------------------------getters----------------------------
   get id(): number {
     return this._id;
@@ -76,6 +77,7 @@ export class Joint {
   get type(): JointType {
     return this._type;
   }
+
   get angle(): number {
     return this._angle;
   }
@@ -83,6 +85,7 @@ export class Joint {
   get isGrounded(): boolean {
     return this._isGrounded.value;
   }
+
   get isInput(): boolean {
     return this._isInput.value;
   }
@@ -98,15 +101,19 @@ export class Joint {
   get isWelded(): boolean {
     return this._isWelded.value;
   }
+
   get locked(): boolean {
     return this._parentLocked;
   }
+
   get isHidden(): boolean {
     return this._isHidden;
   }
+
   get isReference(): boolean {
     return this._isReference;
   }
+
   get isGenerated(): boolean {
     return this._isGenerated;
   }
@@ -114,12 +121,15 @@ export class Joint {
   getInputObservable() {
     return this.isInput$;
   }
+
   getGroundedObservable() {
     return this.isGrounded$;
   }
+
   getWeldedObservable() {
     return this.isWelded$;
   }
+
   //----------------------------setters----------------------------
   set name(newName: string) {
     this._name = newName;
@@ -136,6 +146,7 @@ export class Joint {
   set speed(newSpeed: number) {
     this._inputSpeed = newSpeed;
   }
+
   set locked(value: boolean) {
     this._parentLocked = value;
   }
@@ -151,6 +162,7 @@ export class Joint {
   set reference(val: boolean) {
     this._isReference = val;
   }
+
   set generated(val: boolean) {
     this._isGenerated = val;
   }
@@ -165,6 +177,7 @@ export class Joint {
     this._isInput.next(false);
     this._isGrounded.next(false);
   }
+
   addInput() {
     //console.log("input being called");
     if (!this._isGrounded.value && this._type == JointType.Revolute) {
@@ -188,19 +201,20 @@ export class Joint {
   }
 
   addSlider() {
-    this._isGrounded.next(true);
     this._type = JointType.Prismatic;
+    this.removeGround();
   }
 
   removeSlider() {
-    this._isInput.next(false);
     this._type = JointType.Revolute;
+    this.removeGround();
   }
 
   addLock() {
     console.log('setting lock in child');
     this._parentLocked = true;
   }
+
   breakLock() {
     this._parentLocked = false;
   }
@@ -234,18 +248,22 @@ export class Joint {
   canAddSlider(): boolean {
     return true;
   }
+
   canRemoveSlider(): boolean {
     return true;
   }
+
   canLock(): boolean {
     return true;
   }
+
   canUnlock(): boolean {
     return true;
   }
 
   //----------------------------Joint Alteration Relative to other Joints----------------------------
-  setDistancetoJoint() {}
+  setDistancetoJoint() {
+  }
 
   setAngletoJoint(newAngle: number) {
     this.angle = newAngle;
@@ -255,6 +273,7 @@ export class Joint {
     this._coords = coord;
     this.notifyObservers();
   }
+
   addCoordinates(coord: Coord) {
     this._coords.add(coord);
   }
@@ -273,6 +292,7 @@ export class Joint {
     newJoint.reference = this._isReference;
     return newJoint;
   }
+
   private _observers: ((joint: Joint) => void)[] = [];
 
   addObserver(callback: (joint: Joint) => void) {
@@ -291,4 +311,5 @@ export class Joint {
   }
 }
 
-export class RealJoint {}
+export class RealJoint {
+}
