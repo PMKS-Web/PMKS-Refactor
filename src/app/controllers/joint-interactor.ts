@@ -21,7 +21,7 @@ This interactor defines the following behaviors:
 export class JointInteractor extends Interactor {
   private _isDraggable: boolean = true;
   private jointStartCoords: Coord | null = null;
-  private startCompoundLinkPath: HTMLElement | null = null; // holds compoundLinkPath when dragging tracer joint in welded link
+  private startCompoundLinkPath: Node | undefined; // holds compoundLinkPath when dragging tracer joint in welded link
   private lastNotificationTime = 0;
 
   constructor(
@@ -65,7 +65,7 @@ export class JointInteractor extends Interactor {
         if (this.joint.isTracer && this.joint.addedAfterWeld) {
           this.stateService.getMechanism().getArrayOfCompoundLinks().forEach((link) => {
             if (link.getJoints().includes(this.joint)) {
-              this.startCompoundLinkPath = document.getElementById('' + link.id);
+              this.startCompoundLinkPath = document.getElementById('' + link.id)?.cloneNode(true);
             }
           })
         }
@@ -97,12 +97,17 @@ export class JointInteractor extends Interactor {
         let canMove = true;
         if (this.joint.isTracer && this.joint.addedAfterWeld) {
           const translatedNewPos = this.unitConversionService.modelCoordToSVGCoord(newPos);
-          const point = new DOMPoint((translatedNewPos.x), translatedNewPos.y);
-          if (this.startCompoundLinkPath != null && this.startCompoundLinkPath instanceof SVGGeometryElement) {
-            const isInPath = this.startCompoundLinkPath.isPointInFill(point);
+
+          const svg = document.querySelector('svg');
+          if (this.startCompoundLinkPath != null && this.startCompoundLinkPath instanceof SVGGeometryElement && svg != null) {
+            this.startCompoundLinkPath.setAttribute("visibility", "hidden");
+            svg.appendChild(this.startCompoundLinkPath);
+            let pointTwo = new DOMPoint(translatedNewPos.x, translatedNewPos.y);
+            const isInPath = this.startCompoundLinkPath.isPointInFill(pointTwo);
             if (!isInPath) {
               canMove = false;
             }
+            this.startCompoundLinkPath.remove();
           }
         }
         if (canMove) {
@@ -120,36 +125,12 @@ export class JointInteractor extends Interactor {
         const oldPos = this.jointStartCoords;
         const newPos = this.joint.coords.clone();
 
-        // this.stateService.getMechanism()
-        // const point = svg.createSVGPoint();
-        // pointObj.x = point[0];
-        // pointObj.y = point[1];
-        let canMove = true;
-
-        /*if (this.joint.isTracer && this.joint.addedAfterWeld) {
-          this.stateService.getMechanism().getArrayOfCompoundLinks().forEach((link) => {
-            if (link.getJoints().includes(this.joint)) {
-              const path = document.getElementById('' + link.id);
-
-              const point = new DOMPoint(newPos.x, newPos.y);
-              if (path != null && path instanceof SVGGeometryElement) {
-                const isInPath = path.isPointInFill(point);
-                if (!isInPath) {
-                  canMove = false;
-                }
-              }
-            }
-          })
-        }*/
-
-        if (canMove) {
-          this.undoRedoService.recordAction({
-            type: 'moveJoint',
-            jointId: this.joint.id,
-            oldCoords: { x: oldPos.x, y: oldPos.y },
-            newCoords: { x: newPos.x, y: newPos.y },
-          });
-        }
+        this.undoRedoService.recordAction({
+          type: 'moveJoint',
+          jointId: this.joint.id,
+          oldCoords: { x: oldPos.x, y: oldPos.y },
+          newCoords: { x: newPos.x, y: newPos.y },
+        });
 
       }
 
