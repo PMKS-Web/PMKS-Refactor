@@ -29,13 +29,6 @@ export class SVGPathService {
       return '';
     }
 
-    //check if coordinates are collinear. If they are, use the two returned coords(the end points) to draw a line
-    const collinearCoords: Coord[] | undefined = this.findCollinearCoords(allCoords);
-    if (collinearCoords !== undefined) {
-
-      return this.calculateTwoPointPath(collinearCoords[0], collinearCoords[1], radius);
-    }
-
     let pathData = `M ${allCoords[0].x},${allCoords[0].y} `;
     for (let i = 1; i < allCoords.length; i++) {
       const currentCoord = allCoords[i];
@@ -84,7 +77,6 @@ export class SVGPathService {
         return undefined;
       }
     }
-
     // If all coords have the same slope with the 'start' point, they are collinear
     return [start, end];
   }

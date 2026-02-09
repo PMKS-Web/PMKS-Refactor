@@ -88,12 +88,12 @@
               <label style="margin-right: 5px;">Angle</label>
               <input
                 type="number"
-                [value]="pendingAngle ?? getJointAngle2()"
+                [value]="pendingAngle ?? getSliderJointAngle()"
                 (input)="pendingAngle = $any($event.target).valueAsNumber"
                 (keydown.enter)="confirmJointAngle()"
                 [disabled]="getJointLockState()"
               />
-              <span class="xy-unit">deg</span>
+              <span class="xy-unit">{{ angleSuffix }}</span>
             </div>
           </div>
         </div>
