@@ -60,9 +60,15 @@ export class CompoundLinkComponent extends AbstractInteractiveComponent {
     let subLinkPaths: string[] = [];
 
     this.compoundLink.links.forEach((link,id) =>{
-      let subLinkCoords = Array.from(link.joints,([id,joint])=>{
+      /*let subLinkCoords = Array.from(link.joints,([id,joint])=>{
         return this.unitConversionService.modelCoordToSVGCoord(joint._coords);
-      });
+      });*/
+      let subLinkCoords = new Array<Coord>();
+      for (const [id, joint] of link.joints) {
+        if (!(joint.isTracer && joint.addedAfterWeld)) {
+          subLinkCoords.push(this.unitConversionService.modelCoordToSVGCoord(joint._coords));
+        }
+      }
       subLinkPaths.push(this.svgPathService.getSingleLinkDrawnPath(subLinkCoords,radius));
     });
     return subLinkPaths;
