@@ -1,4 +1,5 @@
-import { Coord } from './coord';
+import {Coord} from './coord';
+import {BehaviorSubject} from "rxjs";
 
 export enum JointType {
   Prismatic,
@@ -11,14 +12,21 @@ export class Joint {
   public _coords: Coord;
   private _type: JointType;
   private _angle: number;
-  private _isGrounded: boolean;
-  private _isInput: boolean;
+  private _isGrounded: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  private _isInput: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   private _inputSpeed: number;
-  private _isWelded: boolean;
+  private _isWelded: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  //allows tracking of multiple links to locking the joint
+  private _lockCount: number = 0;
   private _parentLocked: boolean;
   private _isHidden: boolean;
   private _isReference: boolean;
   private _isGenerated: boolean;
+  private _rpmSpeed: number;
+
+  isInput$ = this._isInput.asObservable();
+  isGrounded$ = this._isGrounded.asObservable();
+  isWelded$ = this._isWelded.asObservable();
 
   constructor(id: number, x: number, y: number);
   constructor(id: number, coord: Coord);
@@ -35,15 +43,16 @@ export class Joint {
     }
     this._type = JointType.Revolute;
     this._angle = 0;
-    this._isInput = false;
-    this._isWelded = false;
-    this._isGrounded = false;
+    // this._isInput = false;
+    // this._isWelded = false;
+    // this._isGrounded = false;
     this._inputSpeed = 0;
     this._parentLocked = false;
     this._inputSpeed = 10;
     this._isHidden = false;
     this._isReference = false;
     this._isGenerated = false;
+    this._rpmSpeed = 10;
 
     if (typeof xORCoord === 'number' && y !== undefined) {
       this._coords = new Coord(xORCoord, y);
@@ -53,6 +62,7 @@ export class Joint {
       throw new Error('Invalid Constructor Parameters');
     }
   }
+
   //----------------------------getters----------------------------
   get id(): number {
     return this._id;
@@ -69,36 +79,59 @@ export class Joint {
   get type(): JointType {
     return this._type;
   }
+
   get angle(): number {
     return this._angle;
   }
 
   get isGrounded(): boolean {
-    return this._isGrounded;
+    return this._isGrounded.value;
   }
+
   get isInput(): boolean {
-    return this._isInput;
+    return this._isInput.value;
   }
 
   get inputSpeed(): number {
     return this._inputSpeed;
   }
 
-  get isWelded(): boolean {
-    return this._isWelded;
+  get rpmSpeed(): number {
+    return this._rpmSpeed;
   }
+
+  get isWelded(): boolean {
+    return this._isWelded.value;
+  }
+
   get locked(): boolean {
     return this._parentLocked;
   }
+
   get isHidden(): boolean {
     return this._isHidden;
   }
+
   get isReference(): boolean {
     return this._isReference;
   }
+
   get isGenerated(): boolean {
     return this._isGenerated;
   }
+
+  getInputObservable() {
+    return this.isInput$;
+  }
+
+  getGroundedObservable() {
+    return this.isGrounded$;
+  }
+
+  getWeldedObservable() {
+    return this.isWelded$;
+  }
+
   //----------------------------setters----------------------------
   set name(newName: string) {
     this._name = newName;
@@ -115,8 +148,19 @@ export class Joint {
   set speed(newSpeed: number) {
     this._inputSpeed = newSpeed;
   }
+
   set locked(value: boolean) {
-    this._parentLocked = value;
+    //value determines if we add or break a lock
+    if(value){
+      this.addLock();
+    }
+    else{
+      this.breakLock();
+    }
+  }
+
+  set rpmSpeed(newSpeed: number) {
+    this._rpmSpeed = newSpeed;
   }
 
   set hidden(val: boolean) {
@@ -126,6 +170,7 @@ export class Joint {
   set reference(val: boolean) {
     this._isReference = val;
   }
+
   set generated(val: boolean) {
     this._isGenerated = val;
   }
@@ -133,51 +178,58 @@ export class Joint {
   //----------------------------Joint Modification with modifying other variables----------------------------
   addGround() {
     this._type = JointType.Revolute;
-    this._isGrounded = true;
+    this._isGrounded.next(true);
   }
 
   removeGround() {
-    this._isInput = false;
-    this._isGrounded = false;
+    this._isInput.next(false);
+    this._isGrounded.next(false);
   }
+
   addInput() {
     //console.log("input being called");
-    if (!this._isGrounded && this._type == JointType.Revolute) {
+    if (!this._isGrounded.value && this._type == JointType.Revolute) {
       throw new Error('Input Joints must be Grounded or Prismatic');
     } else {
       //console.log(`adding input to joint ${this.id}`);
-      this._isInput = true;
+      this._isInput.next(true);
     }
   }
 
   removeInput() {
-    this._isInput = false;
+    this._isInput.next(false);
   }
 
   addWeld() {
-    this._isWelded = true;
+    this._isWelded.next(true);
   }
 
   removeWeld() {
-    this._isWelded = false;
+    this._isWelded.next(false);
   }
 
   addSlider() {
-    this._isGrounded = true;
     this._type = JointType.Prismatic;
+    this.removeGround();
   }
 
   removeSlider() {
-    this._isInput = false;
     this._type = JointType.Revolute;
+    this.removeGround();
   }
 
   addLock() {
-    console.log('setting lock in child');
-    this._parentLocked = true;
+    //add a lock to the joint
+    this._lockCount++;
+    //set parent locked to see if there is more than one lock on joint
+    this._parentLocked = this._lockCount > 0;
   }
+
   breakLock() {
-    this._parentLocked = false;
+    //subtracts a lock and ensures it doesn't go negative
+    this._lockCount = Math.max(0, this._lockCount - 1);
+    //sets parent locked
+    this._parentLocked = this._lockCount > 0;
   }
 
   //----------------------------Joint Modification Querying----------------------------
@@ -190,7 +242,8 @@ export class Joint {
   }
 
   canAddInput(): boolean {
-    return !(!this._isGrounded && this._type == JointType.Revolute);
+    //return !(!this._isGrounded.value && this._type == JointType.Revolute);
+    return this._isGrounded.value;
   }
 
   canRemoveInput(): boolean {
@@ -208,18 +261,22 @@ export class Joint {
   canAddSlider(): boolean {
     return true;
   }
+
   canRemoveSlider(): boolean {
     return true;
   }
+
   canLock(): boolean {
     return true;
   }
+
   canUnlock(): boolean {
     return true;
   }
 
   //----------------------------Joint Alteration Relative to other Joints----------------------------
-  setDistancetoJoint() {}
+  setDistancetoJoint() {
+  }
 
   setAngletoJoint(newAngle: number) {
     this.angle = newAngle;
@@ -229,6 +286,7 @@ export class Joint {
     this._coords = coord;
     this.notifyObservers();
   }
+
   addCoordinates(coord: Coord) {
     this._coords.add(coord);
   }
@@ -238,15 +296,16 @@ export class Joint {
     newJoint.name = this._name;
     newJoint.type = this._type;
     newJoint.angle = this._angle;
-    if (this._isGrounded) newJoint.addGround();
-    if (this._isInput) newJoint.addInput();
-    if (this._isWelded) newJoint.addWeld();
+    if (this._isGrounded.value) newJoint.addGround();
+    if (this._isInput.value) newJoint.addInput();
+    if (this._isWelded.value) newJoint.addWeld();
     newJoint.speed = this._inputSpeed;
-    newJoint.locked = this._parentLocked;
+    newJoint.locked = this.locked;
     newJoint.hidden = this._isHidden;
     newJoint.reference = this._isReference;
     return newJoint;
   }
+
   private _observers: ((joint: Joint) => void)[] = [];
 
   addObserver(callback: (joint: Joint) => void) {
@@ -265,4 +324,5 @@ export class Joint {
   }
 }
 
-export class RealJoint {}
+export class RealJoint {
+}

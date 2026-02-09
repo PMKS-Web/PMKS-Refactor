@@ -42,6 +42,13 @@ export class JointInteractor extends Interactor {
           );
         return;
       }
+      if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
+      ) {
+        this.notificationService.showWarning(
+          'Cannot edit while Animation is in play or paused state!'
+        );
+        return;
+      }
 
       if (
         (!this.joint.locked ||
@@ -79,6 +86,10 @@ export class JointInteractor extends Interactor {
     });
 
     this.onDragEnd$.subscribe(() => {
+      if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
+      ) {
+        return;
+      }
       if (this.jointStartCoords) {
         const oldPos = this.jointStartCoords;
         const newPos = this.joint.coords.clone();
@@ -106,10 +117,52 @@ export class JointInteractor extends Interactor {
     let availableContext: ContextMenuOption[] = [];
 
     let mechanism: Mechanism = this.stateService.getMechanism();
+    let prevJoint = mechanism.getJoint(this.joint.id);
+    let connectedLinks =
+      mechanism.getConnectedLinksForJoint(prevJoint);
+
+    let prevJointData = {
+      id: prevJoint.id,
+      coords: { x: prevJoint.coords.x, y: prevJoint.coords.y },
+      name: prevJoint.name,
+      type: prevJoint.type,
+      angle: prevJoint.angle,
+      isGrounded: prevJoint.isGrounded,
+      isInput: prevJoint.isInput,
+      inputSpeed: prevJoint.inputSpeed,
+      isWelded: prevJoint.isWelded,
+      locked: prevJoint.locked,
+      isHidden: prevJoint.isHidden,
+      isReference: prevJoint.isReference,
+    };
+
+    let prevLinksData = connectedLinks.map((link) => {
+      // If link.joints is a Map, convert to Array first
+      const jointIdsArray = Array.from(link.joints.values()).map(
+        (j) => j.id
+      );
+      return {
+        id: link.id,
+        jointIds: jointIdsArray,
+        name: link.name,
+        mass: link.mass,
+        angle: link.angle,
+        locked: link.locked,
+        color: link.color,
+      };
+    });
+
     if (this.stateService.getCurrentActivePanel === 'Synthesis') {
       this.notificationService.showNotification(
         'Cannot edit in the Synthesis mode! Switch to Edit mode to edit.'
       );
+    }
+    if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
+    ) {
+      this.notificationService.showWarning(
+        'Cannot edit while Animation is in play or paused state!'
+      );
+      return availableContext;
     }
     if (this.stateService.getCurrentActivePanel === 'Analysis') {
       this.notificationService.showNotification(
@@ -148,6 +201,12 @@ export class JointInteractor extends Interactor {
           icon: 'assets/contextMenuIcons/addInput.svg',
           label: 'Add Input',
           action: () => {
+            for (const cJoint of this.stateService.getMechanism().getJointsConnectedForJoint(this.joint)) {
+              if (cJoint.isInput && cJoint.id != this.joint.id) {
+                return;
+              }
+            }
+
             const actionObj: Action = {
               type: 'addInput',
               jointId: this.joint.id,
@@ -157,7 +216,7 @@ export class JointInteractor extends Interactor {
 
             mechanism.addInput(this.joint.id);
           },
-          disabled: !mechanism.canAddInput(this.joint),
+          disabled: !mechanism.canAddInput(this.joint) ,
         });
       }
       //Logic for Grounding option
@@ -169,6 +228,8 @@ export class JointInteractor extends Interactor {
             const actionObj: Action = {
               type: 'removeGround',
               jointId: this.joint.id,
+              jointData: prevJointData,
+              linksData: prevLinksData,
             };
             this.undoRedoService.recordAction(actionObj);
             mechanism.removeGround(this.joint.id);
@@ -183,6 +244,8 @@ export class JointInteractor extends Interactor {
             const actionObj: Action = {
               type: 'addGround',
               jointId: this.joint.id,
+              jointData: prevJointData,
+              linksData: prevLinksData,
             };
 
             this.undoRedoService.recordAction(actionObj);
@@ -201,11 +264,12 @@ export class JointInteractor extends Interactor {
             const actionObj: Action = {
               type: 'removeSlider',
               jointId: this.joint.id,
+              jointData: prevJointData,
+              linksData: prevLinksData,
             };
             this.undoRedoService.recordAction(actionObj);
 
             mechanism.removeSlider(this.joint.id);
-            mechanism.removeGround(this.joint.id);
           },
           disabled: !mechanism.canRemoveSlider(this.joint),
         });
@@ -217,11 +281,12 @@ export class JointInteractor extends Interactor {
             const actionObj: Action = {
               type: 'addSlider',
               jointId: this.joint.id,
+              jointData: prevJointData,
+              linksData: prevLinksData,
             };
             this.undoRedoService.recordAction(actionObj);
 
             mechanism.addSlider(this.joint.id);
-            mechanism.removeGround(this.joint.id);
           },
           disabled: !mechanism.canAddSlider(this.joint),
         });
@@ -235,6 +300,8 @@ export class JointInteractor extends Interactor {
             const actionObj: Action = {
               type: 'removeWeld',
               jointId: this.joint.id,
+              jointData: prevJointData,
+              linksData: prevLinksData,
             };
             this.undoRedoService.recordAction(actionObj);
             mechanism.removeWeld(this.joint.id);
@@ -249,6 +316,8 @@ export class JointInteractor extends Interactor {
             const actionObj: Action = {
               type: 'addWeld',
               jointId: this.joint.id,
+              jointData: prevJointData,
+              linksData: prevLinksData,
             };
             this.undoRedoService.recordAction(actionObj);
             mechanism.addWeld(this.joint.id);

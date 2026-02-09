@@ -22,11 +22,12 @@ export class Mechanism {
   private _linkIDCount: number;
   private _forceIDCount: number;
   private _compoundLinkIDCount: number;
-  private _mechanismChange: BehaviorSubject<Mechanism> =
-  new BehaviorSubject<Mechanism>(this);
+  private _mechanismChange: BehaviorSubject<Mechanism> = new BehaviorSubject<Mechanism>(this);
   public _mechanismChange$ = this._mechanismChange.asObservable();
   private _trajectories: Map<number, Trajectory> = new Map();
   private _refIdCount: number = -1;
+  private _inputSpeed = new BehaviorSubject<number>(10);
+  public mechanismRPMSpeed = this._inputSpeed.asObservable();
 
   private _positionIDCount: number = 0;
   private _positions: Map<number, Position> = new Map();
@@ -91,23 +92,23 @@ export class Mechanism {
     //console.log(this);
   }
 
-addPos(positionIndex: number) {
+  addPos(positionIndex: number) {
     // Get the current coupler length from positionLengthChange
     const couplerLength = this._positionLengthChange.value;
-    
+
     let coord1: Coord, coord2: Coord;
-    
+
     if (positionIndex === 1) {
-        coord1 = new Coord(-couplerLength / 2, 0);
-        coord2 = new Coord(couplerLength / 2, 0);
+      coord1 = new Coord(-couplerLength / 2, 0);
+      coord2 = new Coord(couplerLength / 2, 0);
     } else if (positionIndex === 2) {
-        coord1 = new Coord(-couplerLength / 2 - 1.5 * couplerLength, 0);
-        coord2 = new Coord(couplerLength / 2 - 1.5 * couplerLength, 0);
+      coord1 = new Coord(-couplerLength / 2 - 1.5 * couplerLength, 0);
+      coord2 = new Coord(couplerLength / 2 - 1.5 * couplerLength, 0);
     } else if (positionIndex === 3) {
-        coord1 = new Coord(-couplerLength / 2 + 1.5 * couplerLength, 0);
-        coord2 = new Coord(couplerLength / 2 + 1.5 * couplerLength, 0);
+      coord1 = new Coord(-couplerLength / 2 + 1.5 * couplerLength, 0);
+      coord2 = new Coord(couplerLength / 2 + 1.5 * couplerLength, 0);
     } else {
-        throw new Error(`Invalid position index: ${positionIndex}`);
+      throw new Error(`Invalid position index: ${positionIndex}`);
     }
 
     // Create two joints for the new position
@@ -115,7 +116,7 @@ addPos(positionIndex: number) {
     this._jointIDCount++;
     let jointB = new Joint(this._jointIDCount, coord2);
     this._jointIDCount++;
-    
+
     // Create pseudo joint for fixed reference point, do not add to maps, default to center
     const centerX = (jointA.coords.x + jointB.coords.x) / 2;
     const centerY = (jointA.coords.y + jointB.coords.y) / 2;
@@ -123,34 +124,34 @@ addPos(positionIndex: number) {
     jointC.hidden = true;
     jointC.reference = true;
     this._refIdCount--;
-    
+
     this._joints.set(jointA.id, jointA);
     this._joints.set(jointB.id, jointB);
     this._joints.set(jointC.id, jointC);
-    
+
     let position = new Position(positionIndex, [
-        jointA,
-        jointB,
-        jointC,
+      jointA,
+      jointB,
+      jointC,
     ]);
-    
+
     // Set position properties based on index
     if (positionIndex === 1) {
-        position.name = 'Position 1';
+      position.name = 'Position 1';
     } else if (positionIndex === 2) {
-        position.name = 'Position 2';
+      position.name = 'Position 2';
     } else if (positionIndex === 3) {
-        position.name = 'Position 3';
+      position.name = 'Position 3';
     }
-    
+
     position.setReference(this._positionReference);
-    
+
     this._positionIDCount++;
     this._positions.set(position.id, position);
     this.notifyChange();
-    
+
     return position;
-}
+  }
 
   populateTrajectories(positionSolver: PositionSolverService): void {
     const animationFrames = positionSolver.getAnimationFrames();
@@ -510,13 +511,22 @@ addPos(positionIndex: number) {
   //----------------------------JOINT CONTEXT MENU ACTIONS VERIFIERS----------------------------
 
   canAddInput(joint: Joint): boolean {
-    //check if the joint knows it can be an input
+    // check if the joint knows it can be an input
+    // doesn't take into account if the current joint is an input joint already
     if (!joint.canAddInput()) return false;
 
-    let numberOfEffectiveConnectedLinks =
+    let connectedJoints = this.getJointsConnectedForJoint(joint);
+    for (const currentJoint of connectedJoints) {
+      if (currentJoint.isInput && currentJoint.id != joint.id) {
+        return false;
+      }
+    }
+
+    /*let numberOfEffectiveConnectedLinks =
       this.getNumberOfEffectiveConnectedLinksForJoint(joint);
     //If a revolute grounded joint is connected to more than one link and isn't welded to all of them it cannot be an input.
-    return !(joint.isGrounded && numberOfEffectiveConnectedLinks > 1);
+    return !(joint.isGrounded && numberOfEffectiveConnectedLinks > 1);*/
+    return true;
   }
   canRemoveInput(joint: Joint): boolean {
     return joint.canRemoveInput();
@@ -711,7 +721,7 @@ addPos(positionIndex: number) {
   }
 
   /**
-   * attaches a tracer point(effectively a joint) to a an existing link.
+   * attaches a tracer point(effectively a joint) to an existing link.
    *
    * @param {number} linkID
    * @param {Coord} coord
@@ -727,7 +737,7 @@ addPos(positionIndex: number) {
   }
 
   /**
-   * attaches a tracer point(effectively a joint) to a an existing link.
+   * attaches a tracer point(effectively a joint) to an existing link.
    *
    * @param {number} linkID
    * @param {Coord} coord
@@ -1158,6 +1168,42 @@ addPos(positionIndex: number) {
     return [...connectedLinks, ...connectedCompoundLinks] as RigidBody[];
   }
 
+  // gets all the joints a joint is connected to through its submechanism/linkage
+  getJointsConnectedForJoint(joint: Joint): Joint[] {
+    let attachedJoints: Joint[] = []; // this will be all the joints the joint is connected to
+
+    let allSubMechs: Array<Map<Joint, RigidBody[]>> = this.getSubMechanisms(); // this gives back all the sub mechanisms/full linkages
+
+    if (allSubMechs.length <= 0) {
+      return attachedJoints;
+    }
+
+    let subMech: Map<Joint, RigidBody[]> = new Map();
+    let found = false;
+    let i = 0;
+    while (!found && i < allSubMechs.length) {
+      // find the submechanism with the joint in it
+      if (allSubMechs[i].has(joint)) {
+        subMech = allSubMechs[i];
+        found = true;
+      }
+      i++;
+    }
+
+    if (!found) {
+      return attachedJoints;
+    }
+
+    // from the submechanism, extract all the joints in it besides the joint we are looking at
+    for (let keyJ of subMech.keys()) {
+      if (!attachedJoints.includes(keyJ)) {
+        attachedJoints.push(keyJ);
+      }
+    }
+
+    return attachedJoints;
+  }
+
   public hasPositionWithId(id: number): boolean {
     return this._positions.has(id);
   }
@@ -1238,6 +1284,11 @@ addPos(positionIndex: number) {
   getArrayOfForces(): Array<Force> {
     return Array.from(this._forces.values());
   }
+
+  getInputSpeed(): number {
+    return this._inputSpeed.value;
+  }
+
   //----------------------------SET FUNCTIONS----------------------------
   set_jointIDCount(count: number) {
     this._jointIDCount = count;
@@ -1246,10 +1297,10 @@ addPos(positionIndex: number) {
     this._trajectories.set(jointId, trajectory);
   }
   setCouplerLength(length: number){
-  this._positionLengthChange.next(length);
-  this._positions.forEach(pos => {
-    pos.setLength(length);
-  });
+    this._positionLengthChange.next(length);
+    this._positions.forEach(pos => {
+      pos.setLength(length);
+    });
   }
   setPositionAngle(angle: number, id: number){
     let pos = this._positions.get(id);
@@ -1277,6 +1328,9 @@ addPos(positionIndex: number) {
     }
   }
 
+  setInputSpeed(speed: number) {
+    this._inputSpeed.next(speed);
+  }
 
   //----------------------------CLEAR FUNCTIONS----------------------------
   clearTrajectories(): void {

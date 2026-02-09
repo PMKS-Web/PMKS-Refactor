@@ -1,16 +1,18 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit} from '@angular/core';
+import { Subscription } from 'rxjs';
 import { StateService } from 'src/app/services/state.service';
 import { InteractionService } from 'src/app/services/interaction.service';
 import { JointInteractor } from 'src/app/controllers/joint-interactor';
 import { Mechanism } from 'src/app/model/mechanism';
-import { Joint } from 'src/app/model/joint';
+import {Joint, JointType} from 'src/app/model/joint';
 import { Link } from 'src/app/model/link';
 import {
   LinkEditHoverService,
   LinkHoverState,
 } from 'src/app/services/link-edit-hover.service';
 import {UndoRedoService} from "src/app/services/undo-redo.service";
-
+import { NotificationService } from 'src/app/services/notification.service';
+import { AnimationService } from "src/app/services/animation.service";
 @Component({
   selector: 'app-joint-edit-panel',
   templateUrl: './joint-edit-panel.component.html',
@@ -18,8 +20,7 @@ import {UndoRedoService} from "src/app/services/undo-redo.service";
 
 })
 
-export class jointEditPanelComponent implements OnDestroy{
-
+export class jointEditPanelComponent implements OnInit, OnDestroy{
   graphExpanded: { [key: string]: boolean } = {
     basicBasic: true,
     basicVisual: false,
@@ -28,29 +29,81 @@ export class jointEditPanelComponent implements OnDestroy{
     distance: true,
   };
   isEditingTitle: boolean = false;
-  units: string = 'cm';
-  angles: string = 'º';
+
+  unitSuffix: string = 'cm';
+  angleSuffix: string = 'º';
+
+  unitSuffixSubscription: Subscription = new Subscription();
+  angleSuffixSubscription: Subscription = new Subscription();
+
+  _isInput: boolean = false; // true if current joint is an input
+  _isGround: boolean = false; // true if current joint is grounded
+  _isWeld: boolean = false; // true if current joint is welded
+  _preventForAni: boolean = true; // stops toggle when animation is running, true if animation is running
+  _preventForInput: boolean = false; // stops input toggle if there is already an input joint, true if joint can't become/stop being an input
+  _canBeInput: boolean = true; // true if joint can become/is an input
+  public pendingJointDistance?: number;
+  public pendingJointAngle?: number; // This is for angle of a normal Joint
+  public pendingX?: number;
+  public pendingY?: number;
+  public pendingAngle?: number; // This is for angle of a Joint attached to Slider
+
   constructor(
     private undoRedoService: UndoRedoService,
     private stateService: StateService,
     private interactorService: InteractionService,
-    private linkHoverService: LinkEditHoverService
+    private linkHoverService: LinkEditHoverService,
+    private notificationService: NotificationService,
+    public animationService: AnimationService
   ) {
     console.log('joint-edit-panel.constructor');
+    this.stateService.getAnimationBarComponent().stoppedAnimating.subscribe((isStopped) => {
+      this._preventForAni = !isStopped;
+    })
   }
 
+  ngOnInit(){
+    this.displayInputSpeed();
+    this._canBeInput = this.canBeInput();
+
+    //subscript to listen for unit suffix from stateService
+    this.unitSuffixSubscription = this.stateService.globalUSuffixCurrent.subscribe((unitSuffix)=>{
+      this.unitSuffix = unitSuffix;
+    })
+
+    //subscript to listen for angle suffix from stateService
+    this.angleSuffixSubscription = this.stateService.globalASuffixCurrent.subscribe((angleSuffix)=>{
+      this.angleSuffix = angleSuffix;
+    })
+  }
+
+  //unsubscribe when object deleted
   ngOnDestroy() {
     this._selSub.unsubscribe();
+    this.unitSuffixSubscription.unsubscribe();
+    this.angleSuffixSubscription.unsubscribe();
   }
-
-
-  public pendingX?: number;
-  public pendingY?: number;
 
   private _selSub = this.interactorService._selectionChange$
     .subscribe(sel => {
       // when nothing is selected (i.e. after delete), wipe out our buffers
       if (!sel) this.resetPanel();
+      else {
+        // recalculates necessary variables for when selected joint changes
+        this.getCurrentJoint();
+        this.displayInputSpeed();
+        this.getCurrentJoint().getInputObservable().subscribe(value => {
+          this._isInput = value;
+          this.displayInputSpeed();
+        });
+        this.getCurrentJoint().getGroundedObservable().subscribe(value => {
+          this._isGround = value;
+        })
+        this.getCurrentJoint().getWeldedObservable().subscribe(value => {
+          this._isWeld = value;
+        })
+        this._canBeInput = this.canBeInput();
+      }
     });
 
   // Confirms and saves the X coordinate input
@@ -64,6 +117,12 @@ export class jointEditPanelComponent implements OnDestroy{
     const newY = oldY; // Y stays the same in an X‑only edit
 
     if (Math.abs(oldX - newX) < 1e-6) {
+      this.pendingX = undefined;
+      return;
+    }
+
+    let canEdit = this.confirmCanEdit();
+    if (!canEdit) {
       this.pendingX = undefined;
       return;
     }
@@ -95,6 +154,12 @@ export class jointEditPanelComponent implements OnDestroy{
       return;
     }
 
+    let canEdit = this.confirmCanEdit();
+    if (!canEdit) {
+      this.pendingY = undefined;
+      return;
+    }
+
     this.undoRedoService.recordAction({
       type:      "setJoint",
       jointId:   joint.id,
@@ -108,11 +173,21 @@ export class jointEditPanelComponent implements OnDestroy{
     this.pendingY = undefined;
   }
 
+  // This is for angle of a Joint attached to Slider
+  confirmJointAngle(): void {
+    if (this.pendingAngle == null) return;
+
+    this.setJointAngle(this.pendingAngle);
+    this.pendingAngle = undefined;
+  }
+
   // Handles input of angle values when pressing Enter
-  onAngleEnter(jointId: number, raw: string) {
-    const newAngle = parseFloat(raw);
-    if (isNaN(newAngle)) {
-      return;
+  onAngleEnter(jointId: number) {
+    let newAngle = this.pendingJointAngle;
+    if(newAngle == null) return;
+
+    if (this.angleSuffix === 'rad') { //need to convert the 'raw' into degrees if the current unit is 'rad', we have to convert it because the logic in backend only works with unit in degrees.
+      newAngle = newAngle * 180 / Math.PI;
     }
 
     // figure out which link & compute oldAngle
@@ -121,6 +196,11 @@ export class jointEditPanelComponent implements OnDestroy{
       l.joints.has(jointId)
     )!;
     const other = link.joints.get(jointId)!;
+    let canEdit = this.confirmCanEdit();
+    if (!canEdit) {
+      this.pendingJointAngle = undefined;
+      return;
+    }
     let oldAngle =
       (Math.atan2(
         other.coords.y - current.coords.y,
@@ -132,6 +212,7 @@ export class jointEditPanelComponent implements OnDestroy{
 
     // only record if it really changed
     if (Math.abs(oldAngle - newAngle) < 1e-3) {
+      this.pendingJointAngle = undefined;
       return;
     }
 
@@ -145,6 +226,20 @@ export class jointEditPanelComponent implements OnDestroy{
 
     link.setAngle(newAngle, current);
     this.getMechanism().notifyChange();
+    this.pendingJointAngle = undefined;
+  }
+
+  // Any function that will make changes to the joint should call this.confirmCanEdit() first,
+  // to make sure that the mechanism is not in a state of animation, before making changes.
+  confirmCanEdit(): boolean {
+    if (this._preventForAni) {
+      this.notificationService.showWarning(
+        'Cannot edit joint while Animation is in play or paused state!'
+      );
+      return false;
+    } else {
+      return true;
+    }
   }
 
   // Returns the mechanism state
@@ -226,6 +321,24 @@ export class jointEditPanelComponent implements OnDestroy{
     );
   }
 
+  setJointAngle(angleInput: number): void {
+    const joint = this.getCurrentJoint();
+    const oldAngle = joint.angle;
+    const newAngle = parseFloat(angleInput.toFixed(3));
+
+    if (newAngle !== oldAngle) {
+      this.undoRedoService.recordAction({
+        type: "setJointAngle",
+        jointId: joint.id,
+        oldAngle,
+        newAngle,
+      });
+      joint.angle = newAngle;
+    }
+
+    console.log(`Joint ${joint.id} angle set to ${newAngle}`);
+  }
+
   onTitleBlockClick(event: MouseEvent): void {
     console.log('Title clicked!');
     const clickedElement = event.target as HTMLElement;
@@ -252,6 +365,11 @@ export class jointEditPanelComponent implements OnDestroy{
 
   // Deletes the currently selected joint
   deleteJoint() {
+    let canEdit = this.confirmCanEdit();
+    if (!canEdit) {
+      return;
+    }
+
     this.getMechanism().removeJoint(this.getCurrentJoint().id);
     this.interactorService.deselectObject();
   }
@@ -318,6 +436,13 @@ export class jointEditPanelComponent implements OnDestroy{
         b.coords.y - a.coords.y
       );
 
+      this.pendingJointDistance = newDistance;
+      let canEdit = this.confirmCanEdit();
+      if (!canEdit) {
+        this.pendingJointDistance = this.getJointDistance(b);
+        return;
+      }
+
       // only record if it really changed
       if (Math.abs(oldDistance - newDistance) > 1e-6) {
         this.undoRedoService.recordAction({
@@ -363,48 +488,99 @@ export class jointEditPanelComponent implements OnDestroy{
     let xDiff = otherJoint.coords.x - currentJoint.coords.x;
     let yDiff = otherJoint.coords.y - currentJoint.coords.y;
 
-    const angleInRadians = Math.atan2(yDiff, xDiff);
+    let angleInRadians = Math.atan2(yDiff, xDiff);
     let angleInDegrees = angleInRadians * (180 / Math.PI);
-
     // Normalize the angle to be within [0, 360] degrees
-    if (angleInDegrees < 0) {
-      angleInDegrees += 360;
+    if (this.angleSuffix === 'º') {
+      if (angleInDegrees < 0) {
+        angleInDegrees += 360;
+      }
+      return parseFloat(angleInDegrees.toFixed(3));
+    } else if(this.angleSuffix === 'rad') {
+      if (angleInRadians < 0) {
+        angleInRadians += 2 * (Math.PI); // Normalize to be within [0, 2pi]
+      }
+      return parseFloat(angleInRadians.toFixed(3));
     }
 
-    return parseFloat(angleInDegrees.toFixed(3));
+    return 0;
+  }
+
+  getJointAngle2(): number {
+    return this.getCurrentJoint().angle;
+  }
+
+  getJointGround() {
+    return this.getCurrentJoint().isGrounded;
+  }
+
+  getJointInput() {
+    return this.getCurrentJoint().isInput;
+  }
+
+  getJointWeld() {
+    return this.getCurrentJoint().isWelded;
+  }
+
+  // checks if the current joint can become an input/be toggled off from input
+  canBeInput() {
+    this._preventForInput = !(this.getMechanism().canAddInput(this.getCurrentJoint()) || this._isInput)
+    return !this._preventForInput;
+  }
+
+  // called when a click on toggle has been prevented.
+  // used to show a notification to the user
+  toggleClickStopped(stopped: number) {
+    if (stopped == 0) {
+      this.confirmCanEdit();
+    } else if (stopped == 1) {
+      this.notificationService.showWarning(
+        'A mechanism can only have 1 input joint! Please remove the previous input joint before adding a new one.'
+      );
+    }
   }
 
   // Handles the toggle for grounding the joint
   handleToggleGroundChange(stateChange: boolean) {
-    console.log('Toggle State Changed: ', stateChange);
+
+    console.log('Ground Toggle State Changed: ', stateChange);
     this.getCurrentJoint();
     if (stateChange) {
       this.getMechanism().addGround(this.getCurrentJoint().id);
     } else {
       this.getMechanism().removeGround(this.getCurrentJoint().id);
+      this._isInput = false;
     }
+    this._isGround = stateChange;
+    this._canBeInput = this.canBeInput();
   }
 
   // Handles the toggle for welding the joint
   handleToggleWeldChange(stateChange: boolean) {
-    console.log('Toggle State Changed: ', stateChange);
+
+    console.log('Weld Toggle State Changed: ', stateChange);
     this.getCurrentJoint();
     if (stateChange) {
       this.getMechanism().addWeld(this.getCurrentJoint().id);
     } else {
       this.getMechanism().removeWeld(this.getCurrentJoint().id);
     }
+    this._isWeld = stateChange;
+    this._canBeInput = this.canBeInput();
   }
 
   // Handles the toggle for marking the joint as an input
   handleToggleInputChange(stateChange: boolean) {
-    console.log('Toggle State Changed: ', stateChange);
+
+    console.log('Input Toggle State Changed: ', stateChange);
     this.getCurrentJoint();
     if (stateChange) {
       this.getMechanism().addInput(this.getCurrentJoint().id);
     } else {
       this.getMechanism().removeInput(this.getCurrentJoint().id);
     }
+    this._isInput = stateChange;
+    this._canBeInput = this.canBeInput();
   }
 
   // Determines whether welding should be shown for this joint
@@ -440,6 +616,56 @@ export class jointEditPanelComponent implements OnDestroy{
   private resetPanel(): void {
     this.pendingX = undefined;
     this.pendingY = undefined;
+    this.pendingAngle = undefined;
+    this.pendingJointAngle = undefined;
+  }
+
+  get currentJointType(): 'slider' | 'slider-input' | 'other' {
+    if (!this.getCurrentJoint()) return 'slider-input';
+    if (!this.getCurrentJoint().isInput && this.getCurrentJoint().type === JointType.Prismatic) return 'slider';
+    if (this.getCurrentJoint().isInput && this.getCurrentJoint().type === JointType.Prismatic) return 'slider-input';
+    return 'other';
+  }
+
+  // changes how input joint speed in edit panel is styled depending on whether it in the panel or not
+  displayInputSpeed() {
+    const inputSpeedHTML = document.getElementById('inputJointSpeed');
+    const xyBlockHTML = document.getElementById('jointPositions');
+    if (inputSpeedHTML == null) {
+      return;
+    }
+    if (this.getCurrentJoint().isInput) {
+      inputSpeedHTML.style.display = 'block';
+      if (xyBlockHTML != null) {
+        xyBlockHTML.style.marginBottom = '0px';
+      }
+    } else {
+      inputSpeedHTML.style.display = 'none';
+      if (xyBlockHTML != null) {
+        xyBlockHTML.style.marginBottom = '12px';
+      }
+    }
+  }
+
+  getInputSpeed() {
+    return this.getCurrentJoint().rpmSpeed;
+  }
+
+  setInputSpeed(newSpeed: number): void {
+    let canEdit = this.confirmCanEdit();
+    if (!canEdit) {
+      return;
+    }
+    this.getCurrentJoint().rpmSpeed = newSpeed; // sets the specific input joint speed
+    this.getMechanism().setInputSpeed(newSpeed); // sets whole mechanism input speed
+  }
+
+
+  public onDirectionChanged(selection: string): void {
+    this.animationService.animateMechanisms(false);
+    this.animationService.reset();
+    this.animationService.startDirectionCounterclockwise = (selection === 'Counterclockwise');
+    this.stateService.getAnimationBarComponent()?.updateTimelineMarkers();
   }
 
 }

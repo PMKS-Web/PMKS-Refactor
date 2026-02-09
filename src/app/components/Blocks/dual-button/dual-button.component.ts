@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Link } from '../../../model/link';
 import { Joint } from '../../../model/joint';
@@ -22,6 +22,7 @@ export class DualButtonComponent {
   @Input() btn2Icon: string = '';
   @Input() btn1Action!: () => void;
   @Input() btn2Action!: () => void;
+  @Output() actionPrevented: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Input() btn1SVGPath: string = '';
   @Input() btn2SVGPath: string = '';
 

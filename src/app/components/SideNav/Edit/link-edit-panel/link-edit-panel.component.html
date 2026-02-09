@@ -128,7 +128,7 @@
                   (blur)="onLengthHover(false)"
                   [disabled]="isLocked"
                 />
-                <span class="la-unit">{{ units }}</span>
+                <span class="la-unit">{{ unitSuffix }}</span>
               </div>
               <div class="la-cell">
                 <img
@@ -144,12 +144,12 @@
                   (input)="pendingLinkAngle = $any($event.target).valueAsNumber"
                   (keydown.enter)="confirmLinkAngle()"
                   (mouseenter)="onAngleHover(true)"
-                  (mouseleave)="onAngleHover(false)"
+                  (mouseleave)="onAngleHover(true)"
                   (focus)="onAngleHover(true)"
                   (blur)="onAngleHover(false)"
                   [disabled]="isLocked"
                 />
-                <span class="la-unit">{{ angles }}</span>
+                <span class="la-unit">{{ angleSuffix }}</span>
               </div>
             </div>
           </div>
@@ -164,6 +164,9 @@
             [btn1SVGPath]="addTracerIconPath"
             [btn2SVGPath]="addForceIconPath"
             [mechanism]="getMechanism()"
+            [btn1Disabled] = "_preventDualButtons"
+            [btn2Disabled] = "_preventDualButtons"
+            (actionPrevented) = "dualButtonClickStopped($event)"
           >
           </dual-button>
         </div>
@@ -214,7 +217,7 @@
                       (keydown.enter)="confirmCompX(joint.id)"
                       [disabled]="isLocked"
                     />
-                    <span class="xy-unit">{{ units }}</span>
+                    <span class="xy-unit">{{ unitSuffix }}</span>
                   </div>
                   <div class="xy-cell">
                     <label>Y</label>
@@ -231,7 +234,7 @@
                       (keydown.enter)="confirmCompY(joint.id)"
                       [disabled]="isLocked"
                     />
-                    <span class="xy-unit">{{ units }}</span>
+                    <span class="xy-unit">{{ unitSuffix }}</span>
                   </div>
                 </div>
               </div>
