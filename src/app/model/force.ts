@@ -164,10 +164,9 @@ export class Force {
     const finalAngle = storedAngle + parentAngle;
 
     this.start = new Coord(
-      parentCenter.x + storedDistance * Math.cos(storedAngle),
-      parentCenter.y + storedDistance * Math.sin(storedAngle)
+      parentCenter.x + storedDistance * Math.cos(finalAngle),
+      parentCenter.y + storedDistance * Math.sin(finalAngle)
     );
-
     const angleInRadians = (this.angle * Math.PI) / 180;
 
     this.end = new Coord(
