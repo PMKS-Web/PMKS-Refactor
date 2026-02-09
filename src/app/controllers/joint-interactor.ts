@@ -113,6 +113,18 @@ export class JointInteractor extends Interactor {
         if (canMove) {
           this.stateService.getMechanism().setJointCoord(this.joint.id, newPos);
         }
+
+        if (!canMove) {
+          const now = Date.now();
+          if (now - this.lastNotificationTime >= 3000) {
+            // 3 seconds = 3000ms
+            this.notificationService.showNotification(
+              'Cannot move tracer points added after welding outside of the linkage!'
+            );
+            this.lastNotificationTime = now;
+          }
+          return;
+        }
       }
     });
 
