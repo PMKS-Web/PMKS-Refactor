@@ -866,7 +866,9 @@ export class SVGPathService {
     for (let link of subLinks.values()) {
       let allCoords: Coord[] = [];
       for(let joint of link.joints.values()) {
-        allCoords.push(joint._coords);
+        if (!(joint.isTracer && joint.addedAfterWeld)) {
+          allCoords.push(joint._coords);
+        }
       }
       allCoords = Array.from(allCoords, (coord) => {
         return this.unitConversionService.modelCoordToSVGCoord(coord);
