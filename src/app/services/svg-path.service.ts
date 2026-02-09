@@ -1091,7 +1091,7 @@ export class SVGPathService {
     return intersectionExternalLines;
   }
 
-  calculateCompoundPath(subLinks: Map<number, Link>, allCoordsList: Coord[], r: number) {
+  calculateCompoundPath(subLinks: Map<number, Link>, r: number) {
     // allExternalLines will hold the path coordinates for each line and arc for all the coords
     let allExternalLines: [Coord, Coord, Coord | null, Link][] = this.solveForExternalLines(subLinks, r);
     //console.log(allExternalLines);
