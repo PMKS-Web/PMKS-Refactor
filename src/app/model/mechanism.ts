@@ -314,10 +314,17 @@ export class Mechanism {
       'cannot become unwelded',
       'unwelded',
       (joint) => {
-        joint.removeWeld();
         //cascade effects into affected links, compound links, and forces
         let connectedCompoundLinks: CompoundLink[] =
           this.getConnectedCompoundLinks(joint);
+
+        for (let link of connectedCompoundLinks) {
+          for (let joint of link.getJoints().values()) {
+            if (joint.addedAfterWeld && joint.isTracer) {
+              this.removeJoint(joint.id);
+            }
+          }
+        }
 
         for (let compoundLink of connectedCompoundLinks) {
           console.log('compound links being checked');
@@ -336,6 +343,7 @@ export class Mechanism {
             this._compoundLinkIDCount++;
           }
         }
+        joint.removeWeld();
       }
     );
   }
