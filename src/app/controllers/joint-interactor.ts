@@ -94,6 +94,11 @@ export class JointInteractor extends Interactor {
           .clone()
           .add(this.dragOffsetInModel!);
 
+        let isBoundaryTracer = false;
+        if ((this.joint.isTracer && !this.joint.addedAfterWeld) && this.stateService.getMechanism().isMechanismWelded()) {
+          isBoundaryTracer = true;
+        }
+
         let canMove = true;
         if (this.joint.isTracer && this.joint.addedAfterWeld) {
           const translatedNewPos = this.unitConversionService.modelCoordToSVGCoord(newPos);
@@ -110,6 +115,19 @@ export class JointInteractor extends Interactor {
             this.startCompoundLinkPath.remove();
           }
         }
+
+        if (isBoundaryTracer) {
+          const now = Date.now();
+          if (now - this.lastNotificationTime >= 3000) {
+            // 3 seconds = 3000ms
+            this.notificationService.showNotification(
+              'Cannot move tracer points that define the shape\'s outline after welding!'
+            );
+            this.lastNotificationTime = now;
+          }
+          return;
+        }
+
         if (canMove) {
           this.stateService.getMechanism().setJointCoord(this.joint.id, newPos);
         }
