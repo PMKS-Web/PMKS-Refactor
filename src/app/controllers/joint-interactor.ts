@@ -11,6 +11,7 @@ import { UndoRedoService } from '../services/undo-redo.service';
 import {CompoundLinkInteractor} from "./compound-link-interactor";
 import {CompoundLink} from "../model/compound-link";
 import {UnitConversionService} from "../services/unit-conversion.service";
+import {join} from "@angular/compiler-cli";
 
 
 /*
@@ -94,9 +95,22 @@ export class JointInteractor extends Interactor {
           .clone()
           .add(this.dragOffsetInModel!);
 
-        let isBoundaryTracer = false;
-        if ((this.joint.isTracer && !this.joint.addedAfterWeld) && this.stateService.getMechanism().isMechanismWelded()) {
-          isBoundaryTracer = true;
+        let isBoundary = false;
+        let currentLinkageWelded = false;
+        this.stateService.getMechanism().getArrayOfCompoundLinks().forEach((link) => {
+          let jointList = link.getJoints();
+          if (jointList.includes(this.joint)) {
+            for (let i = 0; i < jointList.length; ++i) {
+              if (jointList.at(i)?.isWelded) {
+                currentLinkageWelded = true;
+                break;
+              }
+            }
+          }
+
+        })
+        if ((!this.joint.addedAfterWeld) && currentLinkageWelded) {
+          isBoundary = true;
         }
 
         let canMove = true;
@@ -116,12 +130,12 @@ export class JointInteractor extends Interactor {
           }
         }
 
-        if (isBoundaryTracer) {
+        if (isBoundary) {
           const now = Date.now();
           if (now - this.lastNotificationTime >= 3000) {
             // 3 seconds = 3000ms
             this.notificationService.showNotification(
-              'Cannot move tracer points that define the shape\'s outline after welding!'
+              'Cannot move joints that to alter the shape\'s outline after welding!'
             );
             this.lastNotificationTime = now;
           }
