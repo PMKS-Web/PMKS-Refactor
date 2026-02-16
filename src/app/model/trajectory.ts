@@ -1,4 +1,4 @@
-import { Coord } from './coord';
+ import { Coord } from './coord';
 
 export class Trajectory {
   constructor(
@@ -24,6 +24,11 @@ export class Trajectory {
     }
     return svgPathService.getSingleLinkDrawnPath(this.coords, 2); // Adjust radius as needed
   }
+
+  /*isTrajectoryTracer(): boolean {
+    // TODO!!!
+    return false;
+  }*/
 
   //Getters
   get coords(): Coord[] {

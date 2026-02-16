@@ -1,11 +1,27 @@
 <svg:g >
   <!-- Draw the trajectory path -->
+  <!--@if (isRef() && !this.joint.isHidden && !this.joint.isTracer){
+    <path
+      [attr.d]="getPath()"
+      [attr.stroke]="getStrokeColor()"
+      stroke-width="2"
+      fill="none"
+      [attr.stroke-width]="3"
+      stroke-dasharray="9.4247 9.4247"
+    ></path>
+  } @else {
+    <path
+      [attr.d]="getPath()"
+      [attr.stroke]="getStrokeColor()"
+      stroke-width="2"
+      fill="none"
+    ></path>
+  }-->
   <path
     [attr.d]="getPath()"
     [attr.stroke]="getStrokeColor()"
     stroke-width="2"
     fill="none"
   ></path>
-
 </svg:g>
 
