@@ -860,22 +860,6 @@ export class SVGPathService {
       return (this.isPointInsideLink(line[0], line[3], linkExternalLines, radius) || origStartOnLink) &&
         (this.isPointInsideLink(line[1], line[3], linkExternalLines, radius) || origEndOnLink);
     }
-
-
-
-    // check if both endpoints are on link and then check for line/line, arc/arc, or arc/line
-    // if line/line or arc/arc, is contained
-    // else if arc/line, is not contained
-    // else if line/arc, is contained
-    /*if (startOnLink && endOnLink) {
-      if (tempShortenedLine[2] !== null) {
-
-      }
-    }*/
-
-    // check if both endpoints of line are inside the link
-    /*return (this.isPointInsideLink(tempShortenedLine[0], tempShortenedLine[3], linkExternalLines, radius) || startOnLink) &&
-      (this.isPointInsideLink(tempShortenedLine[1], tempShortenedLine[3], linkExternalLines, radius) || endOnLink);*/
   }
 
   // this shortens segments by shortenNum and returns new segment
@@ -892,7 +876,6 @@ export class SVGPathService {
       return shortenedLine;
     } else {
       shortenedLine = [line[0].clone(), line[1].clone(), line[2]?.clone(), line[3]];
-      //const angleA = Math.atan2(a.y - startPoint.y, a.x - startPoint.x);
 
       let radius = line[0].getDistanceTo(line[2]);
       let angleToShortenBy = shortenNum / radius;
