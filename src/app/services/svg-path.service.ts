@@ -846,9 +846,73 @@ export class SVGPathService {
   // calculates whether a line is contained within a link
   // used to determine whether to get rid of a line
   isLineContained(line: [Coord, Coord, Coord | null, Link], linkExternalLines: [Coord, Coord, Coord | null, Link][], radius: number, intersectionPoints: {point: Coord, i: number}[]): boolean {
+    const origStartOnLink: boolean = this.isPointOnLink(line[0], linkExternalLines, radius);
+    const origEndOnLink: boolean = this.isPointOnLink(line[1], linkExternalLines, radius);
+    if (origStartOnLink && origEndOnLink) {
+      let tempShortenedLine:[Coord, Coord, Coord | null, Link] = this.shortenBy(line, 0.02 * this.scale);
+
+      const startOnLink: boolean = this.isPointOnLink(tempShortenedLine[0], linkExternalLines, radius);
+      const endOnLink: boolean = this.isPointOnLink(tempShortenedLine[1], linkExternalLines, radius);
+
+      return (this.isPointInsideLink(tempShortenedLine[0], tempShortenedLine[3], linkExternalLines, radius) || startOnLink) &&
+        (this.isPointInsideLink(tempShortenedLine[1], tempShortenedLine[3], linkExternalLines, radius) || endOnLink);
+    } else {
+      return (this.isPointInsideLink(line[0], line[3], linkExternalLines, radius) || origStartOnLink) &&
+        (this.isPointInsideLink(line[1], line[3], linkExternalLines, radius) || origEndOnLink);
+    }
+
+
+
+    // check if both endpoints are on link and then check for line/line, arc/arc, or arc/line
+    // if line/line or arc/arc, is contained
+    // else if arc/line, is not contained
+    // else if line/arc, is contained
+    /*if (startOnLink && endOnLink) {
+      if (tempShortenedLine[2] !== null) {
+
+      }
+    }*/
+
     // check if both endpoints of line are inside the link
-    return (this.isPointInsideLink(line[0], line[3], linkExternalLines, radius) || this.isPointOnLink(line[0], linkExternalLines, radius)) &&
-      (this.isPointInsideLink(line[1], line[3], linkExternalLines, radius) || this.isPointOnLink(line[1], linkExternalLines, radius));
+    /*return (this.isPointInsideLink(tempShortenedLine[0], tempShortenedLine[3], linkExternalLines, radius) || startOnLink) &&
+      (this.isPointInsideLink(tempShortenedLine[1], tempShortenedLine[3], linkExternalLines, radius) || endOnLink);*/
+  }
+
+  // this shortens segments by shortenNum and returns new segment
+  shortenBy(line: [Coord, Coord, Coord | null, Link], shortenNum: number): [Coord, Coord, Coord | null, Link] {
+    let shortenedLine:[Coord, Coord, Coord | null, Link];
+    if (line[2] == null) {
+      shortenedLine = [line[0].clone(), line[1].clone(), line[2], line[3]];
+      const angle = Math.atan2(line[1].y - line[0].y, line[1].x - line[0].x);
+      const shortenByVector = new Coord(Math.cos(angle), Math.sin(angle)).scale(
+        shortenNum / 2
+      );
+      shortenedLine[0] = shortenedLine[0].add(shortenByVector);
+      shortenedLine[1] = shortenedLine[1].subtract(shortenByVector);
+      return shortenedLine;
+    } else {
+      shortenedLine = [line[0].clone(), line[1].clone(), line[2]?.clone(), line[3]];
+      //const angleA = Math.atan2(a.y - startPoint.y, a.x - startPoint.x);
+
+      let radius = line[0].getDistanceTo(line[2]);
+      let angleToShortenBy = shortenNum / radius;
+      angleToShortenBy /= 2;
+
+      let startAngle = line[0].getAngleTo(line[2]);
+      let endAngle = line[1].getAngleTo(line[2]);
+
+      startAngle += angleToShortenBy;
+      endAngle -= angleToShortenBy;
+
+      shortenedLine[0] = line[2].clone()?.add(
+        new Coord(Math.cos(startAngle), Math.sin(startAngle)).scale(radius)
+      );
+      shortenedLine[1] = line[2].clone()?.add(
+        new Coord(Math.cos(endAngle), Math.sin(endAngle)).scale(radius)
+      );
+
+      return shortenedLine;
+    }
   }
 
   // This function returns the lines used to calculate and save the lines of a link
