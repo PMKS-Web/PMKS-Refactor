@@ -373,6 +373,7 @@ export class JointInteractor extends Interactor {
     // ── after ──
     capture.onClick$.subscribe((mousePos) => {
       const mech = this.stateService.getMechanism();
+      this.joint.isTracer = false;
 
       // make the link (and possibly a new joint)
       const hovered = capture.getHoveringJoint();

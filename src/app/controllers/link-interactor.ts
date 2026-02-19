@@ -226,6 +226,8 @@ export class LinkInteractor extends Interactor {
                 (js) => js.coords.x === start.x && js.coords.y === start.y
               )!.id;
 
+              mech.getJoint(attachJointId).isTracer = false;
+
                   this.undoRedoService.recordAction({
                     type:             'addLinkToLink',
                     parentLinkId:   this.link.id,
@@ -258,6 +260,7 @@ export class LinkInteractor extends Interactor {
             const afterIds = Array.from(this.link.joints.keys());
             const newId = afterIds.find((id) => !beforeIds.includes(id))!;
             const newJoint = this.link.joints.get(newId)!;
+            newJoint.isTracer = true;
 
                 // recordAction with a real jointId
                 this.undoRedoService.recordAction({
