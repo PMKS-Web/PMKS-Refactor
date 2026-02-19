@@ -87,7 +87,7 @@ export class CompoundLinkInteractor extends Interactor {
             {
                 icon: "assets/contextMenuIcons/addTracer.svg",
                 label: "Attach Tracer Point",
-                action: () => { mechanism.addJointToLink(this.compoundLink.id, modelPosAtRightClick) },
+                action: () => { mechanism.addTracerPointWelded(this.compoundLink.id, modelPosAtRightClick) },
                 disabled: false
             },
             {
