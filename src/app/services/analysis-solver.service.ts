@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Coord } from '../model/coord';
 import { Link } from "../model/link";
+import { Joint } from "../model/joint";
 import { PositionSolverService, SolveOrder, SolvePrerequisite, SolveType } from './kinematic-solver.service';
 import { AnimationPositions } from './kinematic-solver.service';
 import { create, all, MathJsInstance } from 'mathjs'
@@ -371,14 +372,35 @@ export class AnalysisSolveService {
     const numSteps = subJoints?.[0]?.positions?.length ?? 0;
     if (!numSteps || !link) return { ang: ang_pos, vel: ang_vel, acc: ang_acc };
 
-    // Link lengths from mechanism
-    const r2 = links[0]?.length ?? 0;
-    const r3 = links[1]?.length ?? 0;
-    const r4 = links[2]?.length ?? 0;
+    // Determine which link is actually the input/coupler/output for this mechanism
+    const fourBar = this.identifyFourBarLinks(links);
+    const hasFourBarMap = !!(fourBar.inputLink && fourBar.couplerLink && fourBar.outputLink);
 
-    // Known input speed -> omega2
-    const rpm = mech.getInputSpeed();
+    // Link lengths from mechanism
+    const r2 = hasFourBarMap ? fourBar.inputLink!.length : (links[0]?.length ?? 0);
+    const r3 = hasFourBarMap ? fourBar.couplerLink!.length : (links[1]?.length ?? 0);
+    const r4 = hasFourBarMap ? fourBar.outputLink!.length : (links[2]?.length ?? 0);
+
+    // Known input speed -> omega2 (prefer input joint speed when available)
+    const rpm = fourBar.inputJoint ? fourBar.inputJoint.inputSpeed : mech.getInputSpeed();
     const omega2 = 2 * Math.PI * (rpm / 60);
+
+    const normalizeAngle = (theta: number) => {
+      const twoPi = 2 * Math.PI;
+      const t = theta % twoPi;
+      return t < 0 ? t + twoPi : t;
+    };
+
+    const unwrapAngle = (prevUnwrapped: number, prevRaw: number, raw: number) => {
+      let delta = raw - prevRaw;
+      if (delta > Math.PI) delta -= 2 * Math.PI;
+      else if (delta < -Math.PI) delta += 2 * Math.PI;
+      return prevUnwrapped + delta;
+    };
+
+    let prevThetaRaw: number | null = null;
+    let prevThetaUnwrapped: number | null = null;
+    const thetaUnwrapped: number[] = [];
 
     for (let t = 0; t < numSteps; t++) {
       // Theta for the CURRENT exported link
@@ -390,16 +412,32 @@ export class AnalysisSolveService {
 
       const thisA = subJoints[thisLink.idxA].positions[t];
       const thisB = subJoints[thisLink.idxB].positions[t];
-      const thisTheta = Math.atan2(thisB.y - thisA.y, thisB.x - thisA.x);
-      ang_pos.push(thisTheta);
+      const thisThetaRaw = Math.atan2(thisB.y - thisA.y, thisB.x - thisA.x);
+      const priorRaw: number | null = prevThetaRaw;
+      const priorUnwrapped: number | null = prevThetaUnwrapped;
+      const thisThetaUnwrapped: number = priorRaw === null || priorUnwrapped === null
+        ? thisThetaRaw
+        : unwrapAngle(priorUnwrapped, priorRaw, thisThetaRaw);
+      const dTheta: number = priorUnwrapped === null ? 0 : thisThetaUnwrapped - priorUnwrapped;
+      prevThetaRaw = thisThetaRaw;
+      prevThetaUnwrapped = thisThetaUnwrapped;
+      thetaUnwrapped.push(thisThetaUnwrapped);
+
+      ang_pos.push(normalizeAngle(thisThetaRaw));
 
       // Thetas for matrix solver
-      const p2 = this.findJointPair(links[0], subJoints, jointIDs, t);
-      const p3 = this.findJointPair(links[1], subJoints, jointIDs, t);
-      const p4 = this.findJointPair(links[2], subJoints, jointIDs, t);
+      const link2 = hasFourBarMap ? fourBar.inputLink! : links[0];
+      const link3 = hasFourBarMap ? fourBar.couplerLink! : links[1];
+      const link4 = hasFourBarMap ? fourBar.outputLink! : links[2];
+
+      const p2 = link2 ? this.findJointPair(link2, subJoints, jointIDs, t) : null;
+      const p3 = link3 ? this.findJointPair(link3, subJoints, jointIDs, t) : null;
+      const p4 = link4 ? this.findJointPair(link4, subJoints, jointIDs, t) : null;
 
       if (!p2 || !p3 || !p4 || !r2 || !r3 || !r4) {
-        ang_vel.push(linkIndex === 0 ? omega2 : 0);
+        const omegaFallback = (!hasFourBarMap && linkIndex === 0) || (hasFourBarMap && link === fourBar.inputLink) ? omega2 : 0;
+        const omegaOut = Math.abs(dTheta) > 1e-12 ? Math.sign(dTheta) * Math.abs(omegaFallback) : omegaFallback;
+        ang_vel.push(omegaOut);
         ang_acc.push(0);
         continue;
       }
@@ -420,9 +458,27 @@ export class AnalysisSolveService {
       // Matrix solution for unknown omegas
       const { omega3, omega4 } = this.getAngularVelocities(r2, r3, r4, theta2, theta3, theta4, omega2);
 
-      const omegas = [omega2, omega3, omega4];
-      ang_vel.push(omegas[linkIndex] ?? 0); // Push the selected link velocity
+      let omegaCandidate = 0;
+      if (hasFourBarMap) {
+        if (link === fourBar.inputLink) omegaCandidate = omega2;
+        else if (link === fourBar.couplerLink) omegaCandidate = omega3;
+        else if (link === fourBar.outputLink) omegaCandidate = omega4;
+        else omegaCandidate = 0;
+      } else {
+        const omegas = [omega2, omega3, omega4];
+        omegaCandidate = omegas[linkIndex] ?? 0;
+      }
+      const omegaOut = Math.abs(dTheta) > 1e-12 ? Math.sign(dTheta) * Math.abs(omegaCandidate) : omegaCandidate;
+
+      ang_vel.push(omegaOut); // Push the selected link velocity
       ang_acc.push(0); // Placeholder for now
+    }
+
+    if (ang_vel.length > 1 && thetaUnwrapped.length > 1) {
+      const dTheta0 = thetaUnwrapped[1] - thetaUnwrapped[0];
+      if (Math.abs(dTheta0) > 1e-12) {
+        ang_vel[0] = Math.sign(dTheta0) * Math.abs(ang_vel[0]);
+      }
     }
 
     return { ang: ang_pos, vel: ang_vel, acc: ang_acc };
@@ -444,39 +500,44 @@ export class AnalysisSolveService {
     return { omega2, omega3, omega4 };
   }
 
-  private findJointPair(link: any, subJoints: JointAnalysis[], jointIDs: number[], t: number): { idxA: number; idxB: number } | null {
-    const linkJointIds = Array.from(link.joints.keys())
-      .map(j => Number(j))
-      .sort((a, b) => a - b);
+  private findJointPair(
+    link: any,
+    subJoints: JointAnalysis[],
+    jointIDs: number[],
+    t: number
+  ): { idxA: number; idxB: number } | null {
 
-    // Map link joint ids -> indices into subJoints (aligned with jointIDs)
+    const mech = this.stateService.getMechanism();
+    const allLinks = mech.getArrayOfLinks();
+    const degMap = this.buildJointDegreeMap(allLinks);
+
+    const linkJointIds = Array.from(link.joints.keys()).map(j => Number(j));
+
+    // Prefer joints that connect to other links (degree > 1)
+    let preferred = linkJointIds.filter(jid => (degMap.get(jid) ?? 0) > 1);
+
+    // Fallback if we can't find two connection joints
+    if (preferred.length < 2) preferred = linkJointIds;
+
+    // Map joint ids -> indices into subJoints
     const idxs: number[] = [];
-    for (const jid of linkJointIds) {
+    for (const jid of preferred) {
       const idx = jointIDs.indexOf(jid);
       if (idx >= 0) idxs.push(idx);
     }
 
-    let bestI = -1, bestJ = -1;
-    let bestD2 = -Infinity;
-
+    // Pick farthest pair among preferred candidates (stable + works well)
+    let bestI = -1, bestJ = -1, bestD2 = -Infinity;
     for (let a = 0; a < idxs.length; a++) {
       for (let b = a + 1; b < idxs.length; b++) {
-        const i = idxs[a];
-        const j = idxs[b];
-
+        const i = idxs[a], j = idxs[b];
         const p = subJoints[i]?.positions?.[t];
         const q = subJoints[j]?.positions?.[t];
         if (!p || !q) continue;
 
-        const dx = q.x - p.x;
-        const dy = q.y - p.y;
-        const d2 = dx * dx + dy * dy;
-
-        if (d2 > bestD2) {
-          bestD2 = d2;
-          bestI = i;
-          bestJ = j;
-        }
+        const dx = q.x - p.x, dy = q.y - p.y;
+        const d2 = dx*dx + dy*dy;
+        if (d2 > bestD2) { bestD2 = d2; bestI = i; bestJ = j; }
       }
     }
 
@@ -484,6 +545,86 @@ export class AnalysisSolveService {
     return { idxA: bestI, idxB: bestJ };
   }
 
+  private identifyFourBarLinks(links: Link[]): {
+    inputLink?: Link;
+    couplerLink?: Link;
+    outputLink?: Link;
+    groundLink?: Link;
+    inputJoint?: Joint;
+  } {
+    const mech = this.stateService.getMechanism();
+    const joints = mech.getArrayOfJoints();
+    const inputJoint = joints.find(j => j.isInput);
+    const groundedJoints = joints.filter(j => j.isGrounded);
+
+    const isGroundLink = (link: Link) => {
+      const js = link.getJoints();
+      return js.length >= 2 && js.every(j => j.isGrounded);
+    };
+
+    const groundLink = links.find(isGroundLink);
+
+    let inputLink: Link | undefined;
+    let inputOther: Joint | undefined;
+    if (inputJoint) {
+      for (const l of links) {
+        if (!l.containsJoint(inputJoint.id)) continue;
+        const other = l.getJoints().find(j => j.id !== inputJoint.id);
+        if (other && !other.isGrounded) {
+          inputLink = l;
+          inputOther = other;
+          break;
+        }
+      }
+    }
+
+    let outputJoint: Joint | undefined;
+    if (inputJoint) {
+      outputJoint = groundedJoints.find(j => j.id !== inputJoint.id);
+    }
+
+    let outputLink: Link | undefined;
+    let outputOther: Joint | undefined;
+    if (outputJoint) {
+      for (const l of links) {
+        if (!l.containsJoint(outputJoint.id)) continue;
+        const other = l.getJoints().find(j => j.id !== outputJoint?.id);
+        if (other && !other.isGrounded) {
+          outputLink = l;
+          outputOther = other;
+          break;
+        }
+      }
+    }
+
+    let couplerLink: Link | undefined;
+    if (inputOther && outputOther) {
+      const inputOtherId = inputOther.id;
+      const outputOtherId = outputOther.id;
+      couplerLink = links.find(l => l.containsJoint(inputOtherId) && l.containsJoint(outputOtherId));
+    }
+    if (!couplerLink) {
+      couplerLink = links.find(l =>
+        l !== inputLink &&
+        l !== outputLink &&
+        l !== groundLink &&
+        l.getJoints().every(j => !j.isGrounded)
+      );
+    }
+
+    return { inputLink, couplerLink, outputLink, groundLink, inputJoint };
+  }
+
+
+  private buildJointDegreeMap(links: any[]): Map<number, number> {
+    const deg = new Map<number, number>();
+    for (const link of links) {
+      for (const jid of link.joints.keys()) {
+        deg.set(Number(jid), (deg.get(Number(jid)) ?? 0) + 1);
+      }
+    }
+    return deg;
+  }
 
 
 }
