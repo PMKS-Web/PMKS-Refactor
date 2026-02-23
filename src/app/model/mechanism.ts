@@ -759,15 +759,35 @@ export class Mechanism {
    * @param {Coord} coord
    * @memberof Mechanism
    */
-  addTracerPointWelded(linkID: number, coord: Coord) {
+  addTracerPointWelded(linkID: number, coordModel: Coord, coordSVG: Coord) {
     this.executeLinkAction(linkID, (link) => {
-      let jointA = new Joint(this._jointIDCount, coord);
+      let jointA = new Joint(this._jointIDCount, coordModel);
       this._jointIDCount++;
       if (this.isMechanismWelded()) {
         jointA.isTracer = true;
       }
+
+      let foundLink: boolean = false;
+      let i: number = 0;
+      while (i < this._links.size && !foundLink) {
+        let currentLink = this._links.get(i);
+        const inLink = currentLink?.containsCoord(coordSVG);
+
+        if (inLink) {
+          foundLink = true;
+        } else {
+          i++;
+        }
+      }
+
       this._joints.set(jointA.id, jointA);
-      link.addTracer(jointA);
+
+      const theLink = this._links.get(i);
+      if (foundLink && theLink != undefined) {
+        theLink.addTracer(jointA);
+      } else {
+        link.addTracer(jointA);
+      }
     });
   }
 

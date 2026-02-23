@@ -1,6 +1,8 @@
 import { Coord } from './coord';
 import { Joint } from './joint';
 import { Force } from './force';
+import {UnitConversionService} from "../services/unit-conversion.service";
+import {SVGPathService} from "../services/svg-path.service";
 
 export interface RigidBody {
   getJoints(): Joint[];
@@ -440,6 +442,42 @@ export class Link implements RigidBody {
       return false;
     }
   }
+  // checks if coord is in link. Assumes coords have been converted into svg coords from model coords
+  containsCoord(coord: Coord): boolean {
+    // below is getting the path string of this link
+    let joints: IterableIterator<Joint> = this.joints.values();
+    let allCoords: Coord[] = [];
+    let unitConversionService: UnitConversionService = new UnitConversionService();
+    for (let joint of joints) {
+      let coord: Coord = joint._coords;
+      coord = unitConversionService.modelCoordToSVGCoord(coord);
+      allCoords.push(coord);
+    }
+    const pathString = new SVGPathService(unitConversionService).getSingleLinkDrawnPath(allCoords, 30);
+
+    // NS below is used to create an SVGPathElement instead of an unknown HTML element, by using namespace
+    const NS = "http://www.w3.org/2000/svg";
+    const path = document.createElementNS(NS, "path");
+
+    // creating path element from path string that is invisible
+    path.setAttribute("d", pathString);
+    path.setAttribute("fill", "black");
+
+    // checking that svg exists before calculating for whether the coordinate is within the path or not
+    const svg = document.querySelector('svg');
+    if (svg != null) {
+      path.setAttribute("visibility", "hidden");
+      svg?.appendChild(path);
+
+      // check if coord is within the path or not
+      let pointTwo = new DOMPoint(coord.x, coord.y);
+      const isInPath = path.isPointInFill(pointTwo);
+      path.remove();
+      return isInPath;
+    }
+    return false;
+  }
+
   moveCoordinates(coord: Coord) {
     for (const jointID of this._joints.keys()) {
       const joint = this._joints.get(jointID)!;

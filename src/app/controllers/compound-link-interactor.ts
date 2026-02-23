@@ -77,6 +77,7 @@ export class CompoundLinkInteractor extends Interactor {
           }
         const mechanism: Mechanism = this.stateService.getMechanism();
         let modelPosAtRightClick = this.getMousePos().model;
+        let svgPosAtRightClick = this.getMousePos().svg;
         availableContext.push(
             {
                 icon: "assets/contextMenuIcons/addLink.svg",
@@ -87,7 +88,7 @@ export class CompoundLinkInteractor extends Interactor {
             {
                 icon: "assets/contextMenuIcons/addTracer.svg",
                 label: "Attach Tracer Point",
-                action: () => { mechanism.addTracerPointWelded(this.compoundLink.id, modelPosAtRightClick) },
+                action: () => { mechanism.addTracerPointWelded(this.compoundLink.id, modelPosAtRightClick, svgPosAtRightClick) },
                 disabled: false
             },
             {
