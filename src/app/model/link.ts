@@ -4,6 +4,10 @@ import { Force } from './force';
 
 export interface RigidBody {
   getJoints(): Joint[];
+  get centerOfMass(): Coord;
+  get mass(): number;
+  get id(): number;
+  get name(): string;
 }
 
 export class Link implements RigidBody {
@@ -17,7 +21,7 @@ export class Link implements RigidBody {
   private _color: string = '';
   private _isLocked: boolean;
   private _angle: number;
-
+  
   // These fields are only for supporting CUSTOM centerOfMass logic
   private _customCOMAnchors: [number, number] | null = null; // We store IDs so we can find the correct joints later even if we have references.
   private _customCOMRadii: [number, number] | null = null; // Distances from those two joints to the custom COM at the moment the user sets it.
@@ -91,6 +95,12 @@ export class Link implements RigidBody {
 
   get centerOfMass(): Coord {
     // ensures that the center of mass is always updating, specifically when adding tracer points is useful
+    // If custom COM is set, return it; otherwise calculate from joints
+
+    // if (this._customCenterOfMass) {
+    //   return this._centerOfMass;
+    // }
+
     return this.calculateCenterOfMass();
   }
 
@@ -190,7 +200,8 @@ export class Link implements RigidBody {
 
   addTracer(newJoint: Joint) {
     this._joints.set(newJoint.id, newJoint);
-    this.calculateCenterOfMass();
+    this.resetCenterOfMass();// Reset to calculated COM when adding tracers (optional behavior)
+
     this._name = '';
     for (let joint of this._joints.values()) {
       this._name += joint.name;
@@ -226,7 +237,7 @@ export class Link implements RigidBody {
       //may need to throw error here in future
     }
 
-    this.calculateCenterOfMass();
+    this.resetCenterOfMass();
     if (this._joints.size === 1) {
       throw new Error('Link now only contains 1 Joint');
     }

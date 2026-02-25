@@ -1366,7 +1366,7 @@ export class Mechanism {
         subMechanisms.push(subMechanism);
       }
     }
-
+    // console.log('sub-mechanisms: ', subMechanisms); // just for testing
     return subMechanisms;
   }
 
