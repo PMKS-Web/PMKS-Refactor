@@ -1,4 +1,4 @@
-import { Component} from '@angular/core'
+import {Component, OnInit} from '@angular/core'
 import { AnimationService } from 'src/app/services/animation.service';
 import { InteractionService } from 'src/app/services/interaction.service'
 import {Mechanism} from "../../../../model/mechanism";
@@ -8,6 +8,7 @@ import {RigidBody} from "../../../../model/link";
 import {Joint} from "../../../../model/joint";
 import {JointInteractor} from "../../../../controllers/joint-interactor";
 import {LinkInteractor} from "../../../../controllers/link-interactor";
+import {StaticsAnalysisService} from "../../../../services/statics-analysis.service";
 
 export enum GraphType {
   JointForce
@@ -19,23 +20,41 @@ export enum GraphType {
   styleUrls: ['./forces-analysis-panel.component.scss'],
 
 })
-export class ForcesAnalysisPanelComponent {
+export class ForcesAnalysisPanelComponent implements OnInit {
   currentGraphType: GraphType | null = null;
   selectedSubId: number | null = null;
   currentGlobalUSuffix: any;
   currentGlobalAngleSuffix: any;
   selectedJointId: number | null = null;
+  currentFrameIndex: number = 0;
 
   constructor(
     private stateService: StateService,
     private analysisSolverService: AnalysisSolveService,
     private interactionService: InteractionService,
-    private animationService: AnimationService
+    private animationService: AnimationService,
+    private staticsAnalysis: StaticsAnalysisService
   ) {
     this.stateService.globalASuffixCurrent.subscribe(value => {
       this.currentGlobalAngleSuffix = value;
     });
   }
+
+  ngOnInit(): void {
+
+    this.animationService.currentFrameIndex$
+      .subscribe(index => {
+        this.currentFrameIndex = index;
+      });
+
+    const mechanism = this.stateService.getMechanism();
+    const subMechanisms = mechanism.getSubMechanisms();
+
+    for (let i = 0; i < subMechanisms.length; i++) {
+      this.staticsAnalysis.analyzeIfNeeded(i);
+    }
+  }
+
 
 
   getSelectedObjectType(): string{
@@ -152,6 +171,31 @@ export class ForcesAnalysisPanelComponent {
     } else {
       this.selectedSubId = index;
     }
+  }
+
+  getSubMechanismTorque(subIndex: number): string {
+
+    const frameData =
+      this.staticsAnalysis.getAnalysisResultAtFrame(subIndex, this.currentFrameIndex);
+
+    console.log(
+      "Frame:",
+      this.currentFrameIndex,
+      "Sub:",
+      subIndex,
+      "FrameData:",
+      frameData
+    );
+
+    if (!frameData) {
+      return 'N/A';
+    }
+
+    const torque = frameData.solution.motorTorque;
+    console.log(`Torque at frame ${this.currentFrameIndex}: ${torque.toFixed(2)} N⋅m`);
+
+
+    return torque.toFixed(2) ?? 'N/A';
   }
 
 
