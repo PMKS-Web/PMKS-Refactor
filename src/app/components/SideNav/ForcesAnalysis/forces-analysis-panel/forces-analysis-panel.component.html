@@ -1,0 +1,334 @@
+<div class="app-analysis-panel-container">
+  @if (!this.invalid) {
+    @switch (getSelectedObjectType()){
+      @case('JointInteractor'){
+<!--        <app-joint-analysis-panel></app-joint-analysis-panel>-->
+        <div id="jointAnalysisPanel">
+          <panel-section-collapsible>
+            <title-block class="analysisHeader">
+              Joint {{ getJointName() }}
+            </title-block>
+          </panel-section-collapsible>
+
+          <collapsible-subsection titleLabel="Data Summary">
+
+            <analysis-graph-button
+              [dynamicText]="'Force:'"
+              [explainText]="'Joint Force'"
+              [btn1Action]="toggleGraph.bind(this, GraphType.JointForce)"
+              [graphText]="currentGraphType === GraphType.JointForce ? 'Close Graph' : 'Show Graph'">
+            </analysis-graph-button>
+
+            <p style="margin-left: 10px; margin-top: 1px;">
+              F: {{ getJointForce() }}
+            </p>
+
+            <ng-container *ngIf="currentGraphType === GraphType.JointForce">
+              <div class="modal" (keyup.escape)="closeAnalysisGraph()">
+                <app-analysis-graph-block
+                  class="large-graph"
+                  [inputXData]="getGraphData().xData"
+                  [inputYData]="getGraphData().yData"
+                  [inputLabels]="getGraphData().timeLabels"
+                  [yAxisLabel]="'Joint Force (' + currentGlobalUSuffix + ')'">
+                </app-analysis-graph-block>
+              </div>
+            </ng-container>
+
+          </collapsible-subsection>
+      </div>
+      }
+      @case('LinkInteractor'){
+<!--        <app-link-analysis-panel></app-link-analysis-panel>-->
+        <div id="linkAnalysisPanel">
+          <panel-section-collapsible>
+            <title-block class="analysisHeader">
+              Link {{ getLinkName() }}
+            </title-block>
+          </panel-section-collapsible>
+
+          <collapsible-subsection titleLabel="Data Summary">
+            <div *ngFor="let joint of getCurrentLink().getJoints()">
+
+              <analysis-graph-button
+                [dynamicText]="'Joint ' + joint.name"
+                [explainText]="'Joint Force'"
+                [btn1Action]="toggleJointForceGraph.bind(this, joint.id )"
+                [graphText]="selectedJointId === joint.id ? 'Close Graph' : 'Show Graph'">
+              </analysis-graph-button>
+
+              <!-- TODO: replace with this actual data -->
+              <p style="margin-left: 10px; margin-top: 1px;">
+                F<sub>x</sub>: {{ joint.id }} {{ currentGlobalUSuffix }},
+                F<sub>y</sub>: {{ joint.id }} {{ currentGlobalUSuffix }}
+              </p>
+
+              <!-- Individual Graph -->
+              <ng-container *ngIf="selectedJointId === joint.id">
+                <div class="modal" (keyup.escape)="closeJointForceGraph()">
+                  <app-analysis-graph-block
+                    class="large-graph"
+                    [inputXData]="getJointForceGraphData(joint.id).xData"
+                    [inputYData]="getJointForceGraphData(joint.id).yData"
+                    [inputLabels]="getJointForceGraphData(joint.id).timeLabels"
+                    [yAxisLabel]="'Joint ' + joint.name + ' Force (' + currentGlobalUSuffix + ')'">
+                  </app-analysis-graph-block>
+                </div>
+              </ng-container>
+            </div>
+          </collapsible-subsection>
+        </div>
+
+      }
+      @case('CompoundLinkInteractor'){
+        <app-compound-link-analysis-panel></app-compound-link-analysis-panel>
+      }
+      @case('ForceInteractor'){
+        <p>Force Selected</p>
+      }
+      @default {
+      <div id="default-view">
+<!--        <div class="scroll-container">-->
+<!--          <title-block-->
+<!--            class="title"-->
+<!--            alwaysShown-->
+<!--            description="No link or joint selected. Please select one to show its properties">-->
+<!--            <div style="margin-right: 9.8em;">Analysis</div>-->
+<!--          </title-block>-->
+<!--        </div>-->
+
+        <panel-section-collapsible>
+          <title-block description='' class = "analysisHeader"
+          >Force Analysis
+          </title-block>
+        </panel-section-collapsible>
+
+        <!-- Data Summary -->
+        <collapsible-subsection titleLabel='Data Summary'>
+          <div class="flex-container">
+<!--            <div *ngFor="let sub of getSubMechanisms()">-->
+
+              <div *ngFor="let sub of getSubMechanisms(); let i = index">
+
+                <analysis-graph-button
+                  [dynamicText]="'Submechanism ' + (i + 1)"
+                  [explainText]="'Submechanism Torque'"
+                  [btn1Action]="toggleSubTorqueGraph.bind(this, i)"
+                  [graphText]="selectedSubId === i ? 'Close Graph' : 'Show Graph'">
+                </analysis-graph-button>
+
+                <p style="margin-left: 10px; margin-top: 1px;">
+                  Torque: Submechanism {{ i + 1 }}
+                </p>
+
+
+
+
+
+            </div>
+          </div>
+        </collapsible-subsection>
+
+
+      </div>
+      }
+
+    }
+  }
+    @else(){
+
+  <!--  FORCE ANALYSIS PANEL-->
+  <div id="default-view">
+
+      <panel-section-collapsible
+        [warning]="true"
+        [expanded]="false"
+        id="placeholderContainer"
+        #panelRef>
+
+        <title-block
+          class="title"
+          alwaysShown
+          icon="expand_more"
+          description="This linkage is not valid and cannot be analyzed. Make sure all requirements are met:">
+          <div style="margin-right: 9.8em;">Analysis</div>
+        </title-block>
+
+        <mat-list class="example-list-wrapping" *ngIf="panelRef.expanded">
+          <mat-list-item lines="3">
+            <span matListItemTitle>Must have one input</span>
+            <span>Mechanisms should have 1 and only one joint defined as a input.</span>
+          </mat-list-item>
+
+          <mat-list-item lines="2">
+            <span matListItemTitle>At least one joint is grounded</span>
+            <span>An input joint doubles as a ground joint.</span>
+          </mat-list-item>
+
+          <mat-list-item lines="3">
+            <span matListItemTitle>No orphaned joints</span>
+            <span>
+            Joints that are not a part of any link are orphaned. Remove or connect
+            orphaned joints.
+          </span>
+          </mat-list-item>
+
+          <mat-list-item lines="3">
+            <span matListItemTitle>No free floating links</span>
+            <span>
+            Links that are not part of a grounded joint are free floating. Remove or
+            connect free floating links.
+          </span>
+          </mat-list-item>
+
+          <mat-list-item lines="3">
+            <span matListItemTitle>Degress of freedom must be one</span>
+            <span>DOF = 3*(#_of_Links-1) - 2*(#_of_joints). Count both revolute joints and slider joints.</span>
+          </mat-list-item>
+
+          <mat-list-item lines="3">
+            <span matListItemTitle>Welded links count as one link</span>
+            <span>
+            If two or more links are welded together at a joint they should only be counted as 1 link.
+          </span>
+          </mat-list-item>
+        </mat-list>
+
+      </panel-section-collapsible>
+
+
+    <!-- Save Pannel -->
+        <collapsible-subsection titleLabel='Save Data' >
+          <table class="table-auto border-collapse border w-full text-left">
+            <thead>
+            <tr class="bg-gray-200">
+              <td class="border px-4 py-2">Parameter</td>
+              <td class="border px-4 py-2">Joints</td>
+              <td class="border px-4 py-2">Links</td>
+              <td class="border px-4 py-2"></td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="hover:bg-gray-100">
+              <td class="border px-4 py-2">Position</td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="border px-4 py-2"></td>
+            </tr>
+            <tr class="hover:bg-gray-100">
+              <td class="border px-4 py-2">Velocity</td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="border px-4 py-2"></td>
+            </tr>
+            <tr class="hover:bg-gray-100">
+              <td class="border px-4 py-2">Acceleration</td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="border px-4 py-2"></td>
+            </tr>
+            <tr class="hover:bg-gray-100">
+              <td class="border px-4 py-2">Forces/Torque</td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="border px-4 py-2"></td>
+              <td class="border px-4 py-2"></td>
+            </tr>
+            <tr class="hover:bg-gray-100">
+              <td class="border px-4 py-2">Stress</td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="border px-4 py-2"></td>
+            </tr>
+            <tr class="hover:bg-gray-100">
+              <td class="border px-4 py-2">Instant Centers</td>
+              <td class="border px-4 py-2"></td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td class="border px-4 py-2"></td>
+            </tr>
+            <tr class="hover:bg-gray-100">
+              <td class="border px-4 py-2">Three Position Synthesis</td>
+              <td class="border px-4 py-2"></td>
+              <td class="border px-4 py-2"></td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+            </tr>
+            <tr class="hover:bg-gray-100">
+              <td class="border px-4 py-2">Path Synthesis</td>
+              <td class="border px-4 py-2"></td>
+              <td class="border px-4 py-2"></td>
+              <td class="border px-4 py-2 text-center">
+                <label class="switch">
+                  <input type="checkbox">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+            </tr>
+          </table>
+          <button (click)="downloadCSV()" class="download-btn">Download CSV</button>
+        </collapsible-subsection>
+<!--      </div>-->
+      </div>
+    }
+
+<!--  <div id="import-export">-->
+<!--    <p>Use this panel to import and export kinematic data!</p>-->
+<!--    <import-data></import-data>-->
+<!--    <export-data></export-data>-->
+<!--  </div>-->
+
+</div>
+

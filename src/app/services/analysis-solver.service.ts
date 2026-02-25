@@ -8,6 +8,7 @@ export interface JointAnalysis {
     positions: Coord[],
     velocities: Coord[],
     accelerations: Coord[],
+    forces: Coord[],
 }
 
 export interface LinkAnalysis {
@@ -71,7 +72,12 @@ export class AnalysisSolveService {
             let accelerations = arrayColumn(mechanismAccelerations, i);
             let velocities = arrayColumn(mechanismVelocities, i);
             let positions = arrayColumn(jointPositions.positions, i);
-            let joint: JointAnalysis = { timeIncrement: timeIncrement, positions: positions, velocities: velocities, accelerations: accelerations }
+
+            // TODO: Change with true force in joint
+            let forces: Coord[] = accelerations.map(a =>
+              new Coord(1,1));
+
+            let joint: JointAnalysis = { timeIncrement: timeIncrement, positions: positions, velocities: velocities, accelerations: accelerations, forces: forces }
             this.jointKinematics.set(solveOrder.order[i], joint);
         }
     }
@@ -209,6 +215,7 @@ export class AnalysisSolveService {
 
     // Converts joint kinematic data into arrays suitable for plotting, based on requested data type (position, velocity, or acceleration).
     transformJointKinematicGraph(jointAnalysis: JointAnalysis, dataOf: string): { xData: any[], yData: any[], timeLabels: string[] } {
+
         const xData: any[] = [];
         const yData: any[] = [];
         const timeLabels: string[] = [];
@@ -232,6 +239,15 @@ export class AnalysisSolveService {
                 xData.push({ data: jointAnalysis.accelerations.map(coord => coord.x), label: "X data of Acceleration" });
                 yData.push({ data: jointAnalysis.accelerations.map(coord => coord.y), label: "Y data of Acceleration" });
                 timeLabels.push(...jointAnalysis.accelerations.map((_, index) => String(index)));
+
+                return { xData, yData, timeLabels };
+
+            case ("Force"):
+
+              console.log("hello this is called")
+                xData.push({ data: jointAnalysis.forces.map(coord => coord.x), label: "X data of Force" });
+                yData.push({ data: jointAnalysis.forces.map(coord => coord.y), label: "Y data of Force" });
+                timeLabels.push(...jointAnalysis.forces.map((_, index) => String(index)));
 
                 return { xData, yData, timeLabels };
 

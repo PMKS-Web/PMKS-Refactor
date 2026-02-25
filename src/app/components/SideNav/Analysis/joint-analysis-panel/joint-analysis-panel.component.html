@@ -19,7 +19,7 @@
         <!--      <p class="subtitle">X Coordinate of Joint: {{ this.getJointXCoord() }} </p>-->
         <!--      <p class="subtitle">Y Coordinate of Joint: {{ this.getJointYCoord() }} </p>-->
 
-        <!--Position: -->
+        <!--  Position: -->
         <analysis-graph-button [dynamicText]="'Position:'"
                                [explainText]="'Joint Position'"
                                [btn1Action]="toggleGraph.bind(this, GraphType.JointPosition)"
@@ -39,12 +39,13 @@
           </div>
         </ng-container>
 
-        <!--Velocity: -->
+        <!--  Velocity: -->
         <analysis-graph-button [dynamicText]="'Velocity:'"
                                [explainText]="'Joint Velocity'"
                                [btn1Action]="toggleGraph.bind(this, GraphType.JointVelocity)"
                                [graphText]="currentGraphType === GraphType.JointVelocity ? 'Close Graph' : 'Show Graph'"></analysis-graph-button>
 
+        <!-- TODO: Hook to actual data -->
         <p style="margin-left: 10px; margin-top: 1px;">V<sub>x</sub>: N/A,  V<sub>y</sub>: N/A</p>
 
         <ng-container *ngIf="currentGraphType === GraphType.JointVelocity">
@@ -58,12 +59,13 @@
           </div>
         </ng-container>
 
-        <!--Acceleration: -->
+        <!--  Acceleration: -->
         <analysis-graph-button [dynamicText]="'Acceleration:'"
                                [explainText]="'Joint Acceleration'"
                                [btn1Action]="toggleGraph.bind(this, GraphType.JointAcceleration)"
                                [graphText]= "currentGraphType === GraphType.JointAcceleration ? 'Close Graph' : 'Show Graph'"></analysis-graph-button>
 
+        <!-- TODO: Hook to actual data -->
         <p style="margin-left: 10px; margin-top: 1px;">A<sub>x</sub>: N/A,  A<sub>y</sub>: N/A</p>
 
         <ng-container *ngIf="currentGraphType === GraphType.JointAcceleration">

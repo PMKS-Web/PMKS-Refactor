@@ -13,7 +13,8 @@ export enum GraphType {
   CoMAcceleration,
   referenceJointAngle,
   referenceJointAngularVelocity,
-  referenceJointAngularAcceleration
+  referenceJointAngularAcceleration,
+  JointForce,
   // Add more graph types as needed
 }
 
@@ -30,6 +31,7 @@ export class LinkAnalysisPanelComponent {
   referenceJoint: Joint = this.getCurrentLink().joints.get(0) as Joint;
   currentGlobalUSuffix: any;
   currentGlobalAngleSuffix: any;
+  selectedJointId: number | null = null;
   constructor(private stateService: StateService, private interactorService: InteractionService,
               private analysisSolverService: AnalysisSolveService){
                 this.stateService.globalUSuffixCurrent.subscribe(value => {
@@ -51,13 +53,25 @@ export class LinkAnalysisPanelComponent {
 // get x coord and y coord return the number of the center of mass
   getCOMXCoord(): number {return this.getCurrentLink()?.centerOfMass.x.toFixed(3) as unknown as number;}
     getCOMYCoord(): number {return this.getCurrentLink()?.centerOfMass.y.toFixed(3) as unknown as number;}
+
   openAnalysisGraph(graphType: GraphType): void {
+
+    if (this.currentGraphType !== null) {
+      this.closeAnalysisGraph();
+    }
+
+    if (graphType !== GraphType.JointForce) {
+      this.selectedJointId = null;
+    }
+
     this.currentGraphType = graphType;
-    if(this.currentGraphType == GraphType.CoMPosition ||
-      this.currentGraphType == GraphType.CoMVelocity ||
-      this.currentGraphType == GraphType.CoMAcceleration){
+
+    if (graphType === GraphType.CoMPosition ||
+      graphType === GraphType.CoMVelocity ||
+      graphType === GraphType.CoMAcceleration) {
       this.addPlaceholderCoMJoint();
     }
+
     this.getGraphData();
   }
 
@@ -69,6 +83,7 @@ export class LinkAnalysisPanelComponent {
     }
 
     this.currentGraphType = null;
+    this.selectedJointId = null;
   }
 
   toggleGraph(graphType: GraphType) {
@@ -78,6 +93,34 @@ export class LinkAnalysisPanelComponent {
       this.openAnalysisGraph(graphType); // If it's closed, open it
     }
   }
+
+  toggleJointForceGraph(jointId: number) {
+
+    if (
+      this.currentGraphType === GraphType.JointForce &&
+      this.selectedJointId === jointId
+    ) {
+      this.closeAnalysisGraph();
+      this.selectedJointId = null;
+      return;
+    }
+
+    if (this.currentGraphType !== null) {
+      this.closeAnalysisGraph();
+    }
+
+    this.selectedJointId = jointId;
+    this.currentGraphType = GraphType.JointForce;
+
+    console.log("Selected joint:", this.selectedJointId);
+  }
+
+  closeJointForceGraph() {
+    this.selectedJointId = null;
+    this.currentGraphType = null;
+  }
+
+
   getGraphTypeName(graphType: GraphType): string {
     switch (graphType) {
       case GraphType.CoMPosition:
@@ -87,11 +130,13 @@ export class LinkAnalysisPanelComponent {
       case GraphType.CoMAcceleration:
         return 'Center of Mass Acceleration(' + this.currentGlobalUSuffix + '/s²)';
       case GraphType.referenceJointAngle:
-        return 'Reference Joint Angle(' + this.currentGlobalAngleSuffix + ')'; 
+        return 'Reference Joint Angle(' + this.currentGlobalAngleSuffix + ')';
       case GraphType.referenceJointAngularVelocity:
-        return 'Reference Joint Angular Velocity(' + this.currentGlobalAngleSuffix + '/s)'; 
+        return 'Reference Joint Angular Velocity(' + this.currentGlobalAngleSuffix + '/s)';
       case GraphType.referenceJointAngularAcceleration:
-        return 'Reference Joint Angular Acceleration(' + this.currentGlobalAngleSuffix + '/s²)'; 
+        return 'Reference Joint Angular Acceleration(' + this.currentGlobalAngleSuffix + '/s²)';
+      case GraphType.JointForce:
+        return 'Joint Force (' + this.currentGlobalUSuffix + ')';
       // Add more cases as needed
       default:
         return ''; // Handle unknown cases or add a default value
@@ -184,18 +229,25 @@ export class LinkAnalysisPanelComponent {
           timeLabels: []
         };
 
-      case GraphType.referenceJointAngularAcceleration:
+      case GraphType.JointForce:
+
         if(this.getReferenceJoint() !== undefined) {
-          let joints = this.getCurrentLink().getJoints();
-          let jointIds = joints.map(joint => joint.id);
-          let linkKinematics = this.analysisSolverService.getLinkKinematics(jointIds);
-          return this.analysisSolverService.transformLinkKinematicGraph(linkKinematics, "Acceleration");
+
+          if (this.selectedJointId === null) {
+            return { xData: [], yData: [], timeLabels: [] };
+          }
+
+          console.log("selectedJointID: "+ this.selectedJointId);
+          const jointKinematics = this.analysisSolverService.getJointKinematics(this.selectedJointId);
+
+          return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, "Force");
         }
         return {
           xData: [],
           yData: [],
           timeLabels: []
         };
+
       default:
         return {
           xData: [],
@@ -204,6 +256,9 @@ export class LinkAnalysisPanelComponent {
         };
     }
   }
+
+
+
   public GraphType = GraphType;
 
   downloadCSV() {
@@ -248,4 +303,7 @@ export class LinkAnalysisPanelComponent {
     link.click();
     document.body.removeChild(link);
   }
+
+  protected readonly parseInt = parseInt;
+  protected readonly Number = Number;
 }
