@@ -9,13 +9,14 @@
 import { Injectable } from '@angular/core';
 import { Joint, JointType } from '../model/joint';
 import { Link, RigidBody } from '../model/link';
+import { Mechanism } from '../model/mechanism';
 import { CompoundLink } from '../model/compound-link';
 import { Force, ForceFrame } from '../model/force';
 import { Coord } from '../model/coord';
 import { AnimationPositions, PositionSolverService } from './kinematic-solver.service';
 import * as math from 'mathjs';
-import { link } from 'd3-shape';
-import { throwError } from 'rxjs';
+import { Subscription } from 'rxjs';
+import { StateService } from './state.service';
 
 /**
  * Each JOINT has the directions of reaction force. The user will define which directions for those forces.
@@ -205,7 +206,187 @@ export class StaticsAnalysisService {
     // lastAnalysisResults[submechIndex][frameIndex]
     private lastAnalysisResults: ComprehensiveFrameData[][] = []; // store the analysis result to print out in Excel sheet
 
-    constructor(private positionSolver: PositionSolverService) {}
+    /**
+     * Track which sub-mechanisms have valid cached results
+     * isAnalysisValid[0] = true -> submech 0 results are valid (cached)
+     * isAnalysisValid[0] = false -> submech 0 needs recalculation
+     */
+    private isAnalysisValid: boolean[] = [];
+
+    private currentMechanism: Mechanism | null = null; // Store reference to current mechanism
+    private mechanismSubscription?: Subscription; 
+
+    constructor(
+        private positionSolver: PositionSolverService, 
+        private stateService: StateService
+    ) {
+            this.mechanismSubscription = this.stateService.getMechanismObservable().subscribe(
+                (mechanism: Mechanism) => {        
+                    // Store the new mechanism
+                    this.currentMechanism = mechanism;
+                    
+                    // Clear all cached results (free memory)
+                    // User has to switch to "Edit" tab to modify, then back to "Analysis" tab component
+                    this.lastAnalysisResults = [];
+                    this.isAnalysisValid = [];
+                    this.clearSignConventions;
+                }
+            );
+            
+            // Get initial mechanism
+            this.currentMechanism = this.stateService.getMechanism();
+    }
+
+
+    // Destroy when we close the whole app
+    public ngOnDestroy(): void {
+        if (this.mechanismSubscription) {this.mechanismSubscription.unsubscribe();}
+    }
+
+    /**
+     * Analyze a sub-mechanism (only if needed)
+     * 
+     * **CALL THIS FROM UI COMPONENTS!**
+     * 
+     * Example usage in component:
+     *   const results = this.staticsAnalysis.analyzeIfNeeded(0);
+     * 
+     * Smart caching behavior:
+     * - First call: Runs expensive calculation -> caches result
+     * - Subsequent calls: Returns cached result instantly
+     * - If any sub-mechanism edit: Recalculates automatically
+     * 
+     * @param submechIndex - Which sub-mechanism to analyze (default 0)
+     * @returns Analysis results for all frames, or null if failed
+     */
+     public analyzeIfNeeded(submechIndex: number = 0): ComprehensiveFrameData[] | null {
+        if (!this.currentMechanism) {
+            console.warn('No mechanism available - cannot analyze');
+            return null;
+        }
+        
+        const subMechanisms = this.currentMechanism.getSubMechanisms(); //get all the sub-mechanismm
+        
+        if (subMechanisms.length === 0) {
+            console.warn('No sub-mechanisms found in mechanism');
+            return null;
+        }
+        
+        if (submechIndex < 0 || submechIndex >= subMechanisms.length) {
+            console.error(`Invalid submechIndex ${submechIndex} - only index < ${subMechanisms.length} allowed`);
+            return null;
+        }
+        
+        // Check the cache 
+        if (this.isAnalysisValid[submechIndex] && this.lastAnalysisResults[submechIndex]) {
+            console.log(` Using cached results for submech ${submechIndex} (${this.lastAnalysisResults[submechIndex].length} frames)`);
+            return this.lastAnalysisResults[submechIndex];
+        }
+        
+        // if not cached, recalculate the system
+        console.log(`Running static analysis for submech ${submechIndex}...`);
+        
+        const subMechanism = subMechanisms[submechIndex];
+        
+        // if the signConvention for this sub-mechanism is not here
+        if(!this.signConventions[submechIndex]) {
+            // Initialize new sign convention for a sub-mechanism
+            const initialized = this.initializeSignConventions(subMechanism, submechIndex);
+            
+            if (!initialized) { // if initialization fails
+                console.error('Failed to initialize sign conventions');
+                return null;
+            }
+        }
+        
+        // Run the expensive calculation
+        try {
+            /**
+             * Call solveAllTimesteps()
+             * 
+             * What it does:
+             * 1. Analyzes all 361 frames (0-360 degrees)
+             * 2. Updates this.lastAnalysisResults[submechIndex] internally
+             * 3. Returns StaticSolution[] (we don't use this return value for this function)
+             * 
+             * We ignore the return value because:
+             * - lastAnalysisResults already has ComprehensiveFrameData[]
+             * - That's what we want to return to component
+             */
+            this.solveAllTimesteps(subMechanism, submechIndex); //ignore return value of this function
+            
+            // Verify results were actually created
+            if (!this.lastAnalysisResults[submechIndex]) {
+                console.error('solveAllTimesteps() did not populate lastAnalysisResults');
+                this.isAnalysisValid[submechIndex] = false;
+                return null;
+            }
+            
+            // Mark this submech's cache as valid
+            this.isAnalysisValid[submechIndex] = true;
+            
+            // Return the cached results (populated by solveAllTimesteps)
+            return this.lastAnalysisResults[submechIndex];
+            
+        } catch (error) {
+            console.error('Analysis failed with error:', error);
+            this.isAnalysisValid[submechIndex] = false;
+            return null;
+        }
+    }
+
+    /**
+     * Get result for a specific frame of a specific sub-mechanism
+     * 
+     * Use this when:
+     * - Animation is playing and you want current frame data
+     * - User scrubs timeline slider
+     * - Displaying data for specific timestep
+     * 
+     * This is very fast (array lookup, no calculation)
+     * 
+     * @param submechIndex - Which sub-mechanism (default 0)
+     * @param frameIndex - Which frame (0-360 for full rotation)
+     * @returns Frame data or null if not available
+     */
+    public getAnalysisResultAtFrame(
+        submechIndex: number = 0,
+        frameIndex: number
+    ): ComprehensiveFrameData | null {
+        
+        // Check if we have results for this submech
+        if (!this.lastAnalysisResults[submechIndex]) {
+            return null;
+        }
+        
+        const frames = this.lastAnalysisResults[submechIndex];
+        
+        // Check if frame index is valid
+        if (frameIndex < 0 || frameIndex >= frames.length) {
+            return null;
+        }
+        
+        return frames[frameIndex];
+    }
+
+    /**
+     * HELPER METHODS - For components to query results
+     * Check if we have valid analysis results for a sub-mechanism
+     * 
+     * Use this in components to:
+     * - Show/hide UI elements (e.g., Export button)
+     * - Display "No results" message
+     * - Enable/disable features that need analysis data
+     * 
+     * @param submechIndex - Which sub-mechanism (default 0)
+     * @returns true if valid cached results exist
+     */
+    public hasValidResults(submechIndex: number = 0): boolean {
+        return this.isAnalysisValid[submechIndex] === true && 
+            this.lastAnalysisResults[submechIndex] !== undefined &&
+            this.lastAnalysisResults[submechIndex] !== null &&
+            this.lastAnalysisResults[submechIndex].length > 0;
+    }
 
     /**
      * Validate a sub-mechanism before performing static analysis
@@ -396,6 +577,9 @@ export class StaticsAnalysisService {
         console.log(`   Fx direction: ${xDirection > 0 ? '(+)' : '(-)'}`);
         console.log(`   Fy direction: ${yDirection > 0 ? '(+)' : '(-)'}`);
 
+        // Next analyzeIfNeeded() will recalculate with new conventions
+        this.isAnalysisValid[submechIndex] = false;
+
         return true;
     }
 
@@ -488,6 +672,9 @@ export class StaticsAnalysisService {
         const oldDirection = this.torqueConventions[submechIndex].torqueDirection;
         this.torqueConventions[submechIndex].torqueDirection = torqueDirection;
         
+        // Next analyzeIfNeeded() will recalculate with new direction
+        this.isAnalysisValid[submechIndex] = false;
+
         console.log(`NEW torque direction: ${torqueDirection > 0 ? '+1 (counterclockwise)' : '-1 (clockwise)'}`);
         return true;
     }
@@ -605,6 +792,10 @@ export class StaticsAnalysisService {
         console.log(`Gravity direction updated for Sub-Mechanism ${submechIndex}`);
         // console.log(`   Old: ${oldDirection}`);
         // console.log(`   New: ${direction}`);
+        
+        // Next analyzeIfNeeded() will recalculate with new gravity
+        this.isAnalysisValid[submechIndex] = false;
+
         return true;
     }
 
@@ -696,6 +887,9 @@ export class StaticsAnalysisService {
             console.log(`>> Old: ${oldPivotLabel}`);
             console.log(`>> New: Joint ${joint!.name} (ID ${joint!.id})`);
         }
+
+        // Next analyzeIfNeeded() will recalculate with new pivot
+        this.isAnalysisValid[submechIndex] = false;
 
         return true;
     }
@@ -1933,7 +2127,7 @@ export class StaticsAnalysisService {
     // }
     // // ------------------ END Solution 1 -----------------------------
 
-    
+
     //-------------- SOLUTION 2: CIRCLE INTERSECTIONS ----------------
     // NOTE from MQP 25-26: 
     // You can ask professor Pradeep for some videos to understand the Circle Intersection techniques to solve Mechanical Engineering problems.   
