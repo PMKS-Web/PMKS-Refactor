@@ -47,6 +47,14 @@ export class ForcesAnalysisPanelComponent implements OnInit {
         this.currentFrameIndex = index;
       });
 
+    this.interactionService._selectionChange$
+      .subscribe(() => {
+        this.analyzeAllSubMechanisms();
+      });
+  }
+
+  analyzeAllSubMechanisms(): void {
+
     const mechanism = this.stateService.getMechanism();
     const subMechanisms = mechanism.getSubMechanisms();
 
@@ -54,7 +62,6 @@ export class ForcesAnalysisPanelComponent implements OnInit {
       this.staticsAnalysis.analyzeIfNeeded(i);
     }
   }
-
 
 
   getSelectedObjectType(): string{
