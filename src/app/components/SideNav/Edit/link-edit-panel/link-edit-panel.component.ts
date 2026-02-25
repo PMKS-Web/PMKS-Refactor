@@ -38,6 +38,10 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
   public addForceIconPath: string = 'assets/icons/addForce.svg';
   public pendingLinkLength?: number;
   public pendingLinkAngle?: number;
+  public pendingLinkMass?: number;
+  public pendingCOMX?: number; // x of center of mass location
+  public pendingCOMY?: number; // y of center of mass location
+
   /** Buffers for component edits */
   public pendingCompX: Record<number, number> = {};
   public pendingCompY: Record<number, number> = {};
@@ -218,6 +222,35 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
     this.pendingLinkAngle = undefined;
   }
 
+  // Saves the new pending link mass
+  confirmLinkMass(newMassValue: number): void {
+    const raw = newMassValue;
+    if (raw == null || raw < 0) {
+      this.pendingLinkMass = undefined;
+      return; // Prevent saving null or negative mass
+    }
+
+    let canEdit = this.confirmCanEdit();
+    if (!canEdit) {
+      this.pendingLinkMass = undefined;
+      return; 
+    }
+
+    const oldMass = this.getLinkMass();
+    const newMass = raw;
+
+    if (Math.abs(oldMass - newMass) < 1e-6) {
+      this.pendingLinkMass = undefined;
+      return;
+    }
+
+    // Apply the change directly to the Link object
+    this.setLinkMass(newMass);
+
+    // Notify mechanism to trigger static analysis update
+    this.getMechanism().notifyChange();
+  }
+
   // Any function that will make changes to the link should call this.confirmCanEdit() first,
   // to make sure that the mechanism is not in a state of animation, before making changes.
   confirmCanEdit(): boolean {
@@ -307,6 +340,12 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
     return 0;
   }
 
+  // Helper to get the current mass value from the link
+  getLinkMass(): number {
+    const mass = this.getSelectedObject().mass;
+    return parseFloat(mass.toFixed(3));
+  }
+
   //Returns the joints attached to the selected link
   getLinkJoints(): Map<number, Joint> {
     return this.getSelectedObject().joints;
@@ -321,6 +360,68 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
   getLinkName(): string {
     return this.getSelectedObject().name;
   }
+
+  // Getters for Center of Mass Position
+  getLinkCOMX(): number {
+    const CoM = this.getSelectedObject().centerOfMass;
+    return this.roundToThree(CoM.x);
+  }
+
+  getLinkCOMY(): number {
+    const CoM = this.getSelectedObject().centerOfMass;
+    return this.roundToThree(CoM.y);
+  }
+
+  // Confirm X inputs for Center of Mass
+  confirmCOMX(newX: number): void {
+    if (newX == null) return;
+    let canEdit = this.confirmCanEdit();
+    if (!canEdit) return;
+
+    this.pendingCOMX = newX;
+    this.confirmCenterOfMass();
+  }
+
+  // Confirm Y inputs for Center of Mass
+  confirmCOMY(newY: number): void {
+    if (newY == null) return;
+    let canEdit = this.confirmCanEdit();
+    if (!canEdit) return;
+    
+    this.pendingCOMY = newY;
+    this.confirmCenterOfMass();
+  }
+
+  // Confirm to apply COM update
+  confirmCenterOfMass(): void {
+    const link = this.getSelectedObject();
+    
+    // Determine the current values to use if one input is pending but the other is not
+    const newX = this.pendingCOMX ?? link.centerOfMass.x;
+    const newY = this.pendingCOMY ?? link.centerOfMass.y;
+
+    // Check if change is significant
+    if (Math.abs(link.centerOfMass.x - newX) < 1e-6 && Math.abs(link.centerOfMass.y - newY) < 1e-6) {
+      this.pendingCOMX = undefined;
+      this.pendingCOMY = undefined;
+      return;
+    }
+
+    // Direct update to the Link's _centerOfMass property
+    link.setCenterOfMass(newX, newY); 
+
+    this.getMechanism().notifyChange();
+    
+    this.pendingCOMX = undefined;
+    this.pendingCOMY = undefined;
+  }
+
+  // // Uncomment this if want to design a reset button for Center of Mass in the future
+  // resetCenterOfMass(): void {
+  //   const link = this.getSelectedObject();
+  //   link.resetCenterOfMass();
+  //   this.getMechanism().notifyChange();
+  // }
 
   // Sets the length of the selected Link
   setLinkLength(newLength: number): void {
@@ -347,6 +448,11 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
     if (refJoint) {
       this.getSelectedObject().setAngle(newAngle, refJoint);
     }
+  }
+
+  // Helper to set the mass value on the link and notify
+  setLinkMass(newMass: number): void {
+    this.getSelectedObject().mass = newMass;
   }
 
   setLinkName(newName: string) {
@@ -414,7 +520,7 @@ export class LinkEditPanelComponent implements OnDestroy, OnInit {
     }
   }
 
-  //helper function to quickly round to 3 decimals :)
+  // because toFixed() return a string so we need this helper function to quickly round to 3 decimals :)
   roundToThree(round: number): number {
     return parseFloat(round.toFixed(3));
   }
