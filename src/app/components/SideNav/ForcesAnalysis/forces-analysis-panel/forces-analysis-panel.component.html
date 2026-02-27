@@ -104,7 +104,10 @@
         </panel-section-collapsible>
 
         <!-- Data Summary -->
-        <collapsible-subsection titleLabel='Data Summary'>
+        <collapsible-subsection 
+        titleLabel='Data Summary' 
+        [expanded]="false"
+        (opened)="onSectionOpened()">
           <div class="flex-container">
 <!--            <div *ngFor="let sub of getSubMechanisms()">-->
 
@@ -118,10 +121,10 @@
                 </analysis-graph-button>
 
                 <p style="margin-left: 10px; margin-top: 1px;">
-                  Torque: {{ getSubMechanismTorque(i) }}
+                  Torque: {{ getTorqueForDisplay(i) }}  N⋅m
                 </p>
 
-            </div>
+              </div>
           </div>
         </collapsible-subsection>
 
