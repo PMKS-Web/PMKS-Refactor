@@ -16,6 +16,7 @@ import { Coord } from '../model/coord';
 import { AnimationPositions, PositionSolverService } from './kinematic-solver.service';
 import * as math from 'mathjs';
 import { Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { StateService } from './state.service';
 
 /**
@@ -220,7 +221,9 @@ export class StaticsAnalysisService {
         private positionSolver: PositionSolverService, 
         private stateService: StateService
     ) {
-            this.mechanismSubscription = this.stateService.getMechanismObservable().subscribe(
+            this.mechanismSubscription = this.stateService.getMechanismObservable()
+            .pipe(debounceTime(300)) // Wait 300ms after last change of mechanism
+            .subscribe(
                 (mechanism: Mechanism) => {        
                     // Store the new mechanism
                     this.currentMechanism = mechanism;
@@ -229,7 +232,7 @@ export class StaticsAnalysisService {
                     // User has to switch to "Edit" tab to modify, then back to "Analysis" tab component
                     this.lastAnalysisResults = [];
                     this.isAnalysisValid = [];
-                    this.clearSignConventions;
+                    this.clearSignConventions();
                 }
             );
             
@@ -249,7 +252,7 @@ export class StaticsAnalysisService {
      * **CALL THIS FROM UI COMPONENTS!**
      * 
      * Example usage in component:
-     *   const results = this.staticsAnalysis.analyzeIfNeeded(0);
+     *   const results = this.staticsAnalysis.analyzeIfNeeded(0); // submechanism index 0
      * 
      * Smart caching behavior:
      * - First call: Runs expensive calculation -> caches result
