@@ -18,6 +18,7 @@ export class Link implements RigidBody {
   private _color: string = '';
   private _isLocked: boolean;
   private _angle: number;
+  private _isCircle: boolean = false;
 
   private linkColorOptions = [
     '#727FD5',
@@ -109,6 +110,10 @@ export class Link implements RigidBody {
     return parseFloat(posangle.toFixed(3));
   }
 
+  get isCircle(): boolean {
+    return this._isCircle;
+  }
+
   //setters
   set name(value: string) {
     this._name = value;
@@ -128,6 +133,10 @@ export class Link implements RigidBody {
 
   set angle(value: number) {
     this._angle = ((value % 360) + 360) % 360;
+  }
+
+  set isCircle(value: boolean) {
+    this._isCircle = value;
   }
 
   addTracer(newJoint: Joint) {
