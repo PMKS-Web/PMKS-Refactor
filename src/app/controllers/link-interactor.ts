@@ -366,7 +366,7 @@ export class LinkInteractor extends Interactor {
             }
 
           },
-          disabled: false,
+          disabled:!this.link.getJoints().some(joint => joint.isInput),
 
         }
       );
