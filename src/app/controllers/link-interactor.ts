@@ -348,6 +348,26 @@ export class LinkInteractor extends Interactor {
           },
           disabled: false,
 
+        },
+        {
+          icon: 'assets/contextMenuIcons/circleInputLink.svg',
+          label: 'Circular Input',
+          action: () => {
+            let hasInputJoint = false;
+            for (const joint of this.link.getJoints()) {
+              if (joint.isInput) {
+                hasInputJoint = true;
+              }
+            }
+
+            if (!hasInputJoint) {
+              // prevents click if link does not have an input joint
+              return;
+            }
+
+          },
+          disabled: false,
+
         }
       );
     }
