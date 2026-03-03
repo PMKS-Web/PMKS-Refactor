@@ -39,10 +39,6 @@ export class SVGPathService {
     pathData += `A ${convertedRadius},${convertedRadius} 0 1 0 ${inputCoords.x + convertedRadius},${inputCoords.y} `; // drawing first semicircle
     pathData += `A ${convertedRadius},${convertedRadius} 0 1 0 ${inputCoords.x - convertedRadius},${inputCoords.y} Z`; // drawing second semicircle
 
-    // pathData += `m -${convertedRadius},0 `; // moving to left of center by radius
-    // pathData += `a ${convertedRadius},${convertedRadius} 0 1,0 90,0 `; // drawing first semicircle
-    // pathData += `a ${convertedRadius},${convertedRadius} 0 1,0 -90,0`; // drawing second semicircle
-    console.log(pathData);
     return pathData;
   }
 
