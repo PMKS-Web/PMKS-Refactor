@@ -365,6 +365,8 @@ export class LinkInteractor extends Interactor {
               return;
             }
 
+            this.link.isCircle = true;
+
           },
           disabled:!this.link.getJoints().some(joint => joint.isInput),
 
