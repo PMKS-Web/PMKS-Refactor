@@ -447,7 +447,26 @@ export class LinkComponent
       coord = this.unitConversionService.modelCoordToSVGCoord(coord);
       allCoords.push(coord);
     }
-    return this.svgPathService.getSingleLinkDrawnPath(allCoords, radius);
+    if (this.link.isCircle) {
+      let pathStr = '';
+      let i: number = 0;
+      let foundInput: boolean = false;
+      let inputCoords: Coord;
+      while (!foundInput && i < this.link.joints.size) {
+        if (this.link.joints.get(i)?.isInput) {
+          inputCoords = this.unitConversionService.modelCoordToSVGCoord(this.link.joints.get(i)!!.coords);
+          pathStr = this.svgPathService.getCircularLink(inputCoords, this.link.length, 18 + 10);
+          foundInput = true;
+        }
+        i++;
+      }
+
+      return pathStr;
+
+    } else {
+      return this.svgPathService.getSingleLinkDrawnPath(allCoords, radius);
+    }
+
   }
 
   getLengthSVG() {

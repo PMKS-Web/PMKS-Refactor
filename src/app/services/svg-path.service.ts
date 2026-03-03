@@ -29,6 +29,23 @@ export class SVGPathService {
     return this.calculateConvexPath(hullCoords,radius);
   }
 
+  // draws the circular link for an input link
+  // radius should be positive and inputCoords should already be converted to SVG
+  // offset is accounting for joint radius
+  getCircularLink(inputCoords: Coord, radius: number, offset: number): string {
+    let pathData = '';
+    const convertedRadius = this.unitConversionService.modelNumToSVGNum(radius) + offset;
+    pathData += `M ${inputCoords.x - convertedRadius},${inputCoords.y} `; // moving to center of the circle
+    pathData += `A ${convertedRadius},${convertedRadius} 0 1 0 ${inputCoords.x + convertedRadius},${inputCoords.y} `; // drawing first semicircle
+    pathData += `A ${convertedRadius},${convertedRadius} 0 1 0 ${inputCoords.x - convertedRadius},${inputCoords.y} Z`; // drawing second semicircle
+
+    // pathData += `m -${convertedRadius},0 `; // moving to left of center by radius
+    // pathData += `a ${convertedRadius},${convertedRadius} 0 1,0 90,0 `; // drawing first semicircle
+    // pathData += `a ${convertedRadius},${convertedRadius} 0 1,0 -90,0`; // drawing second semicircle
+    console.log(pathData);
+    return pathData;
+  }
+
   // Creates an SVG path string tracing the trajectory through all provided coordinates with the given radius.
   getTrajectoryDrawnPath(allCoords: Coord[], radius: number): string {
     if (allCoords.length === 0) {
@@ -65,6 +82,7 @@ export class SVGPathService {
     let hullCoords: Coord[] = this.grahamScan(allCoords);
     return this.calculateConvexPath(hullCoords,radius);
   }
+
 
   // Identifies if all coordinates lie on a straight line and returns the endpoints if they are collinear.
   private findCollinearCoords(coords: Coord[]): Coord[] | undefined {
