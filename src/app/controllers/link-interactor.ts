@@ -367,6 +367,12 @@ export class LinkInteractor extends Interactor {
 
             this.link.isCircle = true;
 
+            this.undoRedoService.recordAction({
+              //specifies that it only needs the action name and link id
+              type: "circleLink",
+              linkId: this.link.id,
+            });
+
           },
           disabled:!this.link.getJoints().some(joint => joint.isInput),
 

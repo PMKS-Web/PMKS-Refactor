@@ -297,6 +297,13 @@ export class UndoRedoService {
         //reverses the lock
         link.locked = !locked
         break;
+      } case 'circleLink': {
+        //get the specified link from the action and see if it's a circle
+        const link = this.mechanism.getLink(action.linkId!)!;
+        const circular = link.isCircle;
+        //reverse the lock
+        link.isCircle = !circular
+        break;
       }
 
       default:
@@ -537,6 +544,14 @@ export class UndoRedoService {
         const locked = link.locked
         //reverse the lock
         link.locked = !locked
+        break;
+      }
+      case 'circleLink': {
+        //get the specified link from the action and see if it's a circle
+        const link = this.mechanism.getLink(action.linkId!)!;
+        const circular = link.isCircle
+        //reverse the lock
+        link.isCircle = !circular
         break;
       }
       default:
