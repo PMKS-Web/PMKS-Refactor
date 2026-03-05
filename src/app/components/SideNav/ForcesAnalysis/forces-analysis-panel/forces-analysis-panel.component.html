@@ -114,8 +114,8 @@
               <div *ngFor="let sub of getSubMechanisms(); let i = index">
 
                 <analysis-graph-button
-                  [dynamicText]="'Submechanism ' + (i + 1)"
-                  [explainText]="'Submechanism Torque'"
+                  [dynamicText]="'Linkage ' + (i + 1)"
+                  [explainText]="'Linkage Torque'"
                   [btn1Action]="toggleSubTorqueGraph.bind(this, i)"
                   [graphText]="selectedSubId === i ? 'Close Graph' : 'Show Graph'">
                 </analysis-graph-button>
