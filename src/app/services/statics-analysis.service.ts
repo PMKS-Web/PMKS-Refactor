@@ -154,7 +154,7 @@ interface ForceMeta {
     startPositionAtT0: Coord;
 
     // Angle of force direction relative to link's orientation
-    relativeAngle: number;  // degrees (force angle - link angle at t=0)
+    relativeAngle: number;  // degrees ( = force angle - link angle at t=0)
     
     // Frame of reference determines how force direction behaves
     frameOfReference: ForceFrame;  // Local (rotates with link) or Global (fixed in world)
@@ -226,7 +226,7 @@ export class StaticsAnalysisService {
             .subscribe(
                 (mechanism: Mechanism) => {        
                     // Store the new mechanism
-                    this.currentMechanism = mechanism;
+                    this.currentMechanism = mechanism; // this one mechanism contains many sub-mechanisms
                     
                     // Clear all cached results (free memory)
                     // User has to switch to "Edit" tab to modify, then back to "Analysis" tab component
@@ -316,7 +316,7 @@ export class StaticsAnalysisService {
              * - lastAnalysisResults already has ComprehensiveFrameData[]
              * - That's what we want to return to component
              */
-            this.solveAllTimesteps(subMechanism, submechIndex); //ignore return value of this function
+            this.solveAllTimesteps(subMechanism, submechIndex); //ignore return value of this function, we just care about what it updates for the global variables
             
             // Verify results were actually created
             if (!this.lastAnalysisResults[submechIndex]) {
@@ -1170,12 +1170,12 @@ export class StaticsAnalysisService {
             // => extract that data
             const rigidBodyCOMMap = rigidBodyCOMAllTimesteps[t];
 
-            // TESTING, DELETE IT LATER -------------
-            if(t < 30) {
-                console.log('COM map is ', rigidBodyCOMMap, 'at timestep t = ', t);
-                console.log('positionMap is ', positionMap, 'at timestep t = ', t);
-            }
-            // --------------------------------------
+            // // TESTING, DELETE IT LATER -------------
+            // if(t < 30) {
+            //     console.log('COM map is ', rigidBodyCOMMap, 'at timestep t = ', t);
+            //     console.log('positionMap is ', positionMap, 'at timestep t = ', t);
+            // }
+            // // --------------------------------------
 
             const result = this.solveSubMechanismAtTimestep(
                 submechIndex,
@@ -1510,7 +1510,7 @@ export class StaticsAnalysisService {
         // console.log(`  - Distance from joint1: ${distanceFromJoint1}`);
         // console.log(`  - Distance from joint2: ${distanceFromJoint2}`);
         // console.log(`  - Frame: ${force.frameOfReference === ForceFrame.Global ? 'Global' : 'Local'}`);
-        // console.log(`  - Angle at t=0: ${force.angle}°`);
+        // console.log(`  - Angle at t=0: ${force.angle}`);
         
         return {
             forceId: force.id,
