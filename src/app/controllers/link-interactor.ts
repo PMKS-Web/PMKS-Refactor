@@ -356,15 +356,15 @@ export class LinkInteractor extends Interactor {
             : 'assets/contextMenuIcons/circleInputLink.svg',
           label: this.link.isCircle ? 'Make Bar' : 'Make Circular',
           action: () => {
-            let hasInputJoint = false;
+            let hasGroundJoint = false;
             for (const joint of this.link.getJoints()) {
-              if (joint.isInput) {
-                hasInputJoint = true;
+              if (joint.isGrounded) {
+                hasGroundJoint = true;
               }
             }
 
-            if (!hasInputJoint) {
-              // prevents click if link does not have an input joint
+            if (!hasGroundJoint) {
+              // prevents click if link does not have a ground joint
               return;
             }
 
@@ -377,7 +377,7 @@ export class LinkInteractor extends Interactor {
             });
 
           },
-          disabled:!this.link.getJoints().some(joint => joint.isInput),
+          disabled:!this.link.getJoints().some(joint => joint.isGrounded),
 
         }
       );
