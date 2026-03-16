@@ -453,7 +453,7 @@ export class LinkComponent
       let foundInput: boolean = false;
       let inputCoords: Coord;
       while (!foundInput && i < this.link.joints.size) {
-        if (this.link.isCircle) {
+        if (this.link.joints.get(i)?.isGrounded) {
           inputCoords = this.unitConversionService.modelCoordToSVGCoord(this.link.joints.get(i)!!.coords);
           pathStr = this.svgPathService.getCircularLink(inputCoords, this.link.length, 18 + 10);
           foundInput = true;
