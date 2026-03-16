@@ -57,6 +57,7 @@ export interface LinkSnapshot {
   angle: number;
   locked: boolean;
   color: string;
+  isCircle?: boolean;
 }
 
 export interface JointSnapshot {

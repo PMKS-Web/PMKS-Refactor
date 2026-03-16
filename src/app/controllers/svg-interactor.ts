@@ -105,7 +105,8 @@ export class SvgInteractor extends Interactor {
         mass:     createdLink.mass,
         angle:    createdLink.angle,
         locked:   createdLink.locked,
-        color:    createdLink.color
+        color:    createdLink.color,
+        isCircle: createdLink.isCircle,
       };
 
       this.undoRedoService.recordAction({

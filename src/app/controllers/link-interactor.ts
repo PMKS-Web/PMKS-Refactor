@@ -316,6 +316,7 @@ export class LinkInteractor extends Interactor {
               angle: this.link.angle,
               locked: this.link.locked,
               color: this.link.color,
+              isCircle: this.link.isCircle,
             };
 
             const extraJointsData: JointSnapshot[] = Array.from(
@@ -350,10 +351,10 @@ export class LinkInteractor extends Interactor {
 
         },
         {
-          icon: !this.link.isCircle
-            ? 'assets/contextMenuIcons/circleInputLink.svg'
-            : 'assets/contextMenuIcons/uncircular.svg',
-          label: !this.link.isCircle ? 'Circular Link' : 'Straight Link',
+          icon: this.link.isCircle
+            ? 'assets/contextMenuIcons/uncircular.svg'
+            : 'assets/contextMenuIcons/circleInputLink.svg',
+          label: this.link.isCircle ? 'Make Bar' : 'Make Circular',
           action: () => {
             let hasInputJoint = false;
             for (const joint of this.link.getJoints()) {
@@ -366,7 +367,6 @@ export class LinkInteractor extends Interactor {
               // prevents click if link does not have an input joint
               return;
             }
-
 
             this.link.isCircle = !this.link.isCircle;
 
