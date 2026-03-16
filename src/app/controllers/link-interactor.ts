@@ -350,8 +350,10 @@ export class LinkInteractor extends Interactor {
 
         },
         {
-          icon: 'assets/contextMenuIcons/circleInputLink.svg',
-          label: 'Circular Input',
+          icon: !this.link.isCircle
+            ? 'assets/contextMenuIcons/circleInputLink.svg'
+            : 'assets/contextMenuIcons/uncircular.svg',
+          label: !this.link.isCircle ? 'Circular Link' : 'Straight Link',
           action: () => {
             let hasInputJoint = false;
             for (const joint of this.link.getJoints()) {
@@ -365,7 +367,8 @@ export class LinkInteractor extends Interactor {
               return;
             }
 
-            this.link.isCircle = true;
+
+            this.link.isCircle = !this.link.isCircle;
 
             this.undoRedoService.recordAction({
               //specifies that it only needs the action name and link id
