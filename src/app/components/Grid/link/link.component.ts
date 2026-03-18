@@ -452,13 +452,12 @@ export class LinkComponent
       let i: number = 0;
       let foundInput: boolean = false;
       let inputCoords: Coord;
-      while (!foundInput && i < this.link.joints.size) {
-        if (this.link.joints.get(i)?.isGrounded) {
-          inputCoords = this.unitConversionService.modelCoordToSVGCoord(this.link.joints.get(i)!!.coords);
-          pathStr = this.svgPathService.getCircularLink(inputCoords, this.link.length, 18 + 10);
+      for (const [jID, currentJ] of this.link.joints) {
+        if (!foundInput && currentJ.isGrounded) {
+          inputCoords = this.unitConversionService.modelCoordToSVGCoord(currentJ.coords);
+          pathStr = this.svgPathService.getCircularLink(inputCoords, this.farthestPoint(currentJ.coords), 18 + 10);
           foundInput = true;
         }
-        i++;
       }
 
       return pathStr;
@@ -467,6 +466,17 @@ export class LinkComponent
       return this.svgPathService.getSingleLinkDrawnPath(allCoords, radius);
     }
 
+  }
+
+  farthestPoint(center: Coord): number {
+    let radius: number = 0;
+    for (const [jID, currentJ] of this.link.joints) {
+      const currentR = center.getDistanceTo(currentJ.coords);
+      if (currentR > radius) {
+        radius = currentR;
+      }
+    }
+    return radius;
   }
 
   getLengthSVG() {
