@@ -199,6 +199,7 @@ export class AnalysisSolveService {
           accelerations.push(velocity_acceleration.acceleration);
           break;
         }
+
         case SolveType.CircleLine: {
           const knownIndex1 = solveOrder.order.indexOf(prereq.knownJointOne!.id);
           velocity_acceleration = this.solveCircleLineJointKinematics(index, knownIndex1, prereq, positions, velocities, accelerations)
