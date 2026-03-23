@@ -9,6 +9,7 @@ import { StateService } from './state.service';
 import { isUndefined } from 'lodash';
 import { Position } from '../model/position';
 import { Force } from '../model/force';
+import {CompoundLink} from "../model/compound-link";
 
 @Injectable({
   providedIn: 'root',
@@ -552,6 +553,58 @@ export class UndoRedoService {
         const circular = link.isCircle
         //reverse the lock
         link.isCircle = !circular
+        break;
+      }
+      case 'deleteCompoundLink': {
+        // rebuilding joints
+        if (action.compoundExtraJointsData) {
+          action.compoundExtraJointsData!.forEach((joints) => {
+            joints.forEach((j) => {
+              if (!this.mechanism.getJoint(j.id)) {
+                this.restoreJointFromSnapshot(j);
+              }
+            })
+          })
+        }
+
+        // rebuilding links
+        if (action.compoundExtraLinkData) {
+          action.compoundExtraLinkData!.forEach((link) => {
+            // check that joints exist
+            const jointObjs = link.jointIds.map((id) => {
+              const j = this.mechanism.getJoint(id);
+              if (!j) console.warn(`undo deleteLink: joint ${id} still missing`);
+              return j!;
+            });
+
+            if (jointObjs.every((j) => j != null)) {
+              const linkRestored = new Link(link.id, jointObjs);
+              linkRestored.name = link.name;
+              linkRestored.mass = link.mass;
+              linkRestored.angle = link.angle;
+              linkRestored.locked = link.locked;
+              linkRestored.color = link.color;
+              this.mechanism._addLink(linkRestored);
+            }
+          })
+        }
+
+        // rebuilding compound link
+        const cl = action.compoundLinkData!;
+        const linkObjs = cl.linkIds.map((id) => {
+          const l = this.mechanism.getLink(id);
+          if (!l) console.warn(`undo deleteCompoundLink: link ${id} still missing`);
+          return l!;
+        });
+        if (linkObjs.every((l) => l != null)) {
+          const linkRestored = new CompoundLink(cl.id, linkObjs);
+          linkRestored.name = cl.name;
+          linkRestored.mass = cl.mass;
+          linkRestored.lock = cl.locked;
+          linkRestored.color = cl.color;
+          this.mechanism._addCompoundLink(linkRestored);
+        }
+
         break;
       }
       default:
