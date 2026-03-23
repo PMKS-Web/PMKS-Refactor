@@ -6,6 +6,8 @@ import { Mechanism } from "../model/mechanism";
 import { StateService } from "../services/state.service";
 import { ContextMenuOption, Interactor } from "./interactor";
 import { NotificationService } from "../services/notification.service";
+import type {CompoundLinkSnapshot, JointSnapshot, LinkSnapshot} from "../components/ToolBar/undo-redo-panel/action";
+import {UndoRedoService} from "../services/undo-redo.service";
 
 /*
 This interactor defines the following behaviors:
@@ -17,7 +19,7 @@ export class CompoundLinkInteractor extends Interactor {
     private jointsStartPosModel: Map<number, Coord> = new Map();
     private lastNotificationTime = 0;
 
-    constructor(public compoundLink: CompoundLink, private stateService: StateService, private notificationService: NotificationService) {
+    constructor(public compoundLink: CompoundLink, private stateService: StateService, private notificationService: NotificationService, private undoRedoService: UndoRedoService) {
         super(true, true);
 
         this.onDragStart$.subscribe(() => {
@@ -98,15 +100,70 @@ export class CompoundLinkInteractor extends Interactor {
                 disabled: false
             },
             {
-                label: this.compoundLink.lock ? "Unlock Compound Link" : "Lock Compound Link",
+                label: this.compoundLink.lock ? "Unlock Welded Link" : "Lock Welded Link",
                 icon: this.compoundLink.lock ? "assets/contextMenuIcons/unlock.svg" : "assets/contextMenuIcons/lock.svg",
                 action: () => { this.compoundLink.lock = (!this.compoundLink.lock) },
                 disabled: false
             },
             {
                 icon: "assets/contextMenuIcons/trash.svg",
-                label: "Delete Link",
-                action: () => { mechanism.removeLink(this.compoundLink.id) },
+                label: "Delete Welded Link",
+                action: () => {
+
+                  const compoundLinkData: CompoundLinkSnapshot = {
+                    id: this.compoundLink.id,
+                    linkIds: Array.from(this.compoundLink.links.values()).map((l) => l.id),
+                    name: this.compoundLink.name,
+                    mass: this.compoundLink.mass,
+                    locked: this.compoundLink.lock,
+                    color: this.compoundLink.color,
+                  }
+
+                  const linkData: LinkSnapshot[] = Array.from(
+                    this.compoundLink.links.values()
+                  ).map((l) => ({
+                    id: l.id,
+                    jointIds: Array.from(l.joints.values()).map((j) => j.id),
+                    name: l.name,
+                    mass: l.mass,
+                    angle: l.angle,
+                    locked: l.locked,
+                    color: l.color,
+                    isCircle: l.isCircle,
+                  }));
+
+                  let extraJointsData: JointSnapshot[][] = Array.from(
+                    this.compoundLink.links.values()).map((l, index) => (
+                    Array.from(
+                      l.joints.values()
+                    ).map((j) => ({
+                      id: j.id,
+                      coords: { x: j.coords.x, y: j.coords.y },
+                      name: j.name,
+                      type: j.type,
+                      angle: j.angle,
+                      isGrounded: j.isGrounded,
+                      isWelded: j.isWelded,
+                      isInput: j.isInput,
+                      inputSpeed: j.speed,
+                      locked: j.locked,
+                      isHidden: j.hidden,
+                      isReference: j.reference,
+                    }))
+                  ));
+
+                  this.undoRedoService.recordAction({
+                    type:            "deleteCompoundLink",
+                    compoundLinkData,
+                    compoundExtraLinkData: linkData,
+                    compoundExtraJointsData: extraJointsData,
+                  });
+
+
+                  mechanism.removeCompoundLinkByID(this.compoundLink.id)
+                  this.stateService.getMechanism().notifyChange();
+
+                },
                 disabled: false
             },
         );
