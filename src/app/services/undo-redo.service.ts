@@ -305,6 +305,9 @@ export class UndoRedoService {
         //reverse the lock
         link.isCircle = !circular
         break;
+      }case 'deleteCompoundLink': {
+        this.mechanism.removeCompoundLinkByID(action.compoundLinkData!.id);
+        break;
       }
 
       default:
