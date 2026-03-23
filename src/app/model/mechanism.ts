@@ -936,6 +936,18 @@ export class Mechanism {
     }
   }
 
+  // first removes every link within the compound link, then the compound link itself; finds compound link from id
+  public removeCompoundLinkByID(compoundLinkID: number) {
+    var compoundLink = this._compoundLinks.get(compoundLinkID);
+    if (compoundLink != undefined) {
+      for (let link of compoundLink.links.values()) {
+        this.removeLink(link.id);
+      }
+      this._compoundLinks.delete(compoundLink.id);
+    }
+
+  }
+
   // first removes every link within the compound link, then the compound link itself
   public removeCompoundLink(compoundLink: CompoundLink) {
     for (let link of compoundLink.links.values()) {
