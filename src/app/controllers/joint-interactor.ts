@@ -300,6 +300,7 @@ export class JointInteractor extends Interactor {
             locked: jointToDelete.locked,
             isHidden: jointToDelete.isHidden,
             isReference: jointToDelete.isReference,
+            isTracer: jointToDelete.isTracer,
           };
 
           const connectedLinks =
@@ -336,6 +337,7 @@ export class JointInteractor extends Interactor {
               locked: j.locked,
               isHidden: j.isHidden,
               isReference: j.isReference,
+              isTracer: j.isTracer,
             }));
           new Set(mechanism.getArrayOfJoints().map((j) => j.id));
           mechanism.removeJoint(this.joint.id);
@@ -407,6 +409,7 @@ export class JointInteractor extends Interactor {
           locked: newJoint.locked,
           isHidden: newJoint.hidden,
           isReference: newJoint.reference,
+          isTracer: newJoint.isTracer,
         });
       }
 

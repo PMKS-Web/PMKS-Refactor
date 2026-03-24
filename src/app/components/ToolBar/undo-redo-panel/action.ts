@@ -86,6 +86,7 @@ export interface JointSnapshot {
   locked: boolean;
   isHidden: boolean;
   isReference: boolean;
+  isTracer: boolean;
 }
 
 export interface LinkLockSnapshot {
@@ -108,6 +109,8 @@ export interface LinkTracerSnapshot {
   linkId: number;
   jointId: number;
   coords: { x: number; y: number };
+  tracerModelPos?: Coord;
+  tracerSVGPos?: Coord;
 }
 
 export interface LinkForceSnapshot {

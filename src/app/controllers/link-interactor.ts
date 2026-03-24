@@ -219,6 +219,7 @@ export class LinkInteractor extends Interactor {
                   locked: j.locked,
                   isHidden: j.hidden,
                   isReference: j.reference,
+                  isTracer: j.isTracer,
                 };
               });
 
@@ -334,6 +335,7 @@ export class LinkInteractor extends Interactor {
               locked: j.locked,
               isHidden: j.hidden,
               isReference: j.reference,
+              isTracer: j.isTracer,
             }));
 
                 this.undoRedoService.recordAction({

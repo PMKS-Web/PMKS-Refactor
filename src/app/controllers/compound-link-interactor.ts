@@ -90,7 +90,40 @@ export class CompoundLinkInteractor extends Interactor {
             {
                 icon: "assets/contextMenuIcons/addTracer.svg",
                 label: "Attach Tracer Point",
-                action: () => { mechanism.addTracerPointWelded(this.compoundLink.id, modelPosAtRightClick, svgPosAtRightClick) },
+                action: () => {
+                  // snapshot existing joint‐IDs
+                  let beforeIds: number[] = [];
+                  Array.from(this.compoundLink.links.values()).forEach((l) => {
+                    Array.from(l.joints.keys()).forEach((jID) => {
+                      beforeIds.push(jID);
+                    })
+                  });
+
+                  mechanism.addTracerPointWelded(this.compoundLink.id, modelPosAtRightClick, svgPosAtRightClick)
+
+                  // find exactly which joint is new
+                  let afterIds: number[] = [];
+                  Array.from(this.compoundLink.links.values()).forEach((l) => {
+                    Array.from(l.joints.keys()).forEach((jID) => {
+                      afterIds.push(jID);
+                    })
+                  });
+                  const newId = afterIds.find((id) => !beforeIds.includes(id))!;
+                  const newJoint = mechanism.getJoint(newId);
+                  newJoint.isTracer = true;
+
+                  // recordAction with a real jointId
+                  this.undoRedoService.recordAction({
+                    type: 'addTracerCompound',
+                    linkTracerData: {
+                      linkId: this.compoundLink.id,
+                      jointId: newId,
+                      coords: { x: newJoint.coords.x, y: newJoint.coords.y },
+                      tracerModelPos: modelPosAtRightClick,
+                      tracerSVGPos: svgPosAtRightClick,
+                    }
+                  });
+                },
                 disabled: false
             },
             {
@@ -149,6 +182,7 @@ export class CompoundLinkInteractor extends Interactor {
                       locked: j.locked,
                       isHidden: j.hidden,
                       isReference: j.reference,
+                      isTracer: j.isTracer,
                     }))
                   ));
 

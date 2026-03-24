@@ -261,7 +261,8 @@ export class UndoRedoService {
         const tr = action.linkTracerData!;
         this.mechanism.addJointToLink(
           tr.linkId,
-          new Coord(tr.coords.x, tr.coords.y)
+          new Coord(tr.coords.x, tr.coords.y),
+          true
         );
         break;
       case 'addLinkToLink':
@@ -305,8 +306,16 @@ export class UndoRedoService {
         //reverse the lock
         link.isCircle = !circular
         break;
-      }case 'deleteCompoundLink': {
+      } case 'deleteCompoundLink': {
         this.mechanism.removeCompoundLinkByID(action.compoundLinkData!.id);
+        break;
+      } case 'addTracerCompound': {
+        const tr = action.linkTracerData!;
+        this.mechanism.addTracerPointWelded(
+          tr.linkId,
+          tr.tracerModelPos!,
+          tr.tracerSVGPos!,
+        );
         break;
       }
 
@@ -610,6 +619,42 @@ export class UndoRedoService {
 
         break;
       }
+      case 'addTracerCompound': {
+        const tr = action.linkTracerData!;
+        const allCompoundLinks = this.mechanism.getCompoundLinks();
+        let linkObj;
+        for (const c of allCompoundLinks) {
+          if (c.id == tr.linkId) {
+            linkObj = c;
+          }
+        }
+
+        if (linkObj == undefined) {
+          console.warn(
+            `Undo addTracerCompound: no compound link found)`
+          );
+          break;
+        }
+
+        let allJoints: Joint[] = [];
+        Array.from(linkObj!.links!.values()).forEach((l) => {
+          Array.from(l.joints.values()).forEach((j) => {
+            allJoints.push(j);
+          })
+        });
+
+        const toRemove = allJoints.find(
+          (j) => j.coords.x === tr.coords.x && j.coords.y === tr.coords.y
+        );
+        if (toRemove) {
+          this.mechanism.removeJoint(toRemove.id);
+        } else {
+          console.warn(
+            `Undo addTracerCompound: no tracer found at (${tr.coords.x},${tr.coords.y})`
+          );
+        }
+        break;
+      }
       default:
         console.error('No inverse defined for action type:', action.type);
     }
@@ -632,6 +677,7 @@ export class UndoRedoService {
     restoredJoint.locked = jointSnapshot!.locked;
     restoredJoint.hidden = jointSnapshot!.isHidden;
     restoredJoint.reference = jointSnapshot!.isReference;
+    restoredJoint.isTracer = jointSnapshot!.isTracer;
     this.mechanism._addJoint(restoredJoint);
   }
 }

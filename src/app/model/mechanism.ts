@@ -725,13 +725,17 @@ export class Mechanism {
    *
    * @param {number} linkID
    * @param {Coord} coord
+   * @param {isTracer} boolean
    * @memberof Mechanism
    */
-  addJointToLink(linkID: number, coord: Coord) {
+  addJointToLink(linkID: number, coord: Coord, isTracer?: boolean) {
     this.executeLinkAction(linkID, (link) => {
       let jointA = new Joint(this._jointIDCount, coord);
       this._jointIDCount++;
       this._joints.set(jointA.id, jointA);
+      if (isTracer) {
+        jointA.isTracer = true;
+      }
       link.addTracer(jointA);
     });
   }
