@@ -4,6 +4,10 @@ import { Force } from './force';
 
 export interface RigidBody {
   getJoints(): Joint[];
+  get centerOfMass(): Coord;
+  get mass(): number;
+  get id(): number;
+  get name(): string;
 }
 
 export class Link implements RigidBody {
