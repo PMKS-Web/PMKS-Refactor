@@ -372,6 +372,17 @@ export class StaticsAnalysisService {
         return frames[frameIndex];
     }
 
+    public getLastAnalysisResults(
+        submechIndex: number = 0
+    ): ComprehensiveFrameData[] | null {
+         // Check if we have results for this submech
+        if (!this.lastAnalysisResults[submechIndex]) {
+            return null;
+        }
+
+        return this.lastAnalysisResults[submechIndex];
+    }
+
     /**
      * HELPER METHODS - For components to query results
      * Check if we have valid analysis results for a sub-mechanism
@@ -1209,6 +1220,8 @@ export class StaticsAnalysisService {
         return solutions;
 
     } 
+
+
 
     /**
      * Converts results of a specific sub-mechanism into a CSV and triggers a download.
