@@ -769,7 +769,42 @@ export class Mechanism {
       this._jointIDCount++;
       if (this.isMechanismWelded()) {
         jointA.isTracer = true;
+        jointA.isPartOfWelded = true;
       }
+
+      let foundLink: boolean = false;
+      let i: number = 0;
+      while (i < this._links.size && !foundLink) {
+        let currentLink = this._links.get(i);
+        const inLink = currentLink?.containsCoord(coordSVG);
+
+        if (inLink) {
+          foundLink = true;
+        } else {
+          i++;
+        }
+      }
+
+      this._joints.set(jointA.id, jointA);
+
+      const theLink = this._links.get(i);
+      if (foundLink && theLink != undefined) {
+        theLink.addTracer(jointA);
+      } else {
+        link.addTracer(jointA);
+      }
+    });
+  }
+
+  /**
+   * attaches a tracer point(effectively a joint) to an existing link, but this is from a welded link.
+   *
+   * @param {number} linkID
+   * @param {Coord} coord
+   * @memberof Mechanism
+   */
+  _addJointToWelded(linkID: number, jointA: Joint, coordSVG: Coord) {
+    this.executeLinkAction(linkID, (link) => {
 
       let foundLink: boolean = false;
       let i: number = 0;
@@ -1199,7 +1234,7 @@ export class Mechanism {
     }
     return connectedLinks;
   }
-  private getConnectedCompoundLinks(joint: Joint): CompoundLink[] {
+  getConnectedCompoundLinks(joint: Joint): CompoundLink[] {
     let connectedCompoundLinks: CompoundLink[] = [];
     for (let link of this._compoundLinks.values()) {
       if (link.containsJoint(joint.id)) {

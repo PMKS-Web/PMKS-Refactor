@@ -183,6 +183,7 @@ export class CompoundLinkInteractor extends Interactor {
                       isHidden: j.hidden,
                       isReference: j.reference,
                       isTracer: j.isTracer,
+                      isPartOfWelded: j.isPartOfWelded,
                     }))
                   ));
 

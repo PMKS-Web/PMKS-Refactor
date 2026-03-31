@@ -336,6 +336,7 @@ export class LinkInteractor extends Interactor {
               isHidden: j.hidden,
               isReference: j.reference,
               isTracer: j.isTracer,
+              isPartOfWelded: j.isPartOfWelded,
             }));
 
                 this.undoRedoService.recordAction({

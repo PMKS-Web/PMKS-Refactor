@@ -412,6 +412,15 @@ export class UndoRedoService {
         }
         break;
       case 'deleteJoint':
+        // let weldedLink = undefined;
+        // if (action.linksData) {
+        //   action.linksData.forEach((link) => {
+        //     if (weldedLink === undefined) {
+        //       weldedLink = link;
+        //     }
+        //   })
+        // }
+
         // Restore main joint:
         if (action.jointData) {
           this.restoreJointFromSnapshot(action.jointData);
@@ -436,6 +445,22 @@ export class UndoRedoService {
               restoredLink.locked = linkSnap.locked;
               restoredLink.color = linkSnap.color;
               this.mechanism._addLink(restoredLink);
+            }
+          });
+        }
+
+        if (action.compoundLinkDataArray) {
+          action.compoundLinkDataArray.forEach((cLinkSnap) => {
+            const cLinks = cLinkSnap.linkIds.map((lid) =>
+              this.mechanism.getLink(lid)
+            );
+            if (cLinks.every((l) => l !== undefined)) {
+              const restoredCompoundLink = new CompoundLink(cLinkSnap.id, cLinks);
+              restoredCompoundLink.name = cLinkSnap.name;
+              restoredCompoundLink.mass = cLinkSnap.mass;
+              restoredCompoundLink.lock = cLinkSnap.locked;
+              restoredCompoundLink.color = cLinkSnap.color;
+              this.mechanism._addCompoundLink(restoredCompoundLink);
             }
           });
         }
@@ -678,6 +703,7 @@ export class UndoRedoService {
     restoredJoint.hidden = jointSnapshot!.isHidden;
     restoredJoint.reference = jointSnapshot!.isReference;
     restoredJoint.isTracer = jointSnapshot!.isTracer;
+    restoredJoint.isPartOfWelded = jointSnapshot!.isPartOfWelded;
     this.mechanism._addJoint(restoredJoint);
   }
 }

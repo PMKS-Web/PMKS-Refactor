@@ -95,6 +95,7 @@ export class SvgInteractor extends Interactor {
           isHidden:   j.hidden,
           isReference:j.reference,
           isTracer:   j.isTracer,
+          isPartOfWelded: j.isPartOfWelded,
         };
       });
 

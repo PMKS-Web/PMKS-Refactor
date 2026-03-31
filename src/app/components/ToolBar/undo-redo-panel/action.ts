@@ -25,6 +25,7 @@ export interface Action {
   linkForceData?: LinkForceSnapshot;
 
   compoundLinkData?: CompoundLinkSnapshot;
+  compoundLinkDataArray?: CompoundLinkSnapshot[];
   compoundExtraLinkData?: LinkSnapshot[];
   compoundExtraJointsData?: JointSnapshot[][];
 
@@ -87,6 +88,7 @@ export interface JointSnapshot {
   isHidden: boolean;
   isReference: boolean;
   isTracer: boolean;
+  isPartOfWelded: boolean;
 }
 
 export interface LinkLockSnapshot {
