@@ -4,7 +4,7 @@ import {InteractionService} from "src/app/services/interaction.service";
 import {Mechanism} from "src/app/model/mechanism";
 import {LinkInteractor} from "src/app/controllers/link-interactor";
 import {Joint} from "src/app/model/joint";
-import {AnalysisSolveService, JointAnalysis} from "src/app/services/analysis-solver.service";
+import {AnalysisSolveService, JointAnalysis, LinkAnalysis} from "src/app/services/analysis-solver.service";
 
 // enum contains every kind of graph this panel can open.
 export enum GraphType {
@@ -18,9 +18,9 @@ export enum GraphType {
 }
 
 @Component({
-    selector: 'app-link-analysis-panel',
-    templateUrl: './link-analysis-panel.component.html',
-    styleUrls: ['./link-analysis-panel.component.scss'],
+  selector: 'app-link-analysis-panel',
+  templateUrl: './link-analysis-panel.component.html',
+  styleUrls: ['./link-analysis-panel.component.scss'],
 
 })
 
@@ -32,14 +32,14 @@ export class LinkAnalysisPanelComponent {
   currentGlobalAngleSuffix: any;
   constructor(private stateService: StateService, private interactorService: InteractionService,
               private analysisSolverService: AnalysisSolveService){
-                this.stateService.globalUSuffixCurrent.subscribe(value => {
-                  this.currentGlobalUSuffix = value;
-                });
-                this.stateService.globalASuffixCurrent.subscribe(value => {
-                  this.currentGlobalAngleSuffix = value;
-                });
+    this.stateService.globalUSuffixCurrent.subscribe(value => {
+      this.currentGlobalUSuffix = value;
+    });
+    this.stateService.globalASuffixCurrent.subscribe(value => {
+      this.currentGlobalAngleSuffix = value;
+    });
 
-    }
+  }
 
   getMechanism(): Mechanism {return this.stateService.getMechanism();}
   getCurrentLink(){
@@ -47,10 +47,10 @@ export class LinkAnalysisPanelComponent {
     return (currentLinkInteractor as LinkInteractor).getLink();
   }
   getLinkName(): string {return this.getCurrentLink().name;}
-    getReferenceJoint(){return this.referenceJoint;}
+  getReferenceJoint(){return this.referenceJoint;}
 // get x coord and y coord return the number of the center of mass
   getCOMXCoord(): number {return this.getCurrentLink()?.centerOfMass.x.toFixed(3) as unknown as number;}
-    getCOMYCoord(): number {return this.getCurrentLink()?.centerOfMass.y.toFixed(3) as unknown as number;}
+  getCOMYCoord(): number {return this.getCurrentLink()?.centerOfMass.y.toFixed(3) as unknown as number;}
   openAnalysisGraph(graphType: GraphType): void {
     this.currentGraphType = graphType;
     if(this.currentGraphType == GraphType.CoMPosition ||
@@ -87,11 +87,11 @@ export class LinkAnalysisPanelComponent {
       case GraphType.CoMAcceleration:
         return 'Center of Mass Acceleration(' + this.currentGlobalUSuffix + '/s²)';
       case GraphType.referenceJointAngle:
-        return 'Reference Joint Angle(' + this.currentGlobalAngleSuffix + ')'; 
+        return 'Reference Joint Angle(' + this.currentGlobalAngleSuffix + ')';
       case GraphType.referenceJointAngularVelocity:
-        return 'Reference Joint Angular Velocity(' + this.currentGlobalAngleSuffix + '/s)'; 
+        return 'Reference Joint Angular Velocity(' + this.currentGlobalAngleSuffix + '/s)';
       case GraphType.referenceJointAngularAcceleration:
-        return 'Reference Joint Angular Acceleration(' + this.currentGlobalAngleSuffix + '/s²)'; 
+        return 'Reference Joint Angular Acceleration(' + this.currentGlobalAngleSuffix + '/s²)';
       // Add more cases as needed
       default:
         return ''; // Handle unknown cases or add a default value
@@ -137,7 +137,7 @@ export class LinkAnalysisPanelComponent {
 
     // @ts-ignore
     return maxJoint;
-}
+  }
 
   // calls the positionSolver on current joint and reformats data into a type that chart,js can take
   // see transformJointKinematicGraph function in kinematic solver for more detail
@@ -210,35 +210,79 @@ export class LinkAnalysisPanelComponent {
     const table = document.querySelector(".table-auto");
     if (!table) return;
 
-    const headers: string[] = [];
-    const data: string[][] = [];
+    const selections = Array.from(
+      table.querySelectorAll<HTMLInputElement>("input[type='checkbox']:checked")
+    ).map((input) => ({
+      entity: input.dataset["entity"] || "",
+      parameter: input.dataset["parameter"] || ""
+    }));
 
-    const ths = table.querySelectorAll("thead td");
-    ths.forEach((th, colIndex) => {
-      if (colIndex > 0) {
-        headers.push(th.textContent?.trim() || "");
-      }
-    });
-
-    const rows = table.querySelectorAll("tbody tr");
-    rows.forEach((row) => {
-      const cells = row.querySelectorAll("td");
-      const rowHeader = cells[0].textContent?.trim() || "";
-
-      cells.forEach((cell, index) => {
-        const checkbox = cell.querySelector("input[type='checkbox']") as HTMLInputElement;
-        if (checkbox && checkbox.checked) {
-          data.push([`${headers[index - 1]} ${rowHeader}`]);
-        }
-      });
-    });
-
-    if (data.length === 0) {
+    if (selections.length === 0) {
       alert("No selections made");
       return;
     }
 
-    const csvContent = ["Time," + data.map(d => d[0]).join(",")].join("\n");
+    const unsupportedSelections = selections.filter(selection =>
+      !["position", "velocity", "acceleration"].includes(selection.parameter)
+    );
+    if (unsupportedSelections.length > 0) {
+      alert("CSV export currently supports only position, velocity, and acceleration selections.");
+      return;
+    }
+
+    this.analysisSolverService.updateKinematics();
+    const mechanism = this.getMechanism();
+    const mechanismJoints = mechanism.getArrayOfJoints()
+      .map(joint => ({joint, analysis: this.analysisSolverService.getJointKinematics(joint.id)}))
+      .filter(({analysis}) => !!analysis);
+    const mechanismLinks = mechanism.getArrayOfLinks()
+      .map(link => ({link, joints: link.getJoints()}))
+      .filter(({joints}) => joints.length >= 2)
+      .map(({link, joints}) => ({
+        link,
+        analysis: this.analysisSolverService.getLinkKinematics(joints.map(joint => joint.id))
+      }))
+      .filter(({analysis}) => !!analysis);
+
+    if (mechanismJoints.length === 0 && mechanismLinks.length === 0) {
+      alert("No kinematic data available for export.");
+      return;
+    }
+
+    const series: Array<{header: string, values: number[]}> = [];
+
+    const jointParameters = selections
+      .filter(selection => selection.entity === "joints")
+      .map(selection => selection.parameter);
+    const linkParameters = selections
+      .filter(selection => selection.entity === "links")
+      .map(selection => selection.parameter);
+
+    if (jointParameters.length > 0) {
+      this.appendJointSeries(series, mechanismJoints, jointParameters);
+    }
+
+    if (linkParameters.length > 0) {
+      for (const {link, analysis} of mechanismLinks) {
+        this.appendLinkSeries(series, link.name, analysis, linkParameters);
+      }
+    }
+
+    if (series.length === 0) {
+      alert("The selected export options did not produce any CSV data.");
+      return;
+    }
+
+    const numFrames = series[0].values.length;
+    const timeIncrement = mechanismLinks[0]?.analysis.timeIncrement || mechanismJoints[0]?.analysis.timeIncrement || 0;
+    const rows: string[] = [["Time", ...series.map(item => item.header)].join(",")];
+
+    for (let index = 0; index < numFrames; index++) {
+      const time = timeIncrement > 0 ? index * timeIncrement : index;
+      rows.push([time, ...series.map(item => item.values[index])].join(","));
+    }
+
+    const csvContent = rows.join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv" });
     const link = document.createElement("a");
@@ -247,5 +291,72 @@ export class LinkAnalysisPanelComponent {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  }
+
+  private appendJointSeries(
+    series: Array<{header: string, values: number[]}>,
+    jointAnalyses: Array<{joint: Joint, analysis: JointAnalysis}>,
+    parameters: string[]
+  ): void {
+    for (const {joint, analysis} of jointAnalyses) {
+      for (const parameter of parameters) {
+        switch (parameter) {
+          case "position":
+            series.push(
+              {header: `joint_${joint.id}_x`, values: analysis.positions.map(coord => coord.x)},
+              {header: `joint_${joint.id}_y`, values: analysis.positions.map(coord => coord.y)}
+            );
+            break;
+          case "velocity":
+            series.push(
+              {header: `joint_${joint.id}_vx`, values: analysis.velocities.map(coord => coord.x)},
+              {header: `joint_${joint.id}_vy`, values: analysis.velocities.map(coord => coord.y)}
+            );
+            break;
+          case "acceleration":
+            series.push(
+              {header: `joint_${joint.id}_ax`, values: analysis.accelerations.map(coord => coord.x)},
+              {header: `joint_${joint.id}_ay`, values: analysis.accelerations.map(coord => coord.y)}
+            );
+            break;
+        }
+      }
+    }
+  }
+
+  private appendLinkSeries(
+    series: Array<{header: string, values: number[]}>,
+    linkName: string,
+    linkKinematics: LinkAnalysis,
+    parameters: string[]
+  ): void {
+    for (const parameter of parameters) {
+      switch (parameter) {
+        case "position":
+          series.push(
+            {
+              header: `link_${linkName}_angle_deg`,
+              values: linkKinematics.angle.map(angle => {
+                let normalizedAngle = angle % (2 * Math.PI);
+                if (normalizedAngle < 0) {
+                  normalizedAngle += 2 * Math.PI;
+                }
+                return normalizedAngle * 180 / Math.PI;
+              })
+            }
+          );
+          break;
+        case "velocity":
+          series.push(
+            {header: `link_${linkName}_omega_rad_s`, values: linkKinematics.angularVelocity}
+          );
+          break;
+        case "acceleration":
+          series.push(
+            {header: `link_${linkName}_alpha_rad_s2`, values: linkKinematics.angularAcceleration}
+          );
+          break;
+      }
+    }
   }
 }
