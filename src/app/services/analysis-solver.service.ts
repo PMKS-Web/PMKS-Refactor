@@ -520,25 +520,25 @@ export class AnalysisSolveService {
 
         // two circle centers are almost the same
         if (d < eps && Math.abs(r0 - r1) < eps) {
-            console.log('two circle centers are almost the same');
+            console.log(`two circle centers are almost the same`);
             return [];
         } 
 
         // same center with different radius
         if (d < eps) {
-            console.log('same center with different radius')
+            console.log(`same center with different radius`)
             return []; 
         } 
 
         // Circles too far apart
         if (d > r0 + r1 + eps) {
-            console.log('Circles too far apart');
+            console.log(`Circles too far apart`);
             return [];
         } 
 
         // one circle inside the other without touching
         if (d < Math.abs(r0 - r1) - eps) {
-            console.log('one circle inside the other without touching');
+            console.log(`one circle inside the other without touching`);
             return [];
         } 
 
@@ -563,7 +563,7 @@ export class AnalysisSolveService {
 
         // one intersection, because h is too small, so the offset vector vx, vy becomes 0, 0. And the intersection point simply P2(point2_x, point2_y)
         if (h < eps) {
-            console.log('1 intersection between circles');
+            console.log(`1 intersection between circles`);
             return [new Coord(point2_x, point2_y)];
         }
         
