@@ -25,6 +25,7 @@ export class UndoRedoService {
   public reinitialize$ = this.reinitializeSubject.asObservable();
 
   private mechanism: Mechanism;
+
   constructor(private stateService: StateService) {
     this.mechanism = stateService.getMechanism();
   }
@@ -96,6 +97,7 @@ export class UndoRedoService {
   public getUndoStack(): Action[] {
     return [...this.undoStack];
   }
+
   public getRedoStack(): Action[] {
     return [...this.redoStack];
   }
@@ -323,6 +325,7 @@ export class UndoRedoService {
         console.error('No inverse defined for action type:', action.type);
     }
   }
+
   //---------------------------------------------------------------------------------
   // --------------------------- | UNDO | ------------------------------------------
   //--------------------------------------------------------------------------------
@@ -412,15 +415,6 @@ export class UndoRedoService {
         }
         break;
       case 'deleteJoint':
-        // let weldedLink = undefined;
-        // if (action.linksData) {
-        //   action.linksData.forEach((link) => {
-        //     if (weldedLink === undefined) {
-        //       weldedLink = link;
-        //     }
-        //   })
-        // }
-
         // Restore main joint:
         if (action.jointData) {
           this.restoreJointFromSnapshot(action.jointData);
@@ -553,7 +547,7 @@ export class UndoRedoService {
         }
         if (action.attachJointId !== undefined) {
           this.mechanism.getJoint(action.attachJointId) &&
-            this.mechanism.removeJoint(action.attachJointId);
+          this.mechanism.removeJoint(action.attachJointId);
         }
         break;
       case 'setJoint':
