@@ -8,7 +8,7 @@ import {RigidBody} from "../../../../model/link";
 import {Joint} from "../../../../model/joint";
 import {JointInteractor} from "../../../../controllers/joint-interactor";
 import {LinkInteractor} from "../../../../controllers/link-interactor";
-import {StaticsAnalysisService} from "../../../../services/statics-analysis.service";
+import {ComprehensiveFrameData, StaticsAnalysisService} from "../../../../services/statics-analysis.service";
 import { Subscription } from 'rxjs';
 
 export enum GraphType {
@@ -28,8 +28,13 @@ export class ForcesAnalysisPanelComponent implements OnInit, OnDestroy {
   public selectedJointId: number | null = null;
   public currentFrameIndex: number = 0;
 
+
   private subscriptions: Subscription[] = [];
   subMechanismTorques: Map<number, string> = new Map(); // Store torque values
+
+  // Export options
+  exportAllJointForces = false;
+  exportAllLinkForces = false;
 
   constructor(
     private stateService: StateService,
@@ -48,12 +53,12 @@ export class ForcesAnalysisPanelComponent implements OnInit, OnDestroy {
     const frameSub = this.animationService.currentFrameIndex$
       .subscribe(index => {
         this.currentFrameIndex = index;
-        
+
         this.updateTorqueValues(); // Only update torque values when frame changes
       });
 
       console.log("On init created");
-    
+
       this.subscriptions.push(frameSub);
   }
 
@@ -83,7 +88,7 @@ export class ForcesAnalysisPanelComponent implements OnInit, OnDestroy {
    */
    private updateTorqueValues(): void {
     const subMechanisms = this.getSubMechanisms();
-    
+
     subMechanisms.forEach((subMech, index) => {
       const torque = this.getSubMechanismTorque(index);
       this.subMechanismTorques.set(index, torque);
@@ -108,6 +113,34 @@ export class ForcesAnalysisPanelComponent implements OnInit, OnDestroy {
   }
 
   //////////// JOINT /////////////////
+
+  private getCurrentFrameDataForJoint(jointId: number): ComprehensiveFrameData | null {
+
+    const mechanism = this.stateService.getMechanism();
+    const subMechanisms = mechanism.getSubMechanisms();
+
+    for (let i = 0; i < subMechanisms.length; i++) {
+
+      const sub = subMechanisms[i];
+
+      for (let joint of sub.keys()) {
+        if (joint.id === jointId) {
+
+          const frameData =
+            this.staticsAnalysis.getAnalysisResultAtFrame(i, this.currentFrameIndex);
+
+          if (!frameData) {
+            console.warn("Frame data is null");
+            return null;
+          }
+
+          return frameData;
+        }
+      }
+    }
+    return null;
+  }
+
   getCurrentJoint(): Joint {
     let currentJointInteractor = this.interactionService.getSelectedObject();
     return (currentJointInteractor as JointInteractor).getJoint();
@@ -117,13 +150,47 @@ export class ForcesAnalysisPanelComponent implements OnInit, OnDestroy {
     return this.getCurrentJoint().name;
   }
 
-  getJointForce(): string {
-    // const joint = this.getCurrentJoint();
-    // const kinematics = this.analysisSolverService.getJointKinematics(joint.id);
-    // const latest = kinematics.forces[kinematics.forces.length - 1];
-    // return latest.x.toFixed(3);
+  getJointForce(jointId : number): string {
 
-    return this.getCurrentJoint().name;
+    // const jointId = this.getCurrentJoint().id;
+    const frameData = this.getCurrentFrameDataForJoint(jointId);
+
+    if (!frameData) {
+        console.warn("Frame data is null");
+        return "0";
+      }
+
+    const reaction = frameData.solution.reactionForces.get(jointId);
+
+    if (!reaction) {
+      console.warn(`No reaction force found for Joint ${jointId}`);
+      return "0";
+    }
+
+    console.log("Reaction Force:", reaction);
+
+    const Fx = reaction.Fx ?? 0;
+    const Fy = reaction.Fy ?? 0;
+
+    return `Fx: ${Fx.toFixed(4)} N, Fy: ${Fy.toFixed(4)} N;`;
+  }
+
+  getJointTorque(jointId : number): string {
+    if (!this.getCurrentJoint().isInput) return '';
+
+    const frameData = this.getCurrentFrameDataForJoint(jointId);
+
+    if (!frameData) {
+      console.warn("Frame data is null");
+      return "0";
+    }
+
+    const torque = frameData.solution.motorTorque ?? 0;
+    return `${torque.toFixed(4)} N`;
+  }
+
+  hasJointInput(joint: Joint): boolean {
+     return this.getCurrentJoint().isInput;
   }
 
   toggleGraph(graphType: GraphType) {
@@ -236,50 +303,85 @@ export class ForcesAnalysisPanelComponent implements OnInit, OnDestroy {
   }
 
 
+  downloadCSV(exportJointForces: boolean, exportLinkForces: boolean) {
 
-
-
-
-  downloadCSV() {
-    const table = document.querySelector(".table-auto");
-    if (!table) return;
-
-    const headers: string[] = [];
-    const data: string[][] = [];
-
-    const ths = table.querySelectorAll("thead td");
-    ths.forEach((th, colIndex) => {
-      if (colIndex > 0) {
-        headers.push(th.textContent?.trim() || "");
-      }
-    });
-
-    const rows = table.querySelectorAll("tbody tr");
-    rows.forEach((row) => {
-      const cells = row.querySelectorAll("td");
-      const rowHeader = cells[0].textContent?.trim() || "";
-
-      cells.forEach((cell, index) => {
-        const checkbox = cell.querySelector("input[type='checkbox']") as HTMLInputElement;
-        if (checkbox && checkbox.checked) {
-          data.push([`${headers[index - 1]} ${rowHeader}`]);
-        }
-      });
-    });
-
-    if (data.length === 0) {
-      alert("No selections made");
+    if (!exportJointForces && !exportLinkForces) {
+      alert("No data selected for export.");
       return;
     }
 
-    const csvContent = ["Time," + data.map(d => d[0]).join(",")].join("\n");
+    const mechanism = this.stateService.getMechanism();
+    const subMechanisms = mechanism.getSubMechanisms();
 
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "selected_data.csv";
+    const rows: string[] = [];
+
+    for (let subIndex = 0; subIndex < subMechanisms.length; subIndex++) {
+
+      const data =
+        this.staticsAnalysis.getLastAnalysisResults(subIndex);
+
+      if (!data || data.length === 0) continue;
+
+      const firstFrame = data[0];
+
+      const headers: string[] = ['SubMechanism', 'Frame', 'Time'];
+
+      if (exportJointForces || exportLinkForces) {
+        headers.push('MotorTorque_Nm');
+
+        firstFrame.solution.reactionForces.forEach((_, jointId) => {
+          headers.push(
+            `Joint${jointId}_Fx_N`,
+            `Joint${jointId}_Fy_N`
+          );
+        });
+      }
+
+      rows.push(headers.join(','));
+
+      data.forEach((frame, frameIndex) => {
+
+        const row: string[] = [
+          subIndex.toString(),
+          frameIndex.toString(),
+          frame.time.toString()
+        ];
+
+        if (exportJointForces || exportLinkForces) {
+
+          row.push(
+            (frame.solution.motorTorque ?? 0).toFixed(6)
+          );
+
+          frame.solution.reactionForces.forEach(force => {
+            row.push(
+              (force.Fx ?? 0).toFixed(4),
+              (force.Fy ?? 0).toFixed(4)
+            );
+          });
+        }
+
+        rows.push(row.join(','));
+      });
+
+      rows.push('');
+    }
+
+    const blob = new Blob([rows.join('\n')], {
+      type: 'text/csv;charset=utf-8;'
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+
+    link.href = url;
+    link.download = 'force_export.csv';
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
   }
+
 }
