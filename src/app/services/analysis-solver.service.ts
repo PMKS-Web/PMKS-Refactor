@@ -34,10 +34,6 @@ export interface LinkGraphNode {
 
 /**
  * One link (undirected edge) connecting joints idA and idB.
- * The canonical traversal direction is idA → idB.
- * aGrounded / bGrounded / aIsInput / bIsInput mirror the corresponding
- * node flags and are stored here so the loop solver never has to look
- * them up again.
  */
 export interface LinkGraphEdge {
   idA:       number;
@@ -50,11 +46,6 @@ export interface LinkGraphEdge {
 
 /**
  * Undirected adjacency graph for one submechanism.
- *
- * NOTE: this graph contains only the links that are explicit in the
- * SolveOrder prerequisites (crank, couplers, followers).
- * Ground-to-ground closing edges and prismatic-closing edges are
- * NOT added here — that is Step 2 (spanning tree + loop detection).
  */
 export interface LinkGraph {
   /** Joint-id → node metadata. */
@@ -70,33 +61,18 @@ export interface LinkGraph {
   adj: Map<number, Array<{ neighbor: number; edgeIndex: number }>>;
 }
 
-/**
- * One directed step within a velocity loop.
- *
- * idA / idB are the canonical endpoints of the underlying physical link
- * exactly as stored in the augmented edge list (graph edges + ground-chain
- * closing edges).  The direction flag records which way the loop walks
- * across that link:
- *
- *   direction = +1  →  step traverses the link idA → idB (canonical)
- *   direction = −1  →  step traverses the link idB → idA (reversed)
- *
- * Sign convention for matrix assembly (Step 4):
- *   revolute link:  X += direction * (−r sinθ) * ω
- *                   Y += direction * ( r cosθ) * ω
- *   prismatic link: X += direction * cosθ_slide * ṡ
- *                   Y += direction * sinθ_slide * ṡ
- * where θ is always atan2(idB.pos − idA.pos) regardless of direction.
- */
 export interface LoopEdge {
   idA:       number;
   idB:       number;
   direction: 1 | -1;
+  // True when the loop step comes from a synthesized slider closure rather than a physical link.
+  isVirtualSlider: boolean;
 }
 
 interface AugmentedLoopEdge {
   idA: number;
   idB: number;
+  // Marks slider edges added only so the loop finder can close a prismatic chain
   isVirtualSlider: boolean;
 }
 
@@ -110,18 +86,21 @@ export class AnalysisSolveService {
   private jointPositions: AnimationPositions[] = [];
   private jointKinematics: Map<number, JointAnalysis> = new Map();
 
-  // Cache of link angular velocities keyed by sorted joint-ID pair, e.g. "2_5".
-  // Populated by computeVelocityLoopOmegas() after each submechanism is solved.
+  // Cache of link angular velocities keyed by sorted joint-ID pair, "2_5"
+  // Populated by computeVelocityLoopOmegas() after each submechanism is solved
   private linkAngularVelocityCache: Map<string, number[]> = new Map();
   // Cache of link angular accelerations keyed by sorted joint-ID pair.
   private linkAngularAccelerationCache: Map<string, number[]> = new Map();
 
-  // Most-recently solved SolveOrder, retained so exportLinkKinematicsCSV() can be
-  // called on demand without needing a parameter.
   private lastSolveOrder: SolveOrder | null = null;
 
   constructor(private positionSolver: PositionSolverService, private stateService: StateService) {
 
+  }
+
+  // Converts stored joint angles from degrees to radians before operations
+  private angleDegToRad(angleDeg: number): number {
+    return angleDeg * Math.PI / 180;
   }
 
   // Updates kinematic data by fetching solve orders and joint positions, then solving submechanism kinematics.
@@ -250,7 +229,8 @@ export class AnalysisSolveService {
   // Calculates velocity and acceleration for a prismatic input joint from its prerequisites.
   solvePrisInputJointKinematics(prereq: SolvePrerequisite): { velocity: Coord, acceleration: Coord } {
     const velocityMag = prereq.jointToSolve.inputSpeed * (0.05 * 6) //Kinematic solver generates frames for 0.05m increments, and animator uses Rev-Input timeInterval calculation
-    const velocityTheta = prereq.jointToSolve.angle;
+    // Slider angles are stored in degrees in the joint model.
+    const velocityTheta = this.angleDegToRad(prereq.jointToSolve.angle);
     const deltaX: number = Math.cos(velocityTheta) * velocityMag;
     const deltaY: number = Math.sin(velocityTheta) * velocityMag;
     const jointVelocity: Coord = new Coord(deltaX, deltaY);
@@ -286,12 +266,14 @@ export class AnalysisSolveService {
     const v_k1: Coord = velocities[known1Index];
     const diff_jk1: Coord = new Coord(positions[jointIndex].x - positions[known1Index].x, positions[jointIndex].y - positions[known1Index].y);
     const perp_angle_jk1: number = Math.atan2(diff_jk1.y, diff_jk1.x) + Math.PI / 2;
-    const jointVelocity: Coord = this.parametricLineIntersection(v_k1, perp_angle_jk1, new Coord(0, 0), prereq.jointToSolve.angle);
+    // The line constraint follows the slider guide angle stored on the joint in degrees.
+    const slideAngle = this.angleDegToRad(prereq.jointToSolve.angle);
+    const jointVelocity: Coord = this.parametricLineIntersection(v_k1, perp_angle_jk1, new Coord(0, 0), slideAngle);
     //acceleration
     const x_centripetal_accel_jk1: number = accelerations[known1Index].x + Math.pow(jointVelocity.x, 2) / (-diff_jk1.x);
     const y_centripetal_accel_jk1: number = accelerations[known1Index].y + Math.pow(jointVelocity.y, 2) / (-diff_jk1.y);
     const centripetal_accel_jk1: Coord = new Coord(x_centripetal_accel_jk1, y_centripetal_accel_jk1);
-    const jointAcceleration: Coord = this.parametricLineIntersection(centripetal_accel_jk1, perp_angle_jk1, new Coord(0, 0), prereq.jointToSolve.angle);
+    const jointAcceleration: Coord = this.parametricLineIntersection(centripetal_accel_jk1, perp_angle_jk1, new Coord(0, 0), slideAngle);
     return { velocity: jointVelocity, acceleration: jointAcceleration };
   }
   // Finds the intersection point of two parametric lines defined by starting coordinates and angles.
@@ -458,6 +440,14 @@ export class AnalysisSolveService {
 
     const vel: number[] = [];
     const acc: number[] = [];
+
+    if (jointIDs && jointIDs.length >= 2) {
+      // Crank-slider links may already have a solved angular series in the loop caches.
+      const cachedSeries = this.getCachedLinkSeries(jointIDs);
+      if (cachedSeries) {
+        return { ang, vel: cachedSeries.vel, acc: cachedSeries.acc };
+      }
+    }
 
     for (let t = 0; t < numSteps; t++) {
       const rx = j1.positions[t].x - j0.positions[t].x;
@@ -658,11 +648,21 @@ export class AnalysisSolveService {
         const y  = pathNodes[i + 1];
         const ei = parentEdge.get(y)!;
         const e  = augEdges[ei];
-        loop.push({ idA: e.idA, idB: e.idB, direction: e.idA === x ? 1 : -1 });
+        loop.push({
+          idA: e.idA,
+          idB: e.idB,
+          direction: e.idA === x ? 1 : -1,
+          isVirtualSlider: e.isVirtualSlider,
+        });
       }
 
       const be_e = augEdges[be.edgeIdx];
-      loop.push({ idA: be_e.idA, idB: be_e.idB, direction: be_e.idA === be.from ? 1 : -1 });
+      loop.push({
+        idA: be_e.idA,
+        idB: be_e.idB,
+        direction: be_e.idA === be.from ? 1 : -1,
+        isVirtualSlider: be_e.isVirtualSlider,
+      });
 
       loops.push(loop);
     }
@@ -726,10 +726,10 @@ export class AnalysisSolveService {
 
     // ── Step 3: classify every link encountered in all loops ──────────────────
     //
-    //  ground   → zero ω, skip entirely
-    //  input    → known ω = omega2, move to RHS
-    //  revolute → unknown ω, add column  key = "A_B"
-    //  prismatic→ unknown ṡ, add column  key = "slider_A_B"
+    //  ground   → zero, skip entirely
+    //  input    → known = omega2, move to RHS
+    //  revolute → unknown, add column  key = "A_B"
+    //  prismatic→ unknown, add column  key = "slider_A_B"
     //
     const nodes       = graph.nodes;
     const unknownKeys : string[] = [];
@@ -739,16 +739,15 @@ export class AnalysisSolveService {
       for (const step of loop) {
         const nA = nodes.get(step.idA)!;
         const nB = nodes.get(step.idB)!;
-
-        // ground–ground edge (closing ground link) → no DOF
-        if (nA.isGrounded && nB.isGrounded) continue;
-
-        // input crank → known, will go to RHS
-        if ((nA.isGrounded && nA.isInput) || (nB.isGrounded && nB.isInput)) continue;
-
-        // determine whether the far (non-grounded) joint is prismatic
         const isPrismatic = this.isPrismaticClosureStep(graph, solveOrder, step);
 
+        // ground–ground edge (closing ground link) → no DOF
+        if (nA.isGrounded && nB.isGrounded && !isPrismatic) continue;
+
+        // input crank → known, will go to RHS
+        if (!isPrismatic && ((nA.isGrounded && nA.isInput) || (nB.isGrounded && nB.isInput))) continue;
+
+        // determine whether the far (non-grounded) joint is prismatic
         const k = isPrismatic
           ? this.sliderKey(step.idA, step.idB)
           : this.linkKey(step.idA, step.idB);
@@ -792,9 +791,10 @@ export class AnalysisSolveService {
           const nA   = nodes.get(step.idA)!;
           const nB   = nodes.get(step.idB)!;
           const sign = step.direction;
+          const isPrismatic = this.isPrismaticClosureStep(graph, solveOrder, step);
 
           // ground–ground closing edge
-          if (nA.isGrounded && nB.isGrounded) continue;
+          if (nA.isGrounded && nB.isGrounded && !isPrismatic) continue;
 
           // Joint positions and link geometry at this timestep
           const posA  = this.jointKinematics.get(step.idA)!.positions[t];
@@ -805,20 +805,20 @@ export class AnalysisSolveService {
           const r     = Math.hypot(dx, dy);
 
           // input crank (known ω = omega2) → RHS
-          if ((nA.isGrounded && nA.isInput) || (nB.isGrounded && nB.isInput)) {
+          if (!isPrismatic && ((nA.isGrounded && nA.isInput) || (nB.isGrounded && nB.isInput))) {
             vecB[rowX] += sign * r * Math.sin(theta) * omega2;
             vecB[rowY] -= sign * r * Math.cos(theta) * omega2;
             continue;
           }
 
           // determine if this link is prismatic
-          const isPrismatic = this.isPrismaticClosureStep(graph, solveOrder, step);
-
           if (isPrismatic) {
             // Prismatic contribution
             // θ_slide is the guide angle stored on the slider joint
             const slideJointId = this.getPrismaticClosureJointId(solveOrder, step);
-            const slideAngle = solveOrder.prerequisites.get(slideJointId)!.jointToSolve.angle;
+            const slideAngle = this.angleDegToRad(
+              solveOrder.prerequisites.get(slideJointId)!.jointToSolve.angle
+            );
             const col = unknownCol.get(this.sliderKey(step.idA, step.idB))!;
             matA[rowX][col] += sign * Math.cos(slideAngle);
             matA[rowY][col] += sign * Math.sin(slideAngle);
@@ -874,15 +874,30 @@ export class AnalysisSolveService {
    * Step 5: Solve the system using math.lusolve() and store the results in the cache
    */
   private solveGeneralAccelerationLoops(solveOrder: SolveOrder): void {
-
     const graph = this.buildLinkGraph(solveOrder);
     const loops = this.findVelocityLoops(graph, solveOrder);
     if (loops.length === 0) return;
 
     const inputJointId = solveOrder.order[0];
+    const numSteps = this.jointKinematics.get(inputJointId)?.positions.length ?? 0;
+    if (numSteps === 0) return;
+    const dt = this.jointKinematics.get(inputJointId)?.timeIncrement ?? 0;
+    if (dt <= 0) return;
+
+    const hasVirtualSliderLoop = loops.some(loop => loop.some(step => step.isVirtualSlider));
+    if (hasVirtualSliderLoop) {
+      // For virtual slider closures, differentiate the solved omega series instead of using the general acceleration solver
+      this.linkAngularAccelerationCache = new Map();
+      for (const [key, omegaArray] of this.linkAngularVelocityCache.entries()) {
+        const alphaArray = this.differentiateSeries(omegaArray, dt);
+        this.linkAngularAccelerationCache.set(key, alphaArray);
+      }
+      return;
+    }
+
     const inputSpeed = solveOrder.prerequisites.get(inputJointId)!.jointToSolve.inputSpeed;
     const omega2 = 2 * Math.PI * (inputSpeed / 60);
-    const alpha2 = 0; // input acceleration is 0 (constant)
+    const alpha2 = 0;
 
     let crankEndId: number | null = null;
     for (const id of solveOrder.order) {
@@ -893,9 +908,6 @@ export class AnalysisSolveService {
     }
     if (crankEndId === null) return;
 
-    const numSteps = this.jointKinematics.get(inputJointId)?.positions.length ?? 0;
-    if (numSteps === 0) return;
-
     const nodes = graph.nodes;
     const unknownKeys: string[] = [];
     const seenKeys = new Set<string>();
@@ -904,11 +916,15 @@ export class AnalysisSolveService {
       for (const step of loop) {
         const nA = nodes.get(step.idA)!;
         const nB = nodes.get(step.idB)!;
-        if (nA.isGrounded && nB.isGrounded) continue;
+        const isPrismatic = this.isPrismaticClosureStep(graph, solveOrder, step);
+
+        if (nA.isGrounded && nB.isGrounded && !isPrismatic) continue;
         if ((nA.isGrounded && nA.isInput) || (nB.isGrounded && nB.isInput)) continue;
-        const k = this.isPrismaticClosureStep(graph, solveOrder, step)
+
+        const k = isPrismatic
           ? this.sliderKey(step.idA, step.idB)
           : this.linkKey(step.idA, step.idB);
+
         if (!seenKeys.has(k)) {
           seenKeys.add(k);
           unknownKeys.push(k);
@@ -918,20 +934,19 @@ export class AnalysisSolveService {
 
     const numLoops = loops.length;
     const numUnknowns = unknownKeys.length;
-
     const unknownCol = new Map<string, number>();
     unknownKeys.forEach((k, i) => unknownCol.set(k, i));
 
     const alphaArrays: number[][] = unknownKeys.map(() => []);
     let lastSol: number[] = new Array(numUnknowns).fill(0);
 
+    this.linkAngularAccelerationCache = new Map();
     this.linkAngularAccelerationCache.set(
       this.linkKey(inputJointId, crankEndId),
       new Array(numSteps).fill(alpha2)
     );
 
     for (let t = 0; t < numSteps; t++) {
-
       const matA: number[][] = Array.from(
         { length: 2 * numLoops },
         () => new Array(numUnknowns).fill(0)
@@ -946,8 +961,9 @@ export class AnalysisSolveService {
           const nA = nodes.get(step.idA)!;
           const nB = nodes.get(step.idB)!;
           const sign = step.direction;
+          const isPrismatic = this.isPrismaticClosureStep(graph, solveOrder, step);
 
-          if (nA.isGrounded && nB.isGrounded) continue;
+          if (nA.isGrounded && nB.isGrounded && !isPrismatic) continue;
 
           const posA = this.jointKinematics.get(step.idA)!.positions[t];
           const posB = this.jointKinematics.get(step.idB)!.positions[t];
@@ -959,10 +975,7 @@ export class AnalysisSolveService {
           const sinT = Math.sin(theta);
           const cosT = Math.cos(theta);
 
-          const isCrank = (nA.isGrounded && nA.isInput) || (nB.isGrounded && nB.isInput);
-
-          // input crank moved into RHS
-          if (isCrank) {
+          if ((nA.isGrounded && nA.isInput) || (nB.isGrounded && nB.isInput)) {
             vecB[rowX] += sign * r * omega2 * omega2 * cosT;
             vecB[rowY] += sign * r * omega2 * omega2 * sinT;
 
@@ -973,10 +986,11 @@ export class AnalysisSolveService {
             continue;
           }
 
-          const isPrismatic = this.isPrismaticClosureStep(graph, solveOrder, step);
           if (isPrismatic) {
             const slideJointId = this.getPrismaticClosureJointId(solveOrder, step);
-            const slideAngle = solveOrder.prerequisites.get(slideJointId)!.jointToSolve.angle;
+            const slideAngle = this.angleDegToRad(
+              solveOrder.prerequisites.get(slideJointId)!.jointToSolve.angle
+            );
             const col = unknownCol.get(this.sliderKey(step.idA, step.idB))!;
             matA[rowX][col] += sign * Math.cos(slideAngle);
             matA[rowY][col] += sign * Math.sin(slideAngle);
@@ -992,22 +1006,12 @@ export class AnalysisSolveService {
 
           const col = unknownCol.get(this.linkKey(step.idA, step.idB))!;
           matA[rowX][col] += sign * (-r * sinT);
-          matA[rowY][col] += sign * ( r * cosT);
+          matA[rowY][col] += sign * (r * cosT);
         }
       }
 
       try {
-        let sol: number[];
-        if (matA.length === numUnknowns) {
-          const rawSol = math.lusolve(matA, vecB) as number[][];
-          sol = rawSol.map(row => row[0]);
-        } else {
-          const matAT = math.transpose(matA) as number[][];
-          const matAT_A = math.multiply(matAT, matA) as number[][];
-          const vecAT_b = math.multiply(matAT, vecB) as number[];
-          const rawSol = math.lusolve(matAT_A, vecAT_b) as number[][];
-          sol = rawSol.map(row => row[0]);
-        }
+        const sol = this.solveAccelerationSystem(matA, vecB, numUnknowns);
         lastSol = sol;
         sol.forEach((v, i) => alphaArrays[i].push(v));
       } catch {
@@ -1036,12 +1040,103 @@ export class AnalysisSolveService {
     return `slider_${this.linkKey(a, b)}`;
   }
 
+  // Numerically differentiates a time series with forward/backward ends and centered interior samples.
+  private differentiateSeries(values: number[], dt: number): number[] {
+    if (values.length === 0) return [];
+    if (values.length === 1) return [0];
+
+    const derivative = new Array(values.length).fill(0);
+    derivative[0] = (values[1] - values[0]) / dt;
+
+    for (let i = 1; i < values.length - 1; i++) {
+      derivative[i] = (values[i + 1] - values[i - 1]) / (2 * dt);
+    }
+
+    derivative[values.length - 1] =
+      (values[values.length - 1] - values[values.length - 2]) / dt;
+
+    return derivative;
+  }
+
+  // Solves the acceleration system, using direct 2x2 algebra first and least-squares when A is not square.
+  private solveAccelerationSystem(matA: number[][], vecB: number[], numUnknowns: number): number[] {
+    if (numUnknowns === 2 && matA.length === 2) {
+      const [[a, b], [c, d]] = matA;
+      const det = a * d - b * c;
+      if (Math.abs(det) > 1e-12) {
+        return [
+          (vecB[0] * d - b * vecB[1]) / det,
+          (a * vecB[1] - vecB[0] * c) / det,
+        ];
+      }
+    }
+
+    if (matA.length === numUnknowns) {
+      try {
+        const rawSol = math.lusolve(matA, vecB) as number[][];
+        return rawSol.map(row => row[0]);
+      } catch {
+      }
+    }
+
+    const matAT = math.transpose(matA) as number[][];
+    const matAT_A = math.multiply(matAT, matA) as number[][];
+    const vecAT_b = math.multiply(matAT, vecB) as number[];
+    const rawSol = math.lusolve(matAT_A, vecAT_b) as number[][];
+    return rawSol.map(row => row[0]);
+  }
+
+  // Returns the cached angular series for the most representative joint pair on a compound link.
+  private getCachedLinkSeries(jointIDs: number[]): { vel: number[], acc: number[] } | null {
+    let fallback: { vel: number[], acc: number[] } | null = null;
+    let best: { vel: number[], acc: number[] } | null = null;
+    let bestScore = -Infinity;
+
+    for (let i = 0; i < jointIDs.length - 1; i++) {
+      for (let j = i + 1; j < jointIDs.length; j++) {
+        const key = this.linkKey(jointIDs[i], jointIDs[j]);
+        const vel = this.linkAngularVelocityCache.get(key);
+        const acc = this.linkAngularAccelerationCache.get(key);
+
+        if (!vel || !acc) continue;
+        if (!fallback) fallback = { vel, acc };
+
+        const score = this.seriesVariationScore(vel);
+        if (score > bestScore) {
+          bestScore = score;
+          best = { vel, acc };
+        }
+      }
+    }
+
+    return best ?? fallback;
+  }
+
+  // Prefers the pair whose angular velocity varies the most
+  private seriesVariationScore(values: number[]): number {
+    if (values.length === 0) return -Infinity;
+
+    let min = values[0];
+    let max = values[0];
+    for (const value of values) {
+      if (value < min) min = value;
+      if (value > max) max = value;
+    }
+
+    return max - min;
+  }
+
   private hasPhysicalLink(graph: LinkGraph, a: number, b: number): boolean {
     const key = this.linkKey(a, b);
     return graph.edges.some(edge => this.linkKey(edge.idA, edge.idB) === key);
   }
 
   private isPrismaticClosureStep(graph: LinkGraph, solveOrder: SolveOrder, step: LoopEdge): boolean {
+    if (step.isVirtualSlider) {
+      // Virtual slider edges are always prismatic, even though they do not exist in the physical link graph.
+      return true;
+    }
+
     if (this.hasPhysicalLink(graph, step.idA, step.idB)) {
       return false;
     }
