@@ -1040,7 +1040,7 @@ export class AnalysisSolveService {
     return `slider_${this.linkKey(a, b)}`;
   }
 
-  // Numerically differentiates a time series with forward/backward ends and centered interior samples.
+  // Numerically differentiates a series
   private differentiateSeries(values: number[], dt: number): number[] {
     if (values.length === 0) return [];
     if (values.length === 1) return [0];
