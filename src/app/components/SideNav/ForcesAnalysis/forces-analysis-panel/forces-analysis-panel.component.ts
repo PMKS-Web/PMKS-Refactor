@@ -189,6 +189,23 @@ export class ForcesAnalysisPanelComponent implements OnInit, OnDestroy {
     return `${torque.toFixed(4)} N`;
   }
 
+  getSubMechanismIndexForJoint(jointId : number) : number|null {
+    const mechanism = this.stateService.getMechanism();
+    const subMechanisms = mechanism.getSubMechanisms();
+
+    for (let i = 0; i < subMechanisms.length; i++) {
+
+      const sub = subMechanisms[i];
+
+      for (let joint of sub.keys()) {
+        if (joint.id === jointId) {
+          return i;
+        }
+      }
+    }
+      return null;
+  }
+
   hasJointInput(joint: Joint): boolean {
      return this.getCurrentJoint().isInput;
   }
@@ -376,6 +393,92 @@ export class ForcesAnalysisPanelComponent implements OnInit, OnDestroy {
 
     link.href = url;
     link.download = 'force_export.csv';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+  }
+
+  downloadSelectedJointCSV(exportForce: boolean, exportTorque: boolean) {
+
+    if (!exportForce && !exportTorque) {
+      alert("Please select Force and/or Torque.");
+      return;
+    }
+
+    const selected = this.interactionService.getSelectedObject();
+
+    if (!selected || selected.type() !== 'JointInteractor') {
+      alert("Please select a joint first.");
+      return;
+    }
+
+    const joint = this.getCurrentJoint();
+    const jointId = joint.id;
+
+    const subIndex = this.getSubMechanismIndexForJoint(jointId);
+    if (subIndex === null) {
+      alert("Submechanism not found.");
+      return;
+    }
+
+    const results =
+      this.staticsAnalysis.getLastAnalysisResults(subIndex);
+
+    if (!results || results.length === 0) {
+      alert("No analysis data available.");
+      return;
+    }
+
+    const rows: string[] = [];
+    const headers: string[] = ['Frame', 'Time'];
+
+    if (exportForce) {
+      headers.push(`Joint${jointId}_Fx_N`);
+      headers.push(`Joint${jointId}_Fy_N`);
+    }
+
+    if (exportTorque) {
+      headers.push(`MotorTorque_Nm`);
+    }
+
+    rows.push(headers.join(','));
+
+    results.forEach((frame, frameIndex) => {
+
+      const row: string[] = [
+        frameIndex.toString(),
+        frame.time.toString()
+      ];
+
+      if (exportForce) {
+        const reaction =
+          frame.solution.reactionForces.get(jointId);
+
+        row.push((reaction?.Fx ?? 0).toFixed(4));
+        row.push((reaction?.Fy ?? 0).toFixed(4));
+      }
+
+      if (exportTorque) {
+        const torque = frame.solution.motorTorque ?? 0;
+        row.push(torque.toFixed(6));
+      }
+
+      rows.push(row.join(','));
+    });
+
+    const blob = new Blob(
+      [rows.join('\n')],
+      { type: 'text/csv;charset=utf-8;' }
+    );
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+
+    link.href = url;
+    link.download = `Joint_${jointId}_Data.csv`;
 
     document.body.appendChild(link);
     link.click();

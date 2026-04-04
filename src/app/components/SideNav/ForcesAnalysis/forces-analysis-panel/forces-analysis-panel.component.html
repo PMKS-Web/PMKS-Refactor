@@ -45,8 +45,43 @@
                 </app-analysis-graph-block>
               </div>
             </ng-container>
-
           </collapsible-subsection>
+
+        <!-- Save Pannel -->
+        <collapsible-subsection
+          titleLabel='Save Data'
+          [expanded]="false"
+          (opened)="onSectionOpened()">
+
+          <table class="table-auto border-collapse border w-full text-left">
+          <tr class="hover:bg-gray-100">
+            <td class="border px-4 py-2">Force</td>
+            <td class="border px-4 py-2 text-center" colspan="2">
+              <label class="switch">
+                <input type="checkbox" #forceCheckbox checked>
+                <span class="slider round"></span>
+              </label>
+            </td>
+          </tr>
+
+          <tr class="hover:bg-gray-100">
+            <td class="border px-4 py-2">Torque</td>
+            <td class="border px-4 py-2 text-center" colspan="2">
+              <label class="switch">
+                <input type="checkbox" #torqueCheckbox checked>
+                <span class="slider round"></span>
+              </label>
+            </td>
+          </tr>
+            </table>
+
+          <button
+            (click)="downloadSelectedJointCSV(forceCheckbox.checked, torqueCheckbox.checked)"
+            class="download-btn">
+            Download CSV
+          </button>
+        </collapsible-subsection>
+
       </div>
       }
       @case('LinkInteractor'){
@@ -105,14 +140,6 @@
       }
       @default {
       <div id="default-view">
-<!--        <div class="scroll-container">-->
-<!--          <title-block-->
-<!--            class="title"-->
-<!--            alwaysShown-->
-<!--            description="No link or joint selected. Please select one to show its properties">-->
-<!--            <div style="margin-right: 9.8em;">Analysis</div>-->
-<!--          </title-block>-->
-<!--        </div>-->
 
         <panel-section-collapsible>
           <title-block description='' class = "analysisHeader"
@@ -159,39 +186,6 @@
             </tr>
             </thead>
             <tbody>
-<!--            <tr class="hover:bg-gray-100">-->
-<!--              <td class="border px-4 py-2">Forces/Torque</td>-->
-<!--              <td class="border px-4 py-2 text-center">-->
-<!--                <label class="switch">-->
-<!--                  <input type="checkbox">-->
-<!--                  <span class="slider round"></span>-->
-<!--                </label>-->
-<!--              </td>-->
-<!--              <td class="border px-4 py-2 text-center">-->
-<!--                <label class="switch">-->
-<!--                  <input type="checkbox">-->
-<!--                  <span class="slider round"></span>-->
-<!--                </label>-->
-<!--              </td>-->
-<!--&lt;!&ndash;              <td class="border px-4 py-2"></td>&ndash;&gt;-->
-<!--            </tr>-->
-
-<!--<tr class="hover:bg-gray-100">-->
-<!--  <td class="border px-4 py-2">Stress</td>-->
-<!--  <td class="border px-4 py-2 text-center">-->
-<!--    <label class="switch">-->
-<!--      <input type="checkbox">-->
-<!--      <span class="slider round"></span>-->
-<!--    </label>-->
-<!--  </td>-->
-<!--  <td class="border px-4 py-2 text-center">-->
-<!--    <label class="switch">-->
-<!--      <input type="checkbox">-->
-<!--      <span class="slider round"></span>-->
-<!--    </label>-->
-<!--  </td>-->
-<!--</tr>-->
-
             <tr class="hover:bg-gray-100">
               <td class="border px-4 py-2">Forces/Torque</td>
 
@@ -211,7 +205,7 @@
             </tr>
 
           </table>
-<!--          <button (click)="downloadCSV()" class="download-btn">Download CSV</button>-->
+          <!--          <button (click)="downloadCSV()" class="download-btn">Download CSV</button>-->
           <button
             (click)="downloadCSV(jointForcesCheckbox.checked, linkForcesCheckbox.checked)"
             class="download-btn">
@@ -229,7 +223,7 @@
 
   <!--  FORCE ANALYSIS PANEL-->
   <div id="default-view">
-
+      <div class="scroll-container">
       <panel-section-collapsible
         [warning]="true"
         [expanded]="false"
@@ -286,17 +280,9 @@
 
       </panel-section-collapsible>
 
-
-
-<!--      </div>-->
+      </div>
       </div>
     }
-
-<!--  <div id="import-export">-->
-<!--    <p>Use this panel to import and export kinematic data!</p>-->
-<!--    <import-data></import-data>-->
-<!--    <export-data></export-data>-->
-<!--  </div>-->
 
 </div>
 
