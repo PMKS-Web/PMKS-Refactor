@@ -260,7 +260,7 @@ export class Link implements RigidBody {
         newForce.updateAfterMovement();
       });
     });
-    newForce.updateAfterMovement();
+    // newForce.updateAfterMovement();
   }
 
 

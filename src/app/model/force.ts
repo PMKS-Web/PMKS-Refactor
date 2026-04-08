@@ -40,6 +40,8 @@ export class Force {
     this._magnitude = start.getDistanceTo(end);
     this._posInLink = this.calculatePositionInLink();
     this._relativeAngle = this.calculateRelativeAngle();
+    console.log('Force angle', this._angle);
+    console.log('Relative angle', this._relativeAngle);
   }
 
   get id(): number {
@@ -212,8 +214,12 @@ export class Force {
 
   calculatePositionInLink(): [number, number] {
     const displacement = this.start.subtract(this.parentLink.calculateCenterOfMass());
-    const angleToPos = Math.atan2(displacement.y, displacement.x);
-    return [displacement.getDistanceTo(new Coord(0, 0)), angleToPos];
+    // const angleToPos = Math.atan2(displacement.y, displacement.x);
+    // return [displacement.getDistanceTo(new Coord(0, 0)), angleToPos];
+    const absoluteAngle = Math.atan2(displacement.y, displacement.x);
+    const linkAngle = ((this.parentLink?.calculateAngle() || 0) * Math.PI) / 180;
+    const relativeAngle = absoluteAngle - linkAngle;
+    return [displacement.getDistanceTo(new Coord(0, 0)), relativeAngle];
   }
 
   boundToLink(value: Coord): Coord {

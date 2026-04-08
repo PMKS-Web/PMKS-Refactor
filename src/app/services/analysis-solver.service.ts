@@ -2,6 +2,10 @@ import { Injectable } from '@angular/core';
 import { Coord } from '../model/coord';
 import { PositionSolverService, SolveOrder, SolvePrerequisite, SolveType } from './kinematic-solver.service';
 import { AnimationPositions } from './kinematic-solver.service';
+import { StateService } from './state.service';
+import { RigidBody } from '../model/link';
+import { Link } from '../model/link';
+import { CompoundLink } from '../model/compound-link';
 
 export interface JointAnalysis {
     timeIncrement: number,
@@ -30,9 +34,14 @@ export class AnalysisSolveService {
     private solveOrders: SolveOrder[] = [];
     private jointPositions: AnimationPositions[] = [];
     private jointKinematics: Map<number, JointAnalysis> = new Map();
-    constructor(private positionSolver: PositionSolverService) {
 
-    }
+    // save the COM of every link in the sub-mechanism
+    private comPositions: Map<number, Coord>[][] = []; // Added by MQP 25-26
+    
+    constructor(
+        private positionSolver: PositionSolverService, 
+        private stateService: StateService
+    ) {}
 
     // Updates kinematic data by fetching solve orders and joint positions, then solving submechanism kinematics.
     updateKinematics() {
@@ -42,11 +51,21 @@ export class AnalysisSolveService {
          * 3. Iterate over each position, solving for the needed information for both links and joints.
          * 4. Update the Information
          */
-        this.solveOrders = this.positionSolver.getSolveOrders();
+        this.solveOrders = this.positionSolver.getSolveOrders(); // use solveOrders.length is one of many ways to show how many sub-mechanisms you have on screen
+        console.log("solve order: ", this.solveOrders);
         this.jointPositions = this.positionSolver.getAnimationFrames();
         this.jointKinematics = new Map();
-        for (let i = 0; i < this.solveOrders.length; i++) {
+
+        const subMechanisms = this.stateService.getMechanism().getSubMechanisms();
+
+        for (let i = 0; i < this.solveOrders.length; i++) { 
             this.solveSubmechanimsKinematics(this.solveOrders[i], this.jointPositions[i]);
+
+            // After joint kinematics are solved, compute COM positions for this sub-mechanism 
+            if (i < subMechanisms.length) {
+                const uniqueRigidBodies = this.getUniqueRigidBodies(subMechanisms[i]);
+                this.solveCOMPositions(i, uniqueRigidBodies, this.jointPositions[i]);
+            }
         }
     }
 
@@ -313,6 +332,7 @@ export class AnalysisSolveService {
         let com_positions: Coord[] = [];
         let com_velocities: Coord[] = [];
         let com_accelerations: Coord[] = [];
+        console.log("sub-joint length: ", subJoints[0].positions.length);
         for (let time = 0; time < subJoints[0].positions.length; time++) {
             let x_pos: number = 0;
             let y_pos: number = 0;
@@ -360,6 +380,226 @@ export class AnalysisSolveService {
         }
         return { ang: ang_pos, vel: ang_vel, acc: ang_acc };
     }
+
+    // ===================== COM POSITION TRACKING =====================
+    // This section below is added by MQP 25-26 to calculate and track COM of a link more accurately, not using the average method anymore.
+
+    /**
+     * Computes and stores COM positions for all rigid bodies across all timesteps
+     * for a specific sub-mechanism, using circle-circle intersection to track the
+     * COM as a fixed point in the body frame.
+     *
+     * Results are stored in this.comPositions[submechIndex][timestep] = Map<rigidBodyId, Coord>
+     *
+     * @param submechIndex - index of the sub-mechanism
+     * @param uniqueRigidBodies - unique rigid bodies in this sub-mechanism
+     * @param animationData - animation frames for this sub-mechanism
+     */
+    private solveCOMPositions( // Start from this function for COM
+        submechIndex: number,
+        uniqueRigidBodies: RigidBody[],
+        animationData: AnimationPositions
+    ): void {
+        const allPositions = animationData.positions;       // allPositions[timestep][jointIndex]
+        const jointIDs = animationData.correspondingJoints; // jointIDs[jointIndex] = joint ID
+
+        this.comPositions[submechIndex] = [];
+
+        for (let t = 0; t < allPositions.length; t++) {
+            // Build positionMap <jointId, Coord> for this timestep
+            const positionMap = new Map<number, Coord>();
+            for (let i = 0; i < jointIDs.length; i++) {
+                positionMap.set(jointIDs[i], allPositions[t][i]);
+            }
+
+            const comMapAtT = new Map<number, Coord>();
+
+            if (t === 0) {
+                // Seed from rigidBody.centerOfMass at t=0 (average-of-joints from link.ts)
+                uniqueRigidBodies.forEach(rb => {
+                    comMapAtT.set(rb.id, rb.centerOfMass);
+                });
+            } else {
+                // Track COM forward using circle-circle intersection
+                const prevCOMMap = this.comPositions[submechIndex][t - 1];
+
+                uniqueRigidBodies.forEach(rb => {
+                    const newCOM = this.trackCOMWithCircleIntersection(rb, positionMap, prevCOMMap);
+                    if (newCOM) {
+                        comMapAtT.set(rb.id, newCOM);
+                    } else {
+                        // Fallback: keep previous COM if intersection fails
+                        console.warn(`COM tracking failed for rigid body ${rb.id} at timestep ${t}, using previous value`);
+                        const prevCOM = prevCOMMap.get(rb.id);
+                        if (prevCOM) comMapAtT.set(rb.id, prevCOM);
+                    }
+                });
+            }
+
+            this.comPositions[submechIndex].push(comMapAtT);
+        }
+    }
+
+    /**
+     * Tracks the COM of a rigid body at the current timestep using circle-circle intersection.
+     *
+     * The COM is a fixed point in the body frame. Its new position is found by intersecting:
+     *   Circle 1: centered at joint0's new position, radius = dist(joint0, COM) at t=0
+     *   Circle 2: centered at joint1's new position, radius = dist(joint1, COM) at t=0
+     *
+     * When two intersections exist, the one closer to the previous COM is chosen for continuity.
+     */
+    private trackCOMWithCircleIntersection(
+        rigidBody: RigidBody,
+        positionMap: Map<number, Coord>,
+        prevCOMMap: Map<number, Coord>
+    ): Coord | undefined {
+        const joints = rigidBody.getJoints();
+        if (joints.length < 2) {
+            console.warn(`Rigid body ${rigidBody.id} has fewer than 2 joints — cannot track COM`);
+            return undefined;
+        }
+
+        const joint0 = joints[0];
+        const joint1 = joints[1];
+
+        // Original positions and COM at t=0 (from the live model)
+        const A0 = joint0.coords;
+        const B0 = joint1.coords;
+        const COM0 = rigidBody.centerOfMass;
+
+        // New joint positions at this timestep
+        const A_new = positionMap.get(joint0.id) ?? A0;
+        const B_new = positionMap.get(joint1.id) ?? B0;
+
+        // Fixed radii in the body frame (invariant under rigid motion)
+        const rA = this.distanceBetweenCoords(A0, COM0);
+        const rB = this.distanceBetweenCoords(B0, COM0);
+
+        const intersections = this.circleCircleIntersection(A_new, rA, B_new, rB);
+
+        if (intersections.length === 0) return undefined;
+        if (intersections.length === 1) return intersections[0];
+
+        // Two intersections: pick the one closer to previous COM for continuity
+        const prevCOM = prevCOMMap.get(rigidBody.id);
+        if (!prevCOM) return intersections[0];
+
+        const d0 = this.distanceBetweenCoords(prevCOM, intersections[0]);
+        const d1 = this.distanceBetweenCoords(prevCOM, intersections[1]);
+        return d0 <= d1 ? intersections[0] : intersections[1];
+    }
+
+    /**
+     * Returns the COM map for all rigid bodies at a specific timestep of a sub-mechanism.
+     * For each sub-mechanism, at a timestep "t", we will save a map of each rigid body (link/ compound link) with its COM. 
+     * comPositions[submechIndex][timestep] = Map<rigidBodyId, Coord>
+     */
+    public getCOMPositions(submechIndex: number, timestep: number): Map<number, Coord> | undefined {
+        // santity check
+        if (!this.comPositions[submechIndex]) {
+            console.warn(`No COM data for sub-mechanism ${submechIndex}. Call updateKinematics() first.`);
+            return undefined;
+        }
+        if (timestep < 0 || timestep >= this.comPositions[submechIndex].length) {
+            console.warn("Timestep out of range for sub-mechanism");
+            return undefined;
+        }
+        // otherwise, return the corresponding Map<> of COM at time t of a sub-mechanism
+        return this.comPositions[submechIndex][timestep];
+    }
+
+    /**
+     * Returns true if COM positions have been computed for the given sub-mechanism.
+     */
+    public hasCOMData(submechIndex: number): boolean {
+        return this.comPositions[submechIndex] !== undefined &&
+            this.comPositions[submechIndex].length > 0;
+    }
+
+    private distanceBetweenCoords(p: Coord, q: Coord): number {
+        const dx = q.x - p.x;
+        const dy = q.y - p.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    // Find intersections between 2 circle
+    // Circular method: check "intersections between 2 circle" section here https://paulbourke.net/geometry/circlesphere/
+    // This method is the same as circleCircleIntersection() in kinematic-solver.service.ts
+    private circleCircleIntersection(point0: Coord, r0: number, point1: Coord, r1: number): Coord[] {
+        const eps = 1e-9;
+
+        // Calculate distance d between the center of the circles
+        const dx = point1.x - point0.x;
+        const dy = point1.y - point0.y;
+        const d = Math.sqrt(dx * dx + dy * dy);
+
+        // two circle centers are almost the same
+        if (d < eps && Math.abs(r0 - r1) < eps) {
+            console.log(`two circle centers are almost the same`);
+            return [];
+        } 
+
+        // same center with different radius
+        if (d < eps) {
+            console.log(`same center with different radius`)
+            return []; 
+        } 
+
+        // Circles too far apart
+        if (d > r0 + r1 + eps) {
+            console.log(`Circles too far apart`);
+            return [];
+        } 
+
+        // one circle inside the other without touching
+        if (d < Math.abs(r0 - r1) - eps) {
+            console.log(`one circle inside the other without touching`);
+            return [];
+        } 
+
+        // Compute intersection(s), reading this article at section "Intersection of two circles" https://paulbourke.net/geometry/circlesphere/
+        const a = (r0 * r0 - r1 * r1 + d * d) / (2 * d);
+
+        let h_square = r0 * r0 - a * a;
+
+        // Clamp due to floating point errors
+        if (h_square < 0 && h_square > -1e-9) h_square = 0;
+        if (h_square < 0) return [];
+
+        const h = Math.sqrt(h_square);
+
+        // Point P2 between and along the line created by p0 and p1
+        const point2_x = point0.x + (a * dx) / d;
+        const point2_y = point0.y + (a * dy) / d;
+
+        // Offset vector
+        const vx = (dy * h) / d;
+        const vy = (dx * h) / d;
+
+        // one intersection, because h is too small, so the offset vector vx, vy becomes 0, 0. And the intersection point simply P2(point2_x, point2_y)
+        if (h < eps) {
+            console.log(`1 intersection between circles`);
+            return [new Coord(point2_x, point2_y)];
+        }
+        
+        const p1 = new Coord(point2_x - vx, point2_y + vy);
+        const p2 = new Coord(point2_x + vx, point2_y - vy);
+        return [p1, p2];
+    }   
+
+    /**
+     * Extracts unique rigid bodies from a sub-mechanism map.
+     * --- try to print out using "console.log('sub-mechanisms: ', subMechanisms);" for method getSubMechanisms() in mechanism.ts to understand more why we need this function
+     */
+    private getUniqueRigidBodies(subMechanism: Map<any, RigidBody[]>): RigidBody[] {
+        const rigidBodySet = new Set<RigidBody>();
+        subMechanism.forEach(rigidBodies => {
+            rigidBodies.forEach(rb => rigidBodySet.add(rb));
+        });
+        return Array.from(rigidBodySet);
+    }
+
 
 
 }
