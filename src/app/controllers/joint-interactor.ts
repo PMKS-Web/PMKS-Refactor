@@ -134,6 +134,8 @@ export class JointInteractor extends Interactor {
       locked: prevJoint.locked,
       isHidden: prevJoint.isHidden,
       isReference: prevJoint.isReference,
+      isTracer: prevJoint.isTracer,
+      isPartOfWelded: prevJoint.isPartOfWelded,
     };
 
     let prevLinksData = connectedLinks.map((link) => {
