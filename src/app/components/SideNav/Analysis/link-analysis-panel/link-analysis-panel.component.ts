@@ -1,10 +1,12 @@
-import {Component} from '@angular/core'
+import {Component, OnDestroy} from '@angular/core'
+import {Subscription} from 'rxjs';
 import {StateService} from "src/app/services/state.service";
 import {InteractionService} from "src/app/services/interaction.service";
 import {Mechanism} from "src/app/model/mechanism";
 import {LinkInteractor} from "src/app/controllers/link-interactor";
 import {Joint} from "src/app/model/joint";
 import {AnalysisSolveService, JointAnalysis, LinkAnalysis} from "src/app/services/analysis-solver.service";
+import {AnimationService} from "src/app/services/animation.service";
 
 // enum contains every kind of graph this panel can open.
 export enum GraphType {
@@ -24,21 +26,31 @@ export enum GraphType {
 
 })
 
-export class LinkAnalysisPanelComponent {
+export class LinkAnalysisPanelComponent implements OnDestroy {
 
   currentGraphType: GraphType | null = null;
   referenceJoint: Joint = this.getCurrentLink().joints.get(0) as Joint;
   currentGlobalUSuffix: any;
   currentGlobalAngleSuffix: any;
+  currentFrameIndex = 0;
+  private readonly subscriptions = new Subscription();
   constructor(private stateService: StateService, private interactorService: InteractionService,
-              private analysisSolverService: AnalysisSolveService){
-    this.stateService.globalUSuffixCurrent.subscribe(value => {
+              private analysisSolverService: AnalysisSolveService,
+              private animationService: AnimationService){
+    this.subscriptions.add(this.stateService.globalUSuffixCurrent.subscribe(value => {
       this.currentGlobalUSuffix = value;
-    });
-    this.stateService.globalASuffixCurrent.subscribe(value => {
+    }));
+    this.subscriptions.add(this.stateService.globalASuffixCurrent.subscribe(value => {
       this.currentGlobalAngleSuffix = value;
-    });
+    }));
+    this.subscriptions.add(this.animationService.currentFrameIndex$.subscribe(frameIndex => {
+      this.currentFrameIndex = frameIndex;
+    }));
 
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
   getMechanism(): Mechanism {return this.stateService.getMechanism();}
@@ -51,6 +63,17 @@ export class LinkAnalysisPanelComponent {
 // get x coord and y coord return the number of the center of mass
   getCOMXCoord(): number {return this.getCurrentLink()?.centerOfMass.x.toFixed(3) as unknown as number;}
   getCOMYCoord(): number {return this.getCurrentLink()?.centerOfMass.y.toFixed(3) as unknown as number;}
+
+  getCurrentAngularVelocity(): string {
+    const value = this.getCurrentLinkKinematicValue('velocity');
+    return value === null ? 'N/A' : `${value} ${this.getAngularRateUnit()}`;
+  }
+
+  getCurrentAngularAcceleration(): string {
+    const value = this.getCurrentLinkKinematicValue('acceleration');
+    return value === null ? 'N/A' : `${value} ${this.getAngularAccelerationUnit()}`;
+  }
+
   openAnalysisGraph(graphType: GraphType): void {
     this.currentGraphType = graphType;
     if(this.currentGraphType == GraphType.CoMPosition ||
@@ -85,13 +108,13 @@ export class LinkAnalysisPanelComponent {
       case GraphType.CoMVelocity:
         return 'Center of Mass Velocity (' + this.currentGlobalUSuffix + '/s)';
       case GraphType.CoMAcceleration:
-        return 'Center of Mass Acceleration(' + this.currentGlobalUSuffix + '/s²)';
+        return 'Center of Mass Acceleration(' + this.currentGlobalUSuffix + '/sÂ²)';
       case GraphType.referenceJointAngle:
         return 'Reference Joint Angle(' + this.currentGlobalAngleSuffix + ')';
       case GraphType.referenceJointAngularVelocity:
         return 'Reference Joint Angular Velocity(' + this.currentGlobalAngleSuffix + '/s)';
       case GraphType.referenceJointAngularAcceleration:
-        return 'Reference Joint Angular Acceleration(' + this.currentGlobalAngleSuffix + '/s²)';
+        return 'Reference Joint Angular Acceleration(' + this.currentGlobalAngleSuffix + '/sÂ²)';
       // Add more cases as needed
       default:
         return ''; // Handle unknown cases or add a default value
@@ -206,6 +229,54 @@ export class LinkAnalysisPanelComponent {
   }
   public GraphType = GraphType;
 
+  private getCurrentLinkAnalysis(): LinkAnalysis | null {
+    const joints = this.getCurrentLink().getJoints();
+    if (joints.length < 2 || this.animationService.isInvalid()) {
+      return null;
+    }
+
+    this.analysisSolverService.updateKinematics();
+    return this.analysisSolverService.getLinkKinematics(joints.map(joint => joint.id));
+  }
+
+  private getCurrentLinkKinematicValue(type: 'velocity' | 'acceleration'): string | null {
+    const analysis = this.getCurrentLinkAnalysis();
+    if (!analysis) {
+      return null;
+    }
+
+    const series = type === 'velocity'
+      ? analysis.angularVelocity
+      : analysis.angularAcceleration;
+    if (series.length === 0) {
+      return null;
+    }
+
+    const frameIndex = Math.min(this.currentFrameIndex, series.length - 1);
+    const value = this.convertAngularDisplayValue(series[frameIndex]);
+    return value.toFixed(3);
+  }
+
+  private getAngularRateUnit(): string {
+    return `${this.getAngleDisplayUnit()}/s`;
+  }
+
+  private getAngularAccelerationUnit(): string {
+    return `${this.getAngleDisplayUnit()}/s^2`;
+  }
+
+  private convertAngularDisplayValue(valueInRadians: number): number {
+    if (this.currentGlobalAngleSuffix === 'rad') {
+      return valueInRadians;
+    }
+
+    return valueInRadians * 180 / Math.PI;
+  }
+
+  private getAngleDisplayUnit(): 'rad' | 'deg' {
+    return this.currentGlobalAngleSuffix === 'rad' ? 'rad' : 'deg';
+  }
+
   downloadCSV() {
     const table = document.querySelector(".table-auto");
     if (!table) return;
@@ -298,25 +369,27 @@ export class LinkAnalysisPanelComponent {
     jointAnalyses: Array<{joint: Joint, analysis: JointAnalysis}>,
     parameters: string[]
   ): void {
+    const linearUnit = this.getLinearDisplayUnit();
+
     for (const {joint, analysis} of jointAnalyses) {
       for (const parameter of parameters) {
         switch (parameter) {
           case "position":
             series.push(
-              {header: `joint_${joint.id}_x`, values: analysis.positions.map(coord => coord.x)},
-              {header: `joint_${joint.id}_y`, values: analysis.positions.map(coord => coord.y)}
+              {header: `joint_${joint.id}_x_${linearUnit}`, values: analysis.positions.map(coord => coord.x)},
+              {header: `joint_${joint.id}_y_${linearUnit}`, values: analysis.positions.map(coord => coord.y)}
             );
             break;
           case "velocity":
             series.push(
-              {header: `joint_${joint.id}_vx`, values: analysis.velocities.map(coord => coord.x)},
-              {header: `joint_${joint.id}_vy`, values: analysis.velocities.map(coord => coord.y)}
+              {header: `joint_${joint.id}_vx_${linearUnit}_s`, values: analysis.velocities.map(coord => coord.x)},
+              {header: `joint_${joint.id}_vy_${linearUnit}_s`, values: analysis.velocities.map(coord => coord.y)}
             );
             break;
           case "acceleration":
             series.push(
-              {header: `joint_${joint.id}_ax`, values: analysis.accelerations.map(coord => coord.x)},
-              {header: `joint_${joint.id}_ay`, values: analysis.accelerations.map(coord => coord.y)}
+              {header: `joint_${joint.id}_ax_${linearUnit}_s2`, values: analysis.accelerations.map(coord => coord.x)},
+              {header: `joint_${joint.id}_ay_${linearUnit}_s2`, values: analysis.accelerations.map(coord => coord.y)}
             );
             break;
         }
@@ -330,33 +403,50 @@ export class LinkAnalysisPanelComponent {
     linkKinematics: LinkAnalysis,
     parameters: string[]
   ): void {
+    const angleUnit = this.getAngleDisplayUnit();
+
     for (const parameter of parameters) {
       switch (parameter) {
         case "position":
           series.push(
             {
-              header: `link_${linkName}_angle_deg`,
-              values: linkKinematics.angle.map(angle => {
-                let normalizedAngle = angle % (2 * Math.PI);
-                if (normalizedAngle < 0) {
-                  normalizedAngle += 2 * Math.PI;
-                }
-                return normalizedAngle * 180 / Math.PI;
-              })
+              header: `link_${linkName}_angle_${angleUnit}`,
+              values: linkKinematics.angle.map(angle => this.convertAngleSeriesValue(angle))
             }
           );
           break;
         case "velocity":
           series.push(
-            {header: `link_${linkName}_omega_rad_s`, values: linkKinematics.angularVelocity}
+            {
+              header: `link_${linkName}_omega_${angleUnit}_s`,
+              values: linkKinematics.angularVelocity.map(value => this.convertAngularDisplayValue(value))
+            }
           );
           break;
         case "acceleration":
           series.push(
-            {header: `link_${linkName}_alpha_rad_s2`, values: linkKinematics.angularAcceleration}
+            {
+              header: `link_${linkName}_alpha_${angleUnit}_s2`,
+              values: linkKinematics.angularAcceleration.map(value => this.convertAngularDisplayValue(value))
+            }
           );
           break;
       }
     }
+  }
+
+  private convertAngleSeriesValue(valueInRadians: number): number {
+    let normalizedAngle = valueInRadians % (2 * Math.PI);
+    if (normalizedAngle < 0) {
+      normalizedAngle += 2 * Math.PI;
+    }
+
+    return this.currentGlobalAngleSuffix === 'rad'
+      ? normalizedAngle
+      : normalizedAngle * 180 / Math.PI;
+  }
+
+  private getLinearDisplayUnit(): string {
+    return this.currentGlobalUSuffix || 'cm';
   }
 }
