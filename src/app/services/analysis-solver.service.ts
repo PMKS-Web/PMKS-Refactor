@@ -3,6 +3,7 @@ import { Coord } from '../model/coord';
 import { PositionSolverService, SolveOrder, SolvePrerequisite, SolveType } from './kinematic-solver.service';
 import { AnimationPositions } from './kinematic-solver.service';
 import { StateService } from './state.service';
+import { AnimationService } from './animation.service';
 import { create, all, MathJsInstance } from 'mathjs';
 const math: MathJsInstance = create(all, {});
 
@@ -94,13 +95,29 @@ export class AnalysisSolveService {
 
   private lastSolveOrder: SolveOrder | null = null;
 
-  constructor(private positionSolver: PositionSolverService, private stateService: StateService) {
+  constructor(
+    private positionSolver: PositionSolverService,
+    private stateService: StateService,
+    private animationService: AnimationService
+  ) {
 
   }
 
   // Converts stored joint angles from degrees to radians before operations
   private angleDegToRad(angleDeg: number): number {
     return angleDeg * Math.PI / 180;
+  }
+
+  private getInputDirectionSign(): 1 | -1 {
+    return this.animationService.startDirectionCounterclockwise ? 1 : -1;
+  }
+
+  private getSignedInputSpeed(inputSpeed: number): number {
+    return Math.abs(inputSpeed) * this.getInputDirectionSign();
+  }
+
+  private getSignedInputOmega(inputSpeed: number): number {
+    return 2 * Math.PI * (this.getSignedInputSpeed(inputSpeed) / 60);
   }
 
   // Updates kinematic data by fetching solve orders and joint positions, then solving submechanism kinematics.
@@ -137,8 +154,9 @@ export class AnalysisSolveService {
     }
     const arrayColumn = (array: Coord[][], columnIndex: number) => array.map(row => row[columnIndex])
     this.jointKinematics = new Map();
-    let inputspeed: number = solveOrder.prerequisites.get(solveOrder.order[0])!.jointToSolve.inputSpeed;
-    let timeIncrement: number = 60 / (inputspeed * 360);
+    const inputspeed: number = solveOrder.prerequisites.get(solveOrder.order[0])!.jointToSolve.inputSpeed;
+    const inputspeedMagnitude = Math.abs(inputspeed);
+    let timeIncrement: number = inputspeedMagnitude > 0 ? 60 / (inputspeedMagnitude * 360) : 0;
     for (let i = 0; i < solveOrder.order.length; i++) {
       let accelerations = arrayColumn(mechanismAccelerations, i);
       let velocities = arrayColumn(mechanismVelocities, i);
@@ -210,7 +228,7 @@ export class AnalysisSolveService {
     const xDifference = positions[jointIndex].x - positions[0].x;
     const yDifference = positions[jointIndex].y - positions[0].y;
     const angleToInput: number = Math.atan2(yDifference, xDifference);
-    const omega: number = 2 * Math.PI * (prereq.knownJointOne!.inputSpeed / 60); //Angular Velocity of Link in Radians
+    const omega: number = this.getSignedInputOmega(prereq.knownJointOne!.inputSpeed); //Angular Velocity of Link in Radians
     const r: number = prereq.distFromKnownJointOne!;
 
     //velocity
@@ -228,7 +246,7 @@ export class AnalysisSolveService {
 
   // Calculates velocity and acceleration for a prismatic input joint from its prerequisites.
   solvePrisInputJointKinematics(prereq: SolvePrerequisite): { velocity: Coord, acceleration: Coord } {
-    const velocityMag = prereq.jointToSolve.inputSpeed * (0.05 * 6) //Kinematic solver generates frames for 0.05m increments, and animator uses Rev-Input timeInterval calculation
+    const velocityMag = this.getSignedInputSpeed(prereq.jointToSolve.inputSpeed) * (0.05 * 6) //Kinematic solver generates frames for 0.05m increments, and animator uses Rev-Input timeInterval calculation
     // Slider angles are stored in degrees in the joint model.
     const velocityTheta = this.angleDegToRad(prereq.jointToSolve.angle);
     const deltaX: number = Math.cos(velocityTheta) * velocityMag;
@@ -709,7 +727,7 @@ export class AnalysisSolveService {
     // Input joint / motor speed
     const inputJointId = solveOrder.order[0];
     const inputSpeed   = solveOrder.prerequisites.get(inputJointId)!.jointToSolve.inputSpeed;
-    const omega2       = 2 * Math.PI * (inputSpeed / 60);
+    const omega2       = this.getSignedInputOmega(inputSpeed);
 
     // Find the far end of the input crank (RevoluteInput joint)
     let crankEndId: number | null = null;
@@ -896,7 +914,7 @@ export class AnalysisSolveService {
     }
 
     const inputSpeed = solveOrder.prerequisites.get(inputJointId)!.jointToSolve.inputSpeed;
-    const omega2 = 2 * Math.PI * (inputSpeed / 60);
+    const omega2 = this.getSignedInputOmega(inputSpeed);
     const alpha2 = 0;
 
     let crankEndId: number | null = null;
