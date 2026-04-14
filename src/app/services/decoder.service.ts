@@ -65,12 +65,8 @@ export class DecoderService {
         .replaceAll('~', '","');
       console.log(decompressedJSON);
 
-
       const compactData = JSON.parse(decompressedJSON, (key, value) => {
         if (typeof value === 'string') {
-          if (/^[0-9a-f]+$/i.test(value)) {
-            return parseInt(value, 16);
-          }
           if (value === 'y') return true;
           if (value === 'n') return false;
         }
@@ -80,7 +76,7 @@ export class DecoderService {
       // Expand the compact data into full objects.
       console.log('compactData');
       console.log(compactData);
-      const fullData = this.expandMechanismData(compactData);
+      const fullData = this.expandMechanismData(compactData, true);
 
       if (compactData.z && compactData.z[0][0]) {
         const zoom = parseFloat(compactData.z[0][0]);
@@ -300,7 +296,23 @@ export class DecoderService {
     value: any,
     useDecoding: boolean = true
   ): number {
-    return useDecoding && Number.isInteger(value) ? parseInt(value, 16) : value;
+    if (!useDecoding) {
+      return Number(value);
+    }
+
+    if (typeof value === 'number') {
+      return value;
+    }
+
+    if (typeof value === 'string') {
+      if (/^-?[0-9a-f]+$/i.test(value)) {
+        return parseInt(value, 16);
+      }
+
+      return Number(value);
+    }
+
+    return Number(value);
   }
 
   /**
