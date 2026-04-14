@@ -65,17 +65,13 @@ export class DecoderService {
         .replaceAll('~', '","');
       console.log(decompressedJSON);
 
-
       const compactData = JSON.parse(decompressedJSON, (key, value) => {
         if (typeof value === 'string') {
-          if (/^[0-9a-f]+$/i.test(value)) {
-            return parseInt(value, 16);
-          }
           if (value === 'y') return true;
           if (value === 'n') return false;
-          }
+        }
         return value;
-        });
+      });
 
       // Expand the compact data into full objects.
       console.log('compactData');
