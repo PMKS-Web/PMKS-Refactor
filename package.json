@@ -32,6 +32,8 @@
     "lodash": "^4.17.21",
     "lz-string": "^1.5.0",
     "material": "^0.7.5",
+    "math.js": "^1.1.46",
+    "mathjs": "^15.1.0",
     "ng2-charts": "^5.0.4",
     "papaparse": "^5.4.1",
     "rxjs": "~7.8.0",
