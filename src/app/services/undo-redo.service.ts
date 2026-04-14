@@ -1,14 +1,14 @@
-import { Action } from '../components/ToolBar/undo-redo-panel/action';
-import { Coord } from '../model/coord';
-import { Link } from '../model/link';
-import { Joint } from '../model/joint';
-import { Mechanism } from '../model/mechanism';
-import { Subject } from 'rxjs';
-import { Injectable } from '@angular/core';
-import { StateService } from './state.service';
-import { isUndefined } from 'lodash';
-import { Position } from '../model/position';
-import { Force } from '../model/force';
+import {Action} from '../components/ToolBar/undo-redo-panel/action';
+import {Coord} from '../model/coord';
+import {Link} from '../model/link';
+import {Joint} from '../model/joint';
+import {Mechanism} from '../model/mechanism';
+import {Subject} from 'rxjs';
+import {Injectable} from '@angular/core';
+import {StateService} from './state.service';
+import {isUndefined} from 'lodash';
+import {Position} from '../model/position';
+import {Force} from '../model/force';
 
 @Injectable({
   providedIn: 'root',
@@ -24,6 +24,7 @@ export class UndoRedoService {
   public reinitialize$ = this.reinitializeSubject.asObservable();
 
   private mechanism: Mechanism;
+
   constructor(private stateService: StateService) {
     this.mechanism = stateService.getMechanism();
   }
@@ -95,6 +96,7 @@ export class UndoRedoService {
   public getUndoStack(): Action[] {
     return [...this.undoStack];
   }
+
   public getRedoStack(): Action[] {
     return [...this.redoStack];
   }
@@ -303,12 +305,18 @@ export class UndoRedoService {
         console.error('No inverse defined for action type:', action.type);
     }
   }
+
   //---------------------------------------------------------------------------------
   // --------------------------- | UNDO | ------------------------------------------
   //--------------------------------------------------------------------------------
   // Applies the inverse of an action to the Mechanism (undo logic).
   private applyInverseAction(action: Action): void {
     switch (action.type) {
+      case 'addWeld':
+        if (action.jointId !== undefined) {
+          this.mechanism.removeWeld(action.jointId);
+        }
+        break;
       case 'addInput':
         if (action.jointId !== undefined) {
           this.mechanism.removeInput(action.jointId);
@@ -319,14 +327,14 @@ export class UndoRedoService {
           this.mechanism.addInput(action.jointId);
         }
         break;
-      case 'addGround':
+      case 'removeSlider':
         if (action.jointId !== undefined) {
-          this.mechanism.removeGround(action.jointId);
+          this.mechanism.addSlider(action.jointId);
         }
         break;
-      case 'removeGround':
+      case 'removeWeld':
         if (action.jointId !== undefined) {
-          this.mechanism.addGround(action.jointId);
+          this.mechanism.addWeld(action.jointId);
         }
         break;
       case 'generateFourBar':
@@ -334,11 +342,6 @@ export class UndoRedoService {
         break;
       case 'generateSixBar':
         this.generateSixBarSubject.next();
-        break;
-      case 'addSlider':
-        if (action.jointId !== undefined) {
-          this.mechanism.removeSlider(action.jointId);
-        }
         break;
       case 'setSynthesisLength':
         this.mechanism.setCouplerLength(action.oldDistance as number);
@@ -376,21 +379,9 @@ export class UndoRedoService {
           this.mechanism.setPositionAngle(action.oldAngle, action.linkId);
         }
         break;
-      case 'removeSlider':
-        if (action.jointId !== undefined) {
-          this.mechanism.addSlider(action.jointId);
-        }
-        break;
-      case 'addWeld':
-        if (action.jointId !== undefined) {
-          this.mechanism.removeWeld(action.jointId);
-        }
-        break;
-      case 'removeWeld':
-        if (action.jointId !== undefined) {
-          this.mechanism.addWeld(action.jointId);
-        }
-        break;
+      case 'addSlider':       // Restores the link/joints from snapshot if user
+      case 'addGround':       // performs an undo on add slider, add ground,
+      case 'removeGround':    // remove ground, or delete joint
       case 'deleteJoint':
         // Restore main joint:
         if (action.jointData) {
@@ -508,7 +499,7 @@ export class UndoRedoService {
         }
         if (action.attachJointId !== undefined) {
           this.mechanism.getJoint(action.attachJointId) &&
-            this.mechanism.removeJoint(action.attachJointId);
+          this.mechanism.removeJoint(action.attachJointId);
         }
         break;
       case 'setJoint':
