@@ -173,10 +173,19 @@ export class Force {
     );
     const angleInRadians = (this.angle * Math.PI) / 180;
 
+    // this.end = new Coord(
+    //   this.start.x + this.magnitude * Math.cos(angleInRadians),
+    //   this.start.y + this.magnitude * Math.sin(angleInRadians)
+    // );
+
+
+    // Use a fixed unit-length end point — display length is handled in the force.component.ts
+    // ---- Temporary added for a fixed length of force
     this.end = new Coord(
-      this.start.x + this.magnitude * Math.cos(angleInRadians),
-      this.start.y + this.magnitude * Math.sin(angleInRadians)
+      this.start.x + Math.cos(angleInRadians),
+      this.start.y + Math.sin(angleInRadians)
     );
+    // --------------
   }
   clone(): Force {
     const newForce = new Force(
