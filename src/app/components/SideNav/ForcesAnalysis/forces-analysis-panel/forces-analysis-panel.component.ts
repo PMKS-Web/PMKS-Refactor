@@ -153,8 +153,16 @@ export class ForcesAnalysisPanelComponent implements OnInit, OnDestroy {
   getJointForce(jointId : number): string {
 
     // const jointId = this.getCurrentJoint().id;
-    const frameData = this.getCurrentFrameDataForJoint(jointId);
+    let frameData = this.getCurrentFrameDataForJoint(jointId);
 
+    // frameData can be "null" when we already open "Data summary" of a Joint in Force Analysis sidetab. 
+    // So, we run analysis here as a fallback so the new joint's data is available immediately.
+    if (!frameData) {
+      this.analyzeAllSubMechanisms();
+      frameData = this.getCurrentFrameDataForJoint(jointId);
+    }
+
+    // if it's still "null", return 0
     if (!frameData) {
         console.warn("Frame data is null");
         return "0";
