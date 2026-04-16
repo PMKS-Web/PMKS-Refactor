@@ -228,6 +228,7 @@ export class DecoderService {
       locked: this.convertBoolean(row[8]),
       length: this.convertNumber(row[9], useDecoding),
       angle: this.convertNumber(row[10], useDecoding),
+      isCircle: this.convertBoolean(row[11]),
     }));
 
     const decodedCompoundLinks: any[] = (compactData.c || []).map(

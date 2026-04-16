@@ -154,6 +154,7 @@ export class StateService {
         newLink.angle = link.angle;
         newLink.locked = Boolean(link.locked);
         newLink.color = link.color;
+        newLink.isCircle = Boolean(link.isCircle);
 
         this.mechanism._addLink(newLink);
       }

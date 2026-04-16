@@ -214,6 +214,7 @@ export class EncoderService {
         l.locked,
         l.length,
         l.angle,
+        l.isCircle,
       ]),
       c: mechanism.getArrayOfCompoundLinks().map((cl: CompoundLink) => [
         cl.id,
