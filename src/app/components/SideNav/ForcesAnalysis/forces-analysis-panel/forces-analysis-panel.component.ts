@@ -176,7 +176,9 @@ export class ForcesAnalysisPanelComponent implements OnInit, OnDestroy {
   }
 
   getJointTorque(jointId : number): string {
-    if (!this.getCurrentJoint().isInput) return '';
+    // if (!this.getCurrentJoint().isInput) return '';
+    const joint = this.stateService.getMechanism().getJoint(jointId);
+    if (!joint?.isInput) return '';
 
     const frameData = this.getCurrentFrameDataForJoint(jointId);
 
@@ -246,6 +248,11 @@ export class ForcesAnalysisPanelComponent implements OnInit, OnDestroy {
   }
   getLinkName(): string {
     return this.getCurrentLink().name;
+  }
+
+  getLinkJoints() {
+    this.analyzeAllSubMechanisms();
+    return this.getCurrentLink().getJoints();
   }
 
   toggleJointForceGraph(jointId: number) {

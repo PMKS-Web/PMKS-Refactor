@@ -98,7 +98,7 @@
             [expanded]="false"
             (opened)="onSectionOpened()">
 
-            <div *ngFor="let joint of getCurrentLink().getJoints()">
+            <div *ngFor="let joint of getLinkJoints()">
 
               <analysis-graph-button
                 [dynamicText]="'Joint ' + joint.name"
@@ -108,12 +108,13 @@
               </analysis-graph-button>
 
               <p style="margin-left: 10px; margin-top: 1px;">
-                Force {{ joint.name }}
+                {{ getJointForce(joint.id) }}
               </p>
-
-<!--              <p *ngIf="hasJointInput(joint)" style="margin-left: 10px; margin-top: 1px;">-->
-<!--                Torque: {{ getJointTorque(joint.id) }}-->
-<!--              </p>-->
+ 
+              <!-- Show torque only if this is the input (motor) joint -->
+              <p *ngIf="joint.isInput" style="margin-left: 10px; margin-top: 1px;">
+                Torque: {{ getJointTorque(joint.id) }}
+              </p>
 
               <!-- Individual Graph -->
               <ng-container *ngIf="selectedJointId === joint.id">
