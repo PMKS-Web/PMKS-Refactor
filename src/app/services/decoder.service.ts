@@ -98,6 +98,8 @@ export class DecoderService {
       }
 
       // Pass the reconstructed mechanism data to the state service.
+      console.log('fullData: Compound Link');
+      console.log(fullData.decodedCompoundLinks);
       stateService.reconstructMechanism(fullData);
 
       if (compactData.u) {
@@ -210,6 +212,8 @@ export class DecoderService {
       isHidden: this.convertBoolean(row[11]),
       isReference: this.convertBoolean(row[12]),
       isGenerated: this.convertBoolean(row[13]),
+      isPartOfWelded: this.convertBoolean(row[14]),
+      isTracer: this.convertBoolean(row[15]),
     }));
 
     const decodedLinks: any[] = (compactData.l || []).map((row: any[]) => ({

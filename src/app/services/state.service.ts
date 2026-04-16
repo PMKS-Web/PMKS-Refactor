@@ -119,6 +119,8 @@ export class StateService {
         newJoint.hidden = Boolean(joint.isHidden);
         newJoint.reference = Boolean(joint.isReference);
         newJoint.generated = Boolean(joint.isGenerated);
+        newJoint.isTracer = Boolean(joint.isTracer);
+        newJoint.isPartOfWelded = Boolean(joint.isPartOfWelded);
         if (Boolean(joint.isInput)) {
           newJoint.addInput();
         }
@@ -145,8 +147,8 @@ export class StateService {
         for (const x of jointsArray) {
           console.log(x.id);
         }
-        console.log(link, link.id);
-        let newLink = new Link(link.id, jointsArray);
+        console.log(link, Number(link.id));
+        let newLink = new Link(Number(link.id), jointsArray);
         newLink.name = link.name;
         newLink.mass = link.mass;
         newLink.angle = link.angle;
@@ -159,6 +161,7 @@ export class StateService {
 
     //Compound Links
     if (rawData.decodedCompoundLinks) {
+      console.log("WELDED LINKS")
       for (const compoundlink of rawData.decodedCompoundLinks) {
         let linksArray: Link[] = compoundlink.links
           .split('|')
