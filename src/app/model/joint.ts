@@ -156,6 +156,7 @@ export class Joint {
 
   set speed(newSpeed: number) {
     this._inputSpeed = newSpeed;
+    this._rpmSpeed = newSpeed;
   }
 
   set locked(value: boolean) {
@@ -170,6 +171,7 @@ export class Joint {
 
   set rpmSpeed(newSpeed: number) {
     this._rpmSpeed = newSpeed;
+    this._inputSpeed = newSpeed;
   }
 
   set hidden(val: boolean) {
