@@ -93,7 +93,9 @@ export class SvgInteractor extends Interactor {
           inputSpeed: j.speed,
           locked:     j.locked,
           isHidden:   j.hidden,
-          isReference:j.reference
+          isReference:j.reference,
+          isTracer:   j.isTracer,
+          isPartOfWelded: j.isPartOfWelded,
         };
       });
 
@@ -105,7 +107,8 @@ export class SvgInteractor extends Interactor {
         mass:     createdLink.mass,
         angle:    createdLink.angle,
         locked:   createdLink.locked,
-        color:    createdLink.color
+        color:    createdLink.color,
+        isCircle: createdLink.isCircle,
       };
 
       this.undoRedoService.recordAction({

@@ -725,13 +725,17 @@ export class Mechanism {
    *
    * @param {number} linkID
    * @param {Coord} coord
+   * @param {isTracer} boolean
    * @memberof Mechanism
    */
-  addJointToLink(linkID: number, coord: Coord) {
+  addJointToLink(linkID: number, coord: Coord, isTracer?: boolean) {
     this.executeLinkAction(linkID, (link) => {
       let jointA = new Joint(this._jointIDCount, coord);
       this._jointIDCount++;
       this._joints.set(jointA.id, jointA);
+      if (isTracer) {
+        jointA.isTracer = true;
+      }
       link.addTracer(jointA);
     });
   }
@@ -750,6 +754,95 @@ export class Mechanism {
       this._joints.set(jointA.id, jointA);
       position.addTracer(jointA);
     });
+  }
+
+  /**
+   * attaches a tracer point(effectively a joint) to an existing link, but this is from a welded link.
+   *
+   * @param {number} linkID
+   * @param {Coord} coord
+   * @memberof Mechanism
+   */
+  addTracerPointWelded(linkID: number, coordModel: Coord, coordSVG: Coord) {
+    this.executeLinkAction(linkID, (link) => {
+      let jointA = new Joint(this._jointIDCount, coordModel);
+      this._jointIDCount++;
+      if (this.isMechanismWelded()) {
+        jointA.isTracer = true;
+        jointA.isPartOfWelded = true;
+      }
+
+      let foundLink: boolean = false;
+      let i: number = 0;
+      while (i < this._links.size && !foundLink) {
+        let currentLink = this._links.get(i);
+        const inLink = currentLink?.containsCoord(coordSVG);
+
+        if (inLink) {
+          foundLink = true;
+        } else {
+          i++;
+        }
+      }
+
+      this._joints.set(jointA.id, jointA);
+
+      const theLink = this._links.get(i);
+      if (foundLink && theLink != undefined) {
+        theLink.addTracer(jointA);
+      } else {
+        link.addTracer(jointA);
+      }
+    });
+  }
+
+  /**
+   * attaches a tracer point(effectively a joint) to an existing link, but this is from a welded link.
+   *
+   * @param {number} linkID
+   * @param {Coord} coord
+   * @memberof Mechanism
+   */
+  _addJointToWelded(linkID: number, jointA: Joint, coordSVG: Coord) {
+    this.executeLinkAction(linkID, (link) => {
+
+      let foundLink: boolean = false;
+      let i: number = 0;
+      while (i < this._links.size && !foundLink) {
+        let currentLink = this._links.get(i);
+        const inLink = currentLink?.containsCoord(coordSVG);
+
+        if (inLink) {
+          foundLink = true;
+        } else {
+          i++;
+        }
+      }
+
+      this._joints.set(jointA.id, jointA);
+
+      const theLink = this._links.get(i);
+      if (foundLink && theLink != undefined) {
+        theLink.addTracer(jointA);
+      } else {
+        link.addTracer(jointA);
+      }
+    });
+  }
+
+  /**
+   * determines whether the current mechanism is a welded linkage.
+   *
+   * @memberof Mechanism
+   * @return returns true if the mechanism has a welded joint, false otherwise
+   */
+  isMechanismWelded(): boolean {
+    for (const [id, j] of this._joints) {
+      if (j.isWelded) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -880,6 +973,18 @@ export class Mechanism {
         console.log(`Isolated joint with ID ${joint.id} removed.`);
       }
     }
+  }
+
+  // first removes every link within the compound link, then the compound link itself; finds compound link from id
+  public removeCompoundLinkByID(compoundLinkID: number) {
+    var compoundLink = this._compoundLinks.get(compoundLinkID);
+    if (compoundLink != undefined) {
+      for (let link of compoundLink.links.values()) {
+        this.removeLink(link.id);
+      }
+      this._compoundLinks.delete(compoundLink.id);
+    }
+
   }
 
   // first removes every link within the compound link, then the compound link itself
@@ -1129,7 +1234,7 @@ export class Mechanism {
     }
     return connectedLinks;
   }
-  private getConnectedCompoundLinks(joint: Joint): CompoundLink[] {
+  getConnectedCompoundLinks(joint: Joint): CompoundLink[] {
     let connectedCompoundLinks: CompoundLink[] = [];
     for (let link of this._compoundLinks.values()) {
       if (link.containsJoint(joint.id)) {

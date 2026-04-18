@@ -12,6 +12,7 @@ import { UnitConversionService } from 'src/app/services/unit-conversion.service'
 import { NotificationService } from 'src/app/services/notification.service';
 
 import { AnimationService } from 'src/app/services/animation.service';
+import {UndoRedoService} from "../../../services/undo-redo.service";
 
 @Component({
   selector: '[app-compound-link]',
@@ -27,13 +28,14 @@ export class CompoundLinkComponent extends AbstractInteractiveComponent {
 				private svgPathService: SVGPathService,
         private unitConversionService: UnitConversionService,
         private notificationService: NotificationService,
-        public override animationService: AnimationService
+        public override animationService: AnimationService,
+              private undoRedoService: UndoRedoService
         ) {
     super(interactionService,animationService);
   }
 
   override registerInteractor(): Interactor {
-    return new CompoundLinkInteractor(this.compoundLink, this.stateService, this.notificationService);
+    return new CompoundLinkInteractor(this.compoundLink, this.stateService, this.notificationService, this.undoRedoService);
   }
 
   getColor():string{
@@ -49,7 +51,8 @@ export class CompoundLinkComponent extends AbstractInteractiveComponent {
   let allCoordsAsArray: Coord[] = Array.from(allUniqueJointCoords,(coord,index) =>{
     return this.unitConversionService.modelCoordToSVGCoord(coord);
   });
-	return this.svgPathService.getSingleLinkDrawnPath(allCoordsAsArray, radius);
+    return this.svgPathService.calculateCompoundPath(this.compoundLink.links, allCoordsAsArray, radius);
+	//return this.svgPathService.getSingleLinkDrawnPath(allCoordsAsArray, radius);
   }
   getStrokeColor(): string{
     if (this.getInteractor().isSelected) {
