@@ -195,6 +195,8 @@ export class EncoderService {
           j.isHidden,
           j.isReference,
           j.isGenerated,
+          j.isPartOfWelded,
+          j.isTracer,
         ]),
       l: mechanism.getArrayOfLinks().map((l: Link) => [
         l.id,
@@ -212,6 +214,7 @@ export class EncoderService {
         l.locked,
         l.length,
         l.angle,
+        l.isCircle,
       ]),
       c: mechanism.getArrayOfCompoundLinks().map((cl: CompoundLink) => [
         cl.id,

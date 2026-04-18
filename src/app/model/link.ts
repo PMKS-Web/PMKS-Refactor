@@ -1,6 +1,8 @@
 import { Coord } from './coord';
 import { Joint } from './joint';
 import { Force } from './force';
+import {UnitConversionService} from "../services/unit-conversion.service";
+import {SVGPathService} from "../services/svg-path.service";
 
 export interface RigidBody {
   getJoints(): Joint[];
@@ -21,7 +23,8 @@ export class Link implements RigidBody {
   private _color: string = '';
   private _isLocked: boolean;
   private _angle: number;
-  
+  private _isCircle: boolean = false;
+
   // These fields are only for supporting CUSTOM centerOfMass logic
   private _customCOMAnchors: [number, number] | null = null; // We store IDs so we can find the correct joints later even if we have references.
   private _customCOMRadii: [number, number] | null = null; // Distances from those two joints to the custom COM at the moment the user sets it.
@@ -49,7 +52,7 @@ export class Link implements RigidBody {
     this._color = this.linkColorOptions[id % this.linkColorOptions.length];
     this._isLocked = false;
     this._angle = 0;
-    
+
     if (Array.isArray(jointAORJoints)) {
       jointAORJoints.forEach((joint) => {
         this._joints.set(joint.id, joint);
@@ -127,6 +130,10 @@ export class Link implements RigidBody {
     return parseFloat(posangle.toFixed(3));
   }
 
+  get isCircle(): boolean {
+    return this._isCircle;
+  }
+
   //setters
   set name(value: string) {
     this._name = value;
@@ -146,6 +153,10 @@ export class Link implements RigidBody {
 
   set angle(value: number) {
     this._angle = ((value % 360) + 360) % 360;
+  }
+
+  set isCircle(value: boolean) {
+    this._isCircle = value;
   }
 
   // In the future, we need to check if this custom center of mass is valid.
@@ -193,7 +204,7 @@ export class Link implements RigidBody {
     this._customCOMAnchors = null;
     this._customCOMRadii = null;
     this._centerOfMass = this.calculateCenterOfMass();
-    
+
     // Rebind forces to the new COM definition
     this.rebindForcesAfterCenterOfMassChanged();
   }
@@ -273,7 +284,7 @@ export class Link implements RigidBody {
   }
 
   // MQP 24-25: I don't think this works
-  // MQP 25-26: No, this doesn't work for all shapes, it only works if we have solid filled nice shapes 
+  // MQP 25-26: No, this doesn't work for all shapes, it only works if we have solid filled nice shapes
   //            like triangle, square,... Hope that another MQP can find a better way to calculate it.
   calculateCenterOfMass(): Coord {
 
@@ -281,20 +292,20 @@ export class Link implements RigidBody {
     if (!this._customCenterOfMass) {
       this._centerOfMass = this.calculateCOMUsingAverageMethod();
     }
-    
+
     // if using CUSTOM
     const customCOM = this.calculateCOMUsingCircleMethod();
 
     if (!customCOM) { // if circle method fails, fallback to avarage method
       this._centerOfMass = this.calculateCOMUsingAverageMethod();
-      
+
       if (!this._COMNeedReset) { // need to reset everything related to custom Center of mass
         this._customCenterOfMass = false;
         this._customCOMAnchors = null;
         this._customCOMRadii = null;
-      }   
+      }
     }
-    
+
     return this._centerOfMass;
   }
 
@@ -369,25 +380,25 @@ export class Link implements RigidBody {
     if (d < eps && Math.abs(r0 - r1) < eps) {
         console.log('two circle centers are almost the same');
         return [];
-    } 
+    }
 
     // same center with different radius
     if (d < eps) {
         console.log('same center with different radius')
-        return []; 
-    } 
+        return [];
+    }
 
     // Circles too far apart
     if (d > r0 + r1 + eps) {
         console.log('Circles too far apart');
         return [];
-    } 
+    }
 
     // one circle inside the other without touching
     if (d < Math.abs(r0 - r1) - eps) {
         console.log('one circle inside the other without touching');
         return [];
-    } 
+    }
 
     // Compute intersection(s), reading this article at section "Intersection of two circles" https://paulbourke.net/geometry/circlesphere/
     const a = (r0 * r0 - r1 * r1 + d * d) / (2 * d);
@@ -413,11 +424,11 @@ export class Link implements RigidBody {
         // console.log('1 intersection between circles');
         return [new Coord(point2_x, point2_y)];
     }
-    
+
     const p1 = new Coord(point2_x - vx, point2_y + vy);
     const p2 = new Coord(point2_x + vx, point2_y - vy);
     return [p1, p2];
-  }   
+  }
 
   getMidpoint(joint1: Joint, joint2: Joint): Coord {
     let x: number;
@@ -638,6 +649,42 @@ export class Link implements RigidBody {
       return false;
     }
   }
+  // checks if coord is in link. Assumes coords have been converted into svg coords from model coords
+  containsCoord(coord: Coord): boolean {
+    // below is getting the path string of this link
+    let joints: IterableIterator<Joint> = this.joints.values();
+    let allCoords: Coord[] = [];
+    let unitConversionService: UnitConversionService = new UnitConversionService();
+    for (let joint of joints) {
+      let coord: Coord = joint._coords;
+      coord = unitConversionService.modelCoordToSVGCoord(coord);
+      allCoords.push(coord);
+    }
+    const pathString = new SVGPathService(unitConversionService).getSingleLinkDrawnPath(allCoords, 30);
+
+    // NS below is used to create an SVGPathElement instead of an unknown HTML element, by using namespace
+    const NS = "http://www.w3.org/2000/svg";
+    const path = document.createElementNS(NS, "path");
+
+    // creating path element from path string that is invisible
+    path.setAttribute("d", pathString);
+    path.setAttribute("fill", "black");
+
+    // checking that svg exists before calculating for whether the coordinate is within the path or not
+    const svg = document.querySelector('svg');
+    if (svg != null) {
+      path.setAttribute("visibility", "hidden");
+      svg?.appendChild(path);
+
+      // check if coord is within the path or not
+      let pointTwo = new DOMPoint(coord.x, coord.y);
+      const isInPath = path.isPointInFill(pointTwo);
+      path.remove();
+      return isInPath;
+    }
+    return false;
+  }
+
   moveCoordinates(coord: Coord) {
     for (const jointID of this._joints.keys()) {
       const joint = this._joints.get(jointID)!;

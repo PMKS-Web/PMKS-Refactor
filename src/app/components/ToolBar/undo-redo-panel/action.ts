@@ -24,6 +24,11 @@ export interface Action {
   linkTracerData?: LinkTracerSnapshot;
   linkForceData?: LinkForceSnapshot;
 
+  compoundLinkData?: CompoundLinkSnapshot;
+  compoundLinkDataArray?: CompoundLinkSnapshot[];
+  compoundExtraLinkData?: LinkSnapshot[];
+  compoundExtraJointsData?: JointSnapshot[][];
+
   oldJointPositions?: Array<{
     jointId: number;
     coords: { x: number; y: number };
@@ -49,6 +54,15 @@ export interface Action {
   newAngle?: number;
 }
 
+export interface CompoundLinkSnapshot {
+  id: number;
+  linkIds: number[];
+  name: string;
+  mass: number;
+  locked: boolean;
+  color: string;
+}
+
 export interface LinkSnapshot {
   id: number;
   jointIds: number[];
@@ -57,6 +71,7 @@ export interface LinkSnapshot {
   angle: number;
   locked: boolean;
   color: string;
+  isCircle?: boolean;
 }
 
 export interface JointSnapshot {
@@ -72,6 +87,8 @@ export interface JointSnapshot {
   locked: boolean;
   isHidden: boolean;
   isReference: boolean;
+  isTracer: boolean;
+  isPartOfWelded: boolean;
 }
 
 export interface LinkLockSnapshot {
@@ -94,6 +111,8 @@ export interface LinkTracerSnapshot {
   linkId: number;
   jointId: number;
   coords: { x: number; y: number };
+  tracerModelPos?: Coord;
+  tracerSVGPos?: Coord;
 }
 
 export interface LinkForceSnapshot {

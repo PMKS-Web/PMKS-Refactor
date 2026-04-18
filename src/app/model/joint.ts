@@ -23,6 +23,8 @@ export class Joint {
   private _isReference: boolean;
   private _isGenerated: boolean;
   private _rpmSpeed: number;
+  private _isTracer: boolean = false;
+  private _isPartOfWelded: boolean = false;
 
   isInput$ = this._isInput.asObservable();
   isGrounded$ = this._isGrounded.asObservable();
@@ -119,6 +121,13 @@ export class Joint {
   get isGenerated(): boolean {
     return this._isGenerated;
   }
+  get isTracer(): boolean {
+    return this._isTracer;
+  }
+
+  get isPartOfWelded(): boolean {
+    return this._isPartOfWelded;
+  }
 
   getInputObservable() {
     return this.isInput$;
@@ -175,6 +184,13 @@ export class Joint {
 
   set generated(val: boolean) {
     this._isGenerated = val;
+  }
+  set isTracer(val: boolean) {
+    this._isTracer = val;
+  }
+
+  set isPartOfWelded(val: boolean) {
+    this._isPartOfWelded = val;
   }
 
   //----------------------------Joint Modification with modifying other variables----------------------------
