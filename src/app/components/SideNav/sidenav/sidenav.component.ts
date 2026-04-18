@@ -31,7 +31,13 @@ export class SidenavComponent {
     },
     {
       selected: false,
-      label: 'Analysis',
+      label: 'Kinematic Analysis',
+      icon: 'assets/sidenav/analyze.svg',
+      id: 'sidenav-analysis-button'
+    },
+    {
+      selected: false,
+      label: 'Forces Analysis',
       icon: 'assets/sidenav/analyze.svg',
       id: 'sidenav-analysis-button'
     },
@@ -56,6 +62,7 @@ export class SidenavComponent {
     let editPanel = this.sidePanels[0].children[0];
     let synthPanel = this.sidePanels[0].children[1];
     let analysisPanel = this.sidePanels[0].children[2];
+    let forceAnalysisPanel = this.sidePanels[0].children[3];
 
     //closing the tab after click again
     if (this.isSelected(clickedTab)) {
@@ -79,26 +86,42 @@ export class SidenavComponent {
       this.tabs[1].selected = true;
       this.tabs[2].selected = false;
       this.tabs[0].selected = false;
+      this.tabs[3].selected = false;
       this.hide(synthPanel);
       this.hide(analysisPanel);
+      this.hide(forceAnalysisPanel)
       this.unHide(editPanel);
       this.stateService.changeActivePanel('Edit');
     } else if (clickedTab === 'Synthesis') {
       this.tabs[0].selected = true;
       this.tabs[1].selected = false;
       this.tabs[2].selected = false;
+      this.tabs[3].selected = false;
       this.hide(editPanel);
       this.hide(analysisPanel);
+      this.hide(forceAnalysisPanel)
       this.unHide(synthPanel);
       this.stateService.changeActivePanel('Synthesis');
-    } else {
+    } else if (clickedTab === 'Kinematic Analysis') {
       this.tabs[2].selected = true;
       this.tabs[0].selected = false;
       this.tabs[1].selected = false;
+      this.tabs[3].selected = false;
       this.hide(editPanel);
       this.hide(synthPanel);
       this.unHide(analysisPanel);
+      this.hide(forceAnalysisPanel)
       this.stateService.changeActivePanel('Analysis');
+    } else {
+      this.tabs[3].selected = true;
+      this.tabs[0].selected = false;
+      this.tabs[1].selected = false;
+      this.tabs[2].selected = false;
+      this.hide(editPanel);
+      this.hide(synthPanel);
+      this.hide(analysisPanel);
+      this.unHide(forceAnalysisPanel);
+      this.stateService.changeActivePanel('Forces Analysis');
     }
   }
 

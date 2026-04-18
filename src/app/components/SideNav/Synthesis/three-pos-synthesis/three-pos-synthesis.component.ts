@@ -233,6 +233,11 @@ export class ThreePosSynthesis implements OnInit {
     } else return undefined;
   }
 
+  // because toFixed() return a string so we need this helper function to quickly round to 3 decimals :)
+  roundToThree(round: number): number {
+    return parseFloat(round.toFixed(3));
+  }
+  
   generateFourBar() {
     //button changes to "clear four bar" when already generated, so remove mechanism
     if (this.fourBarGenerated) {
@@ -551,10 +556,10 @@ export class ThreePosSynthesis implements OnInit {
         type: 'setPositionPosition',
         linkId: position.id,
         oldCoords: refPos,
-        newCoords: new Coord(x, parseFloat(this.getPosYCoord(posNum))),
+        newCoords: new Coord(x, this.getPosYCoord(posNum)),
       });
       this.mechanism.setPositionLocation(
-        new Coord(x, parseFloat(this.getPosYCoord(posNum))),
+        new Coord(x, this.getPosYCoord(posNum)),
         position.id
       );
     }
@@ -571,10 +576,10 @@ export class ThreePosSynthesis implements OnInit {
         type: 'setPositionPosition',
         linkId: position.id,
         oldCoords: refPos,
-        newCoords: new Coord(parseFloat(this.getPosXCoord(posNum)), y),
+        newCoords: new Coord(this.getPosXCoord(posNum), y),
       });
       this.mechanism.setPositionLocation(
-        new Coord(parseFloat(this.getPosXCoord(posNum)), y),
+        new Coord(this.getPosXCoord(posNum), y),
         position.id
       );
     }
@@ -608,30 +613,28 @@ export class ThreePosSynthesis implements OnInit {
     }
   }
   getPosXCoord(posNum: number) {
-    if (posNum == 1)
-      return this.getReferenceJoint(
-        this.position1 as Position
-      ).coords.x.toFixed(3);
-    else if (posNum == 2)
-      return this.getReferenceJoint(
-        this.position2 as Position
-      ).coords.x.toFixed(3);
-    return this.getReferenceJoint(this.position3 as Position).coords.x.toFixed(
-      3
-    );
+    if (posNum == 1) {
+      return parseFloat(this.getReferenceJoint(this.position1 as Position).coords.x.toFixed(3));
+    }  
+    else if (posNum == 2) {
+      return parseFloat(this.getReferenceJoint(this.position2 as Position).coords.x.toFixed(3));
+    }
+      
+    return parseFloat(this.getReferenceJoint(this.position3 as Position).coords.x.toFixed(3));
   }
+
   getPosYCoord(posNum: number) {
     if (posNum == 1)
-      return this.getReferenceJoint(
+      return parseFloat(this.getReferenceJoint(
         this.position1 as Position
-      ).coords.y.toFixed(3);
+      ).coords.y.toFixed(3));
     else if (posNum == 2)
-      return this.getReferenceJoint(
+      return parseFloat(this.getReferenceJoint(
         this.position2 as Position
-      ).coords.y.toFixed(3);
-    return this.getReferenceJoint(this.position3 as Position).coords.y.toFixed(
+      ).coords.y.toFixed(3));
+    return parseFloat(this.getReferenceJoint(this.position3 as Position).coords.y.toFixed(
       3
-    );
+    ));
   }
 
   getPosAngle(posNum: number) {
@@ -944,16 +947,16 @@ export class ThreePosSynthesis implements OnInit {
 
   getEndPointXCoords(positionIndex: number, jointIndex: number) {
     if (positionIndex == 1)
-      return this.position1?.getJoints()[jointIndex].coords.x.toFixed(3);
+      return parseFloat(this.position1?.getJoints()[jointIndex].coords.x.toFixed(3) || '0');
     else if (positionIndex == 2)
-      return this.position2?.getJoints()[jointIndex].coords.x.toFixed(3);
-    return this.position3?.getJoints()[jointIndex].coords.x.toFixed(3);
+      return parseFloat(this.position2?.getJoints()[jointIndex].coords.x.toFixed(3) || '0');
+    return parseFloat(this.position3?.getJoints()[jointIndex].coords.x.toFixed(3) || '0');
   }
   getEndPointYCoords(positionIndex: number, jointIndex: number) {
     if (positionIndex == 1)
-      return this.position1?.getJoints()[jointIndex].coords.y.toFixed(3);
+      return parseFloat(this.position1?.getJoints()[jointIndex].coords.y.toFixed(3) || '0');
     else if (positionIndex == 2)
-      return this.position2?.getJoints()[jointIndex].coords.y.toFixed(3);
-    return this.position3?.getJoints()[jointIndex].coords.y.toFixed(3);
+      return parseFloat (this.position2?.getJoints()[jointIndex].coords.y.toFixed(3) || '0');
+    return parseFloat (this.position3?.getJoints()[jointIndex].coords.y.toFixed(3) || '0');
   }
 }
