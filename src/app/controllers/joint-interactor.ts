@@ -8,6 +8,7 @@ import { ContextMenuOption, Interactor } from './interactor';
 import { Action } from '../components/ToolBar/undo-redo-panel/action';
 import { NotificationService } from '../services/notification.service';
 import { UndoRedoService } from '../services/undo-redo.service';
+import {PositionSolverService} from "../services/kinematic-solver.service";
 
 
 /*
@@ -25,7 +26,8 @@ export class JointInteractor extends Interactor {
     private stateService: StateService,
     private interactionService: InteractionService,
     private notificationService: NotificationService,
-    private undoRedoService: UndoRedoService
+    private undoRedoService: UndoRedoService,
+    private positionSolver: PositionSolverService
   ) {
     super(true, true);
 
@@ -82,10 +84,16 @@ export class JointInteractor extends Interactor {
           .clone()
           .add(this.dragOffsetInModel!);
         this.stateService.getMechanism().setJointCoord(this.joint.id, newPos);
+
+        // Display new joint trajectory when joint is moved
+        this.stateService
+          .getMechanism()
+          .populateTrajectories(this.positionSolver);
       }
     });
 
     this.onDragEnd$.subscribe(() => {
+      this.stateService.getMechanism().clearTrajectories(); // Hide trajectories when not moving joint
       if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
       ) {
         return;

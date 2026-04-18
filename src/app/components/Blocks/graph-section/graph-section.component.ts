@@ -40,14 +40,14 @@ export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('graphCanvas', { static: true }) private graphCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('overlayCanvas', { static: true }) private overlayCanvas!: ElementRef<HTMLCanvasElement>;
-  
+
 
 
   chart?: Chart;
   showGrid = true;
   showXCurve = true;
   showYCurve = true;
-  
+
   private readonly destroy$ = new Subject<void>();
 
   constructor(private readonly animationService: AnimationService, private interactionService: InteractionService) {}
@@ -73,10 +73,10 @@ export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   private syncOverlayCanvas(): void {
     if (!this.chart) return;
-    
+
     const chartCanvas = this.graphCanvas.nativeElement;
     const overlay = this.overlayCanvas.nativeElement;
-  
+
     // Use the chart's display size, not internal resolution
     const rect = chartCanvas.getBoundingClientRect();
     overlay.width = rect.width;
@@ -106,7 +106,7 @@ export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
       animation: false,
       hover: {
         mode: 'index',
-        intersect: false    
+        intersect: false
       },
       interaction: {
         mode: 'index',
@@ -173,17 +173,17 @@ export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private get chartDatasets(): ChartDataset<'line'>[] {
     const datasets: ChartDataset<'line'>[] = [];
-    
+
     // Add X data if enabled - always use first color
     if (this.showXCurve && this.inputXData) {
       const xDatasets = this.inputXData.map((dataset, index) => ({
         ...dataset,
-        borderColor: this.colorScheme.domain[0], 
+        borderColor: this.colorScheme.domain[0],
         backgroundColor: this.colorScheme.domain[0]
       }));
       datasets.push(...xDatasets);
     }
-    
+
     // Add Y data if enabled - always use second color
     if (this.showYCurve && this.inputYData) {
       const yDatasets = this.inputYData.map((dataset, index) => ({
@@ -193,7 +193,7 @@ export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
       }));
       datasets.push(...yDatasets);
     }
-    
+
     return datasets;
   }
 
@@ -226,17 +226,17 @@ export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private updateGraphAtStep(step: number): void {
     if (!this.chart || !this.overlayCanvas) return;
-  
+
     const overlay = this.overlayCanvas.nativeElement;
     const ctx = overlay.getContext('2d');
     if (!ctx) return;
-  
+
     const xScale = this.chart.scales['x'];
     const xPos = xScale.getPixelForValue(step);
     if (xPos === undefined) return;
-  
+
     ctx.clearRect(0, 0, overlay.width, overlay.height);
-  
+
     ctx.beginPath();
     ctx.moveTo(xPos, this.chart.chartArea.top);
     ctx.lineTo(xPos, this.chart.chartArea.bottom);
@@ -248,7 +248,7 @@ export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
   onToggleGrid(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.showGrid = target.checked;
-    
+
     if (this.chart) {
       this.chart.destroy();
       this.createChart();
@@ -266,9 +266,35 @@ export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   downloadCSV(): void {
-    if (!this.inputLabels?.length || !this.inputXData?.length || !this.inputYData?.length) return;
+    console.log('downloadCSV clicked!', {
+      labels: this.inputLabels,
+      x: this.inputXData,
+      y: this.inputYData
+    });
 
-    const rows = ['Time,X Data,Y Data'];
+    if (!this.inputLabels?.length) {
+      alert('No data to export.');
+      return;
+    }
+
+    const hasX = this.inputXData.length;
+    const hasY = this.inputYData.length;
+
+    if (!hasX && !hasY) {
+      alert('No data to export.');
+      return;
+    }
+
+    const header = ['Time'];
+    if (hasX) {
+      header.push(this.inputXData[0].label ?? "X Data");
+    }
+    if (hasY) {
+      header.push(this.inputYData[0].label ?? "Y Data");
+    }
+
+    const rows: string[] = [header.join(',')];
+
     const maxLength = Math.max(
       this.inputLabels.length,
       this.inputXData[0]?.data?.length || 0,
@@ -291,7 +317,7 @@ export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
     const canvas = this.chart.canvas;
     const exportCanvas = document.createElement('canvas');
     const ctx = exportCanvas.getContext('2d');
-    
+
     if (!ctx) return;
 
     exportCanvas.width = canvas.width;
@@ -300,7 +326,7 @@ export class GraphSectionComponent implements OnInit, AfterViewInit, OnDestroy {
     // White background
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-    
+
     // Temporarily hide vertical line
     const currentStep = (this.chart as any).currentTimeStep;
     delete (this.chart as any).currentTimeStep;
