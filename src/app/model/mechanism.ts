@@ -229,7 +229,7 @@ export class Mechanism {
       console.error(`Joint with ID ${jointID} ${errorMsg}`);
       return false;
     }
-    if (joint.locked && successMsg !== 'unwelded') {
+    if (joint.locked && successMsg !== 'unwelded' && successMsg !== 'has had a new link added') {
       console.error(`Joint with ID ${jointID} is locked`);
       return false;
     }
