@@ -4,6 +4,7 @@ import { InteractionService } from '../../services/interaction.service';
 import { LinkInteractor } from 'src/app/controllers/link-interactor';
 import {NotificationService} from "../../services/notification.service";
 import {UndoRedoService} from "../../services/undo-redo.service";
+import {PositionSolverService} from "../../services/kinematic-solver.service";
 import {JointInteractor} from "../../controllers/joint-interactor";
 import {Joint} from "../../model/joint";
 import {driver} from "driver.js";
@@ -45,7 +46,8 @@ function selectJointFromCurrentLink(
   stateService: StateService,
   interactionService: InteractionService,
   notificationService: NotificationService,
-  undoRedoService: UndoRedoService
+  undoRedoService: UndoRedoService,
+  positionSolverService: PositionSolverService
 ) {
   const selected = interactionService.getSelectedObject() as any;
   if (!selected?.link) {
@@ -66,7 +68,8 @@ function selectJointFromCurrentLink(
     stateService,
     interactionService,
     notificationService,
-    undoRedoService
+    undoRedoService,
+    positionSolverService
   );
 
   interactionService.setSelectedObject(jointInteractor);
@@ -77,7 +80,8 @@ export function buildTourSteps(
   stateService: StateService,
   interactionService: InteractionService,
   notificationService: NotificationService,
-  undoRedoService: UndoRedoService
+  undoRedoService: UndoRedoService,
+  positionSovlerService: PositionSolverService
 ) {
   return [
     {
@@ -122,7 +126,8 @@ export function buildTourSteps(
             stateService,
             interactionService,
             notificationService,
-            undoRedoService
+            undoRedoService,
+            positionSovlerService
           );
           for (let i = 0; i < 20; i++) {
             const panel = document.querySelector('#edit-joint-panel');

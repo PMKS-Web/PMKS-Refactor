@@ -11,8 +11,8 @@ import { NotificationService } from 'src/app/services/notification.service';
 export class DualInputComponent {
   @Input() disabled: boolean = false;
   @Input() tooltip: string = '';
-  @Input({transform: numberAttribute}) input1Value: number=0;
-  @Input({transform: numberAttribute}) input2Value: number = 0;
+  @Input() input1Value: number = 0;
+  @Input() input2Value: number = 0;
   @Input() label1: string ="";
   @Input() label2: string ="";
   @Input() unit1: string ="";
@@ -27,12 +27,21 @@ export class DualInputComponent {
   constructor(private notificationService: NotificationService){}
   // handle the enter key being pressed and updating the values of the input blocks
   onEnterKeyInput1() {
-    this.input1Change.emit(this.input1Value as number);}
-  onEnterKeyInput2() {this.input2Change.emit(this.input2Value as number);}
+    this.input1Change.emit(this.input1Value as number);
+  }
+
+  onEnterKeyInput2() {
+    this.input2Change.emit(this.input2Value as number);
+  }
 
   onBlurInput1() {
-    this.input1Change.emit(this.input1Value as number);}
-  onBlurInput2() {this.input2Change.emit(this.input2Value as number);}
+    this.input1Change.emit(this.input1Value as number);
+  }
+
+  onBlurInput2() {
+    this.input2Change.emit(this.input2Value as number);
+  }
+
   onInputClick(){
     if(this.disabled) this.notificationService.showNotification("Clear Current Four-bar so that change link length and positions and regenerate a new four-bar");
   }

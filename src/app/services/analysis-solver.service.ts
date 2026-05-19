@@ -2,348 +2,1179 @@ import { Injectable } from '@angular/core';
 import { Coord } from '../model/coord';
 import { PositionSolverService, SolveOrder, SolvePrerequisite, SolveType } from './kinematic-solver.service';
 import { AnimationPositions } from './kinematic-solver.service';
+import { StateService } from './state.service';
+import { AnimationService } from './animation.service';
+import { create, all, MathJsInstance } from 'mathjs';
+const math: MathJsInstance = create(all, {});
 
 export interface JointAnalysis {
-    timeIncrement: number,
-    positions: Coord[],
-    velocities: Coord[],
-    accelerations: Coord[],
+  timeIncrement: number,
+  positions: Coord[],
+  velocities: Coord[],
+  accelerations: Coord[],
 }
 
 export interface LinkAnalysis {
-    timeIncrement: number,
-    COMpositions: Coord[],
-    COMvelocities: Coord[],
-    COMaccelerations: Coord[],
-    angle: number[],
-    angularVelocity: number[],
-    angularAcceleration: number[],
+  timeIncrement: number,
+  COMpositions: Coord[],
+  COMvelocities: Coord[],
+  COMaccelerations: Coord[],
+  angle: number[],
+  angularVelocity: number[],
+  angularAcceleration: number[],
+}
+
+// ─── Graph types for the generalized loop solver ──────────────────────────────
+
+/** One joint (node) in the mechanism graph. */
+export interface LinkGraphNode {
+  id:         number;
+  isGrounded: boolean;  // joint.isGrounded from the model
+  isInput:    boolean;  // joint.isInput — true only for the grounded motor pivot
+}
+
+/**
+ * One link (undirected edge) connecting joints idA and idB.
+ */
+export interface LinkGraphEdge {
+  idA:       number;
+  idB:       number;
+  aGrounded: boolean;
+  bGrounded: boolean;
+  aIsInput:  boolean;
+  bIsInput:  boolean;
+}
+
+/**
+ * Undirected adjacency graph for one submechanism.
+ */
+export interface LinkGraph {
+  /** Joint-id → node metadata. */
+  nodes: Map<number, LinkGraphNode>;
+  /** All edges derived from the solve prerequisites. */
+  edges: LinkGraphEdge[];
+  /**
+   * Undirected adjacency list.
+   * adj.get(id) is a list of { neighbor, edgeIndex } entries so the
+   * DFS in Step 2 can traverse edges in O(1) and look up edge metadata
+   * by index.
+   */
+  adj: Map<number, Array<{ neighbor: number; edgeIndex: number }>>;
+}
+
+export interface LoopEdge {
+  idA:       number;
+  idB:       number;
+  direction: 1 | -1;
+  // True when the loop step comes from a synthesized slider closure rather than a physical link.
+  isVirtualSlider: boolean;
+}
+
+interface AugmentedLoopEdge {
+  idA: number;
+  idB: number;
+  // Marks slider edges added only so the loop finder can close a prismatic chain
+  isVirtualSlider: boolean;
 }
 
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root'
 })
 export class AnalysisSolveService {
 
-    private solveOrders: SolveOrder[] = [];
-    private jointPositions: AnimationPositions[] = [];
-    private jointKinematics: Map<number, JointAnalysis> = new Map();
-    constructor(private positionSolver: PositionSolverService) {
+  private solveOrders: SolveOrder[] = [];
+  private jointPositions: AnimationPositions[] = [];
+  private jointKinematics: Map<number, JointAnalysis> = new Map();
 
-    }
+  // Cache of link angular velocities keyed by sorted joint-ID pair, "2_5"
+  // Populated by computeVelocityLoopOmegas() after each submechanism is solved
+  private linkAngularVelocityCache: Map<string, number[]> = new Map();
+  // Cache of link angular accelerations keyed by sorted joint-ID pair.
+  private linkAngularAccelerationCache: Map<string, number[]> = new Map();
 
-    // Updates kinematic data by fetching solve orders and joint positions, then solving submechanism kinematics.
-    updateKinematics() {
-        /**Order of operations
-         * 1. First we need the Solve Orders and Positions of the joints from position solver
-         * 2. For solving links we need to associate model links with the joints being solved for, we can do so by using the
-         * 3. Iterate over each position, solving for the needed information for both links and joints.
-         * 4. Update the Information
-         */
-        this.solveOrders = this.positionSolver.getSolveOrders();
-        this.jointPositions = this.positionSolver.getAnimationFrames();
-        this.jointKinematics = new Map();
-        for (let i = 0; i < this.solveOrders.length; i++) {
-            this.solveSubmechanimsKinematics(this.solveOrders[i], this.jointPositions[i]);
-        }
-    }
+  private lastSolveOrder: SolveOrder | null = null;
 
-    // Solves kinematics for a specific submechanism given its solve order and joint positions.
-    solveSubmechanimsKinematics(solveOrder: SolveOrder, jointPositions: AnimationPositions) {
-        /**we are given the animation positions and solve order for a submechanism
-         * 1. iterate over each set of positions to solve
-         * 2. call a function that returns all relevant calculations
-         * 3. update jointKinematics
-         */
-        let mechanismVelocities: Coord[][] = [];
-        let mechanismAccelerations: Coord[][] = [];
-        for (let time = 0; time < jointPositions.positions.length; time++) {
-            let solutions = this.solveJointKinematics(solveOrder, jointPositions.positions[time]);
-            mechanismVelocities.push(solutions.velocities);
-            mechanismAccelerations.push(solutions.accelerations);
-        }
-        const arrayColumn = (array: Coord[][], columnIndex: number) => array.map(row => row[columnIndex])
-        this.jointKinematics = new Map();
-        let inputspeed: number = solveOrder.prerequisites.get(solveOrder.order[0])!.jointToSolve.inputSpeed;
-        let timeIncrement: number = 60 / (inputspeed * 360);
-        for (let i = 0; i < solveOrder.order.length; i++) {
-            let accelerations = arrayColumn(mechanismAccelerations, i);
-            let velocities = arrayColumn(mechanismVelocities, i);
-            let positions = arrayColumn(jointPositions.positions, i);
-            let joint: JointAnalysis = { timeIncrement: timeIncrement, positions: positions, velocities: velocities, accelerations: accelerations }
-            this.jointKinematics.set(solveOrder.order[i], joint);
-        }
-    }
+  constructor(
+    private positionSolver: PositionSolverService,
+    private stateService: StateService,
+    private animationService: AnimationService
+  ) {
 
-    // Computes velocities and accelerations for all joints in a solve order at a single time step.
-    solveJointKinematics(solveOrder: SolveOrder, positions: Coord[]): { velocities: Coord[], accelerations: Coord[] } {
-        let velocities: Coord[] = [];
-        let accelerations: Coord[] = [];
+  }
 
-        for (let index = 0; index < solveOrder.order.length; index++) {
-            let id = solveOrder.order[index];
-            let prereq = solveOrder.prerequisites.get(id)!;
-            let velocity_acceleration: { velocity: Coord, acceleration: Coord };
-            switch (prereq.solveType) {
-                case SolveType.Ground:
-                    velocities.push(new Coord(0, 0));
-                    accelerations.push(new Coord(0, 0));
-                    break;
-                case SolveType.RevoluteInput:
-                    velocity_acceleration = this.solveRevInputJointKinematics(index, prereq, positions);
-                    velocities.push(velocity_acceleration.velocity);
-                    accelerations.push(velocity_acceleration.acceleration);
-                    break;
-                case SolveType.PrismaticInput:
-                    velocity_acceleration = this.solvePrisInputJointKinematics(prereq);
-                    velocities.push(velocity_acceleration.velocity);
-                    accelerations.push(velocity_acceleration.acceleration);
-                    break;
-                case SolveType.CircleCircle:
-                    let knownIndex1 = solveOrder.order.indexOf(prereq.knownJointOne!.id);
-                    let knownIndex2 = solveOrder.order.indexOf(prereq.knownJointTwo!.id);
-                    velocity_acceleration = this.solveCircleCirlceJointKinematics(index, knownIndex1, knownIndex2, positions, velocities, accelerations);
-                    velocities.push(velocity_acceleration.velocity);
-                    accelerations.push(velocity_acceleration.acceleration);
-                    break;
-                case SolveType.CircleLine:
-                    knownIndex1 = solveOrder.order.indexOf(prereq.knownJointOne!.id);
-                    velocity_acceleration = this.solveCircleLineJointKinematics(index, knownIndex1, prereq, positions, velocities, accelerations)
-                    velocities.push(velocity_acceleration.velocity);
-                    accelerations.push(velocity_acceleration.acceleration);
-                    break;
-            }
-        }
-        return { velocities: velocities, accelerations: accelerations };
-    }
+  // Converts stored joint angles from degrees to radians before operations
+  private angleDegToRad(angleDeg: number): number {
+    return angleDeg * Math.PI / 180;
+  }
 
-    //need to account for switching directions
-    /**
-     * Solves for the velocity and acceleration of a joint connected to a grounded revolute input
-     * @param jointIndex - an index for the joint to be solved within with positions array.
-     * @param prereq - a SolvePrerequisite that corresponds to that joint.
-     * @param positions - an array of joint positions for a particular timestep.
-     * @returns
+  private getInputDirectionSign(): 1 | -1 {
+    return this.animationService.startDirectionCounterclockwise ? 1 : -1;
+  }
+
+  private getSignedInputSpeed(inputSpeed: number): number {
+    return Math.abs(inputSpeed) * this.getInputDirectionSign();
+  }
+
+  private getSignedInputOmega(inputSpeed: number): number {
+    return 2 * Math.PI * (this.getSignedInputSpeed(inputSpeed) / 60);
+  }
+
+  // Updates kinematic data by fetching solve orders and joint positions, then solving submechanism kinematics.
+  updateKinematics() {
+    /**Order of operations
+     * 1. First we need the Solve Orders and Positions of the joints from position solver
+     * 2. For solving links we need to associate model links with the joints being solved for, we can do so by using the
+     * 3. Iterate over each position, solving for the needed information for both links and joints.
+     * 4. Update the Information
      */
-    solveRevInputJointKinematics(jointIndex: number, prereq: SolvePrerequisite, positions: Coord[]): { velocity: Coord, acceleration: Coord } {
+    this.solveOrders = this.positionSolver.getSolveOrders();
+    this.jointPositions = this.positionSolver.getAnimationFrames();
 
-        const xDifference = positions[jointIndex].x - positions[0].x;
-        const yDifference = positions[jointIndex].y - positions[0].y;
-        const angleToInput: number = Math.atan2(yDifference, xDifference);
-        const omega: number = 2 * Math.PI * (prereq.knownJointOne!.inputSpeed / 60); //Angular Velocity of Link in Radians
-        const r: number = prereq.distFromKnownJointOne!;
+    this.jointKinematics = new Map();
+    for (let i = 0; i < this.solveOrders.length; i++) {
+      this.solveSubmechanimsKinematics(this.solveOrders[i], this.jointPositions[i]);
+    }
+  }
 
-        //velocity
-        const velocityMagnitude = r * omega; //Velocity magnitude
-        const velocityTheta = omega > 0 ? angleToInput - Math.PI / 2 : angleToInput + Math.PI / 2; //Velocity direction
-        const xVelocity: number = Math.cos(velocityTheta) * velocityMagnitude;
-        const yVelocity: number = Math.sin(velocityTheta) * velocityMagnitude;
-        const jointVelocity: Coord = new Coord(xVelocity, yVelocity);
-        //acceleration
-        const xAcceleration: number = -Math.cos(angleToInput) * velocityMagnitude * omega;
-        const yAcceleration: number = -Math.sin(angleToInput) * velocityMagnitude * omega;
-        const jointAcceleration: Coord = new Coord(xAcceleration, yAcceleration);
-        return { velocity: jointVelocity, acceleration: jointAcceleration };
+  // Solves kinematics for a specific submechanism given its solve order and joint positions.
+  solveSubmechanimsKinematics(solveOrder: SolveOrder, jointPositions: AnimationPositions) {
+    /**we are given the animation positions and solve order for a submechanism
+     * 1. iterate over each set of positions to solve
+     * 2. call a function that returns all relevant calculations
+     * 3. update jointKinematics
+     * 4. calls velocity loop solver to compute link angular velocities and accelerations for the submechanism
+     */
+    let mechanismVelocities: Coord[][] = [];
+    let mechanismAccelerations: Coord[][] = [];
+    for (let time = 0; time < jointPositions.positions.length; time++) {
+      let solutions = this.solveJointKinematics(solveOrder, jointPositions.positions[time]);
+      mechanismVelocities.push(solutions.velocities);
+      mechanismAccelerations.push(solutions.accelerations);
+    }
+    const arrayColumn = (array: Coord[][], columnIndex: number) => array.map(row => row[columnIndex])
+    this.jointKinematics = new Map();
+    const inputspeed: number = solveOrder.prerequisites.get(solveOrder.order[0])!.jointToSolve.inputSpeed;
+    const inputspeedMagnitude = Math.abs(inputspeed);
+    let timeIncrement: number = inputspeedMagnitude > 0 ? 60 / (inputspeedMagnitude * 360) : 0;
+    for (let i = 0; i < solveOrder.order.length; i++) {
+      let accelerations = arrayColumn(mechanismAccelerations, i);
+      let velocities = arrayColumn(mechanismVelocities, i);
+      let positions = arrayColumn(jointPositions.positions, i);
+      let joint: JointAnalysis = { timeIncrement: timeIncrement, positions: positions, velocities: velocities, accelerations: accelerations }
+      this.jointKinematics.set(solveOrder.order[i], joint);
     }
 
-    // Calculates velocity and acceleration for a prismatic input joint from its prerequisites.
-    solvePrisInputJointKinematics(prereq: SolvePrerequisite): { velocity: Coord, acceleration: Coord } {
-        const velocityMag = prereq.jointToSolve.inputSpeed * (0.05 * 6) //Kinematic solver generates frames for 0.05m increments, and animator uses Rev-Input timeInterval calculation
-        const velocityTheta = prereq.jointToSolve.angle;
-        const deltaX: number = Math.cos(velocityTheta) * velocityMag;
-        const deltaY: number = Math.sin(velocityTheta) * velocityMag;
-        const jointVelocity: Coord = new Coord(deltaX, deltaY);
-        const jointAcceleration: Coord = new Coord(0, 0);
-        return { velocity: jointVelocity, acceleration: jointAcceleration };
-    }
+    // compute link angular velocities using velocity-loop matrix method
+    this.computeVelocityLoopOmegas(solveOrder);
+    this.lastSolveOrder = solveOrder;
+  }
 
-    // Determines velocity and acceleration for a joint constrained by two circular motions using known indices, positions, velocities, and accelerations.
-    solveCircleCirlceJointKinematics(jointIndex: number, known1Index: number, known2Index: number, positions: Coord[], velocities: Coord[], accelerations: Coord[]): { velocity: Coord, acceleration: Coord } {
-        //velocity
-        const v_k1: Coord = velocities[known1Index];
-        const v_k2: Coord = velocities[known2Index];
-        const pos_j: Coord = positions[jointIndex];
-        const diff_jk1: Coord = new Coord(pos_j.x - positions[known1Index].x, pos_j.y - positions[known1Index].y);
-        const diff_jk2: Coord = new Coord(pos_j.x - positions[known2Index].x, pos_j.y - positions[known2Index].y);
-        const perp_angle_jk1: number = Math.atan2(diff_jk1.y, diff_jk1.x) + Math.PI / 2;
-        const perp_angle_jk2: number = Math.atan2(diff_jk2.y, diff_jk2.x) + Math.PI / 2;
-        const jointVelocity: Coord = this.parametricLineIntersection(v_k1, perp_angle_jk1, v_k2, perp_angle_jk2);
-        //acceleration of k1 + (V_k1j^2 / (k1-j)) for centripetal,
-        const x_centripetal_accel_jk1: number = accelerations[known1Index].x + Math.pow(jointVelocity.x, 2) / (-diff_jk1.x);
-        const y_centripetal_accel_jk1: number = accelerations[known1Index].y + Math.pow(jointVelocity.y, 2) / (-diff_jk1.y);
-        const x_centripetal_accel_jk2: number = accelerations[known2Index].x + Math.pow(jointVelocity.x, 2) / (-diff_jk2.x);
-        const y_centripetal_accel_jk2: number = accelerations[known2Index].y + Math.pow(jointVelocity.y, 2) / (-diff_jk2.y);
-        const centripetal_accel_jk1: Coord = new Coord(x_centripetal_accel_jk1, y_centripetal_accel_jk1);
-        const centripetal_accel_jk2: Coord = new Coord(x_centripetal_accel_jk2, y_centripetal_accel_jk2);
-        const jointAcceleration: Coord = this.parametricLineIntersection(centripetal_accel_jk1, perp_angle_jk1, centripetal_accel_jk2, perp_angle_jk2);
-        return { velocity: jointVelocity, acceleration: jointAcceleration };
-    }
+  // Computes velocities and accelerations for all joints in a solve order at a single time step.
+  solveJointKinematics(solveOrder: SolveOrder, positions: Coord[]): { velocities: Coord[], accelerations: Coord[] } {
+    let velocities: Coord[] = [];
+    let accelerations: Coord[] = [];
 
-    // Determines velocity and acceleration for a joint constrained by a circle and a line using known index, prerequisites, positions, velocities, and accelerations.
-    solveCircleLineJointKinematics(jointIndex: number, known1Index: number, prereq: SolvePrerequisite, positions: Coord[], velocities: Coord[], accelerations: Coord[]): { velocity: Coord, acceleration: Coord } {
-        //velocity
-        const v_k1: Coord = velocities[known1Index];
-        const diff_jk1: Coord = new Coord(positions[jointIndex].x - positions[known1Index].x, positions[jointIndex].y - positions[known1Index].y);
-        const perp_angle_jk1: number = Math.atan2(diff_jk1.y, diff_jk1.x) + Math.PI / 2;
-        const jointVelocity: Coord = this.parametricLineIntersection(v_k1, perp_angle_jk1, new Coord(0, 0), prereq.jointToSolve.angle);
-        //acceleration
-        const x_centripetal_accel_jk1: number = accelerations[known1Index].x + Math.pow(jointVelocity.x, 2) / (-diff_jk1.x);
-        const y_centripetal_accel_jk1: number = accelerations[known1Index].y + Math.pow(jointVelocity.y, 2) / (-diff_jk1.y);
-        const centripetal_accel_jk1: Coord = new Coord(x_centripetal_accel_jk1, y_centripetal_accel_jk1);
-        const jointAcceleration: Coord = this.parametricLineIntersection(centripetal_accel_jk1, perp_angle_jk1, new Coord(0, 0), prereq.jointToSolve.angle);
-        return { velocity: jointVelocity, acceleration: jointAcceleration };
-    }
-    // Finds the intersection point of two parametric lines defined by starting coordinates and angles.
-    parametricLineIntersection(pos1: Coord, theta1: number, pos2: Coord, theta2: number): Coord {
-        const t_2 = ((pos1.y - pos2.y) + ((pos2.x - pos1.x) / Math.cos(theta1))) / ((Math.sin(theta2)) - (Math.cos(theta2) / Math.cos(theta1)));
-        const x_intersection = pos2.x + (t_2 * Math.cos(theta2));
-        const y_intersection = pos2.y + (t_2 * Math.sin(theta2));
-        return new Coord(x_intersection, y_intersection);
-    }
-
-    // Retrieves stored kinematic analysis (positions, velocities, accelerations) for a specific joint ID.
-    getJointKinematics(jointID: number): JointAnalysis {
-        return this.jointKinematics.get(jointID)!;
-    }
-
-    // Converts joint kinematic data into arrays suitable for plotting, based on requested data type (position, velocity, or acceleration).
-    transformJointKinematicGraph(jointAnalysis: JointAnalysis, dataOf: string): { xData: any[], yData: any[], timeLabels: string[] } {
-        const xData: any[] = [];
-        const yData: any[] = [];
-        const timeLabels: string[] = [];
-
-        switch (dataOf) {
-            case ("Position"):
-                xData.push({ data: jointAnalysis.positions.map(coord => coord.x), label: "X data of Position" });
-                yData.push({ data: jointAnalysis.positions.map(coord => coord.y), label: "Y data of Position" });
-                timeLabels.push(...jointAnalysis.positions.map((_, index) => String(index)));
-
-                return { xData, yData, timeLabels };
-
-            case ("Velocity"):
-                xData.push({ data: jointAnalysis.velocities.map(coord => coord.x), label: "X data of Velocity" });
-                yData.push({ data: jointAnalysis.velocities.map(coord => coord.y), label: "Y data of Velocity" });
-                timeLabels.push(...jointAnalysis.velocities.map((_, index) => String(index)));
-
-                return { xData, yData, timeLabels };
-
-            case ("Acceleration"):
-                xData.push({ data: jointAnalysis.accelerations.map(coord => coord.x), label: "X data of Acceleration" });
-                yData.push({ data: jointAnalysis.accelerations.map(coord => coord.y), label: "Y data of Acceleration" });
-                timeLabels.push(...jointAnalysis.accelerations.map((_, index) => String(index)));
-
-                return { xData, yData, timeLabels };
-
-            default:
-                console.error("Invalid Graph type detected! Returning default values.")
-                return { xData, yData, timeLabels };
+    for (let index = 0; index < solveOrder.order.length; index++) {
+      let id = solveOrder.order[index];
+      let prereq = solveOrder.prerequisites.get(id)!;
+      let velocity_acceleration: { velocity: Coord, acceleration: Coord };
+      switch (prereq.solveType) {
+        case SolveType.Ground:
+          velocities.push(new Coord(0, 0));
+          accelerations.push(new Coord(0, 0));
+          break;
+        case SolveType.RevoluteInput:
+          velocity_acceleration = this.solveRevInputJointKinematics(index, prereq, positions);
+          velocities.push(velocity_acceleration.velocity);
+          accelerations.push(velocity_acceleration.acceleration);
+          break;
+        case SolveType.PrismaticInput:
+          velocity_acceleration = this.solvePrisInputJointKinematics(prereq);
+          velocities.push(velocity_acceleration.velocity);
+          accelerations.push(velocity_acceleration.acceleration);
+          break;
+        case SolveType.CircleCircle: {
+          const knownIndex1 = solveOrder.order.indexOf(prereq.knownJointOne!.id);
+          const knownIndex2 = solveOrder.order.indexOf(prereq.knownJointTwo!.id);
+          velocity_acceleration = this.solveCircleCirlceJointKinematics(index, knownIndex1, knownIndex2, positions, velocities, accelerations);
+          velocities.push(velocity_acceleration.velocity);
+          accelerations.push(velocity_acceleration.acceleration);
+          break;
         }
 
-    }
-
-    // Converts link kinematic data into arrays suitable for plotting, based on requested data type (angle, velocity, or acceleration).
-    transformLinkKinematicGraph(linkAnalysis: LinkAnalysis, dataOf: string): { xData: any[], yData: any[], timeLabels: string[] } {
-        const xData: any[] = [];
-        const yData: any[] = [];
-        const timeLabels: string[] = [];
-
-        switch (dataOf) {
-            case ("Angle"):
-                xData.push({ data: linkAnalysis.angle, label: "Angle of Reference Joint" });
-                timeLabels.push(...linkAnalysis.angle.map((_, index) => String(index)));
-
-                return { xData, yData, timeLabels };
-
-            case ("Velocity"):
-                xData.push({ data: linkAnalysis.angularVelocity, label: "Angular Velocity" });
-                timeLabels.push(...linkAnalysis.angularVelocity.map((_, index) => String(index)));
-
-                return { xData, yData, timeLabels };
-
-            case ("Acceleration"):
-                xData.push({ data: linkAnalysis.angularAcceleration, label: "Angular Acceleration" });
-                timeLabels.push(...linkAnalysis.angularAcceleration.map((_, index) => String(index)));
-
-                return { xData, yData, timeLabels };
-
-            default:
-                console.error("Invalid Graph type detected! Returning default values.")
-                return { xData, yData, timeLabels };
+        case SolveType.CircleLine: {
+          const knownIndex1 = solveOrder.order.indexOf(prereq.knownJointOne!.id);
+          velocity_acceleration = this.solveCircleLineJointKinematics(index, knownIndex1, prereq, positions, velocities, accelerations)
+          velocities.push(velocity_acceleration.velocity);
+          accelerations.push(velocity_acceleration.acceleration);
+          break;
         }
-
+      }
     }
-    // Computes center-of-mass and angular kinematics for a link given its associated joint IDs.
-    getLinkKinematics(jointIDs: number[]): LinkAnalysis {
-        let subJoints: JointAnalysis[] = [];
-        for (let id of jointIDs) {
-            subJoints.push(this.jointKinematics.get(id)!);
+    return { velocities: velocities, accelerations: accelerations };
+  }
+
+  //need to account for switching directions
+  /**
+   * Solves for the velocity and acceleration of a joint connected to a grounded revolute input
+   * @param jointIndex - an index for the joint to be solved within with positions array.
+   * @param prereq - a SolvePrerequisite that corresponds to that joint.
+   * @param positions - an array of joint positions for a particular timestep.
+   * @returns
+   */
+  solveRevInputJointKinematics(jointIndex: number, prereq: SolvePrerequisite, positions: Coord[]): { velocity: Coord, acceleration: Coord } {
+
+    const xDifference = positions[jointIndex].x - positions[0].x;
+    const yDifference = positions[jointIndex].y - positions[0].y;
+    const angleToInput: number = Math.atan2(yDifference, xDifference);
+    const omega: number = this.getSignedInputOmega(prereq.knownJointOne!.inputSpeed); //Angular Velocity of Link in Radians
+    const r: number = prereq.distFromKnownJointOne!;
+
+    //velocity
+    const velocityMagnitude = r * omega; //Velocity magnitude
+    const velocityTheta = omega > 0 ? angleToInput + Math.PI / 2 : angleToInput - Math.PI / 2;
+    const xVelocity: number = Math.cos(velocityTheta) * velocityMagnitude;
+    const yVelocity: number = Math.sin(velocityTheta) * velocityMagnitude;
+    const jointVelocity: Coord = new Coord(xVelocity, yVelocity);
+    //acceleration
+    const xAcceleration: number = -Math.cos(angleToInput) * velocityMagnitude * omega;
+    const yAcceleration: number = -Math.sin(angleToInput) * velocityMagnitude * omega;
+    const jointAcceleration: Coord = new Coord(xAcceleration, yAcceleration);
+    return { velocity: jointVelocity, acceleration: jointAcceleration };
+  }
+
+  // Calculates velocity and acceleration for a prismatic input joint from its prerequisites.
+  solvePrisInputJointKinematics(prereq: SolvePrerequisite): { velocity: Coord, acceleration: Coord } {
+    const velocityMag = this.getSignedInputSpeed(prereq.jointToSolve.inputSpeed) * (0.05 * 6) //Kinematic solver generates frames for 0.05m increments, and animator uses Rev-Input timeInterval calculation
+    // Slider angles are stored in degrees in the joint model.
+    const velocityTheta = this.angleDegToRad(prereq.jointToSolve.angle);
+    const deltaX: number = Math.cos(velocityTheta) * velocityMag;
+    const deltaY: number = Math.sin(velocityTheta) * velocityMag;
+    const jointVelocity: Coord = new Coord(deltaX, deltaY);
+    const jointAcceleration: Coord = new Coord(0, 0);
+    return { velocity: jointVelocity, acceleration: jointAcceleration };
+  }
+
+  // Determines velocity and acceleration for a joint constrained by two circular motions using known indices, positions, velocities, and accelerations.
+  solveCircleCirlceJointKinematics(jointIndex: number, known1Index: number, known2Index: number, positions: Coord[], velocities: Coord[], accelerations: Coord[]): { velocity: Coord, acceleration: Coord } {
+    //velocity
+    const v_k1: Coord = velocities[known1Index];
+    const v_k2: Coord = velocities[known2Index];
+    const pos_j: Coord = positions[jointIndex];
+    const diff_jk1: Coord = new Coord(pos_j.x - positions[known1Index].x, pos_j.y - positions[known1Index].y);
+    const diff_jk2: Coord = new Coord(pos_j.x - positions[known2Index].x, pos_j.y - positions[known2Index].y);
+    const perp_angle_jk1: number = Math.atan2(diff_jk1.y, diff_jk1.x) + Math.PI / 2;
+    const perp_angle_jk2: number = Math.atan2(diff_jk2.y, diff_jk2.x) + Math.PI / 2;
+    const jointVelocity: Coord = this.parametricLineIntersection(v_k1, perp_angle_jk1, v_k2, perp_angle_jk2);
+    //acceleration of k1 + (V_k1j^2 / (k1-j)) for centripetal,
+    const x_centripetal_accel_jk1: number = accelerations[known1Index].x + Math.pow(jointVelocity.x, 2) / (-diff_jk1.x);
+    const y_centripetal_accel_jk1: number = accelerations[known1Index].y + Math.pow(jointVelocity.y, 2) / (-diff_jk1.y);
+    const x_centripetal_accel_jk2: number = accelerations[known2Index].x + Math.pow(jointVelocity.x, 2) / (-diff_jk2.x);
+    const y_centripetal_accel_jk2: number = accelerations[known2Index].y + Math.pow(jointVelocity.y, 2) / (-diff_jk2.y);
+    const centripetal_accel_jk1: Coord = new Coord(x_centripetal_accel_jk1, y_centripetal_accel_jk1);
+    const centripetal_accel_jk2: Coord = new Coord(x_centripetal_accel_jk2, y_centripetal_accel_jk2);
+    const jointAcceleration: Coord = this.parametricLineIntersection(centripetal_accel_jk1, perp_angle_jk1, centripetal_accel_jk2, perp_angle_jk2);
+    return { velocity: jointVelocity, acceleration: jointAcceleration };
+  }
+
+  // Determines velocity and acceleration for a joint constrained by a circle and a line using known index, prerequisites, positions, velocities, and accelerations.
+  solveCircleLineJointKinematics(jointIndex: number, known1Index: number, prereq: SolvePrerequisite, positions: Coord[], velocities: Coord[], accelerations: Coord[]): { velocity: Coord, acceleration: Coord } {
+    //velocity
+    const v_k1: Coord = velocities[known1Index];
+    const diff_jk1: Coord = new Coord(positions[jointIndex].x - positions[known1Index].x, positions[jointIndex].y - positions[known1Index].y);
+    const perp_angle_jk1: number = Math.atan2(diff_jk1.y, diff_jk1.x) + Math.PI / 2;
+    // The line constraint follows the slider guide angle stored on the joint in degrees.
+    const slideAngle = this.angleDegToRad(prereq.jointToSolve.angle);
+    const jointVelocity: Coord = this.parametricLineIntersection(v_k1, perp_angle_jk1, new Coord(0, 0), slideAngle);
+    //acceleration
+    const x_centripetal_accel_jk1: number = accelerations[known1Index].x + Math.pow(jointVelocity.x, 2) / (-diff_jk1.x);
+    const y_centripetal_accel_jk1: number = accelerations[known1Index].y + Math.pow(jointVelocity.y, 2) / (-diff_jk1.y);
+    const centripetal_accel_jk1: Coord = new Coord(x_centripetal_accel_jk1, y_centripetal_accel_jk1);
+    const jointAcceleration: Coord = this.parametricLineIntersection(centripetal_accel_jk1, perp_angle_jk1, new Coord(0, 0), slideAngle);
+    return { velocity: jointVelocity, acceleration: jointAcceleration };
+  }
+  // Finds the intersection point of two parametric lines defined by starting coordinates and angles.
+  parametricLineIntersection(pos1: Coord, theta1: number, pos2: Coord, theta2: number): Coord {
+    const t_2 = ((pos1.y - pos2.y) + ((pos2.x - pos1.x) / Math.cos(theta1))) / ((Math.sin(theta2)) - (Math.cos(theta2) / Math.cos(theta1)));
+    const x_intersection = pos2.x + (t_2 * Math.cos(theta2));
+    const y_intersection = pos2.y + (t_2 * Math.sin(theta2));
+    return new Coord(x_intersection, y_intersection);
+  }
+
+  // Retrieves stored kinematic analysis (positions, velocities, accelerations) for a specific joint ID.
+  getJointKinematics(jointID: number): JointAnalysis {
+    return this.jointKinematics.get(jointID)!;
+  }
+
+  // Converts joint kinematic data into arrays suitable for plotting, based on requested data type (position, velocity, or acceleration).
+  transformJointKinematicGraph(jointAnalysis: JointAnalysis, dataOf: string): { xData: any[], yData: any[], timeLabels: string[] } {
+    const xData: any[] = [];
+    const yData: any[] = [];
+    const timeLabels: string[] = [];
+
+    switch (dataOf) {
+      case ("Position"):
+        xData.push({ data: jointAnalysis.positions.map(coord => coord.x), label: "X data of Position" });
+        yData.push({ data: jointAnalysis.positions.map(coord => coord.y), label: "Y data of Position" });
+        timeLabels.push(...jointAnalysis.positions.map((_, index) => String(index)));
+
+        return { xData, yData, timeLabels };
+
+      case ("Velocity"):
+        xData.push({ data: jointAnalysis.velocities.map(coord => coord.x), label: "X data of Velocity" });
+        yData.push({ data: jointAnalysis.velocities.map(coord => coord.y), label: "Y data of Velocity" });
+        timeLabels.push(...jointAnalysis.velocities.map((_, index) => String(index)));
+
+        return { xData, yData, timeLabels };
+
+      case ("Acceleration"):
+        xData.push({ data: jointAnalysis.accelerations.map(coord => coord.x), label: "X data of Acceleration" });
+        yData.push({ data: jointAnalysis.accelerations.map(coord => coord.y), label: "Y data of Acceleration" });
+        timeLabels.push(...jointAnalysis.accelerations.map((_, index) => String(index)));
+
+        return { xData, yData, timeLabels };
+
+      default:
+        console.error("Invalid Graph type detected! Returning default values.")
+        return { xData, yData, timeLabels };
+    }
+
+  }
+
+  // Converts link kinematic data into arrays suitable for plotting, based on requested data type (angle, velocity, or acceleration).
+  transformLinkKinematicGraph(linkAnalysis: LinkAnalysis, dataOf: string): { xData: any[], yData: any[], timeLabels: string[] } {
+    const xData: any[] = [];
+    const yData: any[] = [];
+    const timeLabels: string[] = [];
+
+    switch (dataOf) {
+      case ("Angle"):
+        xData.push({ data: linkAnalysis.angle, label: "Angle of Reference Joint" });
+        timeLabels.push(...linkAnalysis.angle.map((_, index) => String(index)));
+
+        return { xData, yData, timeLabels };
+
+      case ("Velocity"):
+        xData.push({ data: linkAnalysis.angularVelocity, label: "Angular Velocity" });
+        timeLabels.push(...linkAnalysis.angularVelocity.map((_, index) => String(index)));
+
+        return { xData, yData, timeLabels };
+
+      case ("Acceleration"):
+        xData.push({ data: linkAnalysis.angularAcceleration, label: "Angular Acceleration" });
+        timeLabels.push(...linkAnalysis.angularAcceleration.map((_, index) => String(index)));
+
+        return { xData, yData, timeLabels };
+
+      default:
+        console.error("Invalid Graph type detected! Returning default values.")
+        return { xData, yData, timeLabels };
+    }
+
+  }
+
+  // Computes center-of-mass and angular kinematics for a link given its associated joint IDs.
+  getLinkKinematics(jointIDs: number[]): LinkAnalysis {
+    let subJoints: JointAnalysis[] = [];
+    for (let id of jointIDs) {
+      subJoints.push(this.jointKinematics.get(id)!);
+    }
+    let com_solutions: { pos: Coord[], vel: Coord[], acc: Coord[] } = this.getLinkCOMSolutions(subJoints);
+    let angle_solutions: { ang: number[], vel: number[], acc: number[] } = this.getLinkAngularSolutions(subJoints, jointIDs);
+    return {
+      timeIncrement: subJoints[0].timeIncrement,
+      COMpositions: com_solutions.pos,
+      COMvelocities: com_solutions.vel,
+      COMaccelerations: com_solutions.acc,
+      angle: angle_solutions.ang,
+      angularVelocity: angle_solutions.vel,
+      angularAcceleration: angle_solutions.acc,
+    } as LinkAnalysis
+
+  }
+
+  // Calculates center-of-mass positions, velocities, and accelerations from joint-level kinematic data for a link.
+  getLinkCOMSolutions(subJoints: JointAnalysis[]) {
+    let com_positions: Coord[] = [];
+    let com_velocities: Coord[] = [];
+    let com_accelerations: Coord[] = [];
+    for (let time = 0; time < subJoints[0].positions.length; time++) {
+      let x_pos: number = 0;
+      let y_pos: number = 0;
+      let x_vel: number = 0;
+      let y_vel: number = 0;
+      let x_acc: number = 0;
+      let y_acc: number = 0;
+      let denominator: number = subJoints.length;
+      for (let joint of subJoints) {
+        x_pos += joint.positions[time].x;
+        y_pos += joint.positions[time].y;
+        x_vel += joint.velocities[time].x;
+        y_vel += joint.velocities[time].y;
+        x_acc += joint.accelerations[time].x;
+        y_acc += joint.accelerations[time].y;
+      }
+      com_positions.push(new Coord(x_pos / denominator, y_pos / denominator));
+      com_velocities.push(new Coord(x_vel / denominator, y_vel / denominator));
+      com_accelerations.push(new Coord(x_acc / denominator, y_acc / denominator))
+    }
+    return { pos: com_positions, vel: com_velocities, acc: com_accelerations }
+  }
+
+  /**
+   * Calculates angular position, velocity, and acceleration for a link.
+   *
+   * Angle:    theta = atan2(yB - yA, xB - xA) using the first two joints at each timestep.
+   * Velocity: omega from rigid-body relative velocity, ω = (r × v_rel) / |r|^2.
+   * Acceleration: alpha from rigid-body relative acceleration,
+   *               α = (r × a_rel) / |r|^2.
+   *
+   * @param subJoints - JointAnalysis objects for the joints on this link (at least 2).
+   * @param jointIDs  - Corresponding joint IDs, used to look up the velocity-loop cache.
+   */
+  getLinkAngularSolutions(subJoints: JointAnalysis[], jointIDs?: number[]): { ang: number[], vel: number[], acc: number[] } {
+    const numSteps = subJoints[0].positions.length;
+
+    if (subJoints.length < 2) {
+      return {
+        ang: new Array(numSteps).fill(0),
+        vel: new Array(numSteps).fill(0),
+        acc: new Array(numSteps).fill(0),
+      };
+    }
+
+    const j0 = subJoints[0];
+    const j1 = subJoints[1];
+
+    // Step 1: link orientation angle theta = atan2(yB - yA, xB - xA)
+    const ang: number[] = [];
+    for (let t = 0; t < numSteps; t++) {
+      ang.push(Math.atan2(
+        j1.positions[t].y - j0.positions[t].y,
+        j1.positions[t].x - j0.positions[t].x,
+      ));
+    }
+
+    const vel: number[] = [];
+    const acc: number[] = [];
+
+    if (jointIDs && jointIDs.length >= 2) {
+      // Crank-slider links may already have a solved angular series in the loop caches.
+      const cachedSeries = this.getCachedLinkSeries(jointIDs);
+      if (cachedSeries) {
+        return { ang, vel: cachedSeries.vel, acc: cachedSeries.acc };
+      }
+    }
+
+    for (let t = 0; t < numSteps; t++) {
+      const rx = j1.positions[t].x - j0.positions[t].x;
+      const ry = j1.positions[t].y - j0.positions[t].y;
+      const rSquared = rx * rx + ry * ry;
+
+      if (rSquared < 1e-12) {
+        vel.push(0);
+        acc.push(0);
+        continue;
+      }
+
+      const vx = j1.velocities[t].x - j0.velocities[t].x;
+      const vy = j1.velocities[t].y - j0.velocities[t].y;
+      vel.push((rx * vy - ry * vx) / rSquared);
+
+      const ax = j1.accelerations[t].x - j0.accelerations[t].x;
+      const ay = j1.accelerations[t].y - j0.accelerations[t].y;
+      acc.push((rx * ay - ry * ax) / rSquared);
+    }
+
+    return { ang, vel, acc };
+  }
+
+  /**
+   * Step 1 in solveGeneralVelocityLoops()
+   * Maps each joint and link in a mechanism to nodes and edges
+   * Identifies grounded and input joints, which joints connect to each other, and which joint pair IDs belong
+   * to each link
+   *
+   * So that solveGeneralVelocityLoops() can know:
+   * what joints exist
+   * what links connect them
+   * which joints are grounded
+   * which link is the input crank
+   * what closed loops can be formed
+   *
+   * returns graph with:
+   * a collection of nodes for the joints
+   * a collection of edges for the links
+   * adjacency information showing which joints are connected
+   * flags or metadata for grounded/input joints
+   */
+  private buildLinkGraph(solveOrder: SolveOrder): LinkGraph {
+
+    // Build nodes (joints)
+    const nodes = new Map<number, LinkGraphNode>();
+    for (const id of solveOrder.order) {
+      const joint = solveOrder.prerequisites.get(id)!.jointToSolve;
+      nodes.set(id, { // Store joint ID, if it's grounded, if it's an input
+        id,
+        isGrounded: joint.isGrounded,
+        isInput:    joint.isInput,
+      });
+    }
+
+    // Build edges (links)
+    const edges: LinkGraphEdge[] = [];
+
+    // addEdge creates an edge between two joints (a link) to store the joint information in each link
+    const addEdge = (aId: number, bId: number): void => {
+      const a = nodes.get(aId)!;
+      const b = nodes.get(bId)!;
+      edges.push({ // Store the endpoint joint IDs, if joint A & B are grounded and/or inputs
+        idA: aId, idB: bId,
+        aGrounded: a.isGrounded, bGrounded: b.isGrounded,
+        aIsInput:  a.isInput,    bIsInput:  b.isInput,
+      });
+    };
+
+    // Based on the solve type of each joint (revolute, circle-circle, circle-line),
+    for (const id of solveOrder.order) {
+      const prereq = solveOrder.prerequisites.get(id)!;
+      switch (prereq.solveType) {
+        case SolveType.RevoluteInput:
+          addEdge(prereq.knownJointOne!.id, id);
+          break;
+        case SolveType.CircleCircle:
+          addEdge(prereq.knownJointOne!.id, id);
+          addEdge(prereq.knownJointTwo!.id, id);
+          break;
+        case SolveType.CircleLine:
+          addEdge(prereq.knownJointOne!.id, id);
+          break;
+      }
+    }
+
+    // Build adjacency list - for each joint, creates array of neighbor joints. Then maps neighbors to an edge
+    // Used for DFS
+    const adj = new Map<number, Array<{ neighbor: number; edgeIndex: number }>>();
+    for (const id of solveOrder.order) adj.set(id, []);
+    for (let i = 0; i < edges.length; i++) {
+      adj.get(edges[i].idA)!.push({ neighbor: edges[i].idB, edgeIndex: i });
+      adj.get(edges[i].idB)!.push({ neighbor: edges[i].idA, edgeIndex: i });
+    }
+
+    return { nodes, edges, adj };
+  }
+
+  /**
+   * Uses the graph created in buildLinkGraph() and finds the independent closed loops of the mechanism
+   * Velocity solver needs to know:
+   * which loops exist
+   * which links belong to each loop
+   * what direction each link has within the loop.
+   *
+   * Uses DFS to detect loops in the mechanism grpah and return ordered sequence of directed edges for the loop equations
+   * Returns ordered set of loops for the velocity solver
+   */
+  private findVelocityLoops(graph: LinkGraph, solveOrder: SolveOrder): LoopEdge[][] {
+
+    // get the grounded joints from the graph to identify when the loops are closed through the ground
+    const groundIds: number[] = [];
+    for (const id of solveOrder.order) {
+      const t = solveOrder.prerequisites.get(id)!.solveType;
+      if (t === SolveType.Ground || t === SolveType.PrismaticInput) {
+        groundIds.push(id);
+      }
+    }
+
+    // create temporary edge between grounded joints to close paths for complete loops for the DFS to detect
+    const augEdges: AugmentedLoopEdge[] = graph.edges.map(e => ({
+      idA: e.idA,
+      idB: e.idB,
+      isVirtualSlider: false,
+    }));
+    for (let i = 0; i < groundIds.length - 1; i++) {
+      augEdges.push({ idA: groundIds[i], idB: groundIds[i + 1], isVirtualSlider: false });
+    }
+
+    const groundReferenceId = groundIds[0];
+    if (groundReferenceId !== undefined) {
+      for (const id of solveOrder.order) {
+        const prereq = solveOrder.prerequisites.get(id)!;
+        if (prereq.solveType === SolveType.CircleLine) {
+          const hasExistingEdge = augEdges.some(edge =>
+            this.linkKey(edge.idA, edge.idB) === this.linkKey(groundReferenceId, id)
+          );
+          if (!hasExistingEdge) {
+            augEdges.push({ idA: groundReferenceId, idB: id, isVirtualSlider: true });
+          }
         }
-        let com_solutions: { pos: Coord[], vel: Coord[], acc: Coord[] } = this.getLinkCOMSolutions(subJoints);
-        let angle_solutions: { ang: number[], vel: number[], acc: number[] } = this.getLinkAngularSolutions(subJoints);
-        return {
-            timeIncrement: subJoints[0].timeIncrement,
-            COMpositions: com_solutions.pos,
-            COMvelocities: com_solutions.vel,
-            COMaccelerations: com_solutions.acc,
-            angle: angle_solutions.ang,
-            angularVelocity: angle_solutions.vel,
-            angularAcceleration: angle_solutions.acc,
-        } as LinkAnalysis
-
+      }
     }
-    // Calculates center-of-mass positions, velocities, and accelerations from joint-level kinematic data for a link.
-    getLinkCOMSolutions(subJoints: JointAnalysis[]) {
-        let com_positions: Coord[] = [];
-        let com_velocities: Coord[] = [];
-        let com_accelerations: Coord[] = [];
-        for (let time = 0; time < subJoints[0].positions.length; time++) {
-            let x_pos: number = 0;
-            let y_pos: number = 0;
-            let x_vel: number = 0;
-            let y_vel: number = 0;
-            let x_acc: number = 0;
-            let y_acc: number = 0;
-            let denominator: number = subJoints.length;
-            for (let joint of subJoints) {
-                x_pos += joint.positions[time].x;
-                y_pos += joint.positions[time].y;
-                x_vel += joint.velocities[time].x;
-                y_vel += joint.velocities[time].y;
-                x_acc += joint.accelerations[time].x;
-                y_acc += joint.accelerations[time].y;
+
+    // build new adjacency list using the aug edges
+    const adj = new Map<number, Array<{ neighbor: number; edgeIdx: number }>>();
+    for (const id of solveOrder.order) adj.set(id, []);
+    for (let i = 0; i < augEdges.length; i++) {
+      adj.get(augEdges[i].idA)!.push({ neighbor: augEdges[i].idB, edgeIdx: i });
+      adj.get(augEdges[i].idB)!.push({ neighbor: augEdges[i].idA, edgeIdx: i });
+    }
+
+    // DFS
+    const visited    = new Map<number, boolean>();
+    const depth      = new Map<number, number>();
+    const parentEdge = new Map<number, number>();
+    const backEdges: Array<{ from: number; to: number; edgeIdx: number }> = [];
+
+    const dfs = (nodeId: number): void => {
+      visited.set(nodeId, true);
+      for (const { neighbor, edgeIdx } of adj.get(nodeId)!) {
+        if (!visited.get(neighbor)) {
+          depth.set(neighbor, depth.get(nodeId)! + 1);
+          parentEdge.set(neighbor, edgeIdx);
+          dfs(neighbor);
+        } else if (
+          edgeIdx !== parentEdge.get(nodeId) &&
+          depth.get(neighbor)! < depth.get(nodeId)!
+        ) {
+          backEdges.push({ from: nodeId, to: neighbor, edgeIdx });
+        }
+      }
+    };
+
+    const startId = groundIds[0];
+    depth.set(startId, 0);
+    dfs(startId);
+
+    const loops: LoopEdge[][] = [];
+
+    for (const be of backEdges) {
+      const pathNodes: number[] = [];
+      let cursor = be.from;
+      while (cursor !== be.to) {
+        pathNodes.push(cursor);
+        const pei = parentEdge.get(cursor)!;
+        const e   = augEdges[pei];
+        cursor = (e.idA === cursor) ? e.idB : e.idA;
+      }
+      pathNodes.push(be.to);
+      pathNodes.reverse();
+
+      const loop: LoopEdge[] = [];
+
+      for (let i = 0; i < pathNodes.length - 1; i++) {
+        const x  = pathNodes[i];
+        const y  = pathNodes[i + 1];
+        const ei = parentEdge.get(y)!;
+        const e  = augEdges[ei];
+        loop.push({
+          idA: e.idA,
+          idB: e.idB,
+          direction: e.idA === x ? 1 : -1,
+          isVirtualSlider: e.isVirtualSlider,
+        });
+      }
+
+      const be_e = augEdges[be.edgeIdx];
+      loop.push({
+        idA: be_e.idA,
+        idB: be_e.idB,
+        direction: be_e.idA === be.from ? 1 : -1,
+        isVirtualSlider: be_e.isVirtualSlider,
+      });
+
+      loops.push(loop);
+    }
+
+    return loops;
+  }
+
+  /**
+   * Computes link angular velocuty and acceleration for a submechanism
+   * 1. clears previous angular results (in the caches)
+   * 2. runs loop solver for angular velocity, then acceleration
+   * 3. results are stored in the cache to be reused later so links don't need to be re-calculated
+   */
+  private computeVelocityLoopOmegas(solveOrder: SolveOrder): void {
+    this.linkAngularVelocityCache = new Map();
+    this.linkAngularAccelerationCache = new Map();
+    this.solveGeneralVelocityLoops(solveOrder);
+    this.solveGeneralAccelerationLoops(solveOrder);
+  }
+
+  /**
+   * Main function that solves link angular velocity
+   * Step 1: Convert mechanism into general graph where joints are nodes and links are edges
+   * allows multiple types of linkages to be solved
+   *
+   * Step 2: Find the independent closed loops of the mechanism from the graph to form the velocity equations
+   *
+   * Step 3: Classify each link in the mechanism as ground, input, or unknown. Ground links have zero angular velocity, input
+   * links use the known motor speed, and unknown links become the variables of the solver matrix
+   *
+   * Step 4: Loop through each timestep and build the linear system A x omega = B. Unknown links become the matrix
+   * columns and the input link is moved to the right-hand side
+   *
+   * Step 5: Solve the system using math.lusolve() and store the results in the cache
+   *
+   */
+  private solveGeneralVelocityLoops(solveOrder: SolveOrder): void {
+
+    // ── Steps 1 + 2: build mechanism graph and find independent loops ──────────
+    const graph = this.buildLinkGraph(solveOrder);
+    const loops = this.findVelocityLoops(graph, solveOrder);
+    if (loops.length === 0) return;
+
+    // Input joint / motor speed
+    const inputJointId = solveOrder.order[0];
+    const inputSpeed   = solveOrder.prerequisites.get(inputJointId)!.jointToSolve.inputSpeed;
+    const omega2       = this.getSignedInputOmega(inputSpeed);
+
+    // Find the far end of the input crank (RevoluteInput joint)
+    let crankEndId: number | null = null;
+    for (const id of solveOrder.order) {
+      if (solveOrder.prerequisites.get(id)!.solveType === SolveType.RevoluteInput) {
+        crankEndId = id;
+        break;
+      }
+    }
+    if (crankEndId === null) return;
+
+    const numSteps = this.jointKinematics.get(inputJointId)?.positions.length ?? 0;
+    if (numSteps === 0) return;
+
+    // ── Step 3: classify every link encountered in all loops ──────────────────
+    //
+    //  ground   → zero, skip entirely
+    //  input    → known = omega2, move to RHS
+    //  revolute → unknown, add column  key = "A_B"
+    //  prismatic→ unknown, add column  key = "slider_A_B"
+    //
+    const nodes       = graph.nodes;
+    const unknownKeys : string[] = [];
+    const seenKeys    = new Set<string>();
+
+    for (const loop of loops) {
+      for (const step of loop) {
+        const nA = nodes.get(step.idA)!;
+        const nB = nodes.get(step.idB)!;
+        const isPrismatic = this.isPrismaticClosureStep(graph, solveOrder, step);
+
+        // ground–ground edge (closing ground link) → no DOF
+        if (nA.isGrounded && nB.isGrounded && !isPrismatic) continue;
+
+        // input crank → known, will go to RHS
+        if (!isPrismatic && ((nA.isGrounded && nA.isInput) || (nB.isGrounded && nB.isInput))) continue;
+
+        // determine whether the far (non-grounded) joint is prismatic
+        const k = isPrismatic
+          ? this.sliderKey(step.idA, step.idB)
+          : this.linkKey(step.idA, step.idB);
+
+        if (!seenKeys.has(k)) {
+          seenKeys.add(k);
+          unknownKeys.push(k);
+        }
+      }
+    }
+
+    const numLoops    = loops.length;
+    const numUnknowns = unknownKeys.length;
+
+    const unknownCol = new Map<string, number>();
+    unknownKeys.forEach((k, i) => unknownCol.set(k, i));
+
+    const resultArrays: number[][] = unknownKeys.map(() => []);
+    let lastSol: number[] = new Array(numUnknowns).fill(0);
+
+    // Store constant input-crank angular velocity
+    this.linkAngularVelocityCache.set(
+      this.linkKey(inputJointId, crankEndId),
+      new Array(numSteps).fill(omega2)
+    );
+
+    // ── Steps 4 + 5: build A·x = b at every timestep and solve ───────────────
+    for (let t = 0; t < numSteps; t++) {
+
+      const matA: number[][] = Array.from(
+        { length: 2 * numLoops },
+        () => new Array(numUnknowns).fill(0)
+      );
+      const vecB: number[] = new Array(2 * numLoops).fill(0);
+
+      for (let li = 0; li < numLoops; li++) {
+        const rowX = 2 * li;
+        const rowY = 2 * li + 1;
+
+        for (const step of loops[li]) {
+          const nA   = nodes.get(step.idA)!;
+          const nB   = nodes.get(step.idB)!;
+          const sign = step.direction;
+          const isPrismatic = this.isPrismaticClosureStep(graph, solveOrder, step);
+
+          // ground–ground closing edge
+          if (nA.isGrounded && nB.isGrounded && !isPrismatic) continue;
+
+          // Joint positions and link geometry at this timestep
+          const posA  = this.jointKinematics.get(step.idA)!.positions[t];
+          const posB  = this.jointKinematics.get(step.idB)!.positions[t];
+          const dx    = posB.x - posA.x;
+          const dy    = posB.y - posA.y;
+          const theta = Math.atan2(dy, dx);
+          const r     = Math.hypot(dx, dy);
+
+          // input crank (known ω = omega2) → RHS
+          if (!isPrismatic && ((nA.isGrounded && nA.isInput) || (nB.isGrounded && nB.isInput))) {
+            vecB[rowX] += sign * r * Math.sin(theta) * omega2;
+            vecB[rowY] -= sign * r * Math.cos(theta) * omega2;
+            continue;
+          }
+
+          // determine if this link is prismatic
+          if (isPrismatic) {
+            // Prismatic contribution
+            // θ_slide is the guide angle stored on the slider joint
+            const slideJointId = this.getPrismaticClosureJointId(solveOrder, step);
+            const slideAngle = this.angleDegToRad(
+              solveOrder.prerequisites.get(slideJointId)!.jointToSolve.angle
+            );
+            const col = unknownCol.get(this.sliderKey(step.idA, step.idB))!;
+            matA[rowX][col] += sign * Math.cos(slideAngle);
+            matA[rowY][col] += sign * Math.sin(slideAngle);
+
+          } else {
+            const col = unknownCol.get(this.linkKey(step.idA, step.idB))!;
+            matA[rowX][col] += sign * (-r * Math.sin(theta));
+            matA[rowY][col] += sign * ( r * Math.cos(theta));
+          }
+        }
+      }
+
+      // Solve A · x = b
+      try {
+        const rawSol = math.lusolve(matA, vecB) as number[][];
+        const sol    = rawSol.map(row => row[0]);
+        lastSol = sol;
+        sol.forEach((v, i) => resultArrays[i].push(v));
+      } catch {
+        lastSol.forEach((v, i) => resultArrays[i].push(v));
+      }
+    }
+
+    // Angular velocities go into linkAngularVelocityCache under the revolute key.
+    // Slider velocities are stored under the sliderKey — callers can retrieve
+    // them via getSliderVelocity(idA, idB) if needed, but they don't affect the
+    // link angular-velocity display which only reads the revolute key.
+    unknownKeys.forEach((k, i) => {
+      if (k.startsWith('slider_')) {
+        // Store slider velocity separately (available for future use / CSV export)
+        this.linkAngularVelocityCache.set(k, resultArrays[i]);
+      } else {
+        this.linkAngularVelocityCache.set(k, resultArrays[i]);
+      }
+    });
+  }
+
+  /**
+   * Main function that solves link angular acceleration
+   * called after solveGeneralVelocityLoops() so that linkAngularVelocityCache is populated
+   *
+   * Step 1: Rebuild the general mechanism graph from the angular velocity solver
+   *
+   * Step 2: Find the independent closed loops of the mechanism from the graph
+   *
+   * Step 3: Classify links as ground, input, or unknown. Ground links have zero angular acceleration, the
+   * input link uses the known input acceleration, and unknown links become the variables of the solver matrix
+   *
+   * Step 4: Loop through each timestep and build the linear system A x omega = B. The coefficient matrix A is the same form as in
+   * the angular velocity solver, but the right-hand side now includes the centripetal terms computed from the angular velocities
+   * solved previously
+   *
+   * Step 5: Solve the system using math.lusolve() and store the results in the cache
+   */
+  private solveGeneralAccelerationLoops(solveOrder: SolveOrder): void {
+    const graph = this.buildLinkGraph(solveOrder);
+    const loops = this.findVelocityLoops(graph, solveOrder);
+    if (loops.length === 0) return;
+
+    const inputJointId = solveOrder.order[0];
+    const numSteps = this.jointKinematics.get(inputJointId)?.positions.length ?? 0;
+    if (numSteps === 0) return;
+    const dt = this.jointKinematics.get(inputJointId)?.timeIncrement ?? 0;
+    if (dt <= 0) return;
+
+    const hasVirtualSliderLoop = loops.some(loop => loop.some(step => step.isVirtualSlider));
+    if (hasVirtualSliderLoop) {
+      // For virtual slider closures, differentiate the solved omega series instead of using the general acceleration solver
+      this.linkAngularAccelerationCache = new Map();
+      for (const [key, omegaArray] of this.linkAngularVelocityCache.entries()) {
+        const alphaArray = this.differentiateSeries(omegaArray, dt);
+        this.linkAngularAccelerationCache.set(key, alphaArray);
+      }
+      return;
+    }
+
+    const inputSpeed = solveOrder.prerequisites.get(inputJointId)!.jointToSolve.inputSpeed;
+    const omega2 = this.getSignedInputOmega(inputSpeed);
+    const alpha2 = 0;
+
+    let crankEndId: number | null = null;
+    for (const id of solveOrder.order) {
+      if (solveOrder.prerequisites.get(id)!.solveType === SolveType.RevoluteInput) {
+        crankEndId = id;
+        break;
+      }
+    }
+    if (crankEndId === null) return;
+
+    const nodes = graph.nodes;
+    const unknownKeys: string[] = [];
+    const seenKeys = new Set<string>();
+
+    for (const loop of loops) {
+      for (const step of loop) {
+        const nA = nodes.get(step.idA)!;
+        const nB = nodes.get(step.idB)!;
+        const isPrismatic = this.isPrismaticClosureStep(graph, solveOrder, step);
+
+        if (nA.isGrounded && nB.isGrounded && !isPrismatic) continue;
+        if ((nA.isGrounded && nA.isInput) || (nB.isGrounded && nB.isInput)) continue;
+
+        const k = isPrismatic
+          ? this.sliderKey(step.idA, step.idB)
+          : this.linkKey(step.idA, step.idB);
+
+        if (!seenKeys.has(k)) {
+          seenKeys.add(k);
+          unknownKeys.push(k);
+        }
+      }
+    }
+
+    const numLoops = loops.length;
+    const numUnknowns = unknownKeys.length;
+    const unknownCol = new Map<string, number>();
+    unknownKeys.forEach((k, i) => unknownCol.set(k, i));
+
+    const alphaArrays: number[][] = unknownKeys.map(() => []);
+    let lastSol: number[] = new Array(numUnknowns).fill(0);
+
+    this.linkAngularAccelerationCache = new Map();
+    this.linkAngularAccelerationCache.set(
+      this.linkKey(inputJointId, crankEndId),
+      new Array(numSteps).fill(alpha2)
+    );
+
+    for (let t = 0; t < numSteps; t++) {
+      const matA: number[][] = Array.from(
+        { length: 2 * numLoops },
+        () => new Array(numUnknowns).fill(0)
+      );
+      const vecB: number[] = new Array(2 * numLoops).fill(0);
+
+      for (let li = 0; li < numLoops; li++) {
+        const rowX = 2 * li;
+        const rowY = 2 * li + 1;
+
+        for (const step of loops[li]) {
+          const nA = nodes.get(step.idA)!;
+          const nB = nodes.get(step.idB)!;
+          const sign = step.direction;
+          const isPrismatic = this.isPrismaticClosureStep(graph, solveOrder, step);
+
+          if (nA.isGrounded && nB.isGrounded && !isPrismatic) continue;
+
+          const posA = this.jointKinematics.get(step.idA)!.positions[t];
+          const posB = this.jointKinematics.get(step.idB)!.positions[t];
+          const dx = posB.x - posA.x;
+          const dy = posB.y - posA.y;
+          const theta = Math.atan2(dy, dx);
+          const r = Math.hypot(dx, dy);
+
+          const sinT = Math.sin(theta);
+          const cosT = Math.cos(theta);
+
+          if ((nA.isGrounded && nA.isInput) || (nB.isGrounded && nB.isInput)) {
+            vecB[rowX] += sign * r * omega2 * omega2 * cosT;
+            vecB[rowY] += sign * r * omega2 * omega2 * sinT;
+
+            if (alpha2 !== 0) {
+              vecB[rowX] += sign * r * alpha2 * sinT;
+              vecB[rowY] -= sign * r * alpha2 * cosT;
             }
-            com_positions.push(new Coord(x_pos / denominator, y_pos / denominator));
-            com_velocities.push(new Coord(x_vel / denominator, y_vel / denominator));
-            com_accelerations.push(new Coord(x_acc / denominator, y_acc / denominator))
+            continue;
+          }
+
+          if (isPrismatic) {
+            const slideJointId = this.getPrismaticClosureJointId(solveOrder, step);
+            const slideAngle = this.angleDegToRad(
+              solveOrder.prerequisites.get(slideJointId)!.jointToSolve.angle
+            );
+            const col = unknownCol.get(this.sliderKey(step.idA, step.idB))!;
+            matA[rowX][col] += sign * Math.cos(slideAngle);
+            matA[rowY][col] += sign * Math.sin(slideAngle);
+            continue;
+          }
+
+          const omegaI = this.linkAngularVelocityCache.get(
+            this.linkKey(step.idA, step.idB)
+          )?.[t] ?? 0;
+
+          vecB[rowX] += sign * r * omegaI * omegaI * cosT;
+          vecB[rowY] += sign * r * omegaI * omegaI * sinT;
+
+          const col = unknownCol.get(this.linkKey(step.idA, step.idB))!;
+          matA[rowX][col] += sign * (-r * sinT);
+          matA[rowY][col] += sign * (r * cosT);
         }
-        return { pos: com_positions, vel: com_velocities, acc: com_accelerations }
+      }
+
+      try {
+        const sol = this.solveAccelerationSystem(matA, vecB, numUnknowns);
+        lastSol = sol;
+        sol.forEach((v, i) => alphaArrays[i].push(v));
+      } catch {
+        lastSol.forEach((v, i) => alphaArrays[i].push(v));
+      }
     }
 
-    // Calculates angular positions, velocities, and accelerations for a link using two joint-level kinematic analyses.
-    getLinkAngularSolutions(subJoints: JointAnalysis[]) {
-        let ang_pos: number[] = [];
-        let ang_vel: number[] = [];
-        let ang_acc: number[] = [];
-        for (let time = 0; time < subJoints[0].positions.length; time++) {
-            let x_diff_pos: number = subJoints[1].positions[time].x - subJoints[0].positions[time].x;
-            let y_diff_pos: number = subJoints[1].positions[time].y - subJoints[0].positions[time].y;
-            let ang: number = Math.atan2(y_diff_pos, x_diff_pos);
-            let x_diff_vel: number = subJoints[1].velocities[time].x - subJoints[0].velocities[time].x;
-            let y_diff_vel: number = subJoints[1].velocities[time].y - subJoints[0].velocities[time].y;
-            let V_BA: number = Math.sqrt(Math.pow(x_diff_vel, 2) + Math.pow(y_diff_vel, 2));
-            let R_BA: number = Math.sqrt(Math.pow(x_diff_pos, 2) + Math.pow(y_diff_pos, 2));
-            let vel: number = V_BA / R_BA;
-            let x_diff_acc: number = subJoints[1].accelerations[time].x - subJoints[0].accelerations[time].x;
-            let y_diff_acc: number = subJoints[1].accelerations[time].y - subJoints[0].accelerations[time].y;
-            let A_BA: number = Math.sqrt(Math.pow(x_diff_acc, 2) + Math.pow(y_diff_acc, 2));
-            let acc: number = A_BA / R_BA;
-            ang_pos.push(ang);
-            ang_vel.push(vel);
-            ang_acc.push(acc);
-        }
-        return { ang: ang_pos, vel: ang_vel, acc: ang_acc };
+    unknownKeys.forEach((k, i) => {
+      this.linkAngularAccelerationCache.set(k, alphaArrays[i]);
+    });
+  }
+
+  /**
+   * creates unique key for each physical link independent of joint order
+   * i.e. (2,5) is the same as (5,2)
+   */
+  private linkKey(a: number, b: number): string {
+    return a < b ? `${a}_${b}` : `${b}_${a}`;
+  }
+
+  /**
+   * creates unique key for each slider link independent of joint order
+   * i.e. (2,5) is the same as (5,2)
+   */
+  private sliderKey(a: number, b: number): string {
+    return `slider_${this.linkKey(a, b)}`;
+  }
+
+  // Numerically differentiates a series
+  private differentiateSeries(values: number[], dt: number): number[] {
+    if (values.length === 0) return [];
+    if (values.length === 1) return [0];
+
+    const derivative = new Array(values.length).fill(0);
+    derivative[0] = (values[1] - values[0]) / dt;
+
+    for (let i = 1; i < values.length - 1; i++) {
+      derivative[i] = (values[i + 1] - values[i - 1]) / (2 * dt);
     }
 
+    derivative[values.length - 1] =
+      (values[values.length - 1] - values[values.length - 2]) / dt;
 
+    return derivative;
+  }
+
+  // Solves the acceleration system, using direct 2x2 algebra first and least-squares when A is not square.
+  private solveAccelerationSystem(matA: number[][], vecB: number[], numUnknowns: number): number[] {
+    if (numUnknowns === 2 && matA.length === 2) {
+      const [[a, b], [c, d]] = matA;
+      const det = a * d - b * c;
+      if (Math.abs(det) > 1e-12) {
+        return [
+          (vecB[0] * d - b * vecB[1]) / det,
+          (a * vecB[1] - vecB[0] * c) / det,
+        ];
+      }
+    }
+
+    if (matA.length === numUnknowns) {
+      try {
+        const rawSol = math.lusolve(matA, vecB) as number[][];
+        return rawSol.map(row => row[0]);
+      } catch {
+      }
+    }
+
+    const matAT = math.transpose(matA) as number[][];
+    const matAT_A = math.multiply(matAT, matA) as number[][];
+    const vecAT_b = math.multiply(matAT, vecB) as number[];
+    const rawSol = math.lusolve(matAT_A, vecAT_b) as number[][];
+    return rawSol.map(row => row[0]);
+  }
+
+  // Returns the cached angular series for the most representative joint pair on a compound link.
+  private getCachedLinkSeries(jointIDs: number[]): { vel: number[], acc: number[] } | null {
+    let fallback: { vel: number[], acc: number[] } | null = null;
+    let best: { vel: number[], acc: number[] } | null = null;
+    let bestScore = -Infinity;
+
+    for (let i = 0; i < jointIDs.length - 1; i++) {
+      for (let j = i + 1; j < jointIDs.length; j++) {
+        const key = this.linkKey(jointIDs[i], jointIDs[j]);
+        const vel = this.linkAngularVelocityCache.get(key);
+        const acc = this.linkAngularAccelerationCache.get(key);
+
+        if (!vel || !acc) continue;
+        if (!fallback) fallback = { vel, acc };
+
+        const score = this.seriesVariationScore(vel);
+        if (score > bestScore) {
+          bestScore = score;
+          best = { vel, acc };
+        }
+      }
+    }
+
+    return best ?? fallback;
+  }
+
+  // Prefers the pair whose angular velocity varies the most
+  private seriesVariationScore(values: number[]): number {
+    if (values.length === 0) return -Infinity;
+
+    let min = values[0];
+    let max = values[0];
+    for (const value of values) {
+      if (value < min) min = value;
+      if (value > max) max = value;
+    }
+
+    return max - min;
+  }
+
+  private hasPhysicalLink(graph: LinkGraph, a: number, b: number): boolean {
+    const key = this.linkKey(a, b);
+    return graph.edges.some(edge => this.linkKey(edge.idA, edge.idB) === key);
+  }
+
+  private isPrismaticClosureStep(graph: LinkGraph, solveOrder: SolveOrder, step: LoopEdge): boolean {
+    if (step.isVirtualSlider) {
+      // Virtual slider edges are always prismatic, even though they do not exist in the physical link graph.
+      return true;
+    }
+
+    if (this.hasPhysicalLink(graph, step.idA, step.idB)) {
+      return false;
+    }
+
+    const jointAType = solveOrder.prerequisites.get(step.idA)?.solveType;
+    const jointBType = solveOrder.prerequisites.get(step.idB)?.solveType;
+
+    return jointAType === SolveType.CircleLine ||
+      jointAType === SolveType.PrismaticInput ||
+      jointBType === SolveType.CircleLine ||
+      jointBType === SolveType.PrismaticInput;
+  }
+
+  private getPrismaticClosureJointId(solveOrder: SolveOrder, step: LoopEdge): number {
+    const jointAType = solveOrder.prerequisites.get(step.idA)?.solveType;
+    if (jointAType === SolveType.CircleLine || jointAType === SolveType.PrismaticInput) {
+      return step.idA;
+    }
+
+    return step.idB;
+  }
 }
+

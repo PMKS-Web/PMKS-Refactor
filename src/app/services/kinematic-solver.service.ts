@@ -100,6 +100,11 @@ export class PositionSolverService {
     return validMechanisms;
   }
 
+  // validate a sub-mechanism
+  public validateSubmechanism (subMechanism: Map<Joint, RigidBody[]>): boolean {
+    return this.isValidMechanism(subMechanism);
+  }
+
   // Updates the internal list of solve orders by determining how to solve each valid submechanism.
   updateSolveOrders(mechanisms: Map<Joint, RigidBody[]>[]) {
     this.solveOrders = [];
@@ -489,6 +494,15 @@ export class PositionSolverService {
     }
   }
 
+  // // round to the closest 12 decimals, e.g. -5.084....71281e-15 => 0  OR  2.9999999999...97 => 3  OR  4.499999999999..9 => 4.5
+  // private roundCoord(val: number, decimals = 12): number {
+  //   const k = Math.pow(10, decimals);
+  //   const rounded = Math.round(val * k) / k;
+
+  //   // remove negative zero
+  //   return Object.is(rounded, -0) ? 0 : rounded;
+  // }
+
   // Calculates the next position of a joint driven by a grounded revolute input, advancing or reversing by 1°.
   private solveRevInput(
     prevPositions: Coord[],
@@ -621,6 +635,12 @@ export class PositionSolverService {
     const py = firstKnownJointY + a * yDiffBetweenKnowns;
 
     const h = Math.sqrt(distFromFirstJoint * distFromFirstJoint - a * a);
+    
+    // one intersection, because h is too small, so the offset vector vx, vy becomes 0, 0. And the intersection point simply P2(point2_x, point2_y)
+    if (h < 1e-9) {
+      console.log('1 intersection between circles in amination frame');
+      return [new Coord(px, py)];
+  }
 
     const p1x = px + h * yDiffBetweenKnowns;
     const p1y = py - h * xDiffBetweenKnowns;
@@ -652,33 +672,32 @@ export class PositionSolverService {
       nextPositions[solveOrder.indexOf(solvePrerequisite.knownJointOne!.id)!].y;
 
     let m = Math.tan((solvePrerequisite.jointToSolve!.angle * Math.PI) / 180);
-    if (m > 1000 || m < -1000) {
+    
+    if (m > 1000 || m < -1000) { // when angle is 90 degrees, tan will be 1/0 = undefined
       m = Number.MAX_VALUE;
     }
+    
     const prevJointPosition: Coord =
       prevPositions[solveOrder.indexOf(solvePrerequisite.jointToSolve.id)];
-    const n =
-      solvePrerequisite.jointToSolve!.coords.y -
-      m *
-        prevPositions[solveOrder.indexOf(solvePrerequisite.jointToSolve.id)].x;
+    
+    const n = prevJointPosition.y - m * prevJointPosition.x;
+    
     // get a, b, c values
     const a = 1 + Math.pow(m, 2);
     const b = -h * 2 + m * (n - k) * 2;
     const c = Math.pow(h, 2) + Math.pow(n - k, 2) - Math.pow(r, 2);
     // get discriminant
     const d = Math.pow(b, 2) - 4 * a * c;
+    
 
-    //if discriminant is too big or not a number, use alternative method
+    //if discriminant is too big or not a number (NaN), use alternative method. We will see this case when angle of slider = 90 degrees
     if (isNaN(d) || !isFinite(d)) {
-      let temp_a: number = 1;
-      let temp_b: number = -2 * solvePrerequisite.knownJointOne!._coords.y;
-      let temp_c: number =
-        Math.pow(solvePrerequisite.knownJointOne!._coords.y, 2) +
-        Math.pow(
-          solvePrerequisite.knownJointOne!._coords.x - prevJointPosition.x,
-          2
-        ) -
-        Math.pow(r, 2);
+      // Line (vertical slider): x = t
+      // Circle: (x - h)^2 + (y - k)^2 = r^2
+      const t = prevJointPosition.x;
+      const temp_a: number = 1;
+      const temp_b: number = -2 * k;
+      const temp_c: number = Math.pow(k, 2) + Math.pow(t-h,2) - Math.pow(r, 2);
       let temp_d: number = Math.pow(temp_b, 2) - 4 * temp_a * temp_c;
       if (temp_d < 0) {
         return undefined;
@@ -698,9 +717,8 @@ export class PositionSolverService {
         y = y_2;
       }
       x = prevJointPosition.x;
-      //if discriminant is normal, calculate intersection points and return closest.
-    } else {
-      if (d >= 0) {
+    } else { //if discriminant is normal, calculate intersection points and return closest.
+      if (d >= 0) { // discriminant d >= 0, there is at least 1 solution and at most 2 solutions
         const x_1 = (-b + Math.sqrt(Math.pow(b, 2) - 4 * a * c)) / (2 * a);
         const y_1 = m * x_1 + n;
         const x_2 = (-b - Math.sqrt(Math.pow(b, 2) - 4 * a * c)) / (2 * a);
@@ -718,11 +736,15 @@ export class PositionSolverService {
           Math.pow(x_2 - prevJointPosition.x, 2) +
             Math.pow(y_2 - prevJointPosition.y, 2)
         );
-        if (intersection1Diff < intersection2Diff) {
+        if (intersection1Diff < intersection2Diff) { // (x1,y1) closer to the last slider's position 
           x = intersectionPoints[0].x;
           y = intersectionPoints[0].y;
+        } else { // (x2,y2) closer to the last slider's position
+          x = intersectionPoints[1].x;
+          y = intersectionPoints[1].y;
         }
-      } else {
+      } else { // discriminant < 0, there is no solution and it's also the signal about limit of the movement of the crank and we need to swap direction.
+        console.log('crank hits its limit and ready to change direction');
         return undefined;
       }
     }

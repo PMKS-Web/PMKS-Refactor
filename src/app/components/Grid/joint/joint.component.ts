@@ -13,6 +13,7 @@ import { NotificationService } from 'src/app/services/notification.service';
 import { AnimationService } from 'src/app/services/animation.service';
 
 import { UndoRedoService } from 'src/app/services/undo-redo.service';
+import {PositionSolverService} from "../../../services/kinematic-solver.service";
 @Component({
   selector: '[app-joint]',
   templateUrl: './joint.component.html',
@@ -36,13 +37,14 @@ export class JointComponent extends AbstractInteractiveComponent {
     private undoRedoService: UndoRedoService,
     private unitConversionService: UnitConversionService,
     private notificationService: NotificationService,
+    private positionSolver: PositionSolverService,
     public override animationService: AnimationService
   ) {
     super(interactionService, animationService);
   }
 
   override registerInteractor(): Interactor {
-    return new JointInteractor(this.joint, this.stateService, this.interactionService, this.notificationService, this.undoRedoService);
+    return new JointInteractor(this.joint, this.stateService, this.interactionService, this.notificationService, this.undoRedoService, this.positionSolver);
   }
 
   public getX(): number {

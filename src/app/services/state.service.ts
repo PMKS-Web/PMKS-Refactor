@@ -119,6 +119,8 @@ export class StateService {
         newJoint.hidden = Boolean(joint.isHidden);
         newJoint.reference = Boolean(joint.isReference);
         newJoint.generated = Boolean(joint.isGenerated);
+        newJoint.isTracer = Boolean(joint.isTracer);
+        newJoint.isPartOfWelded = Boolean(joint.isPartOfWelded);
         if (Boolean(joint.isInput)) {
           newJoint.addInput();
         }
@@ -145,13 +147,14 @@ export class StateService {
         for (const x of jointsArray) {
           console.log(x.id);
         }
-        console.log(link, link.id);
-        let newLink = new Link(link.id, jointsArray);
+        console.log(link, Number(link.id));
+        let newLink = new Link(Number(link.id), jointsArray);
         newLink.name = link.name;
         newLink.mass = link.mass;
         newLink.angle = link.angle;
         newLink.locked = Boolean(link.locked);
         newLink.color = link.color;
+        newLink.isCircle = Boolean(link.isCircle);
 
         this.mechanism._addLink(newLink);
       }
@@ -159,6 +162,7 @@ export class StateService {
 
     //Compound Links
     if (rawData.decodedCompoundLinks) {
+      console.log("WELDED LINKS")
       for (const compoundlink of rawData.decodedCompoundLinks) {
         let linksArray: Link[] = compoundlink.links
           .split('|')
@@ -251,9 +255,9 @@ export class StateService {
 
   // Updates the global measurement "units" and their "suffix" based on user selection.
   public changeUnits(units: string, suffix: string) {
-    const oldSuffix = this.globalUnitsSuffix.value; 
+    const oldSuffix = this.globalUnitsSuffix.value;
     if (oldSuffix === suffix) return;
-    
+
     // bring whatever current unit to 'cm'
     // 1cm = 1cm, 1cm = 0.01m, 1cm = 1/2.54in
     // Example: 1in = (?)m. 1in / (1/2.54in) = 2.54cm -> 2.54cm*0.01m = 0.025m. Finish convertion 1in = 0.025m
@@ -274,7 +278,7 @@ export class StateService {
       joint.coords.y *= conversionRatio;
       console.log(`new 'x' coordinate conversion: ${joint.coords.x}`);
       console.log(`new 'y' coordinate conversion: ${joint.coords.y}`);
-    });    
+    });
 
     this.mechanism.notifyChange(); //notify the mechanism
     this.globalUnits.next(units);

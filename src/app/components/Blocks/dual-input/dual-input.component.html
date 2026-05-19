@@ -18,7 +18,7 @@
        id="input1" 
        [(ngModel)]="input1Value"
        [disabled]="disabled"
-       (keyup.enter)="onEnterKeyInput1()" 
+       (keydown.enter)="onEnterKeyInput1()" 
        (blur)="onBlurInput1()"
        (click)="onInputClick()"/>
       <span class="unit" style="margin-left: 2px; display: inline-block; width: 24px;">{{unit1}}</span>
@@ -35,7 +35,7 @@
        id="input2" 
        [(ngModel)]="input2Value"
        [disabled]="disabled"
-       (keyup.enter)="onEnterKeyInput2()" 
+       (keydown.enter)="onEnterKeyInput2()" 
        (blur)="onBlurInput2()"
        (click)="onInputClick()"/>
       <span class="unit" style="margin-left: 2px;">{{unit2}}</span>

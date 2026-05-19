@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { Coord } from 'src/app/model/coord';
 import { SVGPathService } from 'src/app/services/svg-path.service';
 import { UnitConversionService } from 'src/app/services/unit-conversion.service';
+import {Joint} from "../../../model/joint";
 
 @Component({
   selector: '[app-trajectory]',
@@ -11,6 +12,7 @@ import { UnitConversionService } from 'src/app/services/unit-conversion.service'
 
 export class TrajectoryComponent {
   @Input() trajectory!: Coord[];
+  @Input() joint!: Joint | null;
 
   constructor(
     private svgPathService: SVGPathService,

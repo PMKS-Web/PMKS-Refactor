@@ -9,6 +9,7 @@ export enum GraphType {
   JointPosition,
   JointVelocity,
   JointAcceleration,
+  JointForce,
   // Add more graph types as needed
 }
 @Component({
@@ -59,6 +60,8 @@ export class JointAnalysisPanelComponent {
         return 'Velocity';
       case GraphType.JointAcceleration:
         return 'Acceleration';
+      case GraphType.JointForce:
+        return 'Force';
       // Add more cases as needed
       default:
         return ''; // Handle unknown cases or add a default value
@@ -72,25 +75,38 @@ export class JointAnalysisPanelComponent {
   getGraphData() {
     this.analysisSolverService.updateKinematics();
     const jointKinematics = this.analysisSolverService.getJointKinematics(this.getCurrentJoint().id);
-    switch(this.currentGraphType) {
-      case GraphType.JointPosition:
-        return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, this.getGraphTypeName(this.currentGraphType));
-
-      case GraphType.JointVelocity:
-        return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, this.getGraphTypeName(this.currentGraphType));
-
-      case GraphType.JointAcceleration:
-        return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, this.getGraphTypeName(this.currentGraphType));
-
-      default:
+    console.log("getCurrentJoint: "+ this.getCurrentJoint().id);
+    if (this.currentGraphType != null) {
+      return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, this.getGraphTypeName(this.currentGraphType));
+    } else {
         return {
-          xData: [],
-          yData: [],
-          timeLabels: []
-        };
+            xData: [],
+            yData: [],
+            timeLabels: []
+          };
     }
+    // switch(this.currentGraphType) {
+    //   case GraphType.JointPosition:
+    //     return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, this.getGraphTypeName(this.currentGraphType));
+    //
+    //   case GraphType.JointVelocity:
+    //     return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, this.getGraphTypeName(this.currentGraphType));
+    //
+    //   case GraphType.JointAcceleration:
+    //     return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, this.getGraphTypeName(this.currentGraphType));
+    //
+    //   case GraphType.JointForce:
+    //     return this.analysisSolverService.transformJointKinematicGraph(jointKinematics, this.getGraphTypeName(this.currentGraphType));
+    //
+    //   default:
+    //     return {
+    //       xData: [],
+    //       yData: [],
+    //       timeLabels: []
+    //     };
+    // }
   }
-  
+
 
   getMechanism(): Mechanism {return this.stateService.getMechanism();}
   getCurrentJoint(){

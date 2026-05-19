@@ -43,6 +43,7 @@ export class ForceComponent
   units: string = 'N'; // Force units
   unitsAngle: string = 'º';
   angle: string = '0';
+  private readonly FIXED_FORCE_DISPLAY_LENGTH = 300; // temporary added so the force's length is fixed
 
   constructor(
     public override interactionService: InteractionService,
@@ -121,28 +122,56 @@ export class ForceComponent
 
   // Get the midpoint of the force vector
   getMidPointX(): number {
-    const startCoord = this.unitConversionService.modelCoordToSVGCoord(
-      this.force.start
-    );
-    const endCoord = this.unitConversionService.modelCoordToSVGCoord(
-      this.force.end
-    );
-    return (startCoord.x + endCoord.x) / 2;
+    // const startCoord = this.unitConversionService.modelCoordToSVGCoord(
+    //   this.force.start
+    // );
+    // const endCoord = this.unitConversionService.modelCoordToSVGCoord(
+    //   this.force.end
+    // );
+    // return (startCoord.x + endCoord.x) / 2;
+
+    // ---Temporary added for a fixed length of force
+    const end = this.getVisualEndCoord();
+    return (this.getStartX() + end.x) / 2;
+    // -------------
   }
 
   getMidPointY(): number {
-    const startCoord = this.unitConversionService.modelCoordToSVGCoord(
-      this.force.start
-    );
-    const endCoord = this.unitConversionService.modelCoordToSVGCoord(
-      this.force.end
-    );
-    return (startCoord.y + endCoord.y) / 2;
+    // const startCoord = this.unitConversionService.modelCoordToSVGCoord(
+    //   this.force.start
+    // );
+    // const endCoord = this.unitConversionService.modelCoordToSVGCoord(
+    //   this.force.end
+    // );
+    // return (startCoord.y + endCoord.y) / 2;
+
+    // ---Temporary added for a fixed length of force
+    const end = this.getVisualEndCoord();
+    return (this.getStartY() + end.y) / 2;
+    // ------------------
+  }
+
+  // Temporary added for a fixed length of force
+  getVisualEndCoord(): { x: number; y: number } {
+    const startX = this.getStartX();
+    const startY = this.getStartY();
+    const angleRad = (this.force.angle * Math.PI) / 180;
+    return {
+      x: startX + this.FIXED_FORCE_DISPLAY_LENGTH * Math.cos(angleRad),
+      y: startY - this.FIXED_FORCE_DISPLAY_LENGTH * Math.sin(angleRad), // SVG Y is flipped
+    };
   }
 
   getLineSVG(): string {
-    const dx: number = this.getEndX() - this.getStartX();
-    const dy = this.getEndY() - this.getStartY();
+    // const dx: number = this.getEndX() - this.getStartX();
+    // const dy = this.getEndY() - this.getStartY();
+
+    // ---Temporary added for a fixed length of force
+    const end = this.getVisualEndCoord();
+    const dx = end.x - this.getStartX();
+    const dy = end.y - this.getStartY();
+    // -------
+
     const length = Math.sqrt(dx * dx + dy * dy);
 
     const shortenBy = 24;
@@ -154,21 +183,36 @@ export class ForceComponent
     return `M${this.getStartX()},${this.getStartY()} L${newEndX},${newEndY}`;
   }
   getSelectionLineSVG(): string {
-    return `M${this.getStartX()},${this.getStartY()} L${this.getEndX()},${this.getEndY()}`;
+    // return `M${this.getStartX()},${this.getStartY()} L${this.getEndX()},${this.getEndY()}`;
+
+    // ---- Temporary added for a fixed length of force
+    const end = this.getVisualEndCoord();
+    return `M${this.getStartX()},${this.getStartY()} L${end.x},${end.y}`;
+    // --------------
   }
 
   // Get the arrowhead path for the force vector
   getArrowheadSVG(): string {
-    const startCoord = this.unitConversionService.modelCoordToSVGCoord(
-      this.force.start
-    );
-    const endCoord = this.unitConversionService.modelCoordToSVGCoord(
-      this.force.end
-    );
+    // const startCoord = this.unitConversionService.modelCoordToSVGCoord(
+    //   this.force.start
+    // );
+    // const endCoord = this.unitConversionService.modelCoordToSVGCoord(
+    //   this.force.end
+    // );
 
-    // Calculate the vector direction
-    const dx = endCoord.x - startCoord.x;
-    const dy = endCoord.y - startCoord.y;
+    // // Calculate the vector direction
+    // const dx = endCoord.x - startCoord.x;
+    // const dy = endCoord.y - startCoord.y;
+
+    // --- Temporary added for a fixed length of force
+    const startX = this.getStartX();
+    const startY = this.getStartY();
+    const end = this.getVisualEndCoord();
+
+    const dx = end.x - startX;
+    const dy = end.y - startY;
+    // -------
+
     const length = Math.sqrt(dx * dx + dy * dy);
 
     if (length === 0) return '';
@@ -181,13 +225,22 @@ export class ForceComponent
     const arrowLength = 40;
     const arrowWidth = 20;
 
-    // Calculate arrowhead points
-    const arrowX1 = endCoord.x - arrowLength * unitX - arrowWidth * unitY;
-    const arrowY1 = endCoord.y - arrowLength * unitY + arrowWidth * unitX;
-    const arrowX2 = endCoord.x - arrowLength * unitX + arrowWidth * unitY;
-    const arrowY2 = endCoord.y - arrowLength * unitY - arrowWidth * unitX;
+    // // Calculate arrowhead points
+    // const arrowX1 = endCoord.x - arrowLength * unitX - arrowWidth * unitY;
+    // const arrowY1 = endCoord.y - arrowLength * unitY + arrowWidth * unitX;
+    // const arrowX2 = endCoord.x - arrowLength * unitX + arrowWidth * unitY;
+    // const arrowY2 = endCoord.y - arrowLength * unitY - arrowWidth * unitX;
 
-    return `M${endCoord.x},${endCoord.y} L${arrowX1},${arrowY1} L${arrowX2},${arrowY2} Z`;
+    // return `M${endCoord.x},${endCoord.y} L${arrowX1},${arrowY1} L${arrowX2},${arrowY2} Z`;
+
+    // --- Temporary added for a fixed length of force
+    const arrowX1 = end.x - arrowLength * unitX - arrowWidth * unitY;
+    const arrowY1 = end.y - arrowLength * unitY + arrowWidth * unitX;
+    const arrowX2 = end.x - arrowLength * unitX + arrowWidth * unitY;
+    const arrowY2 = end.y - arrowLength * unitY - arrowWidth * unitX;
+  
+    return `M${end.x},${end.y} L${arrowX1},${arrowY1} L${arrowX2},${arrowY2} Z`;
+    // ----------
   }
 
   // Get the position for the force magnitude label
@@ -276,17 +329,22 @@ export class ForceComponent
     return Math.sqrt(dx * dx + dy * dy);
   }
   getLineEndCoord(): Coord {
-    const dx: number = this.getEndX() - this.getStartX();
-    const dy = this.getEndY() - this.getStartY();
-    const length = Math.sqrt(dx * dx + dy * dy);
+    // const dx: number = this.getEndX() - this.getStartX();
+    // const dy = this.getEndY() - this.getStartY();
+    // const length = Math.sqrt(dx * dx + dy * dy);
 
-    const shortenBy = 0;
-    const ratio = (length - shortenBy) / length;
+    // const shortenBy = 0;
+    // const ratio = (length - shortenBy) / length;
 
-    const x = this.getStartX() + dx * ratio;
-    const y = this.getStartY() + dy * ratio;
+    // const x = this.getStartX() + dx * ratio;
+    // const y = this.getStartY() + dy * ratio;
 
-    return new Coord(x, y);
+    // return new Coord(x, y);
+
+    //--- Temporary added for a fixed length of force
+    const end = this.getVisualEndCoord();
+    return new Coord(end.x, end.y);
+    // ----------
   }
   getScaledForceVector(): string {
     const startCoord = this.unitConversionService.modelCoordToSVGCoord(

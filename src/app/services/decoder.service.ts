@@ -65,22 +65,18 @@ export class DecoderService {
         .replaceAll('~', '","');
       console.log(decompressedJSON);
 
-
       const compactData = JSON.parse(decompressedJSON, (key, value) => {
         if (typeof value === 'string') {
-          if (/^[0-9a-f]+$/i.test(value)) {
-            return parseInt(value, 16);
-          }
           if (value === 'y') return true;
           if (value === 'n') return false;
-          }
+        }
         return value;
-        });
+      });
 
       // Expand the compact data into full objects.
       console.log('compactData');
       console.log(compactData);
-      const fullData = this.expandMechanismData(compactData);
+      const fullData = this.expandMechanismData(compactData, true);
 
       if (compactData.z && compactData.z[0][0]) {
         const zoom = parseFloat(compactData.z[0][0]);
@@ -102,6 +98,8 @@ export class DecoderService {
       }
 
       // Pass the reconstructed mechanism data to the state service.
+      console.log('fullData: Compound Link');
+      console.log(fullData.decodedCompoundLinks);
       stateService.reconstructMechanism(fullData);
 
       if (compactData.u) {
@@ -214,6 +212,8 @@ export class DecoderService {
       isHidden: this.convertBoolean(row[11]),
       isReference: this.convertBoolean(row[12]),
       isGenerated: this.convertBoolean(row[13]),
+      isPartOfWelded: this.convertBoolean(row[14]),
+      isTracer: this.convertBoolean(row[15]),
     }));
 
     const decodedLinks: any[] = (compactData.l || []).map((row: any[]) => ({
@@ -228,6 +228,7 @@ export class DecoderService {
       locked: this.convertBoolean(row[8]),
       length: this.convertNumber(row[9], useDecoding),
       angle: this.convertNumber(row[10], useDecoding),
+      isCircle: this.convertBoolean(row[11]),
     }));
 
     const decodedCompoundLinks: any[] = (compactData.c || []).map(
@@ -300,7 +301,23 @@ export class DecoderService {
     value: any,
     useDecoding: boolean = true
   ): number {
-    return useDecoding && Number.isInteger(value) ? parseInt(value, 16) : value;
+    if (!useDecoding) {
+      return Number(value);
+    }
+
+    if (typeof value === 'number') {
+      return value;
+    }
+
+    if (typeof value === 'string') {
+      if (/^-?[0-9a-f]+$/i.test(value)) {
+        return parseInt(value, 16);
+      }
+
+      return Number(value);
+    }
+
+    return Number(value);
   }
 
   /**

@@ -75,6 +75,9 @@ import { NotificationComponent } from './components/Blocks/notification/notifica
 import { ForceEditPanelComponent } from './components/SideNav/Edit/force-edit-panel/force-edit-panel.component';
 import { ForceComponent } from './components/Grid/force/force.component';
 import { FeedbackPanelComponent } from './components/ToolBar/feedback-panel/feedback-panel.component';
+import {
+  ForcesAnalysisPanelComponent
+} from "./components/SideNav/ForcesAnalysis/forces-analysis-panel/forces-analysis-panel.component";
 
 @NgModule({
   declarations: [
@@ -95,6 +98,7 @@ import { FeedbackPanelComponent } from './components/ToolBar/feedback-panel/feed
     AnimationBarComponent,
     AnalysisGraphButtonComponent,
     AnalysisPanelComponent,
+    ForcesAnalysisPanelComponent,
     CompoundLinkEditPanelComponent,
     CompoundLinkAnalysisPanelComponent,
     LinkAnalysisPanelComponent,
@@ -114,6 +118,7 @@ import { FeedbackPanelComponent } from './components/ToolBar/feedback-panel/feed
     DualButtonComponent,
     JointAnalysisPanelComponent,
     AnalysisPanelComponent,
+    ForcesAnalysisPanelComponent,
     SynthesisPanelComponent,
     ThreePosSynthesis,
     PathSynthesis,

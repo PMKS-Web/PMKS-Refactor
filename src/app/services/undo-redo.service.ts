@@ -9,6 +9,7 @@ import { StateService } from './state.service';
 import { isUndefined } from 'lodash';
 import { Position } from '../model/position';
 import { Force } from '../model/force';
+import {CompoundLink} from "../model/compound-link";
 
 @Injectable({
   providedIn: 'root',
@@ -24,6 +25,7 @@ export class UndoRedoService {
   public reinitialize$ = this.reinitializeSubject.asObservable();
 
   private mechanism: Mechanism;
+
   constructor(private stateService: StateService) {
     this.mechanism = stateService.getMechanism();
   }
@@ -95,6 +97,7 @@ export class UndoRedoService {
   public getUndoStack(): Action[] {
     return [...this.undoStack];
   }
+
   public getRedoStack(): Action[] {
     return [...this.redoStack];
   }
@@ -260,7 +263,8 @@ export class UndoRedoService {
         const tr = action.linkTracerData!;
         this.mechanism.addJointToLink(
           tr.linkId,
-          new Coord(tr.coords.x, tr.coords.y)
+          new Coord(tr.coords.x, tr.coords.y),
+          true
         );
         break;
       case 'addLinkToLink':
@@ -297,12 +301,31 @@ export class UndoRedoService {
         //reverses the lock
         link.locked = !locked
         break;
+      } case 'circleLink': {
+        //get the specified link from the action and see if it's a circle
+        const link = this.mechanism.getLink(action.linkId!)!;
+        const circular = link.isCircle;
+        //reverse the lock
+        link.isCircle = !circular
+        break;
+      } case 'deleteCompoundLink': {
+        this.mechanism.removeCompoundLinkByID(action.compoundLinkData!.id);
+        break;
+      } case 'addTracerCompound': {
+        const tr = action.linkTracerData!;
+        this.mechanism.addTracerPointWelded(
+          tr.linkId,
+          tr.tracerModelPos!,
+          tr.tracerSVGPos!,
+        );
+        break;
       }
 
       default:
         console.error('No inverse defined for action type:', action.type);
     }
   }
+
   //---------------------------------------------------------------------------------
   // --------------------------- | UNDO | ------------------------------------------
   //--------------------------------------------------------------------------------
@@ -419,6 +442,22 @@ export class UndoRedoService {
             }
           });
         }
+
+        if (action.compoundLinkDataArray) {
+          action.compoundLinkDataArray.forEach((cLinkSnap) => {
+            const cLinks = cLinkSnap.linkIds.map((lid) =>
+              this.mechanism.getLink(lid)
+            );
+            if (cLinks.every((l) => l !== undefined)) {
+              const restoredCompoundLink = new CompoundLink(cLinkSnap.id, cLinks);
+              restoredCompoundLink.name = cLinkSnap.name;
+              restoredCompoundLink.mass = cLinkSnap.mass;
+              restoredCompoundLink.lock = cLinkSnap.locked;
+              restoredCompoundLink.color = cLinkSnap.color;
+              this.mechanism._addCompoundLink(restoredCompoundLink);
+            }
+          });
+        }
         break;
       case 'moveJoint':
         if (action.jointId != null && action.oldCoords) {
@@ -508,7 +547,7 @@ export class UndoRedoService {
         }
         if (action.attachJointId !== undefined) {
           this.mechanism.getJoint(action.attachJointId) &&
-            this.mechanism.removeJoint(action.attachJointId);
+          this.mechanism.removeJoint(action.attachJointId);
         }
         break;
       case 'setJoint':
@@ -539,6 +578,102 @@ export class UndoRedoService {
         link.locked = !locked
         break;
       }
+      case 'circleLink': {
+        //get the specified link from the action and see if it's a circle
+        const link = this.mechanism.getLink(action.linkId!)!;
+        const circular = link.isCircle
+        //reverse the lock
+        link.isCircle = !circular
+        break;
+      }
+      case 'deleteCompoundLink': {
+        // rebuilding joints
+        if (action.compoundExtraJointsData) {
+          action.compoundExtraJointsData!.forEach((joints) => {
+            joints.forEach((j) => {
+              if (!this.mechanism.getJoint(j.id)) {
+                this.restoreJointFromSnapshot(j);
+              }
+            })
+          })
+        }
+
+        // rebuilding links
+        if (action.compoundExtraLinkData) {
+          action.compoundExtraLinkData!.forEach((link) => {
+            // check that joints exist
+            const jointObjs = link.jointIds.map((id) => {
+              const j = this.mechanism.getJoint(id);
+              if (!j) console.warn(`undo deleteLink: joint ${id} still missing`);
+              return j!;
+            });
+
+            if (jointObjs.every((j) => j != null)) {
+              const linkRestored = new Link(link.id, jointObjs);
+              linkRestored.name = link.name;
+              linkRestored.mass = link.mass;
+              linkRestored.angle = link.angle;
+              linkRestored.locked = link.locked;
+              linkRestored.color = link.color;
+              this.mechanism._addLink(linkRestored);
+            }
+          })
+        }
+
+        // rebuilding compound link
+        const cl = action.compoundLinkData!;
+        const linkObjs = cl.linkIds.map((id) => {
+          const l = this.mechanism.getLink(id);
+          if (!l) console.warn(`undo deleteCompoundLink: link ${id} still missing`);
+          return l!;
+        });
+        if (linkObjs.every((l) => l != null)) {
+          const linkRestored = new CompoundLink(cl.id, linkObjs);
+          linkRestored.name = cl.name;
+          linkRestored.mass = cl.mass;
+          linkRestored.lock = cl.locked;
+          linkRestored.color = cl.color;
+          this.mechanism._addCompoundLink(linkRestored);
+        }
+
+        break;
+      }
+      case 'addTracerCompound': {
+        const tr = action.linkTracerData!;
+        const allCompoundLinks = this.mechanism.getCompoundLinks();
+        let linkObj;
+        for (const c of allCompoundLinks) {
+          if (c.id == tr.linkId) {
+            linkObj = c;
+          }
+        }
+
+        if (linkObj == undefined) {
+          console.warn(
+            `Undo addTracerCompound: no compound link found)`
+          );
+          break;
+        }
+
+        let allJoints: Joint[] = [];
+        Array.from(linkObj!.links!.values()).forEach((l) => {
+          Array.from(l.joints.values()).forEach((j) => {
+            allJoints.push(j);
+          })
+        });
+
+        const toRemove = allJoints.find(
+          (j) => j.coords.x === tr.coords.x && j.coords.y === tr.coords.y
+        );
+        if (toRemove) {
+          this.mechanism.removeJoint(toRemove.id);
+        } else {
+          console.warn(
+            `Undo addTracerCompound: no tracer found at (${tr.coords.x},${tr.coords.y})`
+          );
+        }
+        break;
+      }
       default:
         console.error('No inverse defined for action type:', action.type);
     }
@@ -561,6 +696,8 @@ export class UndoRedoService {
     restoredJoint.locked = jointSnapshot!.locked;
     restoredJoint.hidden = jointSnapshot!.isHidden;
     restoredJoint.reference = jointSnapshot!.isReference;
+    restoredJoint.isTracer = jointSnapshot!.isTracer;
+    restoredJoint.isPartOfWelded = jointSnapshot!.isPartOfWelded;
     this.mechanism._addJoint(restoredJoint);
   }
 }

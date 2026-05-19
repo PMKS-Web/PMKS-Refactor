@@ -31,4 +31,10 @@ export class UnitConversionService{
       return new Coord(convertedX,convertedY);
   }
 
+  // Converts model number to SVG number by applying the defined scale factor.
+  public modelNumToSVGNum(modelNum: number): number{
+    let convertedNum: number = modelNum * this.MODEL_TO_SVG_SCALE;
+    return convertedNum;
+  }
+
 }

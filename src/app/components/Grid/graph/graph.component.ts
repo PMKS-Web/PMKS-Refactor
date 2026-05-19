@@ -113,6 +113,15 @@ export class GraphComponent {
     return Array.from(this.stateService.getMechanism().getTrajectories());
   }
 
+  public getOneJoint(id: number): Joint | null {
+    for (const joint of this.stateService.getMechanism().getJoints()) {
+      if (joint.id === id) {
+        return joint;
+      }
+    }
+    return null;
+  }
+
   public getLinks(): Link[] {
     return Array.from(this.stateService.getMechanism().getIndependentLinks());
   }

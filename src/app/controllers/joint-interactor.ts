@@ -5,9 +5,10 @@ import { InteractionService } from '../services/interaction.service';
 import { StateService } from '../services/state.service';
 import { CreateLinkFromJointCapture } from './click-capture/create-link-from-joint-capture';
 import { ContextMenuOption, Interactor } from './interactor';
-import { Action } from '../components/ToolBar/undo-redo-panel/action';
+import {Action, CompoundLinkSnapshot} from '../components/ToolBar/undo-redo-panel/action';
 import { NotificationService } from '../services/notification.service';
 import { UndoRedoService } from '../services/undo-redo.service';
+import {PositionSolverService} from "../services/kinematic-solver.service";
 
 
 /*
@@ -25,7 +26,8 @@ export class JointInteractor extends Interactor {
     private stateService: StateService,
     private interactionService: InteractionService,
     private notificationService: NotificationService,
-    private undoRedoService: UndoRedoService
+    private undoRedoService: UndoRedoService,
+    private positionSolver: PositionSolverService
   ) {
     super(true, true);
 
@@ -82,10 +84,16 @@ export class JointInteractor extends Interactor {
           .clone()
           .add(this.dragOffsetInModel!);
         this.stateService.getMechanism().setJointCoord(this.joint.id, newPos);
+
+        // Display new joint trajectory when joint is moved
+        this.stateService
+          .getMechanism()
+          .populateTrajectories(this.positionSolver);
       }
     });
 
     this.onDragEnd$.subscribe(() => {
+      this.stateService.getMechanism().clearTrajectories(); // Hide trajectories when not moving joint
       if (!this.stateService.getAnimationBarComponent().getIsStoppedAnimating()
       ) {
         return;
@@ -117,6 +125,43 @@ export class JointInteractor extends Interactor {
     let availableContext: ContextMenuOption[] = [];
 
     let mechanism: Mechanism = this.stateService.getMechanism();
+    let prevJoint = mechanism.getJoint(this.joint.id);
+    let connectedLinks =
+      mechanism.getConnectedLinksForJoint(prevJoint);
+
+    let prevJointData = {
+      id: prevJoint.id,
+      coords: { x: prevJoint.coords.x, y: prevJoint.coords.y },
+      name: prevJoint.name,
+      type: prevJoint.type,
+      angle: prevJoint.angle,
+      isGrounded: prevJoint.isGrounded,
+      isInput: prevJoint.isInput,
+      inputSpeed: prevJoint.inputSpeed,
+      isWelded: prevJoint.isWelded,
+      locked: prevJoint.locked,
+      isHidden: prevJoint.isHidden,
+      isReference: prevJoint.isReference,
+      isTracer: prevJoint.isTracer,
+      isPartOfWelded: prevJoint.isPartOfWelded,
+    };
+
+    let prevLinksData = connectedLinks.map((link) => {
+      // If link.joints is a Map, convert to Array first
+      const jointIdsArray = Array.from(link.joints.values()).map(
+        (j) => j.id
+      );
+      return {
+        id: link.id,
+        jointIds: jointIdsArray,
+        name: link.name,
+        mass: link.mass,
+        angle: link.angle,
+        locked: link.locked,
+        color: link.color,
+      };
+    });
+
     if (this.stateService.getCurrentActivePanel === 'Synthesis') {
       this.notificationService.showNotification(
         'Cannot edit in the Synthesis mode! Switch to Edit mode to edit.'
@@ -193,6 +238,8 @@ export class JointInteractor extends Interactor {
             const actionObj: Action = {
               type: 'removeGround',
               jointId: this.joint.id,
+              jointData: prevJointData,
+              linksData: prevLinksData,
             };
             this.undoRedoService.recordAction(actionObj);
             mechanism.removeGround(this.joint.id);
@@ -207,6 +254,8 @@ export class JointInteractor extends Interactor {
             const actionObj: Action = {
               type: 'addGround',
               jointId: this.joint.id,
+              jointData: prevJointData,
+              linksData: prevLinksData,
             };
 
             this.undoRedoService.recordAction(actionObj);
@@ -225,11 +274,12 @@ export class JointInteractor extends Interactor {
             const actionObj: Action = {
               type: 'removeSlider',
               jointId: this.joint.id,
+              jointData: prevJointData,
+              linksData: prevLinksData,
             };
             this.undoRedoService.recordAction(actionObj);
 
             mechanism.removeSlider(this.joint.id);
-            mechanism.removeGround(this.joint.id);
           },
           disabled: !mechanism.canRemoveSlider(this.joint),
         });
@@ -241,11 +291,12 @@ export class JointInteractor extends Interactor {
             const actionObj: Action = {
               type: 'addSlider',
               jointId: this.joint.id,
+              jointData: prevJointData,
+              linksData: prevLinksData,
             };
             this.undoRedoService.recordAction(actionObj);
 
             mechanism.addSlider(this.joint.id);
-            mechanism.removeGround(this.joint.id);
           },
           disabled: !mechanism.canAddSlider(this.joint),
         });
@@ -259,6 +310,8 @@ export class JointInteractor extends Interactor {
             const actionObj: Action = {
               type: 'removeWeld',
               jointId: this.joint.id,
+              jointData: prevJointData,
+              linksData: prevLinksData,
             };
             this.undoRedoService.recordAction(actionObj);
             mechanism.removeWeld(this.joint.id);
@@ -273,6 +326,8 @@ export class JointInteractor extends Interactor {
             const actionObj: Action = {
               type: 'addWeld',
               jointId: this.joint.id,
+              jointData: prevJointData,
+              linksData: prevLinksData,
             };
             this.undoRedoService.recordAction(actionObj);
             mechanism.addWeld(this.joint.id);
@@ -287,6 +342,8 @@ export class JointInteractor extends Interactor {
           const mechanism = this.stateService.getMechanism();
           const jointToDelete = mechanism.getJoint(this.joint.id);
 
+
+
           const jointData = {
             id: jointToDelete.id,
             coords: { x: jointToDelete.coords.x, y: jointToDelete.coords.y },
@@ -300,6 +357,8 @@ export class JointInteractor extends Interactor {
             locked: jointToDelete.locked,
             isHidden: jointToDelete.isHidden,
             isReference: jointToDelete.isReference,
+            isTracer: jointToDelete.isTracer,
+            isPartOfWelded: jointToDelete.isPartOfWelded,
           };
 
           const connectedLinks =
@@ -320,6 +379,22 @@ export class JointInteractor extends Interactor {
             };
           });
 
+          const connectedWeldedLinks = mechanism.getConnectedCompoundLinks(jointToDelete);
+          const weldedlinksData: CompoundLinkSnapshot[] = connectedWeldedLinks.map((clink) => {
+            // If link.joints is a Map, convert to Array first
+            const linkIdsArray: number[] = Array.from(clink.links.values()).map(
+              (l) => l.id
+            );
+            return {
+              id: clink.id,
+              linkIds: linkIdsArray,
+              name: clink.name,
+              mass: clink.mass,
+              locked: clink.lock,
+              color: clink.color,
+            };
+          });
+
           const allJointsSnapshot = mechanism
             .getArrayOfJoints()
             .filter((j) => j.id !== jointToDelete.id)
@@ -336,6 +411,8 @@ export class JointInteractor extends Interactor {
               locked: j.locked,
               isHidden: j.isHidden,
               isReference: j.isReference,
+              isTracer: j.isTracer,
+              isPartOfWelded: j.isPartOfWelded,
             }));
           new Set(mechanism.getArrayOfJoints().map((j) => j.id));
           mechanism.removeJoint(this.joint.id);
@@ -351,6 +428,7 @@ export class JointInteractor extends Interactor {
             jointId: jointToDelete.id,
             jointData,
             linksData,
+            compoundLinkDataArray: weldedlinksData,
             extraJointsData: extraJointsSnapshots,
           };
 
@@ -373,6 +451,7 @@ export class JointInteractor extends Interactor {
     // ── after ──
     capture.onClick$.subscribe((mousePos) => {
       const mech = this.stateService.getMechanism();
+      this.joint.isTracer = false;
 
       // make the link (and possibly a new joint)
       const hovered = capture.getHoveringJoint();
@@ -406,6 +485,8 @@ export class JointInteractor extends Interactor {
           locked: newJoint.locked,
           isHidden: newJoint.hidden,
           isReference: newJoint.reference,
+          isTracer: newJoint.isTracer,
+          isPartOfWelded: newJoint.isPartOfWelded,
         });
       }
 

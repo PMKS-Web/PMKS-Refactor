@@ -9,7 +9,7 @@
 
 <!-- Iterate through joints,links,compoundlinks, and forces and display them in the template. Draw links then joints-->
 <ng-container *ngFor="let trajectory of getTrajectories()">
-  <svg:g app-trajectory [trajectory]="trajectory.coords"></svg:g>
+  <svg:g app-trajectory [trajectory]="trajectory.coords" [joint]="getOneJoint(trajectory.id)" ] ></svg:g>
 </ng-container>
 
 <ng-container *ngFor="let link of getLinks()">

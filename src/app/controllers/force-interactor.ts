@@ -74,6 +74,24 @@ export class ForceInteractor extends Interactor {
       }
     });
 
+    this.onDrag$.subscribe(() => {
+      if (this.stateService.getCurrentActivePanel === 'Forces Analysis') {
+        const now = Date.now();
+        if (now - this.lastNotificationTime >= 3000) {
+          this.notificationService.showNotification(
+            'Cannot edit in the Forces Analysis mode! Switch to Edit mode to edit.'
+          );
+          this.lastNotificationTime = now;
+        }
+        return;
+      }
+
+      // Handle dragging logic
+      if (this.isDraggingHandle && this.handleDragType) {
+        this.handleHandleDrag();
+      }
+    });
+
     this.onDragEnd$.subscribe(() => {
       if (!this.forceStartPositions) return;
 
