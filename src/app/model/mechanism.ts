@@ -941,6 +941,9 @@ export class Mechanism {
       for (let alink of this._links.values()) {
         if (alink.id !== link.id && alink.containsJoint(joint.id)) {
           isIsolated = false; //joint isn't isolated, move to next joint
+          if(link.locked){
+            joint.breakLock()
+          }
           break;
         }
       }
